@@ -1,0 +1,16 @@
+GraphicsTest.c
+Graphics.c
+GraphicsFont.c
+tv.c
+Graphics.h
+tv.h
+TV.spin
+Graphics.spin
+init.c
+>compiler=C
+>memtype=lmm
+>optimize=-Os
+>-m32bit-doubles
+>-fno-exceptions
+>-Dprintf=__simple_printf
+>-s
