@@ -1,0 +1,28 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/newfile.png</file>
+        <file>images/openfile.png</file>
+        <file>images/saveasfile.png</file>
+        <file>images/savefile.png</file>
+        <file>images/build.png</file>
+        <file>images/burnee.png</file>
+        <file>images/debug.png</file>
+        <file>images/properties.png</file>
+        <file>images/reset.png</file>
+        <file>images/run.png</file>
+        <file>images/zip.png</file>
+        <file>images/hardware.png</file>
+        <file>images/print.png</file>
+        <file>images/connected.png</file>
+        <file>images/connected2.png</file>
+        <file>images/refresh.png</file>
+        <file>images/helphint.png</file>
+        <file>images/helpsymbol.png</file>
+        <file>images/exit.png</file>
+        <file>images/project.png</file>
+        <file>images/treeproject.png</file>
+        <file>images/find.png</file>
+        <file>images/redo.png</file>
+        <file>images/undo.png</file>
+    </qresource>
+</RCC>
