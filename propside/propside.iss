@@ -51,7 +51,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Name: modifypath; Description: "&Add Propeller-GCC directory to your environment PATH";
 
 [Files]
-Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\{#MyAppExeName}"; Flags: ignoreversion
+Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "LGPL_2_1.txt"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\doc\xBasicIDEUserGuide.doc"; DestDir: "{app}"; Flags: ignoreversion
@@ -104,7 +104,7 @@ begin
     'Select the folder where Setup will install source files, then click Next.',
     False, '');
   DataDirPage.Add('');
-  DataDirPage.Values[0] := GetPreviousData('DataDir', ExpandConstant('{userdocs}')+'\PropGCC-SimpleIDE');
+  DataDirPage.Values[0] := GetPreviousData('DataDir', ExpandConstant('{userdocs}')+'\SimpleIDE');
 end;
 
 function UpdateReadyMemo(Space, NewLine, MemoUserInfoInfo, MemoDirInfo, MemoTypeInfo,

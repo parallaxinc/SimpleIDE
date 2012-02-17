@@ -2,7 +2,7 @@
 #include "qextserialenumerator.h"
 
 #define APPWINDOW_MIN_HEIGHT 400
-#define EDITOR_MIN_WIDTH 400
+#define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 220
 
 #define COMPILE_STATUS_TERMINAL 0
@@ -62,8 +62,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     status->setMinimumWidth(60*10);
 
     statusBar->addWidget(programSize);
-    statusBar->addWidget(progress);
     statusBar->addWidget(status);
+    statusBar->addWidget(progress);
     //statusBar->setLayoutDirection(Qt::RightToLeft);
     statusBar->setMaximumHeight(22);
 
@@ -306,6 +306,8 @@ void MainWindow::newFile()
     int tab = editors->count()-1;
     editorTabs->addTab(editors->at(tab),(const QString&)untitledstr);
     editorTabs->setCurrentIndex(tab);
+    QPlainTextEdit *ed = editors->at(tab);
+    ed->setFocus();
     fileChangeDisable = false;
 }
 
@@ -428,7 +430,11 @@ void MainWindow::saveFile(const QString &path)
         int n = this->editorTabs->currentIndex();
         QString fileName = editorTabs->tabToolTip(n);
         QString data = editors->at(n)->toPlainText();
-
+        if(fileName.isEmpty())
+            fileName = QFileDialog::getSaveFileName(this,
+                tr("Save As File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
+        if (fileName.isEmpty())
+            return;
         this->editorTabs->setTabText(n,shortFileName(fileName));
         if (!fileName.isEmpty()) {
             QFile file(fileName);
@@ -1143,6 +1149,15 @@ int  MainWindow::runCompiler(QStringList copts)
     /* this is the final compile/link */
     this->startProgram(compstr,sourcePath(projectFile),args);
 
+    /*
+     * Report program size
+     * Use the projectFile instead of the current tab file
+     */
+    QString srcpath = sourcePath(projectFile);
+    QFile aout(srcpath+"a.out");
+    QString ssize = QString("Compiled %L1 Bytes").arg(aout.size());
+    programSize->setText(ssize);
+
     return rc;
 }
 
@@ -1179,6 +1194,8 @@ int  MainWindow::runLoader(QString copts)
         return -1;
     }
     progress->show();
+    progress->setValue(0);
+
     getApplicationSettings();
 
     process->setProperty("Terminal", QVariant(false));
@@ -1192,19 +1209,6 @@ int  MainWindow::runLoader(QString copts)
     portListener->close(); // disconnect uart before use
 
     showBuildStart(aSideLoader,args);
-/*
-    if(process != NULL) {
-        delete process; // kill process
-    }
-    // start a process object for managing external program
-    process = new QProcess(this);
-*/
-    //process->close();
-#if 0
-    // only used for an "all asynchronous" solution
-    process->setProperty("Name", QVariant(aSideLoader));
-    process->setProperty("IsLoader", QVariant(true));
-#endif
 
     connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
@@ -1280,13 +1284,15 @@ void MainWindow::procError(QProcess::ProcessError error)
 void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     QVariant name = process->property("Name");
-    buildResult(exitStatus, exitCode, name.toString(), process->readAllStandardOutput()); //result);
+    buildResult(exitStatus, exitCode, name.toString(), process->readAllStandardOutput());
 
     progress->hide();
+
     int len = status->text().length();
-    QString s = status->text().mid(len-5);
-    if(s.compare("done.",Qt::CaseInsensitive) != 0)
-        status->setText(status->text()+"done.");
+    QString s = status->text().mid(len-8);
+    if(s.contains("done.",Qt::CaseInsensitive) == false)
+        status->setText(status->text()+" done.");
+
     QVariant myterm = process->property("Terminal");
     if(myterm.toBool() && exitCode == 0) {
         btnConnected->setChecked(true);
@@ -1303,8 +1309,24 @@ void MainWindow::procReadyRead()
     for (int n = 0; n < lines.length(); n++) {
         QString line = lines[n];
         if(line.length() > 0) {
+            if(line.contains("Propeller Version",Qt::CaseInsensitive)) {
+                compileStatus->insertPlainText("\r"+line+"\r");
+                progress->setValue(0);
+            }
+            else
             if(line.contains("loading",Qt::CaseInsensitive)) {
                 progMax = 0;
+                progress->setValue(0);
+            }
+            else
+            if(line.contains("writing",Qt::CaseInsensitive)) {
+                progress->setValue(50);
+                compileStatus->insertPlainText(line+"\r");
+            }
+            else
+            if(line.contains("Download OK",Qt::CaseInsensitive)) {
+                progress->setValue(100);
+                compileStatus->insertPlainText(line+"\r");
             }
             else
             if(line.contains("remaining",Qt::CaseInsensitive)) {
@@ -1320,6 +1342,8 @@ void MainWindow::procReadyRead()
             else {
                 compileStatus->insertPlainText(line+"\r");
             }
+            compileStatus->moveCursor(QTextCursor::StartOfLine);
+            compileStatus->moveCursor(QTextCursor::End);
         }
     }
 }
@@ -1366,7 +1390,16 @@ int  MainWindow::buildResult(int exitStatus, int exitCode, QString progName, QSt
     }
     else if(result.toLower().indexOf("error") > -1)
     { // just in case we get an error without exitCode
-        status->setText(progName+tr(" Error."));
+        status->setText(progName+tr(" Error:")+result);
+        if(progName.contains("load",Qt::CaseInsensitive))
+            mbox.setText(tr("Load Error"));
+        else {
+            if(result.contains("port",Qt::CaseInsensitive))
+                mbox.setText(tr("Serial Port Error"));
+            else
+                mbox.setText(tr("Build Error"));
+        }
+        mbox.exec();
     }
     else if(exitCode != 0)
     {

@@ -105,6 +105,6 @@ void Properties::showProperties()
 {
     compilerstr = leditCompiler->text();
     includesstr = leditIncludes->text();
-    this->setWindowTitle("Side Compiler Properties");
+    this->setWindowTitle(QString(ASideGuiKey)+tr(" Compiler Properties"));
     this->show();
 }
