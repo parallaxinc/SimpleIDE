@@ -741,12 +741,12 @@ void MainWindow::setupHelpMenu()
 
 void MainWindow::about()
 {
-    QString version = QString("PropGCC-SimpleIDE Version %1.%2.%3")
+    QString version = QString("SimpleIDE Version %1.%2.%3")
             .arg(IDEVERSION).arg(MINVERSION).arg(FIXVERSION);
-    QMessageBox::about(this, tr("About PropGCC-SimpleIDE"), version + \
-        tr("<p><b>PropGCC-SimpleIDE</b> manages Propeller GCC program builds, and <br/>" \
+    QMessageBox::about(this, tr("About SimpleIDE"), version + \
+        tr("<p><b>SimpleIDE</b> manages Propeller GCC program builds, and <br/>" \
            "downloads programs to propeller for many basic board models.</p>") +
-        tr("Visit <a href=\"www.MicroCSource.com/PropGCC-SimpleIDE/help.htm\">MicroCSource.com</a> for more PropGCC-SimpleIDE help."));
+        tr("Visit <a href=\"www.MicroCSource.com/SimpleIDE/help.htm\">MicroCSource.com</a> for more SimpleIDE help."));
 }
 
 
@@ -843,7 +843,7 @@ int  MainWindow::runBuild(void)
 
     compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\r\n\n");
     compileStatus->moveCursor(QTextCursor::End);
-    status->setText(tr("Building with"));
+    status->setText(tr("Building with ..."));
 
     proj = proj.trimmed(); // kill extra white space
     QStringList list = proj.split("\n");

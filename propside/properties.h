@@ -3,7 +3,7 @@
 
 #define publisherKey        "MicroCSource"
 #define publisherComKey     "MicroCSource.com"
-#define ASideGuiKey         "PropGCC-SimpleIDE"
+#define ASideGuiKey         "SimpleIDE"
 #define compilerKey         "Compiler"
 #define includesKey         "Includes"
 #define separatorKey        "PathSeparator"

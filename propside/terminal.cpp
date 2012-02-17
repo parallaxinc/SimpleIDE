@@ -28,7 +28,7 @@ Terminal::Terminal(QWidget *parent) : QDialog(parent)
     butLayout->addWidget(buttonBox);
     setLayout(termLayout);
     this->setWindowFlags(Qt::Tool);
-    resize(700,500);
+    resize(600,400);
 }
 
 Console *Terminal::getEditor()
