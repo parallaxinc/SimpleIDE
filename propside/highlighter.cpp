@@ -144,8 +144,10 @@ void Highlighter::highlightC()
 
     // quoted strings
     quotationFormat.setForeground(Qt::red);
-    rule.pattern = QRegExp("[<\"].*[\">]");
+    rule.pattern = QRegExp("[\"].*[\"]");
     rule.format = quotationFormat;
+    highlightingRules.append(rule);
+    rule.pattern = QRegExp("[<][a-z,A-Z].*[>]");
     highlightingRules.append(rule);
 
     // multilineline comments
