@@ -8,13 +8,13 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 
     QPushButton *btnCompilerBrowse = new QPushButton(tr("Browse"), this);
     leditCompiler = new QLineEdit(this);
-    QHBoxLayout *clayout = new QHBoxLayout(this);
+    QHBoxLayout *clayout = new QHBoxLayout();
     clayout->addWidget(leditCompiler);
     clayout->addWidget(btnCompilerBrowse);
 
     QPushButton *btnIncludesBrowse = new QPushButton(tr("Browse"), this);
     leditIncludes = new QLineEdit(this);
-    QHBoxLayout *ilayout = new QHBoxLayout(this);
+    QHBoxLayout *ilayout = new QHBoxLayout();
     ilayout->addWidget(leditIncludes);
     ilayout->addWidget(btnIncludesBrowse);
 

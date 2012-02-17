@@ -22,7 +22,7 @@ Terminal::Terminal(QWidget *parent) : QDialog(parent)
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    QHBoxLayout *butLayout = new QHBoxLayout(this);
+    QHBoxLayout *butLayout = new QHBoxLayout();
     termLayout->addLayout(butLayout);
     butLayout->addWidget(cls);
     butLayout->addWidget(buttonBox);

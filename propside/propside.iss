@@ -79,10 +79,10 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 
 [Registry]
 Root: HKCU; SubKey: Software\MicroCSource; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\PropGCC-SimpleIDE"; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\PropGCC-SimpleIDE"; ValueType: string; ValueName: Compiler; ValueData: {code:GetCompilerDir}\bin\propeller-elf-gcc.exe; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\PropGCC-SimpleIDE"; ValueType: string; ValueName: Includes; ValueData: {code:GetCompilerDir}\propeller-load\; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\PropGCC-SimpleIDE"; ValueType: string; ValueName: LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: Compiler; ValueData: {code:GetCompilerDir}\bin\propeller-elf-gcc.exe; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: Includes; ValueData: {code:GetCompilerDir}\propeller-load\; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
 
 [Code]
 var

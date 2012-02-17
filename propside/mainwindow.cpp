@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "qextserialenumerator.h"
 
-#define APPWINDOW_MIN_HEIGHT 400
+#define APPWINDOW_MIN_HEIGHT 500
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 220
 
@@ -844,6 +844,10 @@ int  MainWindow::runBuild(void)
         proj = file.readAll();
         file.close();
     }
+
+    btnConnected->setChecked(false);
+    portListener->close(); // disconnect uart before use
+
     progress->show();
     programSize->setText("");
 
@@ -956,9 +960,6 @@ int  MainWindow::runBstc(QString spinfile)
     args.append("-c");
     args.append(shortFileName(spinfile));
 
-    btnConnected->setChecked(false);
-    portListener->close(); // disconnect uart before use
-
     checkAndSaveFiles();
 
     /* run the bstc program */
@@ -984,9 +985,6 @@ int  MainWindow::runCogObjCopy(QString datfile)
     args.append("--rename-section");
     args.append(".text="+datfile);
     args.append(datfile);
-
-    btnConnected->setChecked(false);
-    portListener->close(); // disconnect uart before use
 
     checkAndSaveFiles();
 
@@ -1017,9 +1015,6 @@ int  MainWindow::runObjCopy(QString datfile)
     args.append(datfile);
     args.append(objfile);
 
-    btnConnected->setChecked(false);
-    portListener->close(); // disconnect uart before use
-
     checkAndSaveFiles();
 
     /* run objcopy to make a spin .dat file into an object file */
@@ -1043,9 +1038,6 @@ int  MainWindow::runGAS(QString gasfile)
     args.append("-o");
     args.append(objfile);
     args.append(gasfile);
-
-    btnConnected->setChecked(false);
-    portListener->close(); // disconnect uart before use
 
     checkAndSaveFiles();
 
@@ -1133,9 +1125,6 @@ int  MainWindow::runCompiler(QStringList copts)
     }
 
     QStringList args = getCompilerParameters(copts);
-
-    btnConnected->setChecked(false);
-    portListener->close(); // disconnect uart before use
 
     checkAndSaveFiles();
 
@@ -1304,6 +1293,9 @@ void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
 void MainWindow::procReadyRead()
 {
     QByteArray bytes = process->readAllStandardOutput();
+
+    if(QString(bytes).contains("error",Qt::CaseInsensitive))
+        buildResult(0,0,"",QString(bytes));
 
     QStringList lines = QString(bytes).split("\r\n");
     for (int n = 0; n < lines.length(); n++) {
@@ -1500,7 +1492,6 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     /* project editor tabs */
     editorTabs = new QTabWidget(this);
     editorTabs->setTabsClosable(true);
-    editorTabs->setMinimumWidth(EDITOR_MIN_WIDTH);
     connect(editorTabs,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
     connect(editorTabs,SIGNAL(currentChanged(int)),this,SLOT(changeTab(int)));
     rightSplit->addWidget(editorTabs);
@@ -1857,7 +1848,7 @@ void MainWindow::connectButton()
     if(btnConnected->isChecked()) {
         btnConnected->setDisabled(true);
         portListener->open();
-        btnConnected->setDisabled(false);
+        btnConnected->setEnabled(true);
 #if COMPILE_STATUS_TERMINAL
 #else
         term->show();

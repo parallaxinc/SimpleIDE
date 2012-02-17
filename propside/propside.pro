@@ -12,7 +12,7 @@
 
 QT       += core gui
 
-TARGET = PropGCC-SimpleIDE
+TARGET = SimpleIDE
 TEMPLATE = app
 
 DEFINES += QEXTSERIALPORT_LIB

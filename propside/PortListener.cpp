@@ -3,7 +3,7 @@
 #include <QtDebug>
 
 
-enum { READSIZE = 512 };
+enum { READSIZE = 16 };
 
 PortListener::PortListener()
 {
@@ -24,7 +24,7 @@ void PortListener::init(const QString & portName, BaudRateType baud)
     port->setParity(PAR_NONE);
     port->setDataBits(DATA_8);
     port->setStopBits(STOP_1);
-    connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead())); // never disconnect
+    connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(port, SIGNAL(dsrChanged(bool)), this, SLOT(onDsrChanged(bool)));
     buffer.resize(READSIZE+1);
 }
@@ -41,9 +41,9 @@ void PortListener::open()
 
     if(port == NULL)
         return;
-
-    port->open(QIODevice::ReadWrite);
-    onReadyRead(); // see what's in the buffer?
+    if(port->isOpen() == false) {
+        port->open(QIODevice::ReadWrite);
+    }
 }
 
 void PortListener::close()
@@ -52,6 +52,7 @@ void PortListener::close()
         return;
 
     if(port->isOpen()) {
+        port->flush();
         port->close();
     }
 }
@@ -71,13 +72,14 @@ void PortListener::onReadyRead()
     QString text;
     int ret;
     int len;
+
     len = port->bytesAvailable();
-    if(len == 0)
+    if(len < 1) // read at least 1 byte
         return;
 
     buffer = port->read(READSIZE);
     ret = buffer.length();
-    if(ret == 0)
+    if(ret < 1)
         return;
 
     for(int n = 0; n < ret; n++)
@@ -102,40 +104,6 @@ void PortListener::onReadyRead()
         }
     }
     textEditor->moveCursor(QTextCursor::End);
-
-#if 0
-    if(buffer.indexOf('\b') < 0)
-    { // no backspace
-        for(int n = 0; n < ret; n++) {
-            switch(buffer[n]) {
-            case 0:
-                break;
-            case 0xA:
-                textEditor->insertPlainText(QString(buffer.at(n)));
-                break;
-            case 0xD:
-                break;
-            default:
-                textEditor->insertPlainText(QString(buffer.at(n)));
-                break;
-            }
-        }
-    }
-    else // handle backspaces.
-    {
-        for(int n = 0; n < ret; n++)
-        {
-            QString text = textEditor->toPlainText();
-            int tlen = text.length();
-            if(buffer[n] == '\b') {
-                textEditor->setPlainText(text.mid(0,tlen-1));
-            } else {
-                textEditor->setPlainText(text + buffer[n]);
-            }
-        }
-    }
-    textEditor->moveCursor(QTextCursor::End);
-#endif
 }
 
 void PortListener::onDsrChanged(bool status)
