@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include "qextserialenumerator.h"
 
-#define APPWINDOW_MIN_HEIGHT 500
-#define EDITOR_MIN_WIDTH 500
+#define APPWINDOW_MIN_HEIGHT 400
+#define EDITOR_MIN_WIDTH 400
 #define PROJECT_WIDTH 220
 
 #define COMPILE_STATUS_TERMINAL 0
@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     this->setStatusBar(statusBar);
     progress = new QProgressBar();
     progress->setMaximumSize(90,20);
-    progress->setValue(0);
+    progress->hide();
 
     programSize = new QLabel();
     programSize->setMinimumWidth(21*10+8);
@@ -97,6 +97,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         setCurrentPort(ndx);
     }
 
+    /* start a process object for the loader to use */
+    process = new QProcess(this);
+
     /* setup the terminal dialog box */
     term = new Terminal(this);
     term->setWindowTitle(QString(ASideGuiKey)+" Terminal");
@@ -123,8 +126,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     }
 
     // old hardware dialog configuration feature
-    //hardwareDialog = new Hardware(this);
-    //connect(hardwareDialog,SIGNAL(accepted()),this,SLOT(initBoardTypes()));
+    //  hardwareDialog = new Hardware(this);
+    //  connect(hardwareDialog,SIGNAL(accepted()),this,SLOT(initBoardTypes()));
 }
 
 void MainWindow::keyHandler(QKeyEvent* event)
@@ -165,7 +168,7 @@ void MainWindow::sendPortMessage(QString s)
 
 void MainWindow::terminalEditorTextChanged()
 {
-    QString text = termEditor->toPlainText();
+    //QString text = termEditor->toPlainText();
 }
 
 /*
@@ -708,9 +711,9 @@ void MainWindow::programDebug()
 {
     if(runBuild())
         return;
-    if(runLoader("-r"))
+
+    if(runLoader("-r -t"))
         return;
-    // don't start terminal if compiler or loader failed
 
     /*
      * setting the position of a new dialog doesn't work very nice
@@ -718,11 +721,8 @@ void MainWindow::programDebug()
      */
 #if COMPILE_STATUS_TERMINAL
 #else
-    term->show();   // show if hidden
+    // term->show();   // show if hidden
 #endif
-
-    btnConnected->setChecked(true);
-    connectButton();
 }
 
 void MainWindow::terminalClosed()
@@ -838,19 +838,27 @@ int  MainWindow::runBuild(void)
         proj = file.readAll();
         file.close();
     }
-
+    progress->show();
     programSize->setText("");
 
-    compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\n");
+    compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\r\n\n");
+    compileStatus->moveCursor(QTextCursor::End);
     status->setText(tr("Building with"));
 
     proj = proj.trimmed(); // kill extra white space
     QStringList list = proj.split("\n");
 
+    int maxprogress = list.length()-1;
+    while(list[maxprogress].at(0) == '>')
+        maxprogress--;
+    maxprogress++;
     for(int n = 0; n < list.length(); n++) {
-        if(!list[n].length())
-            continue;
+        progress->setValue(100*n/maxprogress);
         QString name = list[n];
+        if(name.length() == 0)
+            continue;
+        if(name.at(0) == '>')
+            continue;
         QString base = shortFileName(name.mid(0,name.lastIndexOf(".")));
         if(name.toLower().lastIndexOf(".spin") > 0) {
             if(runBstc(name))
@@ -880,15 +888,20 @@ int  MainWindow::runBuild(void)
             clist.append(name);
         }
     }
+
     if(!runCompiler(clist)) {
         status->setText(status->text()+tr(" done."));
+        progress->hide();
         return 0;
     }
+    progress->hide();
     return -1;
 }
 
 int  MainWindow::runCOGC(QString name)
 {
+    int rc = 0; // return code
+
     QString base = shortFileName(name.mid(0,name.lastIndexOf(".")));
     // copy .cog to .c
     // QFile::copy(sourcePath(projectFile)+name,sourcePath(projectFile)+base+".c");
@@ -903,24 +916,10 @@ int  MainWindow::runCOGC(QString name)
     //args.append("-c");
     args.append(name);
 
+    /* run compiler */
     QString compstr = shortFileName(aSideCompiler);
-    QProcess proc(this);
-    showBuildStart(compstr,args);
-
-    proc.setWorkingDirectory(sourcePath(projectFile));
-    proc.start(compstr,args);
-
-    if(checkBuildStart(&proc, compstr))
-        return -1;
-
-    QString result = proc.readAll();
-    result += proc.readAllStandardOutput();
-    result += proc.readAllStandardError();
-    if(result.length()>0)
-        compileStatus->appendPlainText(result);
-
-    if(result.length())
-        return -1;
+    rc = startProgram(compstr, sourcePath(projectFile),args);
+    if(rc) return rc;
 
     /* now do objcopy */
     args.clear();
@@ -929,96 +928,49 @@ int  MainWindow::runCOGC(QString name)
     args.append(".text="+base+".cog");
     args.append(base+".cog");
 
-    /* old way */
-    /*
-    args.clear();
-    args.append("--localize-text");
-    args.append(base+".o");
-    args.append(base+".cog");
-    */
 
-    //QString objcopy = sourcePath(aSideCompiler)+"propeller-elf-objcopy";
+    /* run object copy to localize fix up .cog object */
+
     QString objcopy = "propeller-elf-objcopy";
-    showBuildStart(objcopy,args);
+    rc = startProgram(objcopy, sourcePath(projectFile), args);
 
-    proc.setWorkingDirectory(sourcePath(projectFile));
-    proc.start(objcopy,args);
-
-    if(checkBuildStart(&proc, objcopy))
-        return -1;
-
-    result = proc.readAll();
-    result += proc.readAllStandardOutput();
-    result += proc.readAllStandardError();
-    if(result.length()>0)
-        compileStatus->appendPlainText(result);
-
-    if(result.length())
-        return -1;
-
-    return 0;
+    return rc;
 }
 
 int  MainWindow::runBstc(QString spinfile)
 {
+    int rc = 0;
+
     getApplicationSettings();
     if(checkCompilerInfo()) {
         return -1;
     }
-    progress->setValue(0);
 
     QStringList args;
     args.append("-c");
     args.append(shortFileName(spinfile));
-    //args.append("-o");
-    //args.append(spinfile.mid(0,spinfile.lastIndexOf("."))+".dat");
 
     btnConnected->setChecked(false);
     portListener->close(); // disconnect uart before use
 
-    progress->setValue(5);
-
     checkAndSaveFiles();
-    progress->setValue(10);
 
+    /* run the bstc program */
     QString bstc = "bstc";
-    showBuildStart(bstc,args);
+    rc = startProgram(bstc, sourcePath(projectFile), args);
 
-    QProcess proc(this);
-
-    proc.setWorkingDirectory(sourcePath(projectFile));
-    proc.start(bstc,args);
-
-    progress->setValue(15);
-
-    if(checkBuildStart(&proc, bstc))
-        return -1;
-
-    progress->setValue(60);
-
-    QString result = proc.readAll();
-    result += proc.readAllStandardOutput();
-    result += proc.readAllStandardError();
-    if(result.length()>0)
-        compileStatus->appendPlainText(result);
-
-    int exitCode = proc.exitCode();
-    int exitStatus = proc.exitStatus();
-    int rc = buildResult(exitStatus, exitCode, bstc, result);
-
-    progress->setValue(100);
     return rc;
 }
 
 
 int  MainWindow::runCogObjCopy(QString datfile)
 {
+    int rc = 0;
+
     getApplicationSettings();
     if(checkCompilerInfo()) {
         return -1;
     }
-
-    progress->setValue(0);
 
     QStringList args;
 
@@ -1030,48 +982,23 @@ int  MainWindow::runCogObjCopy(QString datfile)
     btnConnected->setChecked(false);
     portListener->close(); // disconnect uart before use
 
-    progress->setValue(5);
-
     checkAndSaveFiles();
-    progress->setValue(10);
 
-    //QString objcopy = sourcePath(aSideCompiler)+"propeller-elf-objcopy";
+    /* run objcopy */
     QString objcopy = "propeller-elf-objcopy";
-    showBuildStart(objcopy,args);
+    rc = startProgram(objcopy, sourcePath(projectFile), args);
 
-    QProcess proc(this);
-
-    proc.setWorkingDirectory(sourcePath(projectFile));
-    proc.start(objcopy,args);
-
-    progress->setValue(15);
-
-    if(checkBuildStart(&proc, objcopy))
-        return -1;
-
-    progress->setValue(60);
-
-    QString result = proc.readAll();
-    result += proc.readAllStandardOutput();
-    result += proc.readAllStandardError();
-    if(result.length()>0)
-        compileStatus->appendPlainText(result);
-
-    int exitCode = proc.exitCode();
-    int exitStatus = proc.exitStatus();
-    int rc = buildResult(exitStatus, exitCode, objcopy, result);
-    progress->setValue(100);
     return rc;
 }
 
 int  MainWindow::runObjCopy(QString datfile)
 {
+    int rc = 0;
+
     getApplicationSettings();
     if(checkCompilerInfo()) {
         return -1;
     }
-
-    progress->setValue(0);
 
     QString objfile = datfile.mid(0,datfile.lastIndexOf("."))+"_firmware.o";
     QStringList args;
@@ -1087,48 +1014,23 @@ int  MainWindow::runObjCopy(QString datfile)
     btnConnected->setChecked(false);
     portListener->close(); // disconnect uart before use
 
-    progress->setValue(5);
-
     checkAndSaveFiles();
-    progress->setValue(10);
 
-    //QString objcopy = sourcePath(aSideCompiler)+"propeller-elf-objcopy";
+    /* run objcopy to make a spin .dat file into an object file */
     QString objcopy = "propeller-elf-objcopy";
-    showBuildStart(objcopy,args);
+    rc = startProgram(objcopy, sourcePath(projectFile), args);
 
-    QProcess proc(this);
-
-    proc.setWorkingDirectory(sourcePath(projectFile));
-    proc.start(objcopy,args);
-
-    progress->setValue(15);
-
-    if(checkBuildStart(&proc, objcopy))
-        return -1;
-
-    progress->setValue(60);
-
-    QString result = proc.readAll();
-    result += proc.readAllStandardOutput();
-    result += proc.readAllStandardError();
-    if(result.length()>0)
-        compileStatus->appendPlainText(result);
-
-    int exitCode = proc.exitCode();
-    int exitStatus = proc.exitStatus();
-    int rc = buildResult(exitStatus, exitCode, objcopy, result);
-    progress->setValue(100);
     return rc;
 }
 
 int  MainWindow::runGAS(QString gasfile)
 {
+    int rc = 0;
+
     getApplicationSettings();
     if(checkCompilerInfo()) {
         return -1;
     }
-
-    progress->setValue(0);
 
     QString objfile = gasfile.mid(0,gasfile.lastIndexOf("."))+".o";
     QStringList args;
@@ -1139,37 +1041,12 @@ int  MainWindow::runGAS(QString gasfile)
     btnConnected->setChecked(false);
     portListener->close(); // disconnect uart before use
 
-    progress->setValue(5);
-
     checkAndSaveFiles();
-    progress->setValue(10);
 
-    //QString gas = sourcePath(aSideCompiler)+"propeller-elf-as";
+    /* run the as program */
     QString gas = "propeller-elf-as";
-    showBuildStart(gas,args);
+    rc = startProgram(gas, sourcePath(projectFile), args);
 
-    QProcess proc(this);
-
-    proc.setWorkingDirectory(sourcePath(projectFile));
-    proc.start(gas,args);
-
-    progress->setValue(15);
-
-    if(checkBuildStart(&proc, gas))
-        return -1;
-
-    progress->setValue(60);
-
-    QString result = proc.readAll();
-    result += proc.readAllStandardOutput();
-    result += proc.readAllStandardError();
-    if(result.length()>0)
-        compileStatus->appendPlainText(result);
-
-    int exitCode = proc.exitCode();
-    int exitStatus = proc.exitStatus();
-    int rc = buildResult(exitStatus, exitCode, gas, result);
-    progress->setValue(100);
     return rc;
 }
 
@@ -1178,7 +1055,7 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
     // use the projectFile instead of the current tab file
     QString srcpath = sourcePath(projectFile);
 
-    portName = cbPort->itemText(cbPort->currentIndex());    // TODO should be itemToolTip
+    portName = cbPort->itemText(cbPort->currentIndex());
     boardName = cbBoard->itemText(cbBoard->currentIndex());
 
     QStringList args;
@@ -1186,7 +1063,6 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
     args.append("a.out");
     args.append(projectOptions->getOptimization());
     args.append("-m"+projectOptions->getMemModel());
-    //args.append("-Wno-unused-value");
 
     if(projectOptions->getWarnAll().length())
         args.append(projectOptions->getWarnAll());
@@ -1221,12 +1097,7 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
         args.append(projectOptions->getMathLib());
     if(projectOptions->getPthreadLib().length())
         args.append(projectOptions->getPthreadLib());
-/*
-    if(projectOptions->getCppStdLib().length())
-        args.append(projectOptions->getCppStdLib());
-    if(projectOptions->getCppSupLib().length())
-        args.append(projectOptions->getCppSupLib());
-*/
+
     /* other linker options */
     if(projectOptions->getLinkOptions().length())
         args.append(projectOptions->getLinkOptions());
@@ -1241,6 +1112,8 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
 
 int  MainWindow::runCompiler(QStringList copts)
 {
+    int rc = 0;
+
     if(projectModel == NULL || projectFile.isNull()) {
         QMessageBox mbox(QMessageBox::Critical, "Error No Project",
             "Please select a tab and press F4 to set main project file.", QMessageBox::Ok);
@@ -1253,59 +1126,23 @@ int  MainWindow::runCompiler(QStringList copts)
         return -1;
     }
 
-    progress->setValue(0);
-
     QStringList args = getCompilerParameters(copts);
 
     btnConnected->setChecked(false);
     portListener->close(); // disconnect uart before use
 
-    progress->setValue(5);
-
     checkAndSaveFiles();
-    progress->setValue(10);
 
     QString compstr = shortFileName(aSideCompiler);
-    showBuildStart(compstr,args);
 
     if(projectOptions->getCompiler().indexOf("++") > -1) {
         compstr = compstr.mid(0,compstr.lastIndexOf("-")+1);
         compstr+="c++";
     }
 
-    QProcess proc(this);
+    /* this is the final compile/link */
+    this->startProgram(compstr,sourcePath(projectFile),args);
 
-    proc.setWorkingDirectory(sourcePath(projectFile));
-    proc.start(compstr,args);
-
-    progress->setValue(15);
-
-    if(checkBuildStart(&proc, compstr))
-        return -1;
-
-    progress->setValue(60);
-
-    QString result = proc.readAll();
-    result += proc.readAllStandardOutput();
-    result += proc.readAllStandardError();
-    if(result.length()>0)
-        compileStatus->appendPlainText(result);
-
-    int exitCode = proc.exitCode();
-    int exitStatus = proc.exitStatus();
-
-    int rc = buildResult(exitStatus, exitCode, compstr, result);
-
-    /*
-     * Report program size
-     * Use the projectFile instead of the current tab file
-     */
-    QString srcpath = sourcePath(projectFile);
-    QFile aout(srcpath+"a.out");
-    QString ssize = QString("Compiled %1K Bytes").arg(round(aout.size()/1000));
-    programSize->setText(ssize);
-
-    progress->setValue(100);
     return rc;
 }
 
@@ -1341,45 +1178,150 @@ int  MainWindow::runLoader(QString copts)
         mbox.exec();
         return -1;
     }
-
+    progress->show();
     getApplicationSettings();
 
-    progress->setValue(0);
-
+    process->setProperty("Terminal", QVariant(false));
+    if(copts.indexOf(" -t") > 0) {
+        copts = copts.mid(0,copts.indexOf(" -t"));
+        process->setProperty("Terminal", QVariant(true));
+    }
     QStringList args = getLoaderParameters(copts);
 
     btnConnected->setChecked(false);
     portListener->close(); // disconnect uart before use
 
-    progress->setValue(5);
-
     showBuildStart(aSideLoader,args);
+/*
+    if(process != NULL) {
+        delete process; // kill process
+    }
+    // start a process object for managing external program
+    process = new QProcess(this);
+*/
+    //process->close();
+#if 0
+    // only used for an "all asynchronous" solution
+    process->setProperty("Name", QVariant(aSideLoader));
+    process->setProperty("IsLoader", QVariant(true));
+#endif
 
-    QProcess proc(this);
+    connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
+    connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
+    connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
+
+    process->setProcessChannelMode(QProcess::MergedChannels);
+    process->setWorkingDirectory(aSideCompilerPath);
+    process->start(aSideLoader,args);
 
     status->setText(status->text()+tr(" Loading ... "));
 
-    proc.setWorkingDirectory(aSideCompilerPath);
-    proc.start(aSideLoader,args);
+    return 0;
+}
 
-    if(checkBuildStart(&proc, aSideLoader)) return -1;
+int  MainWindow::startProgram(QString program, QString workpath, QStringList args)
+{
+    /* this is the best synchronous method, but no data collection */
+    // QProcess::execute(program,args);
 
-    progress->setValue(60);
+    /*
+     * this synchronous method allows reporting.
+     * we can only use synchronous methods for compile, etc...
+     */
+    QString result;
+    QProcess proc;
 
-    QString result = proc.readAll();
-    result += proc.readAllStandardOutput();
-    result += proc.readAllStandardError();
-    if(result.length()>0)
-        compileStatus->appendPlainText(result);
-    //termEditor->setPlainText(result);
+    showBuildStart(program, args);
 
-    int exitCode = proc.exitCode();
-    int exitStatus = proc.exitStatus();
-    int rc = buildResult(exitStatus, exitCode, "", result);
-    progress->setValue(100);
-    status->setText(status->text()+tr(" done."));
+    //proc.setProcessChannelMode(QProcess::MergedChannels);
+    proc.setWorkingDirectory(workpath);
+    proc.start(program, args);
 
-    return rc;
+    if(checkBuildStart(&proc, program)) return -1;
+
+    proc.waitForFinished();
+
+    result = proc.readAllStandardOutput(); // + proc.readAllStandardError();
+    this->compileStatus->appendPlainText(result);
+    this->buildResult(proc.exitStatus(), proc.exitCode(), program, result);
+    return proc.exitCode();
+
+    /*
+     * this is the asynchronous method.
+     * some day we might make all processes asynchronous.
+     * problem is they have to all finish in sequence.
+     * until then, all compile processes will be synchronous
+     */
+#if 0
+    /* start a process object for managing external program */
+    QProcess *process = new QProcess(this);
+    procList.append(process);
+
+    process->setProperty("Name", QVariant(program));
+    process->setProperty("IsLoader", QVariant(false));
+
+    connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
+    connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
+    connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
+
+    process->setProcessChannelMode(QProcess::MergedChannels);
+    process->setWorkingDirectory(workpath);
+    process->start(program,args);
+
+    return 0;
+#endif
+}
+
+void MainWindow::procError(QProcess::ProcessError error)
+{
+    QVariant name = process->property("Name");
+    compileStatus->appendPlainText(name.toString() + tr(" error ... \"%1\"").arg(error));
+}
+void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    QVariant name = process->property("Name");
+    buildResult(exitStatus, exitCode, name.toString(), process->readAllStandardOutput()); //result);
+
+    progress->hide();
+    int len = status->text().length();
+    QString s = status->text().mid(len-5);
+    if(s.compare("done.",Qt::CaseInsensitive) != 0)
+        status->setText(status->text()+"done.");
+    QVariant myterm = process->property("Terminal");
+    if(myterm.toBool() && exitCode == 0) {
+        btnConnected->setChecked(true);
+        connectButton();
+        term->show();
+    }
+}
+
+void MainWindow::procReadyRead()
+{
+    QByteArray bytes = process->readAllStandardOutput();
+
+    QStringList lines = QString(bytes).split("\r\n");
+    for (int n = 0; n < lines.length(); n++) {
+        QString line = lines[n];
+        if(line.length() > 0) {
+            if(line.contains("loading",Qt::CaseInsensitive)) {
+                progMax = 0;
+            }
+            else
+            if(line.contains("remaining",Qt::CaseInsensitive)) {
+                if(progMax == 0) {
+                    QString bs = line.mid(0,line.indexOf(" "));
+                    progMax = bs.toInt();
+                    progMax /= 1024;
+                    progCount = 0;
+                }
+                progCount++;
+                progress->setValue(100*progCount/progMax);
+            }
+            else {
+                compileStatus->insertPlainText(line+"\r");
+            }
+        }
+    }
 }
 
 int  MainWindow::checkBuildStart(QProcess *proc, QString progName)
@@ -1388,14 +1330,11 @@ int  MainWindow::checkBuildStart(QProcess *proc, QString progName)
     mbox.setStandardButtons(QMessageBox::Ok);
     qDebug() << QDir::currentPath();
     if(!proc->waitForStarted()) {
-        progress->setValue(100);
         mbox.setInformativeText(progName+tr(" Could not start."));
         mbox.exec();
         return -1;
     }
-    progress->setValue(50);
     if(!proc->waitForFinished()) {
-        progress->setValue(100);
         mbox.setInformativeText(progName+tr(" Error waiting for program to finish."));
         mbox.exec();
         return -1;
@@ -1408,7 +1347,9 @@ void MainWindow::showBuildStart(QString progName, QStringList args)
     QString argstr = "";
     for(int n = 0; n < args.length(); n++)
         argstr += " "+args[n];
-    compileStatus->appendPlainText(progName+argstr);
+    qDebug() << progName+argstr;
+    compileStatus->insertPlainText(progName+argstr);
+    compileStatus->moveCursor(QTextCursor::End);
 }
 
 int  MainWindow::buildResult(int exitStatus, int exitCode, QString progName, QString result)
@@ -1419,19 +1360,16 @@ int  MainWindow::buildResult(int exitStatus, int exitCode, QString progName, QSt
 
     if(exitStatus == QProcess::CrashExit)
     {
-        progress->setValue(100);
         status->setText(tr("Compiler Crashed"));
         mbox.setText(tr("Compiler Crashed"));
         mbox.exec();
     }
     else if(result.toLower().indexOf("error") > -1)
     { // just in case we get an error without exitCode
-        progress->setValue(100);
         status->setText(progName+tr(" Error."));
     }
     else if(exitCode != 0)
     {
-        progress->setValue(100);
         status->setText(progName+tr(" Unknown Error: ")+QString("%1").arg(exitCode));
     }
     else if(result.toLower().indexOf("warning") > -1)
@@ -1456,6 +1394,7 @@ void MainWindow::compilerFinished(int exitCode, QProcess::ExitStatus status)
 {
     qDebug() << exitCode << status;
 }
+
 
 void MainWindow::closeTab(int index)
 {

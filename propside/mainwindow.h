@@ -130,6 +130,10 @@ public slots:
 
     void compileStatusClicked();
 
+    void procError(QProcess::ProcessError error);
+    void procFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void procReadyRead();
+
 private:
     void exitSave();
     void getApplicationSettings();
@@ -144,6 +148,7 @@ private:
     int  runCompiler(QStringList options);
     QStringList getLoaderParameters(QString options);
     int  runLoader(QString options);
+    int  startProgram(QString program, QString workpath, QStringList args);
     int  checkBuildStart(QProcess *proc, QString progName);
     void showBuildStart(QString progName, QStringList args);
     int  buildResult(int exitStatus, int exitCode, QString progName, QString result);
@@ -214,10 +219,12 @@ private:
     QString         portName;
     QString         boardName;
 
-    QProcess        *proc;
+    QProcess        *process;
+    QProgressBar    *progress;
+    int             progMax;
+    int             progCount;
 
     Hardware        *hardwareDialog;
-    QProgressBar    *progress;
     QLabel          *status;
     QLabel          *programSize;
 
