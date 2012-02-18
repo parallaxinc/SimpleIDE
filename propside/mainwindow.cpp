@@ -1226,7 +1226,7 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
 
     showBuildStart(program, args);
 
-    //proc.setProcessChannelMode(QProcess::MergedChannels);
+    proc.setProcessChannelMode(QProcess::MergedChannels);
     proc.setWorkingDirectory(workpath);
     proc.start(program, args);
 
