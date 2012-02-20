@@ -3,7 +3,7 @@
 #include <QtDebug>
 
 
-enum { READSIZE = 16 };
+enum { READSIZE = 64 };
 
 PortListener::PortListener()
 {
@@ -26,7 +26,6 @@ void PortListener::init(const QString & portName, BaudRateType baud)
     port->setStopBits(STOP_1);
     connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(port, SIGNAL(dsrChanged(bool)), this, SLOT(onDsrChanged(bool)));
-    buffer.resize(READSIZE+1);
 }
 
 void PortListener::setDtr(bool enable)
@@ -34,16 +33,19 @@ void PortListener::setDtr(bool enable)
     this->port->setDtr(enable);
 }
 
-void PortListener::open()
+bool PortListener::open()
 {
     if(!textEditor) // no text editor, no open
-        return;
+        return false;
 
     if(port == NULL)
-        return;
-    if(port->isOpen() == false) {
-        port->open(QIODevice::ReadWrite);
-    }
+        return false;
+
+    if(port->isOpen() == true)
+        return false;
+
+    port->open(QIODevice::ReadWrite);
+    return true;
 }
 
 void PortListener::close()
@@ -51,10 +53,12 @@ void PortListener::close()
     if(port == NULL)
         return;
 
-    if(port->isOpen()) {
-        port->flush();
-        port->close();
-    }
+    port->close();
+}
+
+bool PortListener::isOpen()
+{
+    return port->isOpen();
 }
 
 void PortListener::setTerminalWindow(QPlainTextEdit *editor)
@@ -69,38 +73,38 @@ void PortListener::send(QByteArray &data)
 
 void PortListener::onReadyRead()
 {
-    QString text;
-    int ret;
-    int len;
+    char buff[READSIZE+1];
+    int ret = 0;
 
-    len = port->bytesAvailable();
-    if(len < 1) // read at least 1 byte
+    if(port->isOpen() == false)
         return;
 
-    buffer = port->read(READSIZE);
-    ret = buffer.length();
-    if(ret < 1)
-        return;
-
+    ret = port->readData(buff, READSIZE);
     for(int n = 0; n < ret; n++)
     {
-        switch(buffer[n])
+        switch(buff[n])
         {
-            case 0:
+            case 0: {
                 break;
-            case '\b':
+            }
+            case '\b': {
+                QString text;
                 text = textEditor->toPlainText();
                 textEditor->setPlainText(text.mid(0,text.length()-1));
                 n+=2;
                 break;
-            case 0xA:
-                textEditor->insertPlainText(QString(buffer.at(n)));
+            }
+            case 0xA: {
+                textEditor->insertPlainText(QString(buff[n]));
                 break;
-            case 0xD:
+            }
+            case 0xD: {
                 break;
-            default:
-                textEditor->insertPlainText(QString(buffer.at(n)));
+            }
+            default: {
+                textEditor->insertPlainText(QString(buff[n]));
                 break;
+            }
         }
     }
     textEditor->moveCursor(QTextCursor::End);
