@@ -223,6 +223,8 @@ private:
     QProgressBar    *progress;
     int             progMax;
     int             progCount;
+    bool            procDone;
+    QMutex          procMutex;
 
     Hardware        *hardwareDialog;
     QLabel          *status;
