@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "qextserialenumerator.h"
+#include "Sleeper.h"
 
 #define APPWINDOW_MIN_HEIGHT 500
 #define EDITOR_MIN_WIDTH 500
@@ -836,7 +837,7 @@ QString MainWindow::sourcePath(QString srcpath)
 
 int  MainWindow::runBuild(void)
 {
-    //QString srcpath = sourcePath(projectFile);
+    int rc = 0;
     QStringList clist;
     QFile file(projectFile);
     QString proj = "";
@@ -853,7 +854,7 @@ int  MainWindow::runBuild(void)
 
     compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\r\n\n");
     compileStatus->moveCursor(QTextCursor::End);
-    status->setText(tr("Building with ..."));
+    status->setText(tr("Building ..."));
 
     proj = proj.trimmed(); // kill extra white space
     QStringList list = proj.split("\n");
@@ -911,13 +912,11 @@ int  MainWindow::runBuild(void)
         }
     }
 
-    if(!runCompiler(clist)) {
-        status->setText(status->text()+tr(" done."));
-        progress->hide();
-        return 0;
-    }
+    rc = runCompiler(clist);
+    Sleeper::ms(250);
     progress->hide();
-    return -1;
+
+    return rc;
 }
 
 int  MainWindow::runCOGC(QString name)
@@ -1148,7 +1147,7 @@ int  MainWindow::runCompiler(QStringList copts)
     }
 
     /* this is the final compile/link */
-    this->startProgram(compstr,sourcePath(projectFile),args);
+    rc = startProgram(compstr,sourcePath(projectFile),args);
 
     /*
      * Report program size
@@ -1230,42 +1229,9 @@ int  MainWindow::runLoader(QString copts)
 
 int  MainWindow::startProgram(QString program, QString workpath, QStringList args)
 {
-    /* this is the best synchronous method, but no data collection */
-    // QProcess::execute(program,args);
-
-    /*
-     * this synchronous method allows reporting.
-     * we can only use synchronous methods for compile, etc...
-     */
-    QString result;
-    QProcess proc;
-
-    showBuildStart(program, args);
-
-    proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.setWorkingDirectory(workpath);
-    proc.start(program, args);
-
-    if(checkBuildStart(&proc, program)) return -1;
-
-    proc.waitForFinished();
-
-    result = proc.readAllStandardOutput(); // + proc.readAllStandardError();
-    this->compileStatus->appendPlainText(result);
-    this->buildResult(proc.exitStatus(), proc.exitCode(), program, result);
-    return proc.exitCode();
-
     /*
      * this is the asynchronous method.
-     * some day we might make all processes asynchronous.
-     * problem is they have to all finish in sequence.
-     * until then, all compile processes will be synchronous
      */
-#if 0
-    /* start a process object for managing external program */
-    QProcess *process = new QProcess(this);
-    procList.append(process);
-
     process->setProperty("Name", QVariant(program));
     process->setProperty("IsLoader", QVariant(false));
 
@@ -1275,10 +1241,16 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
 
     process->setProcessChannelMode(QProcess::MergedChannels);
     process->setWorkingDirectory(workpath);
+
+    procDone = false;
     process->start(program,args);
 
-    return 0;
-#endif
+    /* process Qt application events until procDone
+     */
+    while(procDone == false)
+        QApplication::processEvents();
+
+    return process->exitCode();
 }
 
 void MainWindow::procError(QProcess::ProcessError error)
@@ -1298,8 +1270,6 @@ void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
     QVariant name = process->property("Name");
     buildResult(exitStatus, exitCode, name.toString(), process->readAllStandardOutput());
 
-    progress->hide();
-
     int len = status->text().length();
     QString s = status->text().mid(len-8);
     if(s.contains("done.",Qt::CaseInsensitive) == false)
@@ -1316,9 +1286,6 @@ void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
 void MainWindow::procReadyRead()
 {
     QByteArray bytes = process->readAllStandardOutput();
-
-    if(QString(bytes).contains("error",Qt::CaseInsensitive))
-        buildResult(0,0,"",QString(bytes));
 
     QStringList lines = QString(bytes).split("\r\n");
     for (int n = 0; n < lines.length(); n++) {
@@ -1427,7 +1394,7 @@ int  MainWindow::buildResult(int exitStatus, int exitCode, QString progName, QSt
     }
     else
     {
-        status->setText(status->text()+" "+progName.mid(progName.lastIndexOf(aSideSeparator)+1));
+        /* we can show progress of individual build steps, but that makes status unreasonable. */
         return 0;
     }
     return -1;
