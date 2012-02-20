@@ -53,7 +53,8 @@ HEADERS  += mainwindow.h \
     asideconfig.h \
     cbuildtree.h \
     finddialog.h \
-    projectoptions.h
+    projectoptions.h \
+    Sleeper.h
 
 FORMS    += \
     hardware.ui \
