@@ -858,10 +858,22 @@ int  MainWindow::runBuild(void)
     proj = proj.trimmed(); // kill extra white space
     QStringList list = proj.split("\n");
 
+    /* Calculate the number of compile steps for progress.
+     * Skip empty lines and don't count ">" parameters.
+     */
     int maxprogress = list.length()-1;
-    while(list[maxprogress].at(0) == '>')
-        maxprogress--;
+    foreach(QString item, list) {
+        if(item.length() == 0) {
+            maxprogress--;
+            continue;
+        }
+        if(item.at(0) == '>')
+            maxprogress--;
+    }
     maxprogress++;
+
+    /* Run through file list and compile according to extension.
+     */
     for(int n = 0; n < list.length(); n++) {
         progress->setValue(100*n/maxprogress);
         QString name = list[n];
@@ -1207,6 +1219,10 @@ int  MainWindow::runLoader(QString copts)
     process->setWorkingDirectory(aSideCompilerPath);
     process->start(aSideLoader,args);
 
+    procMutex.lock();
+    procDone = false;
+    procMutex.unlock();
+
     status->setText(status->text()+tr(" Loading ... "));
 
     return 0;
@@ -1272,6 +1288,13 @@ void MainWindow::procError(QProcess::ProcessError error)
 }
 void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    if(procDone == true)
+        return;
+
+    procMutex.lock();
+    procDone = true;
+    procMutex.unlock();
+
     QVariant name = process->property("Name");
     buildResult(exitStatus, exitCode, name.toString(), process->readAllStandardOutput());
 
@@ -1580,6 +1603,11 @@ void MainWindow::addProjectFile()
 
     QString fileName = dialog.getOpenFileName(this,
         tr("Add File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
+
+    /* Cancel makes filename blank. If fileName is blank, don't add.
+     */
+    if(fileName.length() == 0)
+        return;
 
     QString ext = fileName.mid(fileName.lastIndexOf("."));
     if(ext.length()) {
