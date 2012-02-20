@@ -15,8 +15,9 @@ public:
     PortListener();
     void init(const QString &portName, BaudRateType baud);
     void setDtr(bool enable);
-    void open();
+    bool open();
     void close();
+    bool isOpen();
     void setTerminalWindow(QPlainTextEdit *editor);
     void send(QByteArray &data);
 
