@@ -1418,7 +1418,7 @@ int  MainWindow::buildResult(int exitStatus, int exitCode, QString progName, QSt
     }
     else if(exitCode != 0)
     {
-        status->setText(progName+tr(" Unknown Error: ")+QString("%1").arg(exitCode));
+        status->setText(progName+tr(" Error: ")+QString("%1").arg(exitCode));
     }
     else if(result.toLower().indexOf("warning") > -1)
     {
