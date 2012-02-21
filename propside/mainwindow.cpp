@@ -50,24 +50,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* start with an empty file if fresh install */
     newFile();
 
-    /* status bar for progressbar */
-    QStatusBar *statusBar = new QStatusBar(this);
-    this->setStatusBar(statusBar);
-    progress = new QProgressBar();
-    progress->setMaximumSize(90,20);
-    progress->hide();
-
-    programSize = new QLabel();
-    programSize->setMinimumWidth(21*10+8);
-    status = new QLabel();
-    status->setMinimumWidth(60*10);
-
-    statusBar->addWidget(programSize);
-    statusBar->addWidget(status);
-    statusBar->addWidget(progress);
-    //statusBar->setLayoutDirection(Qt::RightToLeft);
-    statusBar->setMaximumHeight(22);
-
     /* get app settings at startup and before any compiler call */
     getApplicationSettings();
 
@@ -851,6 +833,19 @@ int  MainWindow::runBuild(void)
         file.close();
     }
 
+    proj = proj.trimmed(); // kill extra white space
+    QStringList list = proj.split("\n");
+
+    /* Calculate the number of compile steps for progress.
+     * Skip empty lines and don't count ">" parameters.
+     */
+    int maxprogress = list.length()-1;
+
+    /* If we don't have a list we can't compile!
+     */
+    if(maxprogress < 1)
+        return -1;
+
     btnConnected->setChecked(false);
     portListener->close(); // disconnect uart before use
 
@@ -861,13 +856,6 @@ int  MainWindow::runBuild(void)
     compileStatus->moveCursor(QTextCursor::End);
     status->setText(tr("Building ..."));
 
-    proj = proj.trimmed(); // kill extra white space
-    QStringList list = proj.split("\n");
-
-    /* Calculate the number of compile steps for progress.
-     * Skip empty lines and don't count ">" parameters.
-     */
-    int maxprogress = list.length()-1;
     foreach(QString item, list) {
         if(item.length() == 0) {
             maxprogress--;
@@ -1144,7 +1132,13 @@ int  MainWindow::runCompiler(QStringList copts)
 
     checkAndSaveFiles();
 
-    QString compstr = shortFileName(aSideCompiler);
+    QString compstr;
+
+#if defined(Q_WS_WIN32)
+    compstr = shortFileName(aSideCompiler);
+#else
+    compstr = aSideCompiler;
+#endif
 
     if(projectOptions->getCompiler().indexOf("++") > -1) {
         compstr = compstr.mid(0,compstr.lastIndexOf("-")+1);
@@ -1505,6 +1499,25 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     rsizes[0] = rightSplit->height()*3/4;
     rsizes[1] = rightSplit->height()*1/4;
     rightSplit->setSizes(rsizes);
+
+    /* status bar for progressbar */
+    QStatusBar *statusBar = new QStatusBar(this);
+    this->setStatusBar(statusBar);
+    progress = new QProgressBar();
+    progress->setMaximumSize(90,20);
+    progress->hide();
+
+    programSize = new QLabel();
+    programSize->setMinimumWidth(21*10+8);
+    status = new QLabel();
+    status->setMinimumWidth(60*10);
+
+    statusBar->addWidget(programSize);
+    statusBar->addWidget(status);
+    statusBar->addWidget(progress);
+    //statusBar->setLayoutDirection(Qt::RightToLeft);
+    statusBar->setMaximumHeight(22);
+
 }
 
 /*
@@ -1846,7 +1859,7 @@ void MainWindow::enumeratePorts()
         if(name.indexOf("usbserial") > -1)
             cbPort->addItem(name);
 #else
-        name = "/"+ports.at(i).physName;
+        name = ports.at(i).physName;
         cbPort->addItem(name);
 #endif
     }
