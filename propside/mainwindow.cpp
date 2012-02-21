@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     initBoardTypes();
 
     /* setup the port listener */
-    portListener = new PortListener();
+    portListener = new PortListener(this);
 
     /* get available ports at startup */
     enumeratePorts();
@@ -102,7 +102,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     process = new QProcess(this);
 
     /* setup the terminal dialog box */
-    term = new Terminal(this);
+    term = new Terminal(this, portListener);
     term->setWindowTitle(QString(ASideGuiKey)+" Terminal");
     connect(term,SIGNAL(accepted()),this,SLOT(terminalClosed()));
     connect(term,SIGNAL(rejected()),this,SLOT(terminalClosed()));
@@ -272,6 +272,7 @@ void MainWindow::exitSave()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    /* never leave port open */
     portListener->close();
 
     exitSave(); // find
@@ -728,7 +729,11 @@ void MainWindow::programDebug()
      */
 #if COMPILE_STATUS_TERMINAL
 #else
-    // term->show();   // show if hidden
+    btnConnected->setChecked(true);
+    term->getEditor()->setPlainText("");
+    portListener->open();
+
+    term->show();   // show if hidden
 #endif
 }
 
@@ -1224,7 +1229,10 @@ int  MainWindow::runLoader(QString copts)
 
     status->setText(status->text()+tr(" Loading ... "));
 
-    return 0;
+    while(procDone == false)
+        QApplication::processEvents();
+
+    return process->exitCode();
 }
 
 int  MainWindow::startProgram(QString program, QString workpath, QStringList args)
@@ -1274,13 +1282,15 @@ void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
     QString s = status->text().mid(len-8);
     if(s.contains("done.",Qt::CaseInsensitive) == false)
         status->setText(status->text()+" done.");
-
+#if 0
     QVariant myterm = process->property("Terminal");
     if(myterm.toBool() && exitCode == 0) {
         btnConnected->setChecked(true);
-        connectButton();
+        term->getEditor()->setPlainText("");
+        portListener->open();
         term->show();
     }
+#endif
 }
 
 void MainWindow::procReadyRead()
