@@ -36,7 +36,7 @@ Terminal::Terminal(QWidget *parent, PortListener *serialPort) : QDialog(parent)
     butLayout->addWidget(buttonBox);
     setLayout(termLayout);
     this->setWindowFlags(Qt::Tool);
-    resize(600,400);
+    resize(640,400);
 }
 
 Console *Terminal::getEditor()
