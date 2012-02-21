@@ -2,7 +2,7 @@
 #include "qextserialenumerator.h"
 #include "Sleeper.h"
 
-#define APPWINDOW_MIN_HEIGHT 500
+#define APPWINDOW_MIN_HEIGHT 550
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 220
 
@@ -1060,11 +1060,13 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
     portName = cbPort->itemText(cbPort->currentIndex());
     boardName = cbBoard->itemText(cbBoard->currentIndex());
 
+    QString model = projectOptions->getMemModel();
+
     QStringList args;
     args.append("-o");
     args.append("a.out");
     args.append(projectOptions->getOptimization());
-    args.append("-m"+projectOptions->getMemModel());
+    args.append("-m"+model);
 
     if(projectOptions->getWarnAll().length())
         args.append(projectOptions->getWarnAll());
@@ -1074,8 +1076,16 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
         args.append(projectOptions->getExceptions());
     if(projectOptions->getNoFcache().length())
         args.append(projectOptions->getNoFcache());
-    if(projectOptions->getSimplePrintf().length())
-        args.append(projectOptions->getSimplePrintf());
+
+    if(projectOptions->getSimplePrintf().length()) {
+        /* don't use simple printf flag for COG model programs. */
+        if(model.contains("cog",Qt::CaseInsensitive) == false)
+            args.append(projectOptions->getSimplePrintf());
+        else {
+            this->compileStatus->insertPlainText(tr("Ignoring")+" \"Simple printf\""+tr(" flag in COG mode program.")+"\n");
+            this->compileStatus->moveCursor(QTextCursor::End);
+        }
+    }
 
     if(projectOptions->getCompiler().indexOf("++") > -1)
         args.append("-fno-rtti");
@@ -1163,7 +1173,7 @@ int  MainWindow::runCompiler(QStringList copts)
 QStringList MainWindow::getLoaderParameters(QString copts)
 {
     // use the projectFile instead of the current tab file
-    QString srcpath = sourcePath(projectFile);
+    // QString srcpath = sourcePath(projectFile);
 
     portName = cbPort->itemText(cbPort->currentIndex());    // TODO should be itemToolTip
     boardName = cbBoard->itemText(cbBoard->currentIndex());
@@ -1175,7 +1185,9 @@ QStringList MainWindow::getLoaderParameters(QString copts)
     args.append(portName);
     args.append(tr("-I"));
     args.append(aSideIncludes);
-    args.append(srcpath+"a.out");
+    /* set working directory in process makes this unnecessary */
+    //args.append(srcpath+"a.out");
+    args.append("a.out");
     QStringList olist = copts.split(" ");
     for (int n = 0; n < olist.length(); n++)
         args.append(olist[n]);
@@ -1214,7 +1226,7 @@ int  MainWindow::runLoader(QString copts)
     connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
 
     process->setProcessChannelMode(QProcess::MergedChannels);
-    process->setWorkingDirectory(aSideCompilerPath);
+    process->setWorkingDirectory(sourcePath(projectFile));
     process->start(aSideLoader,args);
 
     procMutex.lock();
@@ -1234,6 +1246,8 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
     /*
      * this is the asynchronous method.
      */
+    showBuildStart(program,args);
+
     process->setProperty("Name", QVariant(program));
     process->setProperty("IsLoader", QVariant(false));
 
@@ -1358,7 +1372,7 @@ void MainWindow::showBuildStart(QString progName, QStringList args)
     for(int n = 0; n < args.length(); n++)
         argstr += " "+args[n];
     qDebug() << progName+argstr;
-    compileStatus->insertPlainText(progName+argstr);
+    compileStatus->insertPlainText(shortFileName(progName)+argstr+"\n");
     compileStatus->moveCursor(QTextCursor::End);
 }
 
