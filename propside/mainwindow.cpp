@@ -2,7 +2,7 @@
 #include "qextserialenumerator.h"
 #include "Sleeper.h"
 
-#define APPWINDOW_MIN_HEIGHT 550
+#define APPWINDOW_MIN_HEIGHT 530
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 220
 
@@ -715,7 +715,13 @@ void MainWindow::programDebug()
     term->getEditor()->setPlainText("");
     portListener->open();
 
-    term->show();   // show if hidden
+    // show if hidden
+    term->show();
+
+    // so user doesn't muck up sources.
+    QPlainTextEdit *ed = editors->at(editorTabs->currentIndex());
+    ed->clearFocus();
+    term->setFocus(Qt::ActiveWindowFocusReason);
 #endif
 }
 
