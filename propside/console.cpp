@@ -4,6 +4,7 @@
 
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
+    setFont(QFont("courier"));
 }
 
 void Console::keyPressEvent(QKeyEvent *event)
