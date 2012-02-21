@@ -1750,7 +1750,11 @@ void MainWindow::showProjectFile()
     if(vs.canConvert(QVariant::String))
     {
         fileName = vs.toString();
-        openFileName(sourcePath(projectFile)+fileName);
+        /* Temporarily disallow opening .spin files
+         * until we know how to handle them.
+         */
+        if(fileName.indexOf(".spin",Qt::CaseInsensitive) < 0)
+            openFileName(sourcePath(projectFile)+fileName);
     }
 }
 
