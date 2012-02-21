@@ -1,8 +1,9 @@
 #include "terminal.h"
 
-Terminal::Terminal(QWidget *parent) : QDialog(parent)
+Terminal::Terminal(QWidget *parent, PortListener *serialPort) : QDialog(parent)
 {
     QVBoxLayout *termLayout = new QVBoxLayout(this);
+    port = serialPort;
 
     termEditor = new Console(parent);
     termEditor->setReadOnly(false);
@@ -17,14 +18,21 @@ Terminal::Terminal(QWidget *parent) : QDialog(parent)
 
     termEditor->setMaximumBlockCount(300);
     termLayout->addWidget(termEditor);
-    QPushButton *cls = new QPushButton(tr("Clear"),this);
-    connect(cls,SIGNAL(clicked()), this, SLOT(clearScreen()));
+
+    QPushButton *buttonClear = new QPushButton(tr("Clear"),this);
+    connect(buttonClear,SIGNAL(clicked()), this, SLOT(clearScreen()));
+
+    buttonEnable = new QPushButton(tr("Disable"),this);
+    connect(buttonEnable,SIGNAL(clicked()), this, SLOT(toggleEnable()));
+
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+
     QHBoxLayout *butLayout = new QHBoxLayout();
     termLayout->addLayout(butLayout);
-    butLayout->addWidget(cls);
+    butLayout->addWidget(buttonClear);
+    butLayout->addWidget(buttonEnable);
     butLayout->addWidget(buttonBox);
     setLayout(termLayout);
     this->setWindowFlags(Qt::Tool);
@@ -45,17 +53,34 @@ void Terminal::setPosition(int x, int y)
 
 void Terminal::accept()
 {
+    buttonEnable->setText("Disable");
+    port->enable(true);
     done(QDialog::Accepted);
 }
 
 void Terminal::reject()
 {
+    buttonEnable->setText("Disable");
+    port->enable(true);
     done(QDialog::Rejected);
 }
 
 void Terminal::clearScreen()
 {
     termEditor->setPlainText("");
+}
+
+void Terminal::toggleEnable()
+{
+    if(buttonEnable->text().contains("Enable",Qt::CaseInsensitive)) {
+        buttonEnable->setText("Disable");
+        port->enable(true);
+    }
+    else {
+        buttonEnable->setText("Enable");
+        port->enable(false);
+    }
+    QApplication::processEvents();
 }
 
 void Terminal::copyFromFile()
