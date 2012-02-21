@@ -2,30 +2,30 @@
 #include "PortListener.h"
 #include <QtDebug>
 
+/*
+ * if READSIZE is much bigger than this, the screen is not very responsive.
+ */
+enum { READSIZE = 32 };
 
-enum { READSIZE = 64 };
-
-PortListener::PortListener()
+/*
+ * We use Polling for the port because events are not
+ * well behaved in the QextSerialPort library on windows.
+ */
+PortListener::PortListener(QObject *parent) : QThread(parent)
 {
-    port = NULL;
+    port = new QextSerialPort(QextSerialPort::Polling);
+    connect(this, SIGNAL(readyRead(int)), this, SLOT(onReadyRead(int)));
+    isEnabled = true;
 }
 
 void PortListener::init(const QString & portName, BaudRateType baud)
 {
-    if(port != NULL) {
-         // don't reinitialize port
-        if(port->portName() == portName)
-            return;
-        delete port;
-    }
-    this->port = new QextSerialPort(portName, QextSerialPort::EventDriven);
+    port->setPortName(portName);
     port->setBaudRate(baud);
     port->setFlowControl(FLOW_OFF);
     port->setParity(PAR_NONE);
     port->setDataBits(DATA_8);
     port->setStopBits(STOP_1);
-    connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    connect(port, SIGNAL(dsrChanged(bool)), this, SLOT(onDsrChanged(bool)));
 }
 
 void PortListener::setDtr(bool enable)
@@ -45,6 +45,7 @@ bool PortListener::open()
         return false;
 
     port->open(QIODevice::ReadWrite);
+    this->start();
     return true;
 }
 
@@ -71,15 +72,14 @@ void PortListener::send(QByteArray &data)
     port->writeData(data.constData(),1);
 }
 
-void PortListener::onReadyRead()
+void PortListener::onReadyRead(int length)
 {
     char buff[READSIZE+1];
-    int ret = 0;
+    int ret;
+    if(length > READSIZE)
+        length = READSIZE;
 
-    if(port->isOpen() == false)
-        return;
-
-    ret = port->readData(buff, READSIZE);
+    ret = port->readData(buff, length);
     for(int n = 0; n < ret; n++)
     {
         switch(buff[n])
@@ -108,6 +108,7 @@ void PortListener::onReadyRead()
         }
     }
     textEditor->moveCursor(QTextCursor::End);
+
 }
 
 void PortListener::onDsrChanged(bool status)
@@ -116,4 +117,28 @@ void PortListener::onDsrChanged(bool status)
         qDebug() << "device was turned on";
     else
         qDebug() << "device was turned off";
+}
+
+/*
+ * This is the port listener thread.
+ * We have to use polling - see constructor.
+ */
+void PortListener::run()
+{
+    int len = 0;
+    while(port->isOpen()) {
+        QApplication::processEvents();
+        msleep(10);
+        if(isEnabled == false)
+            continue;
+        len = port->bytesAvailable();
+        if(len > 0) {
+            emit readyRead(len);
+        }
+    }
+}
+
+void PortListener::enable(bool value)
+{
+    isEnabled = value;
 }

@@ -5,14 +5,13 @@
 #define PORTLISTENER_H_
 
 #include <QtGui>
-#include <QObject>
 #include "qextserialport.h"
 
-class PortListener : public QObject
+class PortListener : public QThread
 {
 Q_OBJECT
 public:
-    PortListener();
+    PortListener(QObject *parent);
     void init(const QString &portName, BaudRateType baud);
     void setDtr(bool enable);
     bool open();
@@ -20,17 +19,21 @@ public:
     bool isOpen();
     void setTerminalWindow(QPlainTextEdit *editor);
     void send(QByteArray &data);
+    virtual void run();
+    void enable(bool value);
 
 private:
     QextSerialPort  *port;
     QPlainTextEdit  *textEditor;
 
-    QByteArray buffer;
+    bool isEnabled;
 
 private slots:
-    void onReadyRead();
+    void onReadyRead(int length);
     void onDsrChanged(bool status);
 
+signals:
+    void readyRead(int length);
 };
 
 
