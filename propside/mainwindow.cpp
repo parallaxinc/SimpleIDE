@@ -2062,10 +2062,9 @@ void MainWindow::setupFileMenu()
     editMenu->addAction(tr("Find Next"), this, SLOT(findNextInFile()), QKeySequence::FindNext);
     editMenu->addAction(tr("Find Previous"), this, SLOT(findPrevInFile()), QKeySequence::FindPrevious);
 
-    editMenu->addSeparator();
-    editMenu->addAction(QIcon(":/images/replace.png"), tr("&Replace"), this, SLOT(replaceInFile()), Qt::CTRL + Qt::Key_R);
-    editMenu->addAction(tr("Replace Next"), this, SLOT(replaceNextInFile()), Qt::Key_F2);
-    editMenu->addAction(tr("Replace Previous"), this, SLOT(replacePrevInFile()), Qt::SHIFT + Qt::Key_F2);
+    editMenu->addAction(QIcon(":/images/replace.png"), tr("Find &Replace"), this, SLOT(replaceInFile()), Qt::CTRL + Qt::Key_R);
+    //editMenu->addAction(tr("Replace Next"), this, SLOT(replaceNextInFile()), Qt::Key_F2);
+    //editMenu->addAction(tr("Replace Previous"), this, SLOT(replacePrevInFile()), Qt::SHIFT + Qt::Key_F2);
 
     editMenu->addSeparator();
     editMenu->addAction(QIcon(":/images/redo.png"), tr("&Redo"), this, SLOT(redoChange()), QKeySequence::Redo);
