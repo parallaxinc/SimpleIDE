@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>218</width>
+    <width>230</width>
     <height>320</height>
    </rect>
   </property>
@@ -24,7 +24,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>218</width>
+     <width>229</width>
      <height>320</height>
     </rect>
    </property>
@@ -109,7 +109,7 @@
       <rect>
        <x>10</x>
        <y>200</y>
-       <width>101</width>
+       <width>111</width>
        <height>21</height>
       </rect>
      </property>
@@ -122,7 +122,7 @@
       <rect>
        <x>10</x>
        <y>170</y>
-       <width>101</width>
+       <width>111</width>
        <height>21</height>
       </rect>
      </property>
@@ -133,7 +133,7 @@
     <widget class="QCheckBox" name="checkBoxPthreadLib">
      <property name="geometry">
       <rect>
-       <x>110</x>
+       <x>120</x>
        <y>200</y>
        <width>101</width>
        <height>21</height>
@@ -148,7 +148,7 @@
       <rect>
        <x>10</x>
        <y>140</y>
-       <width>101</width>
+       <width>111</width>
        <height>21</height>
       </rect>
      </property>
@@ -159,7 +159,7 @@
     <widget class="QCheckBox" name="checkBoxWarnAll">
      <property name="geometry">
       <rect>
-       <x>110</x>
+       <x>120</x>
        <y>110</y>
        <width>101</width>
        <height>21</height>
@@ -172,7 +172,7 @@
     <widget class="QCheckBox" name="checkBoxNoFcache">
      <property name="geometry">
       <rect>
-       <x>110</x>
+       <x>120</x>
        <y>140</y>
        <width>101</width>
        <height>21</height>
@@ -185,7 +185,7 @@
     <widget class="QCheckBox" name="checkBoxExceptions">
      <property name="geometry">
       <rect>
-       <x>110</x>
+       <x>120</x>
        <y>170</y>
        <width>101</width>
        <height>21</height>
@@ -200,7 +200,7 @@
       <rect>
        <x>10</x>
        <y>110</y>
-       <width>101</width>
+       <width>111</width>
        <height>21</height>
       </rect>
      </property>
@@ -213,7 +213,7 @@
       <rect>
        <x>10</x>
        <y>230</y>
-       <width>191</width>
+       <width>201</width>
        <height>21</height>
       </rect>
      </property>
@@ -226,7 +226,7 @@
       <rect>
        <x>10</x>
        <y>260</y>
-       <width>191</width>
+       <width>201</width>
        <height>21</height>
       </rect>
      </property>
