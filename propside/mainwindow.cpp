@@ -1548,7 +1548,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     progress->hide();
 
     programSize = new QLabel();
-    programSize->setMinimumWidth(21*10+8);
+    programSize->setMinimumWidth(PROJECT_WIDTH+2);
     status = new QLabel();
 
     statusBar->addPermanentWidget(progress);
