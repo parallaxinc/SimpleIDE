@@ -108,7 +108,7 @@ void PortListener::onReadyRead(int length)
         }
     }
     textEditor->moveCursor(QTextCursor::End);
-
+    this->yieldCurrentThread();
 }
 
 void PortListener::onDsrChanged(bool status)
@@ -128,7 +128,7 @@ void PortListener::run()
     int len = 0;
     while(port->isOpen()) {
         QApplication::processEvents();
-        msleep(10);
+        msleep(20);
         if(isEnabled == false)
             continue;
         len = port->bytesAvailable();
