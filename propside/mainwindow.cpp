@@ -185,7 +185,11 @@ void MainWindow::getApplicationSettings()
         aSideCompilerPath = aSideCompiler.mid(0,aSideCompiler.lastIndexOf('/')+1);
     }
 
+#if defined(Q_WS_WIN32)
     aSideLoader = aSideCompilerPath + "propeller-load.exe";
+#else
+    aSideLoader = aSideCompilerPath + "propeller-load";
+#endif
 
     /* get the include path and config file set by user */
     QVariant incv = settings->value(includesKey);
