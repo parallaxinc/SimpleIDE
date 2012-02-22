@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0.3.4"
+#define MyAppVersion "0-4-0"
 #define MyAppPublisher "MicroCSource"
 #define MyAppURL "www.MicroCSource.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -34,7 +34,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 OutputDir=..\propside-build-desktop
-OutputBaseFilename=Simple-IDE_0_3_4_setup
+OutputBaseFilename=Simple-IDE_{#MyAppVersion}_setup
 Compression=lzma/Max
 SolidCompression=true
 AlwaysShowDirOnReadyPage=true
