@@ -80,3 +80,7 @@ void FindDialog::clearFindText()
 {
     lineEdit->clear();
 }
+void FindDialog::setFindText(QString text)
+{
+    return lineEdit->setText(text);
+}

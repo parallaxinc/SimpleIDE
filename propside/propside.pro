@@ -35,7 +35,8 @@ SOURCES += main.cpp\
     asideboard.cpp \
     cbuildtree.cpp \
     finddialog.cpp \
-    projectoptions.cpp
+    projectoptions.cpp \
+    replacedialog.cpp
 
 HEADERS  += mainwindow.h \
     highlighter.h \
@@ -54,7 +55,8 @@ HEADERS  += mainwindow.h \
     cbuildtree.h \
     finddialog.h \
     projectoptions.h \
-    Sleeper.h
+    Sleeper.h \
+    replacedialog.h
 
 FORMS    += \
     hardware.ui \

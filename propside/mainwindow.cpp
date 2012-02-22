@@ -26,6 +26,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* setup find dialog */
     findDialog = new FindDialog(this);
 
+    /* setup find dialog */
+    replaceDialog = new ReplaceDialog(this);
+
     /* new ASideConfig class */
     aSideConfig = new ASideConfig();
 
@@ -581,14 +584,9 @@ void MainWindow::systemCommand()
 {
 
 }
-void MainWindow::findInFile()
+
+void MainWindow::findInEditor(QPlainTextEdit *editor, QTextDocument::FindFlag flag)
 {
-    if(!findDialog)
-        return;
-
-    findDialog->clearFindText();
-
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
     if(editor) {
         findDialog->show();
         findDialog->raise();
@@ -599,7 +597,7 @@ void MainWindow::findInFile()
             QString edtext = editor->toPlainText();
             if (edtext.contains(text,Qt::CaseInsensitive)) {
                 editor->setCenterOnScroll(true);
-                editor->find(text);
+                editor->find(text, flag);
             } else {
                 QMessageBox::information(this, tr("Text Not Found"),
                     tr("Can't find text: \"%1\"").arg(text));
@@ -607,34 +605,59 @@ void MainWindow::findInFile()
             }
         }
     }
+}
+
+void MainWindow::findInFile()
+{
+    if(!findDialog)
+        return;
+    findDialog->clearFindText();
+    QString text = editors->at(editorTabs->currentIndex())->textCursor().selectedText();
+    if(text.isEmpty() == false)
+        findDialog->setFindText(text);
+    findInEditor(editors->at(editorTabs->currentIndex()));
 }
 
 void MainWindow::findNextInFile()
 {
     if(!findDialog)
         return;
+    findInEditor(editors->at(editorTabs->currentIndex()));
+}
+
+void MainWindow::findPrevInFile()
+{
+    if(!findDialog)
+        return;
+    findInEditor(editors->at(editorTabs->currentIndex()),QTextDocument::FindBackward);
+}
+
+void MainWindow::replaceInFile()
+{
+    if(!replaceDialog)
+        return;
 
     QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
-    if(editor) {
-        findDialog->show();
-        findDialog->raise();
-        findDialog->activateWindow();
 
-        if (findDialog->exec() == QDialog::Accepted) {
-            QString text = findDialog->getFindText();
-            QString edtext = editor->toPlainText();
-            if (edtext.contains(text,Qt::CaseInsensitive)) {
-                editor->setCenterOnScroll(true);
-                editor->find(text);
-            } else {
-                QMessageBox::information(this, tr("Text Not Found"),
-                    tr("Can't find text: \"%1\"").arg(text));
-                return;
-            }
-        }
-    }
+    replaceDialog->clearFindText();
+    QString text = editors->at(editorTabs->currentIndex())->textCursor().selectedText();
+    if(text.isEmpty() == false)
+        replaceDialog->setFindText(text);
+    replaceDialog->clearReplaceText();
+
+    replaceDialog->show();
+    replaceDialog->raise();
+    replaceDialog->activateWindow();
+    replaceDialog->setEditor(editor);
 }
-void MainWindow::findPrevInFile()
+
+void MainWindow::replaceNextInFile()
+{
+}
+void MainWindow::replacePrevInFile()
+{
+}
+void MainWindow::replaceAllInFile()
 {
 }
 
@@ -2037,7 +2060,12 @@ void MainWindow::setupFileMenu()
     editMenu->addSeparator();
     editMenu->addAction(QIcon(":/images/find.png"), tr("&Find"), this, SLOT(findInFile()), QKeySequence::Find);
     editMenu->addAction(tr("Find Next"), this, SLOT(findNextInFile()), QKeySequence::FindNext);
-    //editMenu->addAction(tr("Find Previous"), this, SLOT(findPrevInFile()), QKeySequence::FindPrevious);
+    editMenu->addAction(tr("Find Previous"), this, SLOT(findPrevInFile()), QKeySequence::FindPrevious);
+
+    editMenu->addSeparator();
+    editMenu->addAction(QIcon(":/images/replace.png"), tr("&Replace"), this, SLOT(replaceInFile()), Qt::CTRL + Qt::Key_R);
+    editMenu->addAction(tr("Replace Next"), this, SLOT(replaceNextInFile()), Qt::Key_F2);
+    editMenu->addAction(tr("Replace Previous"), this, SLOT(replacePrevInFile()), Qt::SHIFT + Qt::Key_F2);
 
     editMenu->addSeparator();
     editMenu->addAction(QIcon(":/images/redo.png"), tr("&Redo"), this, SLOT(redoChange()), QKeySequence::Redo);

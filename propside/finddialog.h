@@ -53,6 +53,7 @@ public:
     FindDialog(QWidget *parent = 0);
     QString getFindText();
     void    clearFindText();
+    void    setFindText(QString text);
 
 public slots:
     void findClicked();
