@@ -3,6 +3,7 @@
 #include "Sleeper.h"
 
 #define APPWINDOW_MIN_HEIGHT 530
+#define APPWINDOW_MIN_WIDTH 780
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 220
 
@@ -43,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* minimum window height */
     this->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
+    this->setMinimumWidth(APPWINDOW_MIN_WIDTH);
 
     /* project tools */
     setupProjectTools(vsplit);
@@ -725,7 +727,8 @@ void MainWindow::programDebug()
     // so user doesn't muck up sources.
     QPlainTextEdit *ed = editors->at(editorTabs->currentIndex());
     ed->clearFocus();
-    term->setFocus(Qt::ActiveWindowFocusReason);
+    term->getEditor()->setFocus();
+    term->setFocus();
 #endif
 }
 
@@ -749,8 +752,8 @@ void MainWindow::about()
             .arg(IDEVERSION).arg(MINVERSION).arg(FIXVERSION);
     QMessageBox::about(this, tr("About SimpleIDE"), version + \
         tr("<p><b>SimpleIDE</b> manages Propeller GCC program builds, and <br/>" \
-           "downloads programs to propeller for many basic board models.</p>") +
-        tr("Visit <a href=\"www.MicroCSource.com/SimpleIDE/help.htm\">MicroCSource.com</a> for more SimpleIDE help."));
+           "downloads programs to Propeller for many basic board models.</p>") +
+        tr("Visit <a href=\"https://sites.google.com/site/propellergcc/simpleide\">SimpleIDE</a> on the web for more help."));
 }
 
 
@@ -1248,6 +1251,7 @@ int  MainWindow::runLoader(QString copts)
     while(procDone == false)
         QApplication::processEvents();
 
+    progress->hide();
     return process->exitCode();
 }
 
@@ -1276,6 +1280,7 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
     while(procDone == false)
         QApplication::processEvents();
 
+    progress->hide();
     return process->exitCode();
 }
 
@@ -1534,12 +1539,10 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     programSize = new QLabel();
     programSize->setMinimumWidth(21*10+8);
     status = new QLabel();
-    status->setMinimumWidth(60*10);
 
+    statusBar->addPermanentWidget(progress);
     statusBar->addWidget(programSize);
     statusBar->addWidget(status);
-    statusBar->addWidget(progress);
-    //statusBar->setLayoutDirection(Qt::RightToLeft);
     statusBar->setMaximumHeight(22);
 
 }
