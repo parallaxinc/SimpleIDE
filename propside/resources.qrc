@@ -24,5 +24,9 @@
         <file>images/find.png</file>
         <file>images/redo.png</file>
         <file>images/undo.png</file>
+        <file>images/back.png</file>
+        <file>images/forward.png</file>
+        <file>images/next.png</file>
+        <file>images/previous.png</file>
     </qresource>
 </RCC>
