@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TermPrefs</class>
+ <widget class="QDialog" name="TermPrefs">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>260</y>
+     <width>341</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbClearScreen">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>156</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(0 or 16) Clear Screen</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbHomeCursor">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>40</y>
+     <width>123</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(1) Home Cursor</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbPositionCursorXY">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>70</y>
+     <width>164</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(2) Position Cursor (x,y)</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbMoveLeft">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>100</y>
+     <width>145</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(3) Move Cursor Left</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbMoceRight">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>130</y>
+     <width>153</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(4) Move Cursor Right</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbMoveUp">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>160</y>
+     <width>139</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(5) Move Cursor Up</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbMoveDown">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>190</y>
+     <width>156</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(6) Move Cursor Down</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbBeepSpeaker">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>220</y>
+     <width>127</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(7) Beep Speaker</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbBackSpace">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>10</y>
+     <width>107</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(8) Backspace</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbTab">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>40</y>
+     <width>68</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(9) Tab</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbLineFeed">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>70</y>
+     <width>110</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(10) Line Feed</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbClearToEOL">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>100</y>
+     <width>167</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(11) Clear to End of Line</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbClearLinesBelow">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>130</y>
+     <width>156</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(12) Clear Lines Below</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbNewLine">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>160</y>
+     <width>107</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(13) New Line</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbPositionCursorX">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>190</y>
+     <width>161</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(14) Position Cursor (x)</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbPositionCursorY">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>220</y>
+     <width>161</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(15) Position Cursor (y)</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>TermPrefs</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>TermPrefs</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
