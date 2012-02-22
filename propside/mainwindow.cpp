@@ -5,7 +5,7 @@
 #define APPWINDOW_MIN_HEIGHT 530
 #define APPWINDOW_MIN_WIDTH 780
 #define EDITOR_MIN_WIDTH 500
-#define PROJECT_WIDTH 220
+#define PROJECT_WIDTH 230
 
 #define COMPILE_STATUS_TERMINAL 0
 
@@ -1320,12 +1320,18 @@ void MainWindow::procReadyRead()
 {
     QByteArray bytes = process->readAllStandardOutput();
 
+#if defined(Q_WS_WIN32)
+    QString eol("\r");
+#else
+    QString eol("");
+#endif
+
     QStringList lines = QString(bytes).split("\r\n");
     for (int n = 0; n < lines.length(); n++) {
         QString line = lines[n];
         if(line.length() > 0) {
             if(line.contains("Propeller Version",Qt::CaseInsensitive)) {
-                compileStatus->insertPlainText("\r"+line+"\r");
+                compileStatus->insertPlainText(eol+line+eol);
                 progress->setValue(0);
             }
             else
@@ -1336,12 +1342,12 @@ void MainWindow::procReadyRead()
             else
             if(line.contains("writing",Qt::CaseInsensitive)) {
                 progress->setValue(50);
-                compileStatus->insertPlainText(line+"\r");
+                compileStatus->insertPlainText(line+eol);
             }
             else
             if(line.contains("Download OK",Qt::CaseInsensitive)) {
                 progress->setValue(100);
-                compileStatus->insertPlainText(line+"\r");
+                compileStatus->insertPlainText(line+eol);
             }
             else
             if(line.contains("remaining",Qt::CaseInsensitive)) {
@@ -1350,12 +1356,17 @@ void MainWindow::procReadyRead()
                     progMax = bs.toInt();
                     progMax /= 1024;
                     progCount = 0;
+                    if(progMax == 0) {
+                        progress->setValue(100);
+                    }
                 }
-                progCount++;
-                progress->setValue(100*progCount/progMax);
+                if(progMax != 0) {
+                    progCount++;
+                    progress->setValue(100*progCount/progMax);
+                }
             }
             else {
-                compileStatus->insertPlainText(line+"\r");
+                compileStatus->insertPlainText(line+eol);
             }
             compileStatus->moveCursor(QTextCursor::StartOfLine);
             compileStatus->moveCursor(QTextCursor::End);
