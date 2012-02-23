@@ -2,6 +2,7 @@
 #define CONSOLE_H
 
 #include <QtGui>
+#include "qextserialport.h"
 
 class Console : public QPlainTextEdit
 {
@@ -12,6 +13,9 @@ public:
 protected:
     void keyPressEvent(QKeyEvent* event);
 
+public slots:
+    void updateReady(QextSerialPort*);
+    void updateReady(char *buff, int length);
 };
 
 #endif // CONSOLE_H

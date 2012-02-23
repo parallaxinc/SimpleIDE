@@ -60,12 +60,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     initBoardTypes();
 
-    /* setup the port listener */
-    portListener = new PortListener(this);
-
-    /* get available ports at startup */
-    enumeratePorts();
-
     /* these are read once per app startup */
     QVariant lastportv  = settings->value(lastPortNameKey);
     if(lastportv.canConvert(QVariant::String))
@@ -96,6 +90,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* tell port listener to use terminal editor for i/o */
     termEditor = term->getEditor();
+
+    /* setup the port listener */
+    portListener = new PortListener(this, termEditor);
+
+    /* get available ports at startup */
+    enumeratePorts();
 
 #if COMPILE_STATUS_TERMINAL
     portListener->setTerminalWindow(compileStatus); // experimental mode
@@ -259,6 +259,7 @@ void MainWindow::exitSave()
             }
         }
     }
+
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -290,6 +291,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     settings->setValue(lastBoardNameKey,boardstr);
     settings->setValue(lastPortNameKey,portstr);
+
+    delete findDialog;
+    //delete hardwareDialog;
+    delete replaceDialog;
+    delete propDialog;
+    delete projectOptions;
+    delete term;
 }
 
 void MainWindow::newFile()

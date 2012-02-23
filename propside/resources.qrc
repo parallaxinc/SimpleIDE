@@ -28,5 +28,8 @@
         <file>images/forward.png</file>
         <file>images/next.png</file>
         <file>images/previous.png</file>
+        <file>images/case.png</file>
+        <file>images/SimpleIDE-Splash.png</file>
+        <file>images/word.png</file>
     </qresource>
 </RCC>

@@ -1,20 +1,22 @@
 
+#include "console.h"
 #include "PortListener.h"
 #include <QtDebug>
-
-/*
- * if READSIZE is much bigger than this, the screen is not very responsive.
- */
-enum { READSIZE = 32 };
 
 /*
  * We use Polling for the port because events are not
  * well behaved in the QextSerialPort library on windows.
  */
-PortListener::PortListener(QObject *parent) : QThread(parent)
+PortListener::PortListener(QObject *parent, Console *term) : QThread(parent)
 {
+    terminal = term;
+#if defined(EVENT_DRIVEN)
+    port = new QextSerialPort(QextSerialPort::EventDriven);
+    connect(port, SIGNAL(readyRead()), this, SLOT(updateReady()));
+#else
     port = new QextSerialPort(QextSerialPort::Polling);
-    connect(this, SIGNAL(readyRead(int)), this, SLOT(onReadyRead(int)));
+    connect(this, SIGNAL(updateEvent(QextSerialPort*)), this, SLOT(updateReady(QextSerialPort*)));
+#endif
     isEnabled = true;
 }
 
@@ -45,7 +47,9 @@ bool PortListener::open()
         return false;
 
     port->open(QIODevice::ReadWrite);
+#if !defined(EVENT_DRIVEN)
     this->start();
+#endif
     return true;
 }
 
@@ -72,43 +76,10 @@ void PortListener::send(QByteArray &data)
     port->writeData(data.constData(),1);
 }
 
-void PortListener::onReadyRead(int length)
+int PortListener::readData(char *buffer, int length)
 {
-    char buff[READSIZE+1];
-    int ret;
-    if(length > READSIZE)
-        length = READSIZE;
-
-    ret = port->readData(buff, length);
-    for(int n = 0; n < ret; n++)
-    {
-        switch(buff[n])
-        {
-            case 0: {
-                break;
-            }
-            case '\b': {
-                QString text;
-                text = textEditor->toPlainText();
-                textEditor->setPlainText(text.mid(0,text.length()-1));
-                n+=2;
-                break;
-            }
-            case 0xA: {
-                textEditor->insertPlainText(QString(buff[n]));
-                break;
-            }
-            case 0xD: {
-                break;
-            }
-            default: {
-                textEditor->insertPlainText(QString(buff[n]));
-                break;
-            }
-        }
-    }
-    textEditor->moveCursor(QTextCursor::End);
-    this->yieldCurrentThread();
+    int ret = port->readData(buffer,length);
+    return ret;
 }
 
 void PortListener::onDsrChanged(bool status)
@@ -117,6 +88,21 @@ void PortListener::onDsrChanged(bool status)
         qDebug() << "device was turned on";
     else
         qDebug() << "device was turned off";
+}
+
+void PortListener::updateReady()
+{
+    terminal->updateReady(port);
+}
+
+void PortListener::updateReady(QextSerialPort* port)
+{
+    terminal->updateReady(port);
+}
+
+void PortListener::updateReady(char *buff, int length)
+{
+    terminal->updateReady(buff, length);
 }
 
 /*
@@ -128,12 +114,13 @@ void PortListener::run()
     int len = 0;
     while(port->isOpen()) {
         QApplication::processEvents();
-        msleep(20);
+        msleep(50);
         if(isEnabled == false)
             continue;
         len = port->bytesAvailable();
         if(len > 0) {
-            emit readyRead(len);
+            // let the updater read from the port
+            emit updateEvent(port);
         }
     }
 }
