@@ -4,13 +4,8 @@
 
 #ifndef REPLACEDIALOG_H
 #define REPLACEDIALOG_H
-#include <QDialog>
 
-class QLineEdit;
-class QPushButton;
-class QToolButton;
-class QPlainTextEdit;
-class QTextCursor;
+#include <QtGUI>
 
 class ReplaceDialog : public QDialog
 {
@@ -18,6 +13,7 @@ class ReplaceDialog : public QDialog
 
 public:
     ReplaceDialog(QWidget *parent = 0);
+    QTextDocument::FindFlag getFlags(int prev = 0);
 
     QString getFindText();
     void    clearFindText();
@@ -25,7 +21,9 @@ public:
     void    clearReplaceText();
     void    setFindText(QString text);
 
-    bool replaceBeginMessage();
+    bool showBeginMessage(QString type);
+    bool showEndMessage(QString type);
+
     void setEditor(QPlainTextEdit *ed);
 
 public slots:
@@ -52,6 +50,11 @@ private:
     QString     replaceText;
 
     QPushButton *okButton;
+
+    QToolButton *caseSensitiveButton;
+    QToolButton *wholeWordButton;
+
+    QGridLayout *layout;
 };
 
 #endif

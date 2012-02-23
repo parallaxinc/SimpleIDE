@@ -54,14 +54,14 @@ void Terminal::setPosition(int x, int y)
 void Terminal::accept()
 {
     buttonEnable->setText("Disable");
-    port->enable(true);
+    port->enable(false);
     done(QDialog::Accepted);
 }
 
 void Terminal::reject()
 {
     buttonEnable->setText("Disable");
-    port->enable(true);
+    port->enable(false);
     done(QDialog::Rejected);
 }
 
