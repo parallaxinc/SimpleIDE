@@ -752,6 +752,7 @@ void MainWindow::programDebug()
     ed->clearFocus();
     term->getEditor()->setFocus();
     term->setFocus();
+    term->activateWindow();
 #endif
 }
 
