@@ -17,7 +17,6 @@ PortListener::PortListener(QObject *parent, Console *term) : QThread(parent)
     port = new QextSerialPort(QextSerialPort::Polling);
     connect(this, SIGNAL(updateEvent(QextSerialPort*)), this, SLOT(updateReady(QextSerialPort*)));
 #endif
-    isEnabled = true;
 }
 
 void PortListener::init(const QString & portName, BaudRateType baud)
@@ -100,11 +99,6 @@ void PortListener::updateReady(QextSerialPort* port)
     terminal->updateReady(port);
 }
 
-void PortListener::updateReady(char *buff, int length)
-{
-    terminal->updateReady(buff, length);
-}
-
 /*
  * This is the port listener thread.
  * We have to use polling - see constructor.
@@ -115,7 +109,7 @@ void PortListener::run()
     while(port->isOpen()) {
         QApplication::processEvents();
         msleep(50);
-        if(isEnabled == false)
+        if(QThread::currentThread() != this)
             continue;
         len = port->bytesAvailable();
         if(len > 0) {
@@ -123,9 +117,4 @@ void PortListener::run()
             emit updateEvent(port);
         }
     }
-}
-
-void PortListener::enable(bool value)
-{
-    isEnabled = value;
 }

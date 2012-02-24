@@ -9,13 +9,18 @@ class Console : public QPlainTextEdit
     Q_OBJECT
 public:
     explicit Console(QWidget *parent = 0);
+    void setPortEnable(bool value);
+
+private:
+    bool isEnabled;
+    void updateReady(char *buff, int length);
 
 protected:
     void keyPressEvent(QKeyEvent* event);
 
 public slots:
     void updateReady(QextSerialPort*);
-    void updateReady(char *buff, int length);
+
 };
 
 #endif // CONSOLE_H

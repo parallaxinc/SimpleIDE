@@ -31,5 +31,6 @@
         <file>images/case.png</file>
         <file>images/SimpleIDE-Splash.png</file>
         <file>images/word.png</file>
+        <file>images/helpme.png</file>
     </qresource>
 </RCC>

@@ -1,13 +1,12 @@
 #include "mainwindow.h"
 #include "qextserialenumerator.h"
 #include "Sleeper.h"
+#include "about.h"
 
 #define APPWINDOW_MIN_HEIGHT 530
 #define APPWINDOW_MIN_WIDTH 780
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 230
-
-#define COMPILE_STATUS_TERMINAL 0
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -97,11 +96,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* get available ports at startup */
     enumeratePorts();
 
-#if COMPILE_STATUS_TERMINAL
-    portListener->setTerminalWindow(compileStatus); // experimental mode
-#else
     portListener->setTerminalWindow(termEditor);
-#endif
 
     /* load the last file into the editor to make user happy */
     QVariant lastfilev = settings->value(lastFileNameKey);
@@ -746,9 +741,8 @@ void MainWindow::programDebug()
      * setting the position of a new dialog doesn't work very nice
      * Term dialog will not close/reopen on debug so it doesn't matter.
      */
-#if COMPILE_STATUS_TERMINAL
-#else
     btnConnected->setChecked(true);
+    term->getEditor()->setPortEnable(true);
     term->getEditor()->setPlainText("");
     portListener->open();
 
@@ -761,7 +755,6 @@ void MainWindow::programDebug()
     term->getEditor()->setFocus();
     term->setFocus();
     term->activateWindow();
-#endif
 }
 
 void MainWindow::terminalClosed()
@@ -774,20 +767,25 @@ void MainWindow::setupHelpMenu()
 {
     QMenu *helpMenu = new QMenu(tr("&Help"), this);
     menuBar()->addMenu(helpMenu);
+    aboutDialog = new AboutDialog(this);
 
-    helpMenu->addAction(QIcon(":/images/helpsymbol.png"), tr("&About"), this, SLOT(about()));
+    helpMenu->addAction(QIcon(":/images/helpsymbol.png"), tr("&About"), this, SLOT(aboutShow()));
+    helpMenu->addAction(QIcon(":/images/helpme.png"), tr("&Help"), this, SLOT(helpShow()));
 }
 
-void MainWindow::about()
+void MainWindow::aboutShow()
 {
-    QString version = QString("SimpleIDE Version %1.%2.%3")
-            .arg(IDEVERSION).arg(MINVERSION).arg(FIXVERSION);
-    QMessageBox::about(this, tr("About SimpleIDE"), version + \
-        tr("<p><b>SimpleIDE</b> manages Propeller GCC program builds, and <br/>" \
-           "downloads programs to Propeller for many basic board models.</p>") +
-        tr("Visit <a href=\"https://sites.google.com/site/propellergcc/simpleide\">SimpleIDE</a> on the web for more help."));
+    aboutDialog->show();
 }
 
+void MainWindow::helpShow()
+{
+    QMessageBox::about(this, ASideGuiKey+tr(" help"),
+        tr("<p><b>")+ASideGuiKey+tr("</b> manages Propeller GCC program builds, and <br/>" \
+           "downloads programs to Propeller for many board types.</p>") +
+        tr("Visit <a href=\"https://sites.google.com/site/propellergcc/simpleide\">")+
+        ASideGuiKey+tr("</a> on the web for more help."));
+}
 
 void MainWindow::setCurrentBoard(int index)
 {
@@ -1272,11 +1270,12 @@ int  MainWindow::runLoader(QString copts)
 
     process->setProcessChannelMode(QProcess::MergedChannels);
     process->setWorkingDirectory(sourcePath(projectFile));
-    process->start(aSideLoader,args);
 
     procMutex.lock();
     procDone = false;
     procMutex.unlock();
+
+    process->start(aSideLoader,args);
 
     status->setText(status->text()+tr(" Loading ... "));
 
@@ -1941,10 +1940,7 @@ void MainWindow::connectButton()
         btnConnected->setDisabled(true);
         portListener->open();
         btnConnected->setEnabled(true);
-#if COMPILE_STATUS_TERMINAL
-#else
         term->show();
-#endif
     }
     else {
         portListener->close();

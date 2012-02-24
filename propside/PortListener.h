@@ -22,7 +22,6 @@ public:
     void send(QByteArray &data);
     int  readData(char *buff, int length);
     virtual void run();
-    void enable(bool value);
 
 private:
 
@@ -30,18 +29,14 @@ private:
     QextSerialPort  *port;
     QPlainTextEdit  *textEditor;
 
-    bool isEnabled;
-
 private slots:
     void onDsrChanged(bool status);
     void updateReady();
     void updateReady(QextSerialPort*);
-    void updateReady(char *buff, int length);
 
 signals:
     void readyRead(int length);
     void updateEvent(QextSerialPort*);
-    void updateEvent(char *buff, int length);
 };
 
 

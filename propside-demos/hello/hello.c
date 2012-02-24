@@ -10,9 +10,12 @@
 
 int main(void)
 {
-    int n = 0;
+    int n = 1;
     while(1) {
-        waitcnt(CLKFREQ/5+CNT);
+        //waitcnt(CLKFREQ/5+CNT);
+        //waitcnt(CLKFREQ/50+CNT);   // faster
+        //waitcnt(CLKFREQ/500+CNT);  // murderous
+        waitcnt(CLKFREQ/5000+CNT);   // redrum
         printf("Hello World %d\n", n);
         n++;
     }
