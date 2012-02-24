@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "qextserialenumerator.h"
 #include "Sleeper.h"
-#include "about.h"
 
 #define APPWINDOW_MIN_HEIGHT 530
 #define APPWINDOW_MIN_WIDTH 780
