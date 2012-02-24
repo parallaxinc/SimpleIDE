@@ -5,6 +5,12 @@
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
     setFont(QFont("courier"));
+    isEnabled = true;
+}
+
+void Console::setPortEnable(bool value)
+{
+    isEnabled = value;
 }
 
 void Console::keyPressEvent(QKeyEvent *event)
@@ -37,7 +43,9 @@ void Console::updateReady(QextSerialPort* port)
     int length = port->bytesAvailable();
     if(length > BUFFERSIZE) length = BUFFERSIZE;
     length = port->readData(buffer, length);
-    updateReady(buffer, length);
+
+    if(isEnabled)
+        updateReady(buffer, length);
 }
 
 void Console::updateReady(char *buff, int length)

@@ -25,6 +25,7 @@
 #include "cbuildtree.h"
 #include "finddialog.h"
 #include "replacedialog.h"
+#include "aboutdialog.h"
 
 #define untitledstr "Untitled"
 
@@ -50,7 +51,8 @@ public slots:
     void openRecentProject(const QString &path = QString());
     void printFile(const QString &path = QString());    // not implemented
     void zipFile(const QString &path = QString());      // not implemented
-    void about();
+    void aboutShow();
+    void helpShow();
     void projectTreeClicked(QModelIndex index);
     void referenceTreeClicked(QModelIndex index);
     void closeTab(int index = 0);
@@ -139,6 +141,8 @@ private:
 
     void setCurrentProject(const QString &fileName);
     void updateRecentProjectActions();
+
+    AboutDialog     *aboutDialog;
 
     QSettings       *settings;
     QString         aSideLoader;

@@ -54,14 +54,14 @@ void Terminal::setPosition(int x, int y)
 void Terminal::accept()
 {
     buttonEnable->setText("Disable");
-    port->enable(false);
+    termEditor->setPortEnable(false);
     done(QDialog::Accepted);
 }
 
 void Terminal::reject()
 {
     buttonEnable->setText("Disable");
-    port->enable(false);
+    termEditor->setPortEnable(false);
     done(QDialog::Rejected);
 }
 
@@ -74,11 +74,11 @@ void Terminal::toggleEnable()
 {
     if(buttonEnable->text().contains("Enable",Qt::CaseInsensitive)) {
         buttonEnable->setText("Disable");
-        port->enable(true);
+        termEditor->setPortEnable(true);
     }
     else {
         buttonEnable->setText("Enable");
-        port->enable(false);
+        termEditor->setPortEnable(false);
     }
     QApplication::processEvents();
 }
