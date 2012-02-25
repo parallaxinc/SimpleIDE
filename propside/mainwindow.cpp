@@ -313,9 +313,8 @@ void MainWindow::openFile(const QString &path)
     QString fileName = path;
 
     if (fileName.isNull()) {
-        QFileDialog dialog(this);
-        dialog.setDirectory(sourcePath(projectFile));
-        fileName = dialog.getOpenFileName(this,
+        fileDialog.setDirectory(sourcePath(projectFile));
+        fileName = fileDialog.getOpenFileName(this,
             tr("Open File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
     }
     if(fileName.indexOf(".side") > 0) {
@@ -345,8 +344,8 @@ void MainWindow::openFileName(QString fileName)
 {
     QString data;
     if (!fileName.isEmpty()) {
+        fileDialog.setDirectory(sourcePath(fileName));
         QFile file(fileName);
-//        if (file.open(QFile::ReadOnly | QFile::Text))
         if (file.open(QFile::ReadOnly))
         {
             data = file.readAll();
@@ -428,7 +427,7 @@ void MainWindow::saveFile(const QString &path)
         QString fileName = editorTabs->tabToolTip(n);
         QString data = editors->at(n)->toPlainText();
         if(fileName.isEmpty())
-            fileName = QFileDialog::getSaveFileName(this,
+            fileName = fileDialog.getSaveFileName(this,
                 tr("Save As File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
         if (fileName.isEmpty())
             return;
@@ -471,7 +470,7 @@ void MainWindow::saveAsFile(const QString &path)
         QString fileName = path;
 
         if (fileName.isEmpty())
-            fileName = QFileDialog::getSaveFileName(this,
+            fileName = fileDialog.getSaveFileName(this,
                 tr("Save As File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
 
         if (fileName.isEmpty())
@@ -1713,17 +1712,16 @@ void MainWindow::projectTreeClicked(QModelIndex index)
 
 void MainWindow::addProjectFile()
 {
-    QFileDialog dialog(this);
-    dialog.setDirectory(sourcePath(projectFile));
+    fileDialog.setDirectory(sourcePath(projectFile));
 
 #ifdef OPEN_MULTIPLE_FILES
     // this is on the wish list and not finished yet
-    dialog.setFileMode(QFileDialog::ExistingFiles);
-    dialog.getOpenFileNames(this,
+    fileDialog.setFileMode(QFileDialog::ExistingFiles);
+    fileDialog.getOpenFileNames(this,
         tr("Add File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
 #else
 
-    QString fileName = dialog.getOpenFileName(this,
+    QString fileName = fileDialog.getOpenFileName(this,
         tr("Add File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
 
     /* Cancel makes filename blank. If fileName is blank, don't add.

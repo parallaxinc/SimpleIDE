@@ -182,6 +182,8 @@ private:
     QString         basicPath;
     QString         includePath;
 
+    QFileDialog     fileDialog;
+
     QComboBox       *cbBoard;
     QComboBox       *cbPort;
     QToolButton     *btnConnected;
