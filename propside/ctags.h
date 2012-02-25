@@ -22,7 +22,7 @@ public:
 
 signals:
 
-public slots:
+private slots:
     void    procError(QProcess::ProcessError);
     void    procReadyRead();
     void    procFinished(int,QProcess::ExitStatus);

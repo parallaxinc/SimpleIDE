@@ -23,6 +23,7 @@ DEFINES += MINVERSION=4
 DEFINES += FIXVERSION=0
 
 SOURCES += main.cpp\
+    ctags.cpp \
     mainwindow.cpp \
     treemodel.cpp \
     treeitem.cpp \
@@ -39,10 +40,10 @@ SOURCES += main.cpp\
     finddialog.cpp \
     projectoptions.cpp \
     replacedialog.cpp \
-    aboutdialog.cpp \
-    ctags.cpp
+    aboutdialog.cpp
 
 HEADERS  += mainwindow.h \
+    ctags.h \
     highlighter.h \
     treemodel.h \
     treeitem.h \
@@ -61,8 +62,7 @@ HEADERS  += mainwindow.h \
     projectoptions.h \
     Sleeper.h \
     replacedialog.h \
-    aboutdialog.h \
-    ctags.h
+    aboutdialog.h
 
 FORMS    += \
     hardware.ui \
