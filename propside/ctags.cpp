@@ -192,6 +192,8 @@ int CTags::tagPush(QString tagline)
 QString CTags::tagPop()
 {
     QString tagline;
+    if(tagStack.count() < 1)
+        return "";
     tagline = tagStack.at(tagStack.count()-1);
     tagStack.removeLast();
     return tagline;
