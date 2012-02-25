@@ -26,6 +26,7 @@
 #include "finddialog.h"
 #include "replacedialog.h"
 #include "aboutdialog.h"
+#include "ctags.h"
 
 #define untitledstr "Untitled"
 
@@ -99,6 +100,9 @@ public slots:
     void replaceAllInFile();
     void redoChange();
     void undoChange();
+    void findDeclaration();
+    void prevDeclaration();
+    int  showDeclaration(QString tagline);
 
     void compileStatusClicked();
 
@@ -216,6 +220,8 @@ private:
     enum { MaxRecentProjects = 5 };
     QAction *recentProjectActs[MaxRecentProjects];
     QAction *separatorAct;
+
+    CTags    *ctags;
 };
 
 //! [0]

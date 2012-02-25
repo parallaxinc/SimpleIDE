@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     finddialog.cpp \
     projectoptions.cpp \
     replacedialog.cpp \
-    aboutdialog.cpp
+    aboutdialog.cpp \
+    ctags.cpp
 
 HEADERS  += mainwindow.h \
     highlighter.h \
@@ -60,7 +61,8 @@ HEADERS  += mainwindow.h \
     projectoptions.h \
     Sleeper.h \
     replacedialog.h \
-    aboutdialog.h
+    aboutdialog.h \
+    ctags.h
 
 FORMS    += \
     hardware.ui \

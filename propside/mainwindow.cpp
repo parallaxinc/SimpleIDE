@@ -56,6 +56,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* get app settings at startup and before any compiler call */
     getApplicationSettings();
 
+    /* set up ctag tool */
+    ctags = new CTags(aSideCompilerPath);
+
     initBoardTypes();
 
     /* these are read once per app startup */
@@ -287,7 +290,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings->setValue(lastPortNameKey,portstr);
 
     delete findDialog;
-    //delete hardwareDialog;
     delete replaceDialog;
     delete propDialog;
     delete projectOptions;
@@ -663,6 +665,68 @@ void MainWindow::replaceAllInFile()
 {
 }
 
+void MainWindow::findDeclaration()
+{
+    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    if(editor) {
+        ctags->runCtags(sourcePath(projectFile));
+        QTextCursor cur = editor->textCursor();
+        cur.movePosition(QTextCursor::StartOfWord,QTextCursor::MoveAnchor);
+        cur.movePosition(QTextCursor::EndOfWord,QTextCursor::KeepAnchor);
+        editor->setTextCursor(cur);
+        QString text = cur.selectedText();
+
+        cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+        cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+
+        int index = editorTabs->currentIndex();
+        QString fileName = editorTabs->tabToolTip(index);
+        QString currentTag = "/\t" + fileName + "\t" + cur.selectedText();
+
+        if(text.length() == 0)
+            return;
+        QString tagLine = ctags->findTag(text);
+
+        if(showDeclaration(tagLine) > -1)
+            ctags->tagPush(currentTag);
+    }
+}
+
+void MainWindow::prevDeclaration()
+{
+    showDeclaration(ctags->tagPop());
+    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    QTextCursor cur = editor->textCursor();
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+    //editor->setTextCursor(cur);
+}
+
+int MainWindow::showDeclaration(QString tagline)
+{
+    int rc = -1;
+    if(tagline.length() == 0)
+        return rc;
+    QString file = ctags->getFile(tagline);
+    if(file.length() == 0)
+        return rc;
+    int  linenum = ctags->getLine(tagline);
+    if(linenum < 0)
+        return rc;
+    this->openFileName(file);
+    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    editor->setCenterOnScroll(true);
+    QTextCursor cur = editor->textCursor();
+    //cur.setPosition(linenum,QTextCursor::MoveAnchor);
+    cur.movePosition(QTextCursor::Start);
+    cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,linenum);
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+    cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+    editor->setTextCursor(cur);
+    QString res = cur.selectedText();
+    qDebug() << res;
+    return linenum;
+}
+
 void MainWindow::redoChange()
 {
     QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
@@ -769,7 +833,7 @@ void MainWindow::setupHelpMenu()
     aboutDialog = new AboutDialog(this);
 
     helpMenu->addAction(QIcon(":/images/helpsymbol.png"), tr("&About"), this, SLOT(aboutShow()));
-    helpMenu->addAction(QIcon(":/images/helpme.png"), tr("&Help"), this, SLOT(helpShow()));
+    helpMenu->addAction(tr("&Help"), this, SLOT(helpShow()));
 }
 
 void MainWindow::aboutShow()
@@ -2047,8 +2111,7 @@ void MainWindow::setupFileMenu()
     // fileMenu->addAction(QIcon(":/images/print.png"), tr("Print"), this, SLOT(printFile()), QKeySequence::Print);
     // fileMenu->addAction(QIcon(":/images/zip.png"), tr("Archive"), this, SLOT(zipFile()), 0);
 
-    fileMenu->addAction(QIcon(":/images/exit.png"), tr("E&xit"), qApp, SLOT(quit()),
-                        QKeySequence::Quit);
+    fileMenu->addAction(QIcon(":/images/exit.png"), tr("E&xit"), qApp, SLOT(quit()), QKeySequence::Quit);
 
     QMenu *editMenu = new QMenu(tr("&Edit"), this);
     menuBar()->addMenu(editMenu);
@@ -2063,12 +2126,16 @@ void MainWindow::setupFileMenu()
 */
     editMenu->addSeparator();
     editMenu->addAction(QIcon(":/images/find.png"), tr("&Find"), this, SLOT(findInFile()), QKeySequence::Find);
-    editMenu->addAction(tr("Find Next"), this, SLOT(findNextInFile()), QKeySequence::FindNext);
-    editMenu->addAction(tr("Find Previous"), this, SLOT(findPrevInFile()), QKeySequence::FindPrevious);
+    editMenu->addAction(QIcon(":/images/next.png"), tr("Find Next"), this, SLOT(findNextInFile()), QKeySequence::FindNext);
+    editMenu->addAction(QIcon(":/images/previous.png"), tr("Find Previous"), this, SLOT(findPrevInFile()), QKeySequence::FindPrevious);
 
-    editMenu->addAction(QIcon(":/images/replace.png"), tr("Find &Replace"), this, SLOT(replaceInFile()), Qt::CTRL + Qt::Key_R);
-    //editMenu->addAction(tr("Replace Next"), this, SLOT(replaceNextInFile()), Qt::Key_F2);
-    //editMenu->addAction(tr("Replace Previous"), this, SLOT(replacePrevInFile()), Qt::SHIFT + Qt::Key_F2);
+    editMenu->addAction(QIcon(":/images/replace.png"), tr("&Replace"), this, SLOT(replaceInFile()), Qt::CTRL + Qt::Key_R);
+
+    if(ctags->enabled()) {
+        editMenu->addSeparator();
+        editMenu->addAction(QIcon(":/images/forward.png"),tr("Find &Definition"), this, SLOT(findDeclaration()), Qt::CTRL + Qt::Key_D);
+        editMenu->addAction(QIcon(":/images/back.png"),tr("Go &Back"), this, SLOT(prevDeclaration()), Qt::CTRL + Qt::Key_B);
+    }
 
     editMenu->addSeparator();
     editMenu->addAction(QIcon(":/images/redo.png"), tr("&Redo"), this, SLOT(redoChange()), QKeySequence::Redo);
@@ -2175,7 +2242,7 @@ void MainWindow::setupToolBars()
     connect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
 
     btnConnected = new QToolButton(this);
-    btnConnected->setToolTip(tr("Port Status"));
+    btnConnected->setToolTip(tr("Port Connect"));
     btnConnected->setCheckable(true);
     connect(btnConnected,SIGNAL(clicked()),this,SLOT(connectButton()));
 
