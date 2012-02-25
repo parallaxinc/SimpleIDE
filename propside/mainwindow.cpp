@@ -33,11 +33,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     projectModel = NULL;
     referenceModel = NULL;
 
-    /* setup gui components */
-    setupFileMenu();
-    setupHelpMenu();
-    setupToolBars();
-
     /* main container */
     setWindowTitle(ASideGuiKey);
     QSplitter *vsplit = new QSplitter(this);
@@ -58,6 +53,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* set up ctag tool */
     ctags = new CTags(aSideCompilerPath);
+
+    /* setup gui components */
+    setupFileMenu();
+    setupHelpMenu();
+    setupToolBars();
 
     initBoardTypes();
 

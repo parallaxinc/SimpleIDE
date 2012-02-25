@@ -1,7 +1,6 @@
 #include "ctags.h"
 
-CTags::CTags(QString path, QObject *parent) :
-    QObject(parent)
+CTags::CTags(QString path, QObject *parent) : QObject(parent)
 {
     QString ctags("ctags");
 
@@ -37,7 +36,16 @@ int CTags::runCtags(QString path)
     process->setProcessChannelMode(QProcess::MergedChannels);
     process->setWorkingDirectory(path);
 
-    args.append(path+"*");
+    args.append("--format=1");
+
+    QDir dir(path);
+    dir.setFilter(QDir::Files);
+    QFileInfoList fileList = dir.entryInfoList();
+    foreach(QFileInfo file, fileList) {
+        if(file.fileName().contains(".out"))
+            continue;
+        args.append(path+file.fileName());
+    }
 
     procDone = false;
     process->start(ctagsProgram,args);
@@ -47,7 +55,30 @@ int CTags::runCtags(QString path)
     while(procDone == false)
         QApplication::processEvents();
 
-    return process->exitCode();
+    rc = process->exitCode();
+    return rc;
+}
+
+void CTags::procError(QProcess::ProcessError code)
+{
+    qDebug() << "procError " << code;
+}
+
+void CTags::procReadyRead()
+{
+    qDebug() << "procReadyRead :" << process->readAllStandardOutput();
+}
+
+void CTags::procFinished(int code, QProcess::ExitStatus status)
+{
+    if(procDone)
+        return;
+
+    mutex.lock();
+    procDone = true;
+    mutex.unlock();
+
+    qDebug() << "procFinished " << code << " " << status << ":" << process->readAllStandardOutput();
 }
 
 bool CTags::enabled()
@@ -73,7 +104,7 @@ QString CTags::findTag(QString symbol)
     if(fileString.contains(symbol)) {
         QStringList list = fileString.split("\n");
         QRegExp rx("^"+symbol+"[ \t].*");
-        for(int n = 0; n < list.length(); n++) {
+        for(int n = list.length()-1; n >= 0; n--) {
             QString line = list.at(n);
             if(line.length() == 0)
                 continue;
@@ -136,28 +167,6 @@ int CTags::getLine(QString line)
 #endif
     }
     return -1;
-}
-
-void CTags::procError(QProcess::ProcessError code)
-{
-    qDebug() << "procError " << code;
-}
-
-void CTags::procReadyRead()
-{
-    qDebug() << "procReadyRead :" << process->readAllStandardOutput();
-}
-
-void CTags::procFinished(int code, QProcess::ExitStatus status)
-{
-    if(procDone)
-        return;
-
-    mutex.lock();
-    procDone = true;
-    mutex.unlock();
-
-    qDebug() << "procFinished " << code << " " << status << ":" << process->readAllStandardOutput();
 }
 
 int CTags::tagPush(QString tagline)
