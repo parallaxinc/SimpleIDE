@@ -104,7 +104,7 @@ QString CTags::findTag(QString symbol)
     if(fileString.contains(symbol)) {
         QStringList list = fileString.split("\n");
         QRegExp rx("^"+symbol+"[ \t].*");
-        for(int n = list.length()-1; n >= 0; n--) {
+        for(int n = 0; n < list.length(); n++) {
             QString line = list.at(n);
             if(line.length() == 0)
                 continue;
@@ -128,24 +128,34 @@ QString CTags::getFile(QString line)
 
 int CTags::getLine(QString line)
 {
+    int rc = -1;
     QStringList item = line.split("\t");
-    QString rspec = item.at(2);
-    if(rspec.indexOf('^') > -1)
-        rspec = rspec.mid(rspec.indexOf('^')+1);
-    if(rspec.lastIndexOf('$') > 0)
-        rspec = rspec.mid(0,rspec.lastIndexOf('$'));
-    QRegExp rx(rspec,Qt::CaseSensitive, QRegExp::RegExp);
-    QRegExp rx2(rspec,Qt::CaseSensitive, QRegExp::RegExp2);
-    QRegExp rxwc(rspec,Qt::CaseSensitive, QRegExp::Wildcard);
-    QRegExp rxwcu(rspec,Qt::CaseSensitive, QRegExp::WildcardUnix);
-    QRegExp rxfs(rspec,Qt::CaseSensitive, QRegExp::FixedString);
-    QRegExp rxw3(rspec,Qt::CaseSensitive, QRegExp::W3CXmlSchema11);
-
     QFile file(item.at(1));
+    if(file.exists() == false)
+        return rc;
+
     QString filestr;
     if(file.open(QFile::ReadOnly)) {
         filestr = file.readAll();
         file.close();
+    }
+    QString rspec = item.at(2);
+    bool isnumber;
+    int num = rspec.toInt(&isnumber);
+    if(isnumber) {
+        return num;
+    }
+    else {
+        if(rspec.indexOf('^') > -1)
+            rspec = rspec.mid(rspec.indexOf('^')+1);
+        if(rspec.lastIndexOf('$') > 0)
+            rspec = rspec.mid(0,rspec.lastIndexOf('$'));
+        QRegExp rx(rspec,Qt::CaseSensitive, QRegExp::RegExp);
+        QRegExp rx2(rspec,Qt::CaseSensitive, QRegExp::RegExp2);
+        QRegExp rxwc(rspec,Qt::CaseSensitive, QRegExp::Wildcard);
+        QRegExp rxwcu(rspec,Qt::CaseSensitive, QRegExp::WildcardUnix);
+        QRegExp rxfs(rspec,Qt::CaseSensitive, QRegExp::FixedString);
+        QRegExp rxw3(rspec,Qt::CaseSensitive, QRegExp::W3CXmlSchema11);
 #if 0
         /* could return the file position of the search string */
         int pos = rxwc.indexIn(filestr);
@@ -153,7 +163,10 @@ int CTags::getLine(QString line)
             return pos;
 #else
         QStringList list = filestr.split("\n");
-        for(int n = 0; n < list.length(); n++) {
+        /* searching backwards increases chance of finding
+         * the function definition instead of a declaration.
+         */
+        for(int n = list.length()-1; n >= 0; n--) {
             QString line = list.at(n)+"\n";
             int pos = rx.indexIn(line);
             pos &= rx2.indexIn(line);
@@ -166,7 +179,8 @@ int CTags::getLine(QString line)
         }
 #endif
     }
-    return -1;
+
+    return rc;
 }
 
 int CTags::tagPush(QString tagline)
