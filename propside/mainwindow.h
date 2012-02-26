@@ -49,9 +49,14 @@ public slots:
     void saveFile(const QString &path = QString());
     void saveFileByTabIndex(int tab);
     void saveAsFile(const QString &path = QString());
-    void openRecentProject(const QString &path = QString());
     void printFile(const QString &path = QString());    // not implemented
     void zipFile(const QString &path = QString());      // not implemented
+    void closeFile();
+    void closeAll();
+    void newProject();
+    void openProject();
+    void saveProject();
+    void closeProject();
     void aboutShow();
     void helpShow();
     void projectTreeClicked(QModelIndex index);
@@ -110,6 +115,14 @@ public slots:
     void procFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void procReadyRead();
 
+    void setCurrentFile(const QString &fileName);
+    void updateRecentFileActions();
+    void openRecentFile(const QString &file);
+
+    void setCurrentProject(const QString &fileName);
+    void updateRecentProjectActions();
+    void openRecentProject(const QString &path = QString());
+
 private:
     void exitSave();
     void getApplicationSettings();
@@ -143,9 +156,6 @@ private:
     QString shortFileName(QString fileName);
     QString sourcePath(QString file);
 
-    void setCurrentProject(const QString &fileName);
-    void updateRecentProjectActions();
-
     AboutDialog     *aboutDialog;
 
     QSettings       *settings;
@@ -159,7 +169,9 @@ private:
     Highlighter     *highlighter;
 
     QToolBar        *fileToolBar;
+    QToolBar        *projToolBar;
     QToolBar        *propToolBar;
+    QToolBar        *browseToolBar;
     QToolBar        *debugToolBar;
     QToolBar        *ctrlToolBar;
 
@@ -219,9 +231,13 @@ private:
     FindDialog      *findDialog;
     ReplaceDialog   *replaceDialog;
 
+    enum { MaxRecentFiles = 5 };
+    QAction *recentFileActs[MaxRecentFiles];
+    QAction *separatorFileAct;
+
     enum { MaxRecentProjects = 5 };
     QAction *recentProjectActs[MaxRecentProjects];
-    QAction *separatorAct;
+    QAction *separatorProjectAct;
 
     CTags    *ctags;
 };
