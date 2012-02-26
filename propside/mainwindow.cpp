@@ -14,6 +14,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     QCoreApplication::setOrganizationDomain(publisherComKey);
     QCoreApplication::setApplicationName(ASideGuiKey);
 
+    /* set the windows icon */
+    this->setWindowIcon(QIcon(":/images/SimpleIDE.png"));
+
     /* global settings */
     settings = new QSettings(publisherKey, ASideGuiKey, this);
 
@@ -372,8 +375,83 @@ void MainWindow::openFileName(QString fileName)
     }
 }
 
+void MainWindow::closeFile()
+{
+
+}
+
+void MainWindow::closeAll()
+{
+
+}
+
+void MainWindow::newProject()
+{
+
+}
+
+void MainWindow::openProject()
+{
+
+}
+
+/* not used. close project automatically saves */
+void MainWindow::saveProject()
+{
+
+}
+
+void MainWindow::closeProject()
+{
+
+}
+
 
 void MainWindow::openRecentProject(const QString &proj)
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (action)
+        openFile(action->data().toString());
+}
+
+
+void MainWindow::setCurrentFile(const QString &fileName)
+{
+    QStringList files = settings->value("recentFileList").toStringList();
+    files.removeAll(fileName);
+    files.prepend(fileName);
+    while (files.size() > MaxRecentFiles)
+        files.removeLast();
+
+    settings->setValue("recentFileList", files);
+
+    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+        MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
+        if (mainWin)
+            mainWin->updateRecentFileActions();
+    }
+}
+
+void MainWindow::updateRecentFileActions()
+{
+    QStringList projects = settings->value("recentFileList").toStringList();
+
+    int numRecentFiles = qMin(projects.size(), (int)MaxRecentFiles);
+
+    for (int i = 0; i < numRecentFiles; ++i) {
+        //QString filename = QFileInfo(projects[i]).fileName();
+        QString text = tr("&%1 %2").arg(i + 1).arg(projects[i]);
+        recentFileActs[i]->setText(text);
+        recentFileActs[i]->setData(projects[i]);
+        recentFileActs[i]->setVisible(true);
+    }
+    for (int j = numRecentFiles; j < MaxRecentFiles; ++j)
+        recentFileActs[j]->setVisible(false);
+
+    separatorFileAct->setVisible(numRecentFiles > 0);
+}
+
+void MainWindow::openRecentFile(const QString &file)
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action)
@@ -417,7 +495,7 @@ void MainWindow::updateRecentProjectActions()
     for (int j = numRecentProjects; j < MaxRecentProjects; ++j)
         recentProjectActs[j]->setVisible(false);
 
-    separatorAct->setVisible(numRecentProjects > 0);
+    separatorProjectAct->setVisible(numRecentProjects > 0);
 }
 
 void MainWindow::saveFile(const QString &path)
@@ -831,8 +909,8 @@ void MainWindow::setupHelpMenu()
     menuBar()->addMenu(helpMenu);
     aboutDialog = new AboutDialog(this);
 
-    helpMenu->addAction(QIcon(":/images/helpsymbol.png"), tr("&About"), this, SLOT(aboutShow()));
-    helpMenu->addAction(tr("&Help"), this, SLOT(helpShow()));
+    helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
+    helpMenu->addAction(QIcon(":/images/helphint.png"), tr("&Help"), this, SLOT(helpShow()));
 }
 
 void MainWindow::aboutShow()
@@ -1072,7 +1150,13 @@ int  MainWindow::runBstc(QString spinfile)
     checkAndSaveFiles();
 
     /* run the bstc program */
+#if defined(Q_WS_WIN32)
     QString bstc = "bstc";
+#elif defined(Q_WS_MAC)
+    QString bstc = aSideCompilerPath+"bstc.osx";
+#else
+    QString bstc = aSideCompilerPath+"bstc.linux";
+#endif
     rc = startProgram(bstc, sourcePath(projectFile), args);
 
     return rc;
@@ -1355,6 +1439,11 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
      */
     showBuildStart(program,args);
 
+#if !defined(Q_WS_WIN32)
+    if(program.contains(aSideCompilerPath) == false)
+        program = aSideCompilerPath + program;
+#endif
+
     process->setProperty("Name", QVariant(program));
     process->setProperty("IsLoader", QVariant(false));
 
@@ -1381,6 +1470,7 @@ void MainWindow::procError(QProcess::ProcessError error)
 {
     QVariant name = process->property("Name");
     compileStatus->appendPlainText(name.toString() + tr(" error ... \"%1\"").arg(error));
+    compileStatus->appendPlainText(process->readAllStandardOutput());
 }
 void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
@@ -2077,20 +2167,47 @@ void MainWindow::setupFileMenu()
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     menuBar()->addMenu(fileMenu);
 
-    fileMenu->addAction(QIcon(":/images/newfile.png"), tr("&New"), this, SLOT(newFile()),
-                        QKeySequence::New);
+    fileMenu->addAction(QIcon(":/images/newfile.png"), tr("&New"), this, SLOT(newFile()), QKeySequence::New);
+    fileMenu->addAction(QIcon(":/images/openfile.png"), tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
+    fileMenu->addAction(QIcon(":/images/savefile.png"), tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
+    fileMenu->addAction(QIcon(":/images/saveasfile.png"), tr("Save &As"), this, SLOT(saveAsFile()),QKeySequence::SaveAs);
 
-    fileMenu->addAction(QIcon(":/images/openfile.png"), tr("&Open"), this, SLOT(openFile()),
-                        QKeySequence::Open);
+    fileMenu->addAction(tr("Close"), this, SLOT(closeFile()));
+    fileMenu->addAction(tr("Close All"), this, SLOT(closeAll()));
 
-    fileMenu->addAction(QIcon(":/images/savefile.png"), tr("&Save"), this, SLOT(saveFile()),
-                        QKeySequence::Save);
+    // recent file actions
+    separatorFileAct = fileMenu->addSeparator();
 
-    fileMenu->addAction(QIcon(":/images/saveasfile.png"), tr("Save &As"), this, SLOT(saveAsFile()),
-                        QKeySequence::SaveAs);
+    for (int i = 0; i < MaxRecentFiles; ++i) {
+        recentFileActs[i] = new QAction(this);
+        recentFileActs[i]->setVisible(false);
+        connect(recentFileActs[i], SIGNAL(triggered()),
+                this, SLOT(openRecentFile()));
+    }
+
+    for (int i = 0; i < MaxRecentFiles; ++i)
+        fileMenu->addAction(recentFileActs[i]);
+
+    updateRecentFileActions();
+
+    fileMenu->addSeparator();
+
+    // fileMenu->addAction(QIcon(":/images/print.png"), tr("Print"), this, SLOT(printFile()), QKeySequence::Print);
+    // fileMenu->addAction(QIcon(":/images/zip.png"), tr("Archive"), this, SLOT(zipFile()), 0);
+
+    fileMenu->addAction(QIcon(":/images/exit.png"), tr("E&xit"), qApp, SLOT(quit()), QKeySequence::Quit);
+
+    QMenu *projMenu = new QMenu(tr("&Project"), this);
+    menuBar()->addMenu(projMenu);
+
+    projMenu->addAction(QIcon(":/images/newproj.png"), tr("New Project"), this, SLOT(newProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_N);
+    projMenu->addAction(QIcon(":/images/openproj.png"), tr("Open Project"), this, SLOT(openProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_O);
+    projMenu->addAction(QIcon(":/images/closeproj.png"), tr("Close Project"), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
+    projMenu->addAction(QIcon(":/images/treeproject.png"), tr("Set Project"), this, SLOT(setProject()), Qt::Key_F4);
+    //projMenu->addAction(QIcon(":/images/hardware.png"), tr("Load Board Types"), this, SLOT(hardware()), Qt::Key_F6);
 
     // recent project actions
-    separatorAct = fileMenu->addSeparator();
+    separatorProjectAct = projMenu->addSeparator();
 
     for (int i = 0; i < MaxRecentProjects; ++i) {
         recentProjectActs[i] = new QAction(this);
@@ -2100,23 +2217,20 @@ void MainWindow::setupFileMenu()
     }
 
     for (int i = 0; i < MaxRecentProjects; ++i)
-        fileMenu->addAction(recentProjectActs[i]);
+        projMenu->addAction(recentProjectActs[i]);
 
     updateRecentProjectActions();
 
-    fileMenu->addSeparator();
-
-    // fileMenu->addAction(QIcon(":/images/print.png"), tr("Print"), this, SLOT(printFile()), QKeySequence::Print);
-    // fileMenu->addAction(QIcon(":/images/zip.png"), tr("Archive"), this, SLOT(zipFile()), 0);
-
-    fileMenu->addAction(QIcon(":/images/exit.png"), tr("E&xit"), qApp, SLOT(quit()), QKeySequence::Quit);
+    projMenu->addSeparator();
+    projMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F5);
 
     QMenu *editMenu = new QMenu(tr("&Edit"), this);
     menuBar()->addMenu(editMenu);
 
-    editMenu->addAction(tr("Copy"), this, SLOT(copyFromFile()), QKeySequence::Copy);
-    editMenu->addAction(tr("Cut"), this, SLOT(cutFromFile()), QKeySequence::Cut);
-    editMenu->addAction(tr("Paste"), this, SLOT(pasteToFile()), QKeySequence::Paste);
+    editMenu->addAction(QIcon(":/images/copy.png"), tr("Copy"), this, SLOT(copyFromFile()), QKeySequence::Copy);
+    editMenu->addAction(QIcon(":/images/cut.png"), tr("Cut"), this, SLOT(cutFromFile()), QKeySequence::Cut);
+    editMenu->addAction(QIcon(":/images/paste.png"), tr("Paste"), this, SLOT(pasteToFile()), QKeySequence::Paste);
+
 /*
     editMenu->addSeparator();
     editMenu->addAction(tr("Edit Command"), this, SLOT(editCommand()), Qt::CTRL + Qt::Key_Colon);
@@ -2138,13 +2252,6 @@ void MainWindow::setupFileMenu()
     editMenu->addSeparator();
     editMenu->addAction(QIcon(":/images/redo.png"), tr("&Redo"), this, SLOT(redoChange()), QKeySequence::Redo);
     editMenu->addAction(QIcon(":/images/undo.png"), tr("&Undo"), this, SLOT(undoChange()), QKeySequence::Undo);
-
-    QMenu *projMenu = new QMenu(tr("&Project"), this);
-    menuBar()->addMenu(projMenu);
-
-    projMenu->addAction(QIcon(":/images/treeproject.png"), tr("Set Project"), this, SLOT(setProject()), Qt::Key_F4);
-    projMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F5);
-    //projMenu->addAction(QIcon(":/images/hardware.png"), tr("Load Board Types"), this, SLOT(hardware()), Qt::Key_F6);
 
     QMenu *debugMenu = new QMenu(tr("&Debug"), this);
     menuBar()->addMenu(debugMenu);
@@ -2180,15 +2287,39 @@ void MainWindow::setupToolBars()
     //connect(btnFilePrint,SIGNAL(clicked()),this,SLOT(printFile()));
     //connect(btnFileZip,SIGNAL(clicked()),this,SLOT(zipFile()));
 
-    btnFileNew->setToolTip(tr("New"));
-    btnFileOpen->setToolTip(tr("Open"));
-    btnFileSave->setToolTip(tr("Save"));
-    btnFileSaveAs->setToolTip(tr("Save As"));
+    btnFileNew->setToolTip(tr("New File"));
+    btnFileOpen->setToolTip(tr("Open File"));
+    btnFileSave->setToolTip(tr("Save File"));
+    btnFileSaveAs->setToolTip(tr("Save As File"));
     //btnFilePrint->setToolTip(tr("Print"));
     //btnFileZip->setToolTip(tr("Archive"));
 
-    propToolBar = addToolBar(tr("Properties"));
+    /*
+     * Project Toobar
+     */
+    projToolBar = addToolBar(tr("Project"));
+    QToolButton *btnProjectNew = new QToolButton(this);
+    QToolButton *btnProjectOpen = new QToolButton(this);
+    QToolButton *btnProjectClose = new QToolButton(this);
+    QToolButton *btnProjectApp = new QToolButton(this);
 
+
+    addToolButton(projToolBar, btnProjectNew, QString(":/images/newproj.png"));
+    addToolButton(projToolBar, btnProjectOpen, QString(":/images/openproj.png"));
+    addToolButton(projToolBar, btnProjectClose, QString(":/images/closeproj.png"));
+    addToolButton(projToolBar, btnProjectApp, QString(":/images/treeproject.png"));
+
+    connect(btnProjectNew,SIGNAL(clicked()),this,SLOT(newProject()));
+    connect(btnProjectOpen,SIGNAL(clicked()),this,SLOT(openProject()));
+    connect(btnProjectClose,SIGNAL(clicked()),this,SLOT(closeProject()));
+    connect(btnProjectApp,SIGNAL(clicked()),this,SLOT(setProject()));
+
+    btnProjectNew->setToolTip(tr("New Project"));
+    btnProjectOpen->setToolTip(tr("Open Project"));
+    btnProjectClose->setToolTip(tr("Close Project"));
+    btnProjectApp->setToolTip(tr("Set Project to Current File"));
+
+    //propToolBar = addToolBar(tr("Properties"));
 /*
     QToolButton *btnProjectBoard = new QToolButton(this);
     addToolButton(propToolBar, btnProjectBoard, QString(":/images/hardware.png"));
@@ -2196,14 +2327,23 @@ void MainWindow::setupToolBars()
     btnProjectBoard->setToolTip(tr("Configuration"));
 */
     QToolButton *btnProjectProperties = new QToolButton(this);
-    addToolButton(propToolBar, btnProjectProperties, QString(":/images/properties.png"));
+    addToolButton(projToolBar, btnProjectProperties, QString(":/images/properties.png"));
     connect(btnProjectProperties,SIGNAL(clicked()),this,SLOT(properties()));
     btnProjectProperties->setToolTip(tr("Properties"));
 
-    QToolButton *btnProjectApp = new QToolButton(this);
-    addToolButton(propToolBar, btnProjectApp, QString(":/images/treeproject.png"));
-    connect(btnProjectApp,SIGNAL(clicked()),this,SLOT(setProject()));
-    btnProjectApp->setToolTip(tr("Set Project File"));
+    if(ctags->enabled()) {
+        browseToolBar = addToolBar(tr("Source Browser"));
+        QToolButton *btnBrowseBack = new QToolButton(this);
+        addToolButton(browseToolBar, btnBrowseBack, QString(":/images/trackback.png"));
+        connect(btnBrowseBack,SIGNAL(clicked()),this,SLOT(prevDeclaration()));
+        btnBrowseBack->setToolTip("Reverse Lookup");
+
+        QToolButton *btnFindDef = new QToolButton(this);
+        addToolButton(browseToolBar, btnFindDef, QString(":/images/lookup.png"));
+        connect(btnFindDef,SIGNAL(clicked()),this,SLOT(findDeclaration()));
+        btnFindDef->setToolTip("Lookup Definition");
+    }
+
 
     debugToolBar = addToolBar(tr("Debug"));
     QToolButton *btnDebugDebugTerm = new QToolButton(this);

@@ -17,6 +17,8 @@ AboutDialog::AboutDialog(QWidget *parent) :
     layout->addWidget(new QLabel(version+"         "+tr("Copyright (C) 2012, Parallax, Inc.")));
     QString license(tr("An MIT Licensed open-source IDE using Qt libraries under LGPLv2.1"));
     layout->addWidget(new QLabel(license));
+    QString icons(tr("Most ToolBar Icons \"24x24 Free Application Icons\" by www.aha-soft.com,\nused under Creative Commons Attribution-Share Alike 3.0 License."));
+    layout->addWidget(new QLabel(icons));
 
     layout->addWidget(buttonBox);
     setLayout(layout);
