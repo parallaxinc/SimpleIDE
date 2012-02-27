@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     QCoreApplication::setApplicationName(ASideGuiKey);
 
     /* set the windows icon */
-    this->setWindowIcon(QIcon(":/images/SimpleIDE.png"));
+    this->setWindowIcon(QIcon(":/images/integr8.png"));
 
     /* global settings */
     settings = new QSettings(publisherKey, ASideGuiKey, this);
@@ -23,6 +23,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* setup properties dialog */
     propDialog = new Properties(this);
     connect(propDialog,SIGNAL(accepted()),this,SLOT(propertiesAccepted()));
+
+    /* setup new project dialog */
+    newProjDialog = new NewProject(this);
+    connect(newProjDialog,SIGNAL(accepted()),this,SLOT(newProjectAccepted()));
 
     /* setup find dialog */
     findDialog = new FindDialog(this);
@@ -334,6 +338,9 @@ void MainWindow::openFile(const QString &path)
         }
         updateProjectTree(fileName,"");
     }
+    else {
+        setCurrentFile(fileName);
+    }
     openFileName(fileName);
     if(projectFile.length() == 0) {
         setProject();
@@ -375,35 +382,155 @@ void MainWindow::openFileName(QString fileName)
     }
 }
 
+/*
+ * this is the same as when a user clicks a tab's X
+ */
 void MainWindow::closeFile()
 {
 
 }
 
+/*
+ * close project if open and close all tabs.
+ * do exitSave function and close all windows.
+ */
 void MainWindow::closeAll()
 {
-
+    exitSave();
+    setWindowTitle(QString(ASideGuiKey));
+    if(projectModel != NULL) {
+        delete projectModel;
+        projectModel = NULL;
+    }
+    for(int tab = editorTabs->count()-1; tab > -1; tab--)
+        closeTab(tab);
 }
 
+/*
+ * New project should start a project wizard.
+ * First generation wizard should just ask for
+ * project name and project folder (workspace?).
+ * Wizard should always create a project.c
+ * file that will contain main.
+ */
 void MainWindow::newProject()
 {
-
+    newProjDialog = new NewProject();
+    newProjDialog->showDialog();
 }
 
-void MainWindow::openProject()
+void MainWindow::newProjectAccepted()
 {
+    QString name = newProjDialog->getName();
+    QString path = newProjDialog->getPath();
 
+    QString maintemplate("/**\n" \
+         " * @file "+name+".c\n" \
+         " * @details <desciption of program>\n" \
+         " * @author <your name>\n" \
+         " * @copyright Copyright (C) <year>, <name>\n" \
+         " * <license info>\n" \
+         " */\n" \
+         "\n" \
+         "/**\n" \
+         " * @details Main program entry point.\n" \
+         " */\n" \
+         "int main(void)\n" \
+         "{\n" \
+         "    return 0;\n" \
+         "}\n" \
+         "\n");
+    QFile mainfile(path+name+".c");
+    if(mainfile.exists() == false) {
+        if(mainfile.open(QFile::ReadWrite)) {
+            mainfile.write(maintemplate.toAscii());
+            mainfile.close();
+        }
+    }
+    openProject(path+name+".side");
 }
 
-/* not used. close project automatically saves */
+void MainWindow::openProject(const QString &path)
+{
+    QString fileName = path;
+
+    if (fileName.isNull()) {
+        fileDialog.setDirectory(sourcePath(projectFile));
+        fileName = fileDialog.getOpenFileName(this,
+            tr("Open Project"), "", "Program Source Files (*.side)");
+    }
+    if(fileName.indexOf(".side") > 0) {
+        // save old project options before loading new one
+        saveProjectOptions();
+        // load new project
+        projectFile = fileName;
+        setCurrentProject(projectFile);
+        QFile proj(projectFile);
+        if(proj.open(QFile::ReadOnly | QFile::Text)) {
+            fileName = sourcePath(projectFile)+proj.readLine();
+            fileName = fileName.trimmed();
+            proj.close();
+        }
+        updateProjectTree(fileName,"");
+    }
+    openFileName(fileName);
+    if(projectFile.length() == 0) {
+        setProject();
+    }
+    else if(editorTabs->count() == 1) {
+        setProject();
+    }
+}
+
+/*
+ * not used. close project automatically saves
+ */
 void MainWindow::saveProject()
 {
 
 }
 
+/*
+ * close project runs through project file list and closes files.
+ * finally it closes the project manager side bar.
+ */
 void MainWindow::closeProject()
 {
+    /* save all first */
+    exitSave();
 
+    /* go through project file list and close files
+     */
+    QFile file(projectFile);
+    QString proj = "";
+    if(file.open(QFile::ReadOnly | QFile::Text)) {
+        proj = file.readAll();
+        file.close();
+    }
+
+    proj = proj.trimmed(); // kill extra white space
+    QStringList list = proj.split("\n");
+
+    /* Run through file list and delete matches.
+     */
+    for(int n = 0; n < list.length(); n++) {
+        for(int tab = editorTabs->count()-1; tab > -1; tab--) {
+            // close exact tab
+            if(editorTabs->tabToolTip(tab).compare(sourcePath(projectFile)+list.at(n)) == 0)
+                closeTab(tab);
+        }
+    }
+
+    /* clean project manager selections TODO
+     */
+
+    /* close project manager side bar
+     */
+    setWindowTitle(QString(ASideGuiKey));
+    if(projectModel != NULL) {
+        delete projectModel;
+        projectModel = NULL;
+    }
 }
 
 
@@ -451,7 +578,7 @@ void MainWindow::updateRecentFileActions()
     separatorFileAct->setVisible(numRecentFiles > 0);
 }
 
-void MainWindow::openRecentFile(const QString &file)
+void MainWindow::openRecentFile()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action)

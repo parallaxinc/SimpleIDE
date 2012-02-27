@@ -42,5 +42,6 @@
         <file>images/cut.png</file>
         <file>images/paste.png</file>
         <file>images/SimpleIDE.png</file>
+        <file>images/integr8.png</file>
     </qresource>
 </RCC>

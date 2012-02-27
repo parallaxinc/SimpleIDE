@@ -69,10 +69,10 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
     okButton->setDefault(true);
 
     setLayout(layout);
-
+    setWindowFlags(Qt::Tool);
     setMinimumWidth(500);
 
-    setWindowTitle(tr("Find Replace Text"));
+    setWindowTitle(tr("Find and Replace Text"));
     connect(findNextButton, SIGNAL(clicked()), this, SLOT(findNextClicked()));
     connect(findPrevButton, SIGNAL(clicked()), this, SLOT(findPrevClicked()));
     connect(replaceNextButton, SIGNAL(clicked()), this, SLOT(replaceNextClicked()));
