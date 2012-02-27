@@ -31,7 +31,6 @@
         <file>images/lookup.png</file>
         <file>images/properties.png</file>
         <file>images/about.png</file>
-        <file>images/SimpleIDE.png</file>
         <file>images/burnee.png</file>
         <file>images/run.png</file>
         <file>images/debug.png</file>
@@ -42,5 +41,6 @@
         <file>images/copy.png</file>
         <file>images/cut.png</file>
         <file>images/paste.png</file>
+        <file>images/SimpleIDE.png</file>
     </qresource>
 </RCC>
