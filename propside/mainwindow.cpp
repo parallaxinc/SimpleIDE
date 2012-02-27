@@ -339,7 +339,8 @@ void MainWindow::openFile(const QString &path)
         updateProjectTree(fileName,"");
     }
     else {
-        setCurrentFile(fileName);
+        if(fileName.length())
+            setCurrentFile(fileName);
     }
     openFileName(fileName);
     if(projectFile.length() == 0) {
@@ -415,7 +416,6 @@ void MainWindow::closeAll()
  */
 void MainWindow::newProject()
 {
-    newProjDialog = new NewProject();
     newProjDialog->showDialog();
 }
 
@@ -426,28 +426,30 @@ void MainWindow::newProjectAccepted()
 
     QString maintemplate("/**\n" \
          " * @file "+name+".c\n" \
-         " * @details <desciption of program>\n" \
-         " * @author <your name>\n" \
-         " * @copyright Copyright (C) <year>, <name>\n" \
-         " * <license info>\n" \
+         " * This is the main "+name+" program start point.\n" \
          " */\n" \
          "\n" \
          "/**\n" \
-         " * @details Main program entry point.\n" \
+         " * Main program function.\n" \
          " */\n" \
          "int main(void)\n" \
          "{\n" \
          "    return 0;\n" \
          "}\n" \
          "\n");
-    QFile mainfile(path+name+".c");
+    QString mainName(path+name+".c");
+    QFile mainfile(mainName);
     if(mainfile.exists() == false) {
         if(mainfile.open(QFile::ReadWrite)) {
             mainfile.write(maintemplate.toAscii());
             mainfile.close();
         }
     }
-    openProject(path+name+".side");
+    projectFile = path+name+".side";
+    setCurrentProject(mainName);
+    updateProjectTree(projectFile,"");
+    openFileName(mainName);
+
 }
 
 void MainWindow::openProject(const QString &path)
