@@ -27,6 +27,7 @@
 #include "replacedialog.h"
 #include "aboutdialog.h"
 #include "ctags.h"
+#include "newproject.h"
 
 #define untitledstr "Untitled"
 
@@ -54,7 +55,8 @@ public slots:
     void closeFile();
     void closeAll();
     void newProject();
-    void openProject();
+    void newProjectAccepted();
+    void openProject(const QString &path = QString());
     void saveProject();
     void closeProject();
     void aboutShow();
@@ -117,7 +119,7 @@ public slots:
 
     void setCurrentFile(const QString &fileName);
     void updateRecentFileActions();
-    void openRecentFile(const QString &file);
+    void openRecentFile();
 
     void setCurrentProject(const QString &fileName);
     void updateRecentProjectActions();
@@ -239,7 +241,8 @@ private:
     QAction *recentProjectActs[MaxRecentProjects];
     QAction *separatorProjectAct;
 
-    CTags    *ctags;
+    CTags       *ctags;
+    NewProject  *newProjDialog;
 };
 
 //! [0]
