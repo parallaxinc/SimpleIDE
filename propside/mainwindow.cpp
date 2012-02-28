@@ -2433,7 +2433,7 @@ void MainWindow::setupFileMenu()
     QMenu *debugMenu = new QMenu(tr("&Debug"), this);
     menuBar()->addMenu(debugMenu);
 
-    debugMenu->addAction(QIcon(":/images/debug.png"), tr("Debug"), this, SLOT(programDebug()), Qt::Key_F8);
+    debugMenu->addAction(QIcon(":/images/runconsole.png"), tr("Run Console"), this, SLOT(programDebug()), Qt::Key_F8);
     debugMenu->addAction(QIcon(":/images/build.png"), tr("Build"), this, SLOT(programBuild()), Qt::Key_F9);
     debugMenu->addAction(QIcon(":/images/run.png"), tr("Run"), this, SLOT(programRun()), Qt::Key_F10);
     debugMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn"), this, SLOT(programBurnEE()), Qt::Key_F11);
@@ -2531,7 +2531,7 @@ void MainWindow::setupToolBars()
     addToolButton(debugToolBar, btnDebugBuild, QString(":/images/build.png"));
     addToolButton(debugToolBar, btnDebugBurnEEP, QString(":/images/burnee.png"));
     addToolButton(debugToolBar, btnDebugRun, QString(":/images/run.png"));
-    addToolButton(debugToolBar, btnDebugDebugTerm, QString(":/images/debug.png"));
+    addToolButton(debugToolBar, btnDebugDebugTerm, QString(":/images/runconsole.png"));
 
     connect(btnDebugBuild,SIGNAL(clicked()),this,SLOT(programBuild()));
     connect(btnDebugBurnEEP,SIGNAL(clicked()),this,SLOT(programBurnEE()));
@@ -2540,8 +2540,8 @@ void MainWindow::setupToolBars()
 
     btnDebugBuild->setToolTip(tr("Build"));
     btnDebugBurnEEP->setToolTip(tr("Burn EEPROM"));
-    btnDebugDebugTerm->setToolTip(tr("Debug"));
     btnDebugRun->setToolTip(tr("Run"));
+    btnDebugDebugTerm->setToolTip(tr("Run Console"));
 
     ctrlToolBar = addToolBar(tr("Control"));
     ctrlToolBar->setLayoutDirection(Qt::RightToLeft);
@@ -2557,7 +2557,7 @@ void MainWindow::setupToolBars()
     connect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
 
     btnConnected = new QToolButton(this);
-    btnConnected->setToolTip(tr("Port Connect"));
+    btnConnected->setToolTip(tr("Serial Port Console"));
     btnConnected->setCheckable(true);
     connect(btnConnected,SIGNAL(clicked()),this,SLOT(connectButton()));
 
@@ -2569,7 +2569,7 @@ void MainWindow::setupToolBars()
     btnLoadBoards->setToolTip(tr("Reload Board List"));
     connect(btnLoadBoards,SIGNAL(clicked()),this,SLOT(initBoardTypes()));
 
-    addToolButton(ctrlToolBar, btnConnected, QString(":/images/connected2.png"));
+    addToolButton(ctrlToolBar, btnConnected, QString(":/images/console.png"));
     addToolButton(ctrlToolBar, btnPortScan, QString(":/images/refresh.png"));
     ctrlToolBar->addWidget(cbPort);
     addToolButton(ctrlToolBar, btnLoadBoards, QString(":/images/hardware.png"));
