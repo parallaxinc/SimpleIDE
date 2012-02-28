@@ -21,7 +21,11 @@ PortListener::PortListener(QObject *parent, Console *term) : QThread(parent)
 
 void PortListener::init(const QString & portName, BaudRateType baud)
 {
+#if defined(Q_WS_WIN32)
     port->setPortName(port->fullPortNameWin(portName));
+#else
+    port->setPortName(portName);
+#endif
     port->setBaudRate(baud);
     port->setFlowControl(FLOW_OFF);
     port->setParity(PAR_NONE);
