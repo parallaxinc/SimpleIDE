@@ -8,6 +8,7 @@ const QString ProjectOptions::memtype = "memtype";
 const QString ProjectOptions::optimization = "optimize";
 const QString ProjectOptions::cflags = "defs";
 const QString ProjectOptions::lflags = "linker";
+const QString ProjectOptions::board = "BOARD";
 
 ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Project)
 {
@@ -101,6 +102,12 @@ QStringList ProjectOptions::getOptions()
     if(getStripElf().length())
         args.append(getStripElf());
 
+    /* board type */
+    if(getBoardType().length())
+        args.append(board+"::"+getBoardType());
+    else
+        args.append(board+"::");
+
     qDebug() << args;
     return args;
 }
@@ -161,7 +168,10 @@ QString  ProjectOptions::getLinkOptions()
 {
     return ui->lineEditLinkOptions->text().toAscii();
 }
-
+QString  ProjectOptions::getBoardType()
+{
+    return ui->lineEditLinkOptions->text().toAscii();
+}
 
 void ProjectOptions::setOptions(QString s)
 {
@@ -180,12 +190,16 @@ void ProjectOptions::setOptions(QString s)
         if(flags.length() > 1) {
             name = flags[0];
             value = flags[1];
-            if(name.compare(cflags) == 0) {
+            if(name.compare(cflags,Qt::CaseInsensitive) == 0) {
                 this->setCompOptions(value);
             }
             else
-            if(name.compare(lflags) == 0) {
+            if(name.compare(lflags,Qt::CaseInsensitive) == 0) {
                 this->setLinkOptions(value);
+            }
+            else
+            if(name.compare(board,Qt::CaseInsensitive) == 0) {
+                this->setBoardType(value);
             }
         }
         else // handle parameters as "name=value"
@@ -313,4 +327,8 @@ void ProjectOptions::setCompOptions(QString s)
 void ProjectOptions::setLinkOptions(QString s)
 {
     ui->lineEditLinkOptions->setText(s);
+}
+void ProjectOptions::setBoardType(QString s)
+{
+    boardType = s.trimmed();
 }

@@ -571,15 +571,18 @@ void MainWindow::setCurrentFile(const QString &fileName)
 
 void MainWindow::updateRecentFileActions()
 {
-    QStringList projects = settings->value("recentFileList").toStringList();
+    QStringList files = settings->value("recentFileList").toStringList();
 
-    int numRecentFiles = qMin(projects.size(), (int)MaxRecentFiles);
+    int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
 
     for (int i = 0; i < numRecentFiles; ++i) {
+        QString estr = files.at(i);
+        if(estr.length() == 0)
+            continue;
         //QString filename = QFileInfo(projects[i]).fileName();
-        QString text = tr("&%1 %2").arg(i + 1).arg(projects[i]);
+        QString text = tr("&%1 %2").arg(i + 1).arg(estr);
         recentFileActs[i]->setText(text);
-        recentFileActs[i]->setData(projects[i]);
+        recentFileActs[i]->setData(estr);
         recentFileActs[i]->setVisible(true);
     }
     for (int j = numRecentFiles; j < MaxRecentFiles; ++j)
@@ -599,7 +602,6 @@ void MainWindow::openRecentFile()
 void MainWindow::setCurrentProject(const QString &fileName)
 {
     projectFile = fileName;
-    //setWindowFilePath(curFile);
 
     QStringList files = settings->value("recentProjectList").toStringList();
     files.removeAll(fileName);
@@ -623,10 +625,12 @@ void MainWindow::updateRecentProjectActions()
     int numRecentProjects = qMin(projects.size(), (int)MaxRecentProjects);
 
     for (int i = 0; i < numRecentProjects; ++i) {
-        //QString filename = QFileInfo(projects[i]).fileName();
-        QString text = tr("&%1 %2").arg(i + 1).arg(projects[i]);
+        QString estr = projects.at(i);
+        if(estr.length() == 0)
+            continue;
+        QString text = tr("&%1 %2").arg(i + 1).arg(estr);
         recentProjectActs[i]->setText(text);
-        recentProjectActs[i]->setData(projects[i]);
+        recentProjectActs[i]->setData(estr);
         recentProjectActs[i]->setVisible(true);
     }
     for (int j = numRecentProjects; j < MaxRecentProjects; ++j)
@@ -1940,6 +1944,10 @@ void MainWindow::projectTreeClicked(QModelIndex index)
     }
 }
 
+/*
+ * add a new project file
+ * save new filelist and options to project.side file
+ */
 void MainWindow::addProjectFile()
 {
     fileDialog.setDirectory(sourcePath(projectFile));
@@ -2016,10 +2024,10 @@ void MainWindow::addProjectFile()
         projstr += this->shortFileName(fileName) + "\n";
         list.clear();
         list = projectOptions->getOptions();
+
         foreach(QString arg, list) {
             projstr += ">"+arg+"\n";
         }
-
         if(file.open(QFile::WriteOnly | QFile::Text)) {
             file.write(projstr.toAscii());
             file.close();
@@ -2029,47 +2037,10 @@ void MainWindow::addProjectFile()
 #endif
 }
 
-void MainWindow::saveProjectOptions()
-{
-    QString projstr = "";
-    QStringList list;
-
-    if(projectFile.length() > 0)
-        setWindowTitle(QString(ASideGuiKey)+" "+projectFile);
-
-    QFile file(projectFile);
-    if(file.exists()) {
-        if(file.open(QFile::ReadOnly | QFile::Text)) {
-            projstr = file.readAll();
-            file.close();
-        }
-        list = projstr.split("\n");
-        projstr = "";
-        for(int n = 0; n < list.length(); n++) {
-            QString arg = list[n];
-            if(!arg.length())
-                continue;
-            if(arg.at(0) == '>')
-                continue;
-            projstr += arg + "\n";
-        }
-        list.clear();
-        list = projectOptions->getOptions();
-        foreach(QString arg, list) {
-            if(arg.at(0) == '>')
-                projstr += arg+"\n";
-            else
-                projstr += ">"+arg+"\n";
-        }
-
-        if(file.open(QFile::WriteOnly | QFile::Text)) {
-            file.write(projstr.toAscii());
-            file.close();
-        }
-    }
-}
-
-
+/*
+ * delete project source file.
+ * save new filelist and options to project.side file
+ */
 void MainWindow::deleteProjectFile()
 {
     QString projstr = "";
@@ -2131,6 +2102,52 @@ void MainWindow::showProjectFile()
     }
 }
 
+/*
+ * save project file with options.
+ */
+void MainWindow::saveProjectOptions()
+{
+    QString projstr = "";
+    QStringList list;
+
+    if(projectFile.length() > 0)
+        setWindowTitle(QString(ASideGuiKey)+" "+projectFile);
+
+    QFile file(projectFile);
+    if(file.exists()) {
+        if(file.open(QFile::ReadOnly | QFile::Text)) {
+            projstr = file.readAll();
+            file.close();
+        }
+        list = projstr.split("\n");
+        projstr = "";
+        for(int n = 0; n < list.length(); n++) {
+            QString arg = list[n];
+            if(!arg.length())
+                continue;
+            if(arg.at(0) == '>')
+                continue;
+            projstr += arg + "\n";
+        }
+        list.clear();
+        list = projectOptions->getOptions();
+        foreach(QString arg, list) {
+            if(arg.compare(ProjectOptions::board+"::") == 0)
+                projstr += ">"+ProjectOptions::board+"::"+cbBoard->currentText()+"\n";
+            else
+                projstr += ">"+arg+"\n";
+        }
+
+        if(file.open(QFile::WriteOnly | QFile::Text)) {
+            file.write(projstr.toAscii());
+            file.close();
+        }
+    }
+}
+
+/*
+ * update project tree and options by reading from project.side file
+ */
 void MainWindow::updateProjectTree(QString fileName, QString text)
 {
     QString projName = this->shortFileName(fileName);
@@ -2163,10 +2180,28 @@ void MainWindow::updateProjectTree(QString fileName, QString text)
         foreach(QString arg, list) {
             if(!arg.length())
                 continue;
-            if(arg.at(0) != '>')
+            if(arg.at(0) == '>') {
+                if(arg.contains(ProjectOptions::board+"::")) {
+                    QStringList barr = arg.split("::");
+                    if(barr.count() > 0) {
+                        QString board = barr.at(1);
+                        projectOptions->setBoardType(board);
+                        for(int n = cbBoard->count()-1; n >= 0; n--) {
+                            QString cbstr = cbBoard->itemText(n);
+                            if(board.compare(cbstr) == 0) {
+                                cbBoard->setCurrentIndex(n);
+                                break;
+                            }
+                        }
+                    }
+                }
+                else {
+                    projectOptions->setOptions(arg);
+                }
+            }
+            else {
                 projectModel->addRootItem(arg);
-            else
-                projectOptions->setOptions(arg);
+            }
         }
     }
 
@@ -2314,7 +2349,7 @@ void MainWindow::setupFileMenu()
     fileMenu->addAction(QIcon(":/images/savefile.png"), tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
     fileMenu->addAction(QIcon(":/images/saveasfile.png"), tr("Save &As"), this, SLOT(saveAsFile()),QKeySequence::SaveAs);
 
-    fileMenu->addAction(tr("Close"), this, SLOT(closeFile()));
+    //fileMenu->addAction(tr("Close"), this, SLOT(closeFile())); // X the editor tab to close a file
     fileMenu->addAction(tr("Close All"), this, SLOT(closeAll()));
 
     // recent file actions
@@ -2344,7 +2379,7 @@ void MainWindow::setupFileMenu()
 
     projMenu->addAction(QIcon(":/images/newproj.png"), tr("New Project"), this, SLOT(newProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_N);
     projMenu->addAction(QIcon(":/images/openproj.png"), tr("Open Project"), this, SLOT(openProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_O);
-    projMenu->addAction(QIcon(":/images/closeproj.png"), tr("Close Project"), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
+    projMenu->addAction(QIcon(":/images/closeproj.png"), tr("Save and Close Project"), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
     projMenu->addAction(QIcon(":/images/treeproject.png"), tr("Set Project"), this, SLOT(setProject()), Qt::Key_F4);
     //projMenu->addAction(QIcon(":/images/hardware.png"), tr("Load Board Types"), this, SLOT(hardware()), Qt::Key_F6);
 
@@ -2458,7 +2493,7 @@ void MainWindow::setupToolBars()
 
     btnProjectNew->setToolTip(tr("New Project"));
     btnProjectOpen->setToolTip(tr("Open Project"));
-    btnProjectClose->setToolTip(tr("Close Project"));
+    btnProjectClose->setToolTip(tr("Save and Close Project"));
     btnProjectApp->setToolTip(tr("Set Project to Current File"));
 
     //propToolBar = addToolBar(tr("Properties"));

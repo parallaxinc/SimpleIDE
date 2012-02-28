@@ -22,6 +22,7 @@ public:
     static const QString optimization;
     static const QString cflags;
     static const QString lflags;
+    static const QString board;
 
     explicit ProjectOptions(QWidget *parent = 0);
     ~ProjectOptions();
@@ -42,6 +43,7 @@ public:
     QString getStripElf();
     QString getCompOptions();
     QString getLinkOptions();
+    QString getBoardType();
 
     void setCompiler(QString s);
     void setMemModel(QString s);
@@ -57,10 +59,13 @@ public:
     void setStripElf(bool s);
     void setCompOptions(QString s);
     void setLinkOptions(QString s);
+    void setBoardType(QString s);
 
     QStringList getOptions();
     void        setOptions(QString s);
 
+private:
+    QString     boardType;
 };
 
 #endif // PROJECTOPTIONS_H
