@@ -44,5 +44,7 @@
         <file>images/SimpleIDE.png</file>
         <file>images/integr8.png</file>
         <file>images/SimpleIDE32.png</file>
+        <file>images/console.png</file>
+        <file>images/runconsole.png</file>
     </qresource>
 </RCC>
