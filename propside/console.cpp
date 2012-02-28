@@ -50,6 +50,8 @@ void Console::updateReady(QextSerialPort* port)
 
 void Console::updateReady(char *buff, int length)
 {
+    // always start at the end just in case someone clicked the window
+    moveCursor(QTextCursor::End);
     for(int n = 0; n < length; n++)
     {
         switch(buff[n])
