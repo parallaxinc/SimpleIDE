@@ -31,7 +31,8 @@ NewProject::NewProject(QWidget *parent) : QDialog(parent)
     setLayout(blay);
     buttonBox->setFocus();
 
-    setMinimumWidth(userpath.length()*path->fontInfo().pointSize()+100);
+    int fontSize = path->fontInfo().pixelSize();
+    setMinimumWidth(userpath.length()*fontSize+100);
     setWindowFlags(Qt::Tool);
 }
 

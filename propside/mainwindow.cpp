@@ -14,8 +14,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     QCoreApplication::setOrganizationDomain(publisherComKey);
     QCoreApplication::setApplicationName(ASideGuiKey);
 
-    /* set the windows icon */
-    this->setWindowIcon(QIcon(":/images/integr8.png"));
+    /* set the windows icon
+     */
+    this->setWindowIcon(QIcon(":/images/SimpleIDE32.png"));
 
     /* global settings */
     settings = new QSettings(publisherKey, ASideGuiKey, this);
@@ -343,12 +344,15 @@ void MainWindow::openFile(const QString &path)
             setCurrentFile(fileName);
     }
     openFileName(fileName);
+
+    /* for old project manager method only
     if(projectFile.length() == 0) {
         setProject();
     }
     else if(editorTabs->count() == 1) {
         setProject();
     }
+    */
 }
 
 void MainWindow::openFileName(QString fileName)
@@ -384,11 +388,13 @@ void MainWindow::openFileName(QString fileName)
 }
 
 /*
- * this is the same as when a user clicks a tab's X
+ * this is similar to when a user clicks a tab's X
  */
 void MainWindow::closeFile()
 {
-
+    int index = editorTabs->currentIndex();
+    if(index > -1)
+        closeTab(index);
 }
 
 /*
@@ -399,6 +405,7 @@ void MainWindow::closeAll()
 {
     exitSave();
     setWindowTitle(QString(ASideGuiKey));
+    this->projectOptions->clearOptions();
     if(projectModel != NULL) {
         delete projectModel;
         projectModel = NULL;
@@ -446,7 +453,7 @@ void MainWindow::newProjectAccepted()
         }
     }
     projectFile = path+name+".side";
-    setCurrentProject(mainName);
+    setCurrentProject(projectFile);
     updateProjectTree(projectFile,"");
     openFileName(mainName);
 
@@ -523,8 +530,9 @@ void MainWindow::closeProject()
         }
     }
 
-    /* clean project manager selections TODO
+    /* clean project manager selections
      */
+    this->projectOptions->clearOptions();
 
     /* close project manager side bar
      */
@@ -682,6 +690,9 @@ void MainWindow::saveAsFile(const QString &path)
 
         if (fileName.isEmpty())
             return;
+
+        /* save directory in file dialog for user */
+        fileDialog.setDirectory(sourcePath(fileName));
 
         this->editorTabs->setTabText(n,shortFileName(fileName));
         editorTabs->setTabToolTip(n,fileName);
@@ -1493,7 +1504,7 @@ QStringList MainWindow::getLoaderParameters(QString copts)
     // use the projectFile instead of the current tab file
     // QString srcpath = sourcePath(projectFile);
 
-    portName = cbPort->itemText(cbPort->currentIndex());    // TODO should be itemToolTip
+    portName = cbPort->itemText(cbPort->currentIndex());
     boardName = cbBoard->itemText(cbBoard->currentIndex());
 
     QStringList args;
@@ -2201,6 +2212,8 @@ void MainWindow::enumeratePorts()
         stringlist << "===================================";
 #if defined(Q_WS_WIN32)
         name = ports.at(i).portName;
+        if(name.lastIndexOf('\\') > -1)
+            name = name.mid(name.lastIndexOf('\\')+1);
         if(name.contains(QString("LPT"),Qt::CaseInsensitive) == false)
             cbPort->addItem(name);
 #elif defined(Q_WS_MAC)
