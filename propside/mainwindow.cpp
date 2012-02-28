@@ -1021,24 +1021,13 @@ void MainWindow::programDebug()
     if(runLoader("-r -t"))
         return;
 
-    /*
-     * setting the position of a new dialog doesn't work very nice
-     * Term dialog will not close/reopen on debug so it doesn't matter.
-     */
     btnConnected->setChecked(true);
     term->getEditor()->setPortEnable(true);
     term->getEditor()->setPlainText("");
     portListener->open();
-
-    // show if hidden
-    term->show();
-
-    // so user doesn't muck up sources.
-    QPlainTextEdit *ed = editors->at(editorTabs->currentIndex());
-    ed->clearFocus();
-    term->getEditor()->setFocus();
-    term->setFocus();
     term->activateWindow();
+    term->show();
+    term->getEditor()->setFocus();
 }
 
 void MainWindow::terminalClosed()
@@ -1547,6 +1536,10 @@ int  MainWindow::runLoader(QString copts)
         copts = copts.mid(0,copts.indexOf(" -t"));
         process->setProperty("Terminal", QVariant(true));
     }
+
+    process->setProperty("Name", QVariant(aSideLoader));
+    process->setProperty("IsLoader", QVariant(true));
+
     QStringList args = getLoaderParameters(copts);
 
     btnConnected->setChecked(false);
@@ -1613,7 +1606,7 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
 void MainWindow::procError(QProcess::ProcessError error)
 {
     QVariant name = process->property("Name");
-    compileStatus->appendPlainText(name.toString() + tr(" error ... \"%1\"").arg(error));
+    compileStatus->appendPlainText(name.toString() + tr(" error ... (%1)").arg(error));
     compileStatus->appendPlainText(process->readAllStandardOutput());
 }
 void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
@@ -1646,6 +1639,8 @@ void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
 void MainWindow::procReadyRead()
 {
     QByteArray bytes = process->readAllStandardOutput();
+    if(bytes.length() == 0)
+        return;
 
 #if defined(Q_WS_WIN32)
     QString eol("\r");
@@ -1692,6 +1687,10 @@ void MainWindow::procReadyRead()
                     progress->setValue(100*progCount/progMax);
                 }
             }
+            else
+            if(line.contains("error:",Qt::CaseInsensitive)) {
+                status->setText(status->text()+line+" ");
+            }
             else {
                 compileStatus->insertPlainText(line+eol);
             }
@@ -1737,13 +1736,13 @@ int  MainWindow::buildResult(int exitStatus, int exitCode, QString progName, QSt
 
     if(exitStatus == QProcess::CrashExit)
     {
-        status->setText(tr("Compiler Crashed"));
+        status->setText(status->text()+" "+tr("Compiler Crashed"));
         mbox.setText(tr("Compiler Crashed"));
         mbox.exec();
     }
     else if(result.toLower().indexOf("error") > -1)
     { // just in case we get an error without exitCode
-        status->setText(progName+tr(" Error:")+result);
+        status->setText(status->text()+" "+progName+tr(" Error:")+result);
         if(progName.contains("load",Qt::CaseInsensitive))
             mbox.setText(tr("Load Error"));
         else {
@@ -1756,11 +1755,11 @@ int  MainWindow::buildResult(int exitStatus, int exitCode, QString progName, QSt
     }
     else if(exitCode != 0)
     {
-        status->setText(progName+tr(" Error: ")+QString("%1").arg(exitCode));
+        status->setText(status->text()+" "+progName+tr(" Error: ")+QString("%1").arg(exitCode));
     }
     else if(result.toLower().indexOf("warning") > -1)
     {
-        status->setText(progName+tr(" Compiled OK with Warning(s)."));
+        status->setText(status->text()+" "+progName+tr(" Compiled OK with Warning(s)."));
         return 0;
     }
     else
@@ -2265,13 +2264,15 @@ void MainWindow::enumeratePorts()
 void MainWindow::connectButton()
 {
     if(btnConnected->isChecked()) {
-        btnConnected->setDisabled(true);
-        portListener->open();
-        btnConnected->setEnabled(true);
+        term->getEditor()->setPortEnable(true);
+        term->activateWindow();
         term->show();
+        term->getEditor()->setFocus();
+        portListener->open();
     }
     else {
         portListener->close();
+        term->hide();
     }
 }
 
