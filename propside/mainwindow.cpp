@@ -7,6 +7,8 @@
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 230
 
+#define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     /* setup application registry info */
@@ -16,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* set the windows icon
      */
-    this->setWindowIcon(QIcon(":/images/SimpleIDE32.png"));
+    this->setWindowIcon(QIcon(":/images/SimpleIDE5.png"));
 
     /* global settings */
     settings = new QSettings(publisherKey, ASideGuiKey, this);
@@ -59,6 +61,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* get app settings at startup and before any compiler call */
     getApplicationSettings();
 
+    /* get user's last open path */
+    QVariant  lastfile = settings->value(lastFileNameKey);
+    if(lastfile.canConvert(QVariant::String)) {
+        lastPath = sourcePath(lastfile.toString());
+    }
+
     /* set up ctag tool */
     ctags = new CTags(aSideCompilerPath);
 
@@ -66,6 +74,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     setupFileMenu();
     setupHelpMenu();
     setupToolBars();
+
+    /* show gui */
+    QApplication::processEvents();
 
     initBoardTypes();
 
@@ -321,9 +332,9 @@ void MainWindow::openFile(const QString &path)
     QString fileName = path;
 
     if (fileName.isNull()) {
-        fileDialog.setDirectory(sourcePath(projectFile));
-        fileName = fileDialog.getOpenFileName(this,
-            tr("Open File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
+        fileName = fileDialog.getOpenFileName(this, tr("Open File"), lastPath, tr(SOURCE_FILE_TYPES));
+        if(fileName.length() > 0)
+            lastPath = sourcePath(fileName);
     }
     if(fileName.indexOf(".side") > 0) {
         // save old project options before loading new one
@@ -359,7 +370,6 @@ void MainWindow::openFileName(QString fileName)
 {
     QString data;
     if (!fileName.isEmpty()) {
-        fileDialog.setDirectory(sourcePath(fileName));
         QFile file(fileName);
         if (file.open(QFile::ReadOnly))
         {
@@ -430,6 +440,7 @@ void MainWindow::newProjectAccepted()
 {
     QString name = newProjDialog->getName();
     QString path = newProjDialog->getPath();
+    QDir dir(path);
 
     QString maintemplate("/**\n" \
          " * @file "+name+".c\n" \
@@ -444,7 +455,9 @@ void MainWindow::newProjectAccepted()
          "    return 0;\n" \
          "}\n" \
          "\n");
-    QString mainName(path+name+".c");
+    if(dir.exists(path) == 0)
+        dir.mkdir(path);
+    QString mainName(path+"/"+name+".c");
     QFile mainfile(mainName);
     if(mainfile.exists() == false) {
         if(mainfile.open(QFile::ReadWrite)) {
@@ -452,10 +465,10 @@ void MainWindow::newProjectAccepted()
             mainfile.close();
         }
     }
-    projectFile = path+name+".side";
+    projectFile = path+"/"+name+".side";
     setCurrentProject(projectFile);
-    updateProjectTree(projectFile,"");
-    openFileName(mainName);
+    updateProjectTree(mainName,"");
+    openFile(projectFile);
 
 }
 
@@ -464,9 +477,9 @@ void MainWindow::openProject(const QString &path)
     QString fileName = path;
 
     if (fileName.isNull()) {
-        fileDialog.setDirectory(sourcePath(projectFile));
-        fileName = fileDialog.getOpenFileName(this,
-            tr("Open Project"), "", "Program Source Files (*.side)");
+        fileName = fileDialog.getOpenFileName(this, tr("Open Project"), lastPath, "Project Files (*.side)");
+        if(fileName.length() > 0)
+            lastPath = sourcePath(fileName);
     }
     if(fileName.indexOf(".side") > 0) {
         // save old project options before loading new one
@@ -646,8 +659,9 @@ void MainWindow::saveFile(const QString &path)
         QString fileName = editorTabs->tabToolTip(n);
         QString data = editors->at(n)->toPlainText();
         if(fileName.isEmpty())
-            fileName = fileDialog.getSaveFileName(this,
-                tr("Save As File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
+            fileName = fileDialog.getSaveFileName(this, tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
+        if(fileName.length() > 0)
+            lastPath = sourcePath(fileName);
         if (fileName.isEmpty())
             return;
         this->editorTabs->setTabText(n,shortFileName(fileName));
@@ -689,14 +703,12 @@ void MainWindow::saveAsFile(const QString &path)
         QString fileName = path;
 
         if (fileName.isEmpty())
-            fileName = fileDialog.getSaveFileName(this,
-                tr("Save As File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
+            fileName = fileDialog.getSaveFileName(this, tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
+        if(fileName.length() > 0)
+            lastPath = sourcePath(fileName);
 
         if (fileName.isEmpty())
             return;
-
-        /* save directory in file dialog for user */
-        fileDialog.setDirectory(sourcePath(fileName));
 
         this->editorTabs->setTabText(n,shortFileName(fileName));
         editorTabs->setTabToolTip(n,fileName);
@@ -1955,13 +1967,15 @@ void MainWindow::addProjectFile()
     // this is on the wish list and not finished yet
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
     fileDialog.getOpenFileNames(this,
-        tr("Add File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
+        tr("Add File"), lastPath, tr(SOURCE_FILE_TYPES));
 #else
 
-    QString fileName = fileDialog.getOpenFileName(this,
-        tr("Add File"), "", "Program Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)");
-
-    /* Cancel makes filename blank. If fileName is blank, don't add.
+    QString fileName;
+    fileName = fileDialog.getOpenFileName(this, tr("Add File"), lastPath, tr(SOURCE_FILE_TYPES));
+    if(fileName.length() > 0)
+        lastPath = sourcePath(fileName);
+    /*
+     * Cancel makes filename blank. If fileName is blank, don't add.
      */
     if(fileName.length() == 0)
         return;

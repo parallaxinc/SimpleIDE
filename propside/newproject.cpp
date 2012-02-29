@@ -4,9 +4,11 @@
 NewProject::NewProject(QWidget *parent) : QDialog(parent)
 {
     name = new QLineEdit(tr("project"), this);
+    connect(name,SIGNAL(textChanged(QString)),this,SLOT(nameChanged(QString)));
 
-    QString userpath = getCurrentPath();
-    path = new QLineEdit(userpath,this);
+    mypath = getCurrentPath();
+    path = new QLineEdit(mypath,this);
+    path->setText(mypath+name->text());
     QLabel *nameLabel = new QLabel(tr("Project Name"));
     QLabel *pathLabel = new QLabel(tr("Folder"));
 
@@ -32,7 +34,7 @@ NewProject::NewProject(QWidget *parent) : QDialog(parent)
     buttonBox->setFocus();
 
     int fontSize = path->fontInfo().pixelSize();
-    setMinimumWidth(userpath.length()*fontSize+100);
+    setMinimumWidth(mypath.length()*fontSize+100);
     setWindowFlags(Qt::Tool);
 }
 
@@ -40,6 +42,11 @@ NewProject::~NewProject()
 {
     delete name;
     delete path;
+}
+
+void NewProject::nameChanged(QString s)
+{
+    path->setText(mypath+name->text());
 }
 
 QString NewProject::getCurrentPath()
@@ -58,30 +65,34 @@ QString NewProject::getCurrentPath()
 
 void NewProject::browsePath()
 {
-    QFileDialog fileDialog(this);
-    QString mypath = getCurrentPath();
-    if(mypath.length())
-        fileDialog.setDirectory(mypath);
-    QString pathName = fileDialog.getExistingDirectory(this,
-        tr("New Project Folder"), tr("Project Folder (*)"));
+    QString pathName;
+    QString fullname = mypath+name->text();
+    QFileDialog fileDialog(this,tr("New Project Folder"),fullname,tr("Project Folder (*)"));
+    fileDialog.setFileMode(QFileDialog::Directory);
+    QStringList filenames;
+    if(fileDialog.exec())
+        filenames = fileDialog.selectedFiles();
+    if(filenames.length() > 0)
+        pathName = filenames.at(0);
 
-    QString s = QDir::fromNativeSeparators(pathName);
-    if(s.length() == 0)
+    mypath = QDir::fromNativeSeparators(pathName);
+    if(mypath.length() == 0)
         return;
-    if(s.indexOf("/") > -1) {
-        if(s.mid(s.length()-1) != "/")
-            s += "/";
+    if(mypath.indexOf("/") > -1) {
+        if(mypath.mid(mypath.length()-1) != "/")
+            mypath += "/";
     }
-    else if(s.indexOf("\\") > -1) {
-        if(s.mid(s.length()-1) != "\\")
-            s += "\\";
+    else if(mypath.indexOf("\\") > -1) {
+        if(mypath.mid(mypath.length()-1) != "\\")
+            mypath += "\\";
     }
-    path->setText(s);
-    qDebug() << "New Project Folder " << s;
+    path->setText(mypath+name->text());
+    qDebug() << "New Project Folder " << mypath << name->text();
 }
 
 void NewProject::accept()
 {
+    path->setText(mypath+name->text());
     done(QDialog::Accepted);
 }
 
@@ -92,6 +103,8 @@ void NewProject::reject()
 
 void NewProject::showDialog()
 {
+    mypath = getCurrentPath();
+    path->setText(mypath+name->text());
     this->setWindowTitle(QString(ASideGuiKey)+tr(" New Project"));
     this->show();
 }
