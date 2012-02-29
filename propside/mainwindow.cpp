@@ -8,6 +8,7 @@
 #define PROJECT_WIDTH 230
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
+#define ENABLE_CTRL_RIGHTCLICK_FIND 0
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -18,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* set the windows icon
      */
-    this->setWindowIcon(QIcon(":/images/SimpleIDE5.png"));
+    this->setWindowIcon(QIcon(":/images/CovertBeanie32.png"));
 
     /* global settings */
     settings = new QSettings(publisherKey, ASideGuiKey, this);
@@ -898,17 +899,32 @@ void MainWindow::replaceAllInFile()
 {
 }
 
+void MainWindow::findDeclaration(QPoint point)
+{
+    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    QTextCursor cur = editor->cursorForPosition(point);
+    findDeclaration(cur);
+}
+
 void MainWindow::findDeclaration()
+{
+    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    QTextCursor cur = editor->textCursor();
+    findDeclaration(cur);
+}
+
+void MainWindow::findDeclaration(QTextCursor cur)
 {
     QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
     if(editor) {
         ctags->runCtags(sourcePath(projectFile));
-        QTextCursor cur = editor->textCursor();
+        /* find word */
         cur.movePosition(QTextCursor::StartOfWord,QTextCursor::MoveAnchor);
         cur.movePosition(QTextCursor::EndOfWord,QTextCursor::KeepAnchor);
         editor->setTextCursor(cur);
         QString text = cur.selectedText();
 
+        /* find line for traceback */
         cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
         cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
 
@@ -916,18 +932,61 @@ void MainWindow::findDeclaration()
         QString fileName = editorTabs->tabToolTip(index);
         QString currentTag = "/\t" + fileName + "\t" + cur.selectedText();
 
-        if(text.length() == 0)
+        if(text.length() == 0) {
+            findDeclarationInfo();
             return;
+        }
         QString tagLine = ctags->findTag(text);
 
-        if(showDeclaration(tagLine) > -1)
+        if(showDeclaration(tagLine) > -1) {
             ctags->tagPush(currentTag);
+        }
+        else
+            findDeclarationInfo();
     }
+}
+
+void MainWindow::findDeclarationInfo()
+{
+#if ENABLE_CTRL_RIGHTCLICK_FIND
+    QMessageBox::information(this,
+        tr("Find Function Declaration"),
+        tr("Please note: library functions will not be found<br/><br/>" \
+           "One of these methods should find a function declaration.<ul>"\
+           "<li>Use \"Ctrl+Right Mouse Click\" over the symbol name.<br/></li>" \
+           "<li>Put the cursor on the symbol and use the keyboard shortcut for " \
+           "\"Menu->Edit->Find Declaration\".</li>" \
+           "</ul>"),
+        QMessageBox::Ok);
+#else
+    QMessageBox::information(this,
+        tr("Find Function Declaration"),
+        tr("Please note: library functions will not be found.<br/><br/>" \
+           "To find a function declaration:<ul>"\
+           "<li>Put the cursor on the symbol and use the keyboard shortcut for " \
+           "\"Menu->Edit->Find Declaration\".</li>" \
+           "</ul>"),
+        QMessageBox::Ok);
+#endif
 }
 
 void MainWindow::prevDeclaration()
 {
-    showDeclaration(ctags->tagPop());
+    QString tagline = ctags->tagPop();
+    if(tagline.indexOf("/ ") == 0) {
+        QMessageBox::information(this,
+            tr("Back from Declaration"),tr("Can't go back. The \"Find Function Declaration\" stack is empty."),
+            QMessageBox::Ok);
+        return;
+    }
+    if(tagline.length() > 0) {
+        showDeclaration(tagline);
+    }
+    else {
+        QMessageBox::information(this,
+            tr("Back from Declaration"),tr("Can't go back. The \"Find Function Declaration\" stack is empty."),
+            QMessageBox::Ok);
+    }
     QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
     QTextCursor cur = editor->textCursor();
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
@@ -953,7 +1012,7 @@ int MainWindow::showDeclaration(QString tagline)
     cur.movePosition(QTextCursor::Start);
     cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,linenum);
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-    cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+    //cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
     editor->setTextCursor(cur);
     QString res = cur.selectedText();
     qDebug() << res;
@@ -1065,11 +1124,22 @@ void MainWindow::aboutShow()
 
 void MainWindow::helpShow()
 {
+    QString license(tr("SimpleIDE is an MIT License open-source IDE.<br/>SimpleIDE is built Qt libraries under LGPLv2.1<br/><br/>"));
+    QString icons(tr("Most Icons: <a href=\"http://www.small-icons.com/packs/24x24-free-application-icons.htm\">www.aha-soft.com 24x24 Free Application Icons</a>" \
+                     "<br/>with Creative Commons Attribution-Share Alike 3.0 License.<br/>"));
+    QString ctags(tr("Uses <a href=\"http://ctags.sourceforge.net\">ctags</a> binary program under GPLv2 for source browsing.<br/>"));
+    QString propgcc(tr("Uses <a href=\"http://propgcc.googlecode.com\">Propeller GCC tool chain</a> GCC 4.6.1 base under GPLv3<br/>"));
+    QString sources(tr("All IDE, ctags, and icon sources kept in <a href=\"http://propside.googlecode.com\">SimpleIDE repository</a>.<br/><br/>" \
+                       "All license documents included in the Simple-IDE package."));
+
     QMessageBox::about(this, ASideGuiKey+tr(" help"),
-        tr("<p><b>")+ASideGuiKey+tr("</b> manages Propeller GCC program builds, and <br/>" \
-           "downloads programs to Propeller for many board types.</p>") +
+        tr("<p><b>")+ASideGuiKey+tr("</b> is an integrated C development environment <br/>"\
+           "which manages Propeller GCC program builds, and <br/>" \
+           "loads programs to Propeller for many board types.</p>") +
         tr("Visit <a href=\"https://sites.google.com/site/propellergcc/simpleide\">")+
-        ASideGuiKey+tr("</a> on the web for more help."));
+        ASideGuiKey+tr("</a> on the web for help and more information.<br/><br/>")+
+        license+icons+ctags+propgcc+sources);
+    //QMessageBox::aboutQt(this,tr("About Qt"));
 }
 
 void MainWindow::setCurrentBoard(int index)
@@ -1840,7 +1910,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectMenu = new QMenu(QString("Project Menu"));
     projectMenu->addAction(tr("Add File"), this,SLOT(addProjectFile()));
     projectMenu->addAction(tr("Delete File"), this,SLOT(deleteProjectFile()));
-    //projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
+    projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
 
     projectOptions = new ProjectOptions(this);
     projectOptions->setMinimumWidth(PROJECT_WIDTH);
@@ -2237,10 +2307,47 @@ void MainWindow::setEditorTab(int num, QString shortName, QString fileName, QStr
     QPlainTextEdit *editor = editors->at(num);
     fileChangeDisable = true;
     editor->setPlainText(text);
+
+    /* connect later when we can handle multiple popup events
+     */
+#if ENABLE_CTRL_RIGHTCLICK_FIND
+    connect(editor,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(editorMenu(QPoint)));
+    editor->setContextMenuPolicy(Qt::CustomContextMenu);
+#endif
+
     fileChangeDisable = false;
     editorTabs->setTabText(num,shortName);
     editorTabs->setTabToolTip(num,fileName);
     editorTabs->setCurrentIndex(num);
+}
+
+void MainWindow::editorMenu(QPoint point)
+{
+#if ENABLE_CTRL_RIGHTCLICK_FIND
+    Qt::KeyboardModifiers keybm = QApplication::keyboardModifiers();
+    if(keybm & Qt::ControlModifier){
+        findDeclaration(point);
+    }
+    else {
+        QPlainTextEdit *ed = editors->at(editorTabs->currentIndex());
+        QTextCursor cur = ed->textCursor();
+        QList<QAction*> list = edpopup->actions();
+        if(cur.selectedText().length() == 0) {
+            list.at(2)->setEnabled(false);
+            list.at(3)->setEnabled(false);
+        }
+        else {
+            list.at(2)->setEnabled(true);
+            list.at(3)->setEnabled(true);
+        }
+        if(ed->canPaste())
+            list.at(4)->setEnabled(true);
+        else
+            list.at(4)->setEnabled(false);
+
+        edpopup->popup(QCursor::pos());
+    }
+#endif
 }
 
 void MainWindow::enumeratePorts()
@@ -2345,7 +2452,7 @@ void MainWindow::setupEditor()
     font.setFixedPitch(true);
     font.setPointSize(10);
 
-    QPlainTextEdit *editor = new QPlainTextEdit;
+    QPlainTextEdit *editor = new QPlainTextEdit(this);
     editor->setTabStopWidth(40);
     editor->setFont(font);
     editor->setLineWrapMode(QPlainTextEdit::NoWrap);
@@ -2437,8 +2544,8 @@ void MainWindow::setupFileMenu()
 
     if(ctags->enabled()) {
         editMenu->addSeparator();
-        editMenu->addAction(QIcon(":/images/forward.png"),tr("Find &Definition"), this, SLOT(findDeclaration()), Qt::CTRL + Qt::Key_D);
-        editMenu->addAction(QIcon(":/images/back.png"),tr("Go &Back"), this, SLOT(prevDeclaration()), Qt::CTRL + Qt::Key_B);
+        editMenu->addAction(QIcon(":/images/back.png"),tr("Go &Back"), this, SLOT(prevDeclaration()), QKeySequence::Back);
+        editMenu->addAction(QIcon(":/images/forward.png"),tr("Find Function"), this, SLOT(findDeclaration()), QKeySequence::Forward);
     }
 
     editMenu->addSeparator();
@@ -2452,6 +2559,16 @@ void MainWindow::setupFileMenu()
     debugMenu->addAction(QIcon(":/images/build.png"), tr("Build"), this, SLOT(programBuild()), Qt::Key_F9);
     debugMenu->addAction(QIcon(":/images/run.png"), tr("Run"), this, SLOT(programRun()), Qt::Key_F10);
     debugMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn"), this, SLOT(programBurnEE()), Qt::Key_F11);
+
+
+    /* add editor popup context menu */
+    edpopup = new QMenu(tr("Editor Popup"), this);
+    edpopup->addAction(QIcon(":/images/undo.png"),tr("Undo"),this,SLOT(undoChange()));
+    edpopup->addAction(QIcon(":/images/redo.png"),tr("Redo"),this,SLOT(redoChange()));
+    edpopup->addSeparator();
+    edpopup->addAction(QIcon(":/images/copy.png"),tr("Copy"),this,SLOT(copyFromFile()));
+    edpopup->addAction(QIcon(":/images/cut.png"),tr("Cut"),this,SLOT(cutFromFile()));
+    edpopup->addAction(QIcon(":/images/paste.png"),tr("Paste"),this,SLOT(pasteToFile()));
 }
 
 
@@ -2526,14 +2643,14 @@ void MainWindow::setupToolBars()
     if(ctags->enabled()) {
         browseToolBar = addToolBar(tr("Source Browser"));
         QToolButton *btnBrowseBack = new QToolButton(this);
-        addToolButton(browseToolBar, btnBrowseBack, QString(":/images/trackback.png"));
+        addToolButton(browseToolBar, btnBrowseBack, QString(":/images/back.png"));
         connect(btnBrowseBack,SIGNAL(clicked()),this,SLOT(prevDeclaration()));
-        btnBrowseBack->setToolTip("Reverse Lookup");
+        btnBrowseBack->setToolTip("Back");
 
         QToolButton *btnFindDef = new QToolButton(this);
-        addToolButton(browseToolBar, btnFindDef, QString(":/images/lookup.png"));
+        addToolButton(browseToolBar, btnFindDef, QString(":/images/forward.png"));
         connect(btnFindDef,SIGNAL(clicked()),this,SLOT(findDeclaration()));
-        btnFindDef->setToolTip("Lookup Definition");
+        btnFindDef->setToolTip("Find Function Declaration");
     }
 
 

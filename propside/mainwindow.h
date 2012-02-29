@@ -28,6 +28,7 @@
 #include "aboutdialog.h"
 #include "ctags.h"
 #include "newproject.h"
+//#include "texteditor.h"
 
 #define untitledstr "Untitled"
 
@@ -108,8 +109,11 @@ public slots:
     void redoChange();
     void undoChange();
     void findDeclaration();
+    void findDeclaration(QPoint point);
+    void findDeclaration(QTextCursor cur);
     void prevDeclaration();
     int  showDeclaration(QString tagline);
+    void findDeclarationInfo();
 
     void compileStatusClicked();
 
@@ -124,6 +128,8 @@ public slots:
     void setCurrentProject(const QString &fileName);
     void updateRecentProjectActions();
     void openRecentProject(const QString &path = QString());
+
+    void editorMenu(QPoint point);
 
 private:
     void exitSave();
@@ -183,6 +189,7 @@ private:
     QTabWidget      *editorTabs;
     QVector<QPlainTextEdit*> *editors;
     bool            fileChangeDisable;
+    QMenu           *edpopup;
 
     QPlainTextEdit  *compileStatus;
 
