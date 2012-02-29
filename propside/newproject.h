@@ -18,6 +18,7 @@ public:
 signals:
 
 public slots:
+    void nameChanged(QString s);
     void browsePath();
     void accept();
     void reject();
@@ -29,7 +30,7 @@ private:
 
     QLineEdit   *name;
     QLineEdit   *path;
-
+    QString     mypath;
 };
 
 #endif // NEWPROJECT_H

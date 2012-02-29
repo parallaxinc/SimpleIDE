@@ -241,8 +241,10 @@ private:
     QAction *recentProjectActs[MaxRecentProjects];
     QAction *separatorProjectAct;
 
-    CTags       *ctags;
-    NewProject  *newProjDialog;
+    CTags           *ctags;
+    NewProject      *newProjDialog;
+
+    QString         lastPath;
 };
 
 //! [0]
