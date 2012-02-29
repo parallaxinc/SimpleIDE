@@ -951,21 +951,19 @@ void MainWindow::findDeclarationInfo()
 #if ENABLE_CTRL_RIGHTCLICK_FIND
     QMessageBox::information(this,
         tr("Find Function Declaration"),
-        tr("Please note: library functions will not be found<br/><br/>" \
-           "One of these methods should find a function declaration.<ul>"\
-           "<li>Use \"Ctrl+Right Mouse Click\" over the symbol name.<br/></li>" \
-           "<li>Put the cursor on the symbol and use the keyboard shortcut for " \
-           "\"Menu->Edit->Find Declaration\".</li>" \
-           "</ul>"),
+        tr("Please note: library functions will not be found\n\n" \
+           "One of these methods should find a function declaration.\n"\
+           "1) Use \"Ctrl+Right Mouse Click\" over the symbol name.\n" \
+           "2) Put the cursor on the symbol and use the keyboard shortcut for " \
+           "\"Menu->Edit->Find Declaration\".\n"),
         QMessageBox::Ok);
 #else
     QMessageBox::information(this,
         tr("Find Function Declaration"),
-        tr("Please note: library functions will not be found.<br/><br/>" \
-           "To find a function declaration:<ul>"\
-           "<li>Put the cursor on the symbol and use the keyboard shortcut for " \
-           "\"Menu->Edit->Find Declaration\".</li>" \
-           "</ul>"),
+        tr("Please note: library functions will not be found.\n\n" \
+           "To find a function declaration, "\
+           "put the cursor on the symbol and use the keyboard shortcut for " \
+           "\"Menu->Edit->Find Declaration\".\n"),
         QMessageBox::Ok);
 #endif
 }
