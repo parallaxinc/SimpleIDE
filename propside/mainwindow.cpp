@@ -1032,7 +1032,6 @@ void MainWindow::undoChange()
         editor->undo();
 }
 
-
 void MainWindow::setProject()
 {
     int index = editorTabs->currentIndex();
@@ -1876,8 +1875,10 @@ void MainWindow::closeTab(int index)
 
 void MainWindow::changeTab(int index)
 {
+/*
     if(editorTabs->count() == 1)
         setProject();
+*/
 }
 
 void MainWindow::addToolButton(QToolBar *bar, QToolButton *btn, QString imgfile)
@@ -2471,7 +2472,7 @@ void MainWindow::setupFileMenu()
     fileMenu->addAction(QIcon(":/images/savefile.png"), tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
     fileMenu->addAction(QIcon(":/images/saveasfile.png"), tr("Save &As"), this, SLOT(saveAsFile()),QKeySequence::SaveAs);
 
-    //fileMenu->addAction(tr("Close"), this, SLOT(closeFile())); // X the editor tab to close a file
+    fileMenu->addAction(QIcon(":/images/Delete.png"),tr("Close"), this, SLOT(closeFile()));
     fileMenu->addAction(tr("Close All"), this, SLOT(closeAll()));
 
     // recent file actions
