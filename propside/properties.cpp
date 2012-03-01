@@ -41,7 +41,7 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 #if defined(Q_WS_WIN32)
     mypath = "c:/propgcc";
 #else
-    mypath = "/opt/parallax/"
+    mypath = "/opt/parallax/";
 #endif
 
     if(compv.canConvert(QVariant::String)) {
