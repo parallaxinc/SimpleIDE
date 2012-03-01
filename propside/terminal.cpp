@@ -35,7 +35,8 @@ Terminal::Terminal(QWidget *parent, PortListener *serialPort) : QDialog(parent)
     butLayout->addWidget(buttonEnable);
     butLayout->addWidget(buttonBox);
     setLayout(termLayout);
-    this->setWindowFlags(Qt::Tool);
+    setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    setWindowIcon(QIcon(":/images/console.png"));
     resize(640,400);
 }
 
