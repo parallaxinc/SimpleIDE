@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-4-0"
+#define MyAppVersion "0-5-0"
 #define MyAppPublisher "MicroCSource"
 #define MyAppURL "www.MicroCSource.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -53,6 +53,7 @@ Name: modifypath; Description: "&Add Propeller-GCC directory to your environment
 [Files]
 Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "LGPL_2_1.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\icons\24x24-free-application-icons\readme.txt"; DestDir: "{app}\bin"; Flags: ignoreversion
 ;Source: "..\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\doc\xBasicIDEUserGuide.doc"; DestDir: "{app}"; Flags: ignoreversion
 
@@ -61,6 +62,7 @@ Source: "{#MyQtPath}\mingw\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignor
 Source: "{#MyQtPath}\qt\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\qt\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "..\propside-demos\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion
 Source: "{#MyGccPath}\*"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 ;Source: "C:\bstc\bstc.exe"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion
