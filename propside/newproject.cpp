@@ -52,7 +52,7 @@ void NewProject::nameChanged(QString s)
 QString NewProject::getCurrentPath()
 {
     QSettings settings(publisherKey, ASideGuiKey, this);
-    QVariant  lastfile = settings.value(lastFileNameKey);
+    QVariant  lastfile = settings.value(workspaceKey);
     QString userpath("");
     if(lastfile.canConvert(QVariant::String)) {
         userpath = lastfile.toString();
@@ -66,7 +66,7 @@ QString NewProject::getCurrentPath()
 void NewProject::browsePath()
 {
     QString pathName;
-    QString fullname = mypath+name->text();
+    QString fullname = mypath; //+name->text();
     QFileDialog fileDialog(this,tr("New Project Folder"),fullname,tr("Project Folder (*)"));
     fileDialog.setFileMode(QFileDialog::Directory);
     QStringList filenames;
@@ -87,6 +87,10 @@ void NewProject::browsePath()
             mypath += "\\";
     }
     path->setText(mypath+name->text());
+    QSettings settings(publisherKey, ASideGuiKey, this);
+    settings.setValue(workspaceKey,mypath);
+    int fontSize = path->fontInfo().pixelSize();
+    setMinimumWidth(mypath.length()*fontSize+100);
     qDebug() << "New Project Folder " << mypath << name->text();
 }
 
