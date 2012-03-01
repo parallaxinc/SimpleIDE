@@ -37,6 +37,7 @@ private:
     QLineEdit   *leditIncludes;
     QString     compilerstr;
     QString     includesstr;
+    QString     mypath;
 };
 
 #endif // PROPERTIES_H

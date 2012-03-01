@@ -1,4 +1,28 @@
-The xBasic IDE is built with Qt Creator according to LGPL license 2.1 (file LGPL_2_1.txt).
+SimpleIDE
+Copyright (c) 2012 Parallax, Inc.
+
++----------------------------
+| TERMS OF USE: MIT License
++----------------------------
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++----------------------------
+
+
+All SimpleIDE demo programs are MIT licensed unless otherwise stated.
+
+SimpleIDE repository propside.googlecode.com
+Repository contains SimpleIDE, aha-soft icons, and ctags58 sources.
+Propeller-GCC repository propgcc.googlecode.com
+
+
++============================
+
+
+SimpleIDE was built with Qt Creator according to LGPL license 2.1 (file LGPL_2_1.txt).
 
 About QtCreator:
 ---
@@ -16,4 +40,26 @@ The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRAN
 
 Qt Libraries QtCored4.dll and QtGuid4.dll are used according to the License Exception (file LGPL_EXCEPTION.txt).
 
+
++============================
+
+
+Most Toolbar Icons are from the www.aha-soft.com 24x24-freeapplication-icons pack.
+Icons are used according to the Creative Commons 3.0 license (file aha-soft-license.txt)
+
+
++============================
+
+
+The ctags program unmodified binary is used according to GPLv2 (file ctags-license.txt)
+Program information for ctags is in file ctags-readme.txt.
+
+
++============================
+
+
+Propeller-GCC is used according to GPLv3.0 (file LICENSE.txt and COPYING*.txt in propeller-gcc install folders).
+
+
++============================
 

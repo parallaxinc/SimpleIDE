@@ -41,6 +41,7 @@ AlwaysShowDirOnReadyPage=true
 UserInfoPage=false
 UsePreviousUserInfo=false
 ChangesEnvironment=true
+LicenseFile=.\IDE_LICENSE.txt
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -52,9 +53,12 @@ Name: modifypath; Description: "&Add Propeller-GCC directory to your environment
 
 [Files]
 Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "IDE_LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_2_1.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\icons\24x24-free-application-icons\readme.txt"; DestDir: "{app}\bin"; Flags: ignoreversion
-;Source: "..\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "LGPL_EXCEPTION.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\ctags58\README"; DestDir: "{app}\ctags-readme.txt"; Flags: ignoreversion
+Source: "..\ctags58\COPYING"; DestDir: "{app}\ctags-license.txt"; Flags: ignoreversion
+Source: "..\icons\24x24-free-application-icons\readme.txt"; DestDir: "{app}\bin\aha-soft-license.txt"; Flags: ignoreversion
 ;Source: "..\doc\xBasicIDEUserGuide.doc"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "{#MyQtPath}\mingw\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
