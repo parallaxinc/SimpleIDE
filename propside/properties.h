@@ -8,6 +8,7 @@
 #define includesKey         "Includes"
 #define separatorKey        "PathSeparator"
 #define configFileKey       "ConfigFile"
+#define workspaceKey        "Workspace"
 #define lastFileNameKey     "LastFileName"
 #define lastBoardNameKey    "LastBoardName"
 #define lastPortNameKey     "LastPortName"
