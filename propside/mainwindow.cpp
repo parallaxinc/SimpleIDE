@@ -2258,6 +2258,22 @@ void MainWindow::updateProjectTree(QString fileName, QString text)
             file.close();
         }
         QStringList list = s.split("\n");
+
+        /*
+         * add sorting feature - parameters get sorted too, but placement is not important.
+         */
+        QString main = list.at(0);
+        QString mains = main.mid(0,main.lastIndexOf("."));
+        QString projs = projName.mid(0,projName.lastIndexOf("."));
+        if(mains.compare(projs) == 0) {
+            QString s;
+            list.removeAt(0);
+            list.sort();
+            s = list.at(0);
+            if(s.length() == 0)
+                list.removeAt(0);
+            list.insert(0,main);
+        }
         projectOptions->clearOptions();
         foreach(QString arg, list) {
             if(!arg.length())
