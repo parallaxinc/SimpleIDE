@@ -52,7 +52,7 @@ If you do not have an 80MHz Propeller board, you can make your own board type an
 3. Click the Jigsaw puzzle piece button near to reload the board types.
 4. Choose YOURBOARD from the combobox.
 
-Now, you can click the "Run Console" or "Play" button (triangle on blue background circle) to rebuild, load the program, and start the terminal. The terminal will show "Hello World ..." after the program starts.
+Now, you can click the "Run Console" or blue "Play" button to rebuild, load the program, and start the serial port console terminal window. The terminal will show "Hello World ..." after the program starts.
 
 
 Running a new project:
@@ -162,7 +162,7 @@ Using the IDE:
 
   Debug Menu:
 
-  - Run Console. Build, load, and run program on Propeller RAM (or external memory for XMM). Opens a console terminal.
+  - Run Console. Build, load, and run program on Propeller RAM (or external memory for XMM). Opens a serial port console terminal window.
 
   - Build. Build program only.
 
@@ -179,9 +179,9 @@ Top Right-hand Side GUI Elements:
 
   - Serial Port. This is the combo box on the right. It lets you choose the port to use where your board is attached.
 
-  - Port Refresh. You must click the refresh button every time you change port connections.
+  - Port Rescan. You must click the rescan button every time you change port connections.
 
-  - Terminal Connect. A "display" button. Press to show and connect terminal to the selected port. If pressed (square around the button), it is connected and you can disconnect by pressing the button again.
+  - Serial Port Console. A "display" button. Press to show and connect terminal window to the selected port. If pressed (square around the button), it is connected and you can disconnect by pressing the button again.
 
 
 Project Pane:
@@ -245,5 +245,5 @@ Program Challenges (room for improvement):
 
 Fixed bugs:
 
-  It has been noted that sometimes when the serial port is closed by the terminal or using the display Terminal Connect button that the program will eat lots of CPU time. When you suspect this is happening, just clicking the Connect button to open then close the port should make the program use less CPU time.
+  It has been noted that sometimes when the serial port is closed by the terminal or using the display terminal button that the program will eat lots of CPU time. When you suspect this is happening, just clicking the Connect button to open then close the port should make the program use less CPU time.
 

@@ -76,3 +76,5 @@ win32 {
     DEFINES += WINVER=0x0501 # needed for mingw to pull in appropriate dbt business...probably a better way to do this
     LIBS += -lsetupapi
 }
+
+RC_FILE = myapp.rc

@@ -17,10 +17,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     QCoreApplication::setOrganizationDomain(publisherComKey);
     QCoreApplication::setApplicationName(ASideGuiKey);
 
-    /* set the windows icon
-     */
-    this->setWindowIcon(QIcon(":/images/SimpleIDE6.png"));
-
     /* global settings */
     settings = new QSettings(publisherKey, ASideGuiKey, this);
 

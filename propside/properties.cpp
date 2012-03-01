@@ -38,10 +38,17 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
     QVariant compv = settings.value(compilerKey);
     QVariant incv = settings.value(includesKey);
 
+#if defined(Q_WS_WIN32)
+    mypath = "c:/propgcc";
+#else
+    mypath = "/opt/parallax/"
+#endif
+
     if(compv.canConvert(QVariant::String)) {
         QString s = compv.toString();
         s = QDir::fromNativeSeparators(s);
         leditCompiler->setText(s);
+        mypath = s.mid(0,s.lastIndexOf("/"));
     }
 
     if(incv.canConvert(QVariant::String)) {
@@ -57,19 +64,37 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 
 void Properties::browseCompiler()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-            tr("Select Compiler"), "", "Compiler (propeller-elf-gcc.*)");
+    //QString fileName = QFileDialog::getOpenFileName(this,tr("Select Compiler"), mypath, "Compiler (propeller-elf-gcc.*)");
+    QFileDialog fileDialog(this,  tr("Select Compiler"), mypath, "Compiler (propeller-elf-gcc.*)");
+    fileDialog.exec();
+    QStringList files = fileDialog.selectedFiles();
+    QString fileName = files.at(0);
+
     QString s = QDir::fromNativeSeparators(fileName);
     compilerstr = leditCompiler->text();
-    if(s.length() > 0)
+    if(s.length() > 0) {
         leditCompiler->setText(s);
+        mypath = s.mid(0,s.lastIndexOf("/"));
+    }
     qDebug() << "browseCompiler" << s;
 }
 
 void Properties::browseIncludes()
 {
-    QString pathName = QFileDialog::getExistingDirectory(this,
-            tr("Select Loader Folder"), "Loader Folder (propeller-load))");
+    if(mypath.indexOf("bin") > -1)
+        mypath = mypath.mid(0,mypath.lastIndexOf("/"))+"/propeller-load/";
+
+    QFileDialog fileDialog(this,tr("New Project Folder"),mypath,tr("Project Folder (*)"));
+
+    QStringList filenames;
+    QString pathName;
+
+    fileDialog.setFileMode(QFileDialog::Directory);
+    if(fileDialog.exec())
+        filenames = fileDialog.selectedFiles();
+    if(filenames.length() > 0)
+        pathName = filenames.at(0);
+
     QString s = QDir::fromNativeSeparators(pathName);
     if(s.length() == 0)
         return;
