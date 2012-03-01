@@ -4,7 +4,7 @@ Side User Guide Notes:
 
 Propeller-GCC Simple IDE (Side)
 
-  The Simple IDE for Propeller-GCC is designed for building Propeller-GCC programs. Simple should mean simple and easy for users, and I think this is achieved with the IDE. There are some things that need improvement because simple in this case also means easy for the programmer. At this time only a Windows version is published, but Linux/Mac programs are easy to make.
+  The Simple IDE is designed for building Propeller-GCC programs. Simple should mean simple and easy for users, and I think this is achieved with the IDE. There are some things that need improvement because simple in this case also means easy for the programmer. At this time only a Windows version is published, but Linux/Mac programs have been compiled and run.
 
 
 This User Guide is not comprehensive, but it describes using basic features where necessary.
@@ -13,35 +13,35 @@ This User Guide is not comprehensive, but it describes using basic features wher
 Simple IDE features:
 
 - Windows Installer.
-- Menu Bar with File, Edit, Project, Debug, and About.
+- Menu Bar with File, Project, Edit, Debug, and Help.
 - Tool Bar with most Menu Bar operations.
 - Project manager area for project file settings.
 - Compiler area for setting build attributes.
 - Tabbed text editor.
 - Project build status pane.
-- Status bar showing compile size and build progress.
+- Status bar showing compile size, brief messages, and build progress.
 - Board type and COM port selector.
 
 
 Windows Installer:
 
-  The windows installer is about 72MB and contains both the Propeller-GCC tool-chain and the Simple IDE. The installer will ask the user for directories and other info for setup. The installer makes the package ready to use.
+  The windows installer is about 72MB and contains both the Propeller-GCC tool-chain and the Simple IDE. The installer will ask the user for directories and other info for setup. The installer makes the package ready to use in one simple process.
 
 
 Running the IDE for the first time:
 
-  A properties dialog will usually start the first time. In most cases, it will already have the fields properly set. Please review the fields and click Ok when ready. These properties may be changed to allow using another compiler by clicking the tool-bar wrench.
+  A properties dialog will usually start the first time. In most cases, it will already have the fields properly set. Please make a note of the fields and click Ok when ready. These properties may be changed to allow using another compiler directory by clicking the tool-bar wrench.
 
-A "Hello" demo should be loaded the first time the program starts. Whatever project/program you is loaded when you exit the IDE will be the project the IDE loads on next start-up.
+A "Hello" demo should be loaded the first time the program starts. Whatever project/program is loaded when you exit the IDE will be the project the IDE loads on next start-up.
 
 
 Running the Hello Demo:
 
-  To run the Hello demo, you must have a suitable board type selected, and the right COM port selected, and have a Propeller board connected.
+  To run the Hello demo, you must have a suitable board type selected, and the right COM port selected, and have a Propeller board connected. The demo should start with a simple board type like "HUB" or "ASC".
 
 The default board type "ASC" will be good enough for most 80MHz Propeller board tests. A more generic HUB board type is available if you like - there is practically no difference for simple programs like hello except for the clock type like available on the SPINSTAMP.
 
-If the top-right combo box near the refresh symbol is blank, insert your Propeller board and click refresh.
+If the top-right combo box near the refresh symbol is blank, insert your Propeller USB connected board and click refresh.
 
 Some default board types are available such as SPINSTAMP in the board combo box.
 
@@ -52,12 +52,27 @@ If you do not have an 80MHz Propeller board, you can make your own board type an
 3. Click the Jigsaw puzzle piece button near to reload the board types.
 4. Choose YOURBOARD from the combobox.
 
-Now, you can click the debug button (triangle on blue background circle) to rebuild, load the program, and start the terminal. The terminal will show "Hello World ..." after the program starts.
+Now, you can click the "Run Console" or "Play" button (triangle on blue background circle) to rebuild, load the program, and start the terminal. The terminal will show "Hello World ..." after the program starts.
 
 
 Running a new project:
 
-  If you want to try your own program, you can click x on all open editors. That will leave you with no project and an "Untitled" tab. Enter the following code in the untitled tab (please do not copy/paste the [code] tags).
+  There are two ways to start a new project:
+
+Option 1: New Project
+
+1. Choose Menu->Project->New Project or press the New Project tool button.
+2. Enter your project name. The name will be added to the folder path.
+3. Click the folder browse button to select a new folder.
+
+When you press OK to finish the New Project dialog the folder/project name will be created for you if does not exist already. A main program template will be added for your new project.
+
+Option 2: Close All, start new.
+
+1. Choose Menu->File->Close all to close all open editors and the side project.
+2. Choose Menu->File->Save As to rename the "untitled" editor tab.
+3. Choose Menu->Project->Set Project
+4. Fill in new main program with code below (please do not copy/paste the [code] tags).
 
 [code]
 #include <propeller.h>
@@ -74,32 +89,80 @@ int main(int argc, char* argv[])
 }
 [/code]
 
-Press the save-as button (two floppies) or use File->Save As and save it as blink.c in your folder.
 
-After saving, click the project button (white-ish button to the left of the hammer) or use Project->Set Project (F4). This will create a blink.side project for you. Whatever file is shown when you click the project button is the new project name and is automatically saved for you.
+Using Menu->Project->Set Project will set the project name to the editor tab filename. Set Project saves the project properties to the current state.
 
-When you build and/or load programs, the project and it's files are built and may not be the same file as the one open in the editor. In the case of blink, there is only one file.
+After setting up your project, click the hammer button to build your program. There should be no warnings or errors. If you see a warning or error, click on that line in the build output and it will take you to the problem area in the editor in most cases. Check your code there for typos. 
 
-After setting the project, click the hammer button to build blink. There should be no warnings or errors. If you see a warning or error, click on that line in the build output and it will take you to the problem area in the editor in most cases. Check your code there for typos.  If you did copy/paste the [code] tags for example you might see the message below. Click the error message and remove the line from the editor panel.
+If you did copy/paste the [code] tags for example you might see the message below. Click the error message and remove the line from the editor panel.
 
 blink.c:1:1: error: expected identifier or '(' before '[' token
-
 
 
 Using the IDE:
 
   Many of the features of the IDE will be familiar to new users. Some features need a little explanation.
 
+  File Menu:
+
+  - New: creates a new file called "untitled" in the tabbed editor space.
+
+  - Open: opens an existing file in the tabbed editor space.
+
+  - Save: saves the tabbed editor text to the filename in shown on the tab.
+
+  - Save As: saves the current tabbed editor text to another filename.
+
+  - Close: closes the currently visible tabbed editor.
+
+  - Close All: closes all files and projects.
+
+  - Previous file names: lists the last 5 opened files.
+
+  - Exit: exits the program.
+
+
   Project Menu:
 
-  - Set Project. The function of the set project button (F4 or Project->Set Project) has been discussed in the blink example. Please review that section if you haven't already.
+  - New Project: opens a dialog for creating a new project "name" in "folder/name" selected by user. If the folder does not exist, it is created. Project name will be added to the folder by the program.
+
+  - Open Project: opens an existing project file with extention .side
+
+  - Save and Close Project: projects are always saved before they are closed.
+
+  - Set Project. The function of the set project button (F4 or Project->Set Project) has been discussed in the example above. Please review that section if you haven't already.
 
   - Properies. This item or associated button with bring up the properties menu which was discussed in the first time use section.
 
 
+  Edit Menu:
+
+  - Copy: copies selected editor text to the clip-board.
+
+  - Cut: copies selected editor text to the clip-board and deletes text.
+
+  - Paste: pastes text from clipboard to the editor at cursor.
+
+  - Find: finds text in the editor from the starting point to the end of file.
+
+  - Find Next: finds the next occurance of text.
+
+  - Find Previous: finds the previous occurance of text.
+
+  - Replace: opens a dialog with find and replace tools that allows for optional whole word and case sensitive find and replace.
+
+  - Go Back: this goes back to the file place where a find function started.
+
+  - Find Function: used to find a function implementation from a function call. This and Go Back make up a source browser.
+
+  - Redo: undoes the last undo.
+
+  - Undo: reverses the last edit.
+
+
   Debug Menu:
 
-  - Debug. Build, load, and run program on Propeller RAM (or external memory for XMM). Open a terminal.
+  - Run Console. Build, load, and run program on Propeller RAM (or external memory for XMM). Opens a console terminal.
 
   - Build. Build program only.
 
@@ -118,7 +181,7 @@ Top Right-hand Side GUI Elements:
 
   - Port Refresh. You must click the refresh button every time you change port connections.
 
-  - Terminal Connect. A button with white "+" plus on a round green background. Press to show and connect terminal to the selected port. If pressed (square around the button), it is connected and you can disconnect by pressing the button again.
+  - Terminal Connect. A "display" button. Press to show and connect terminal to the selected port. If pressed (square around the button), it is connected and you can disconnect by pressing the button again.
 
 
 Project Pane:
@@ -172,14 +235,15 @@ Future enhancements:
 
   -- Add AUTO serial port management.
 
-  -- Need a program ICON.
-
-  -- Add selected board type to project file save.
-
   -- Others as necessary.
 
 
 Program Challenges (room for improvement):
 
-  It has been noted that sometimes when the serial port is closed by the terminal or using the white/green Terminal Connect button that the program will eat lots of CPU time. When you suspect this is happening, just clicking the Connect button to open then close the port should make the program use less CPU time.
+  - New project seems a little clunky. A wizard would allow separating the project name and folder selection.
+
+
+Fixed bugs:
+
+  It has been noted that sometimes when the serial port is closed by the terminal or using the display Terminal Connect button that the program will eat lots of CPU time. When you suspect this is happening, just clicking the Connect button to open then close the port should make the program use less CPU time.
 

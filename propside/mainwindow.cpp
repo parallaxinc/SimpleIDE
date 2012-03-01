@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* set the windows icon
      */
-    this->setWindowIcon(QIcon(":/images/CovertBeanie32.png"));
+    this->setWindowIcon(QIcon(":/images/SimpleIDE6.png"));
 
     /* global settings */
     settings = new QSettings(publisherKey, ASideGuiKey, this);
