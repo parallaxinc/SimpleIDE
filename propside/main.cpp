@@ -1,6 +1,5 @@
 #include <QtGui/QApplication>
 #include "mainwindow.h"
-#include "Sleeper.h"
 
 int main(int argc, char *argv[])
 {
