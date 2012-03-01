@@ -65,7 +65,11 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 void Properties::browseCompiler()
 {
     //QString fileName = QFileDialog::getOpenFileName(this,tr("Select Compiler"), mypath, "Compiler (propeller-elf-gcc.*)");
+#if defined(Q_WS_WIN32)
     QFileDialog fileDialog(this,  tr("Select Compiler"), mypath, "Compiler (propeller-elf-gcc.*)");
+#else
+    QFileDialog fileDialog(this,  tr("Select Compiler"), mypath, "Compiler (propeller-elf-gcc)");
+#endif
     fileDialog.exec();
     QStringList files = fileDialog.selectedFiles();
     QString fileName = files.at(0);
