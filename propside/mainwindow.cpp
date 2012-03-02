@@ -28,10 +28,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     newProjDialog = new NewProject(this);
     connect(newProjDialog,SIGNAL(accepted()),this,SLOT(newProjectAccepted()));
 
-    /* setup find dialog */
-    findDialog = new FindDialog(this);
-
-    /* setup find dialog */
+    /* setup find/replace dialog */
     replaceDialog = new ReplaceDialog(this);
 
     /* new ASideConfig class */
@@ -310,7 +307,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings->setValue(lastBoardNameKey,boardstr);
     settings->setValue(lastPortNameKey,portstr);
 
-    delete findDialog;
     delete replaceDialog;
     delete propDialog;
     delete projectOptions;
@@ -830,53 +826,6 @@ void MainWindow::systemCommand()
 
 }
 
-void MainWindow::findInEditor(QPlainTextEdit *editor, QTextDocument::FindFlag flag)
-{
-    if(editor) {
-        findDialog->show();
-        findDialog->raise();
-        findDialog->activateWindow();
-
-        if (findDialog->exec() == QDialog::Accepted) {
-            QString text = findDialog->getFindText();
-            QString edtext = editor->toPlainText();
-            if (edtext.contains(text,Qt::CaseInsensitive)) {
-                editor->setCenterOnScroll(true);
-                editor->find(text, flag);
-            } else {
-                QMessageBox::information(this, tr("Text Not Found"),
-                    tr("Can't find text: \"%1\"").arg(text));
-                return;
-            }
-        }
-    }
-}
-
-void MainWindow::findInFile()
-{
-    if(!findDialog)
-        return;
-    findDialog->clearFindText();
-    QString text = editors->at(editorTabs->currentIndex())->textCursor().selectedText();
-    if(text.isEmpty() == false)
-        findDialog->setFindText(text);
-    findInEditor(editors->at(editorTabs->currentIndex()));
-}
-
-void MainWindow::findNextInFile()
-{
-    if(!findDialog)
-        return;
-    findInEditor(editors->at(editorTabs->currentIndex()));
-}
-
-void MainWindow::findPrevInFile()
-{
-    if(!findDialog)
-        return;
-    findInEditor(editors->at(editorTabs->currentIndex()),QTextDocument::FindBackward);
-}
-
 void MainWindow::replaceInFile()
 {
     if(!replaceDialog)
@@ -890,10 +839,10 @@ void MainWindow::replaceInFile()
         replaceDialog->setFindText(text);
     replaceDialog->clearReplaceText();
 
+    replaceDialog->setEditor(editor);
     replaceDialog->show();
     replaceDialog->raise();
     replaceDialog->activateWindow();
-    replaceDialog->setEditor(editor);
 }
 
 void MainWindow::replaceNextInFile()
@@ -2591,11 +2540,7 @@ void MainWindow::setupFileMenu()
     editMenu->addAction(tr("System Command"), this, SLOT(systemCommand()), Qt::CTRL + Qt::Key_Semicolon);
 */
     editMenu->addSeparator();
-    editMenu->addAction(QIcon(":/images/find.png"), tr("&Find"), this, SLOT(findInFile()), QKeySequence::Find);
-    editMenu->addAction(QIcon(":/images/next.png"), tr("Find Next"), this, SLOT(findNextInFile()), QKeySequence::FindNext);
-    editMenu->addAction(QIcon(":/images/previous.png"), tr("Find Previous"), this, SLOT(findPrevInFile()), QKeySequence::FindPrevious);
-
-    editMenu->addAction(QIcon(":/images/replace.png"), tr("&Replace"), this, SLOT(replaceInFile()), Qt::CTRL + Qt::Key_R);
+    editMenu->addAction(QIcon(":/images/find.png"), tr("&Find and Replace"), this, SLOT(replaceInFile()), QKeySequence::Find);
 
     if(ctags->enabled()) {
         editMenu->addSeparator();

@@ -97,10 +97,6 @@ public slots:
     void pasteToFile();
     void editCommand();
     void systemCommand();
-    void findInEditor(QPlainTextEdit *editor, QTextDocument::FindFlag flag = (QTextDocument::FindFlag)0);
-    void findInFile();
-    void findNextInFile();
-    void findPrevInFile();
     void replaceInFile();
     void replaceNextInFile();
     void replacePrevInFile();
@@ -236,7 +232,7 @@ private:
 
     ProjectOptions  *projectOptions;
 
-    FindDialog      *findDialog;
+    // find and replace
     ReplaceDialog   *replaceDialog;
 
     enum { MaxRecentFiles = 5 };
