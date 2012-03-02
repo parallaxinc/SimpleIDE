@@ -376,25 +376,23 @@ void MainWindow::openFileName(QString fileName)
         if (file.open(QFile::ReadOnly))
         {
             data = file.readAll();
+            file.close();
             data.replace('\t',"    ");
             QString sname = this->shortFileName(fileName);
             if(editorTabs->count()>0) {
                 for(int n = editorTabs->count()-1; n > -1; n--) {
                     if(editorTabs->tabText(n) == sname) {
                         setEditorTab(n, sname, fileName, data);
-                        file.close();
                         return;
                     }
                 }
             }
             if(editorTabs->tabText(0) == untitledstr) {
                 setEditorTab(0, sname, fileName, data);
-                file.close();
                 return;
             }
             newFile();
             setEditorTab(editorTabs->count()-1, sname, fileName, data);
-            file.close();
         }
     }
 }
@@ -404,10 +402,9 @@ void MainWindow::openFileName(QString fileName)
  */
 void MainWindow::closeFile()
 {
-    // TODO ... test for change and ask if ok to close.
-    int index = editorTabs->currentIndex();
-    if(index > -1)
-        closeTab(index);
+    int tab = editorTabs->currentIndex();
+    if(tab > -1)
+        closeTab(tab);
 }
 
 /*
@@ -416,7 +413,7 @@ void MainWindow::closeFile()
  */
 void MainWindow::closeAll()
 {
-    exitSave();
+    saveProjectOptions();
     setWindowTitle(QString(ASideGuiKey));
     this->projectOptions->clearOptions();
     if(projectModel != NULL) {
@@ -521,8 +518,9 @@ void MainWindow::saveProject()
  */
 void MainWindow::closeProject()
 {
-    /* save all first */
-    exitSave();
+    /* save options
+     */
+    saveProjectOptions();
 
     /* go through project file list and close files
      */
@@ -1870,14 +1868,28 @@ void MainWindow::compilerFinished(int exitCode, QProcess::ExitStatus status)
 }
 
 
-void MainWindow::closeTab(int index)
+void MainWindow::closeTab(int tab)
 {
+    QMessageBox mbox(QMessageBox::Question, "Save File?", "",
+                     QMessageBox::Discard | QMessageBox::Save, this);
+
     fileChangeDisable = true;
-    editors->at(index)->setPlainText("");
-    editors->remove(index);
+
+    QString tabName = editorTabs->tabText(tab);
+    if(tabName.at(tabName.length()-1) == '*')
+    {
+        mbox.setInformativeText(tr("Save File: ") + tabName.mid(0,tabName.indexOf(" *")) + tr(" ?"));
+        int ret = mbox.exec();
+        if(ret == QMessageBox::Save)
+            saveFileByTabIndex(tab);
+    }
+
+    editors->at(tab)->setPlainText("");
+    editors->remove(tab);
     if(editorTabs->count() == 1)
         newFile();
-    editorTabs->removeTab(index);
+    editorTabs->removeTab(tab);
+
     fileChangeDisable = false;
 }
 
@@ -2220,8 +2232,9 @@ void MainWindow::saveProjectOptions()
             if(!arg.length())
                 continue;
             if(arg.at(0) == '>')
-                continue;
-            projstr += arg + "\n";
+                projectOptions->setOptions(arg);
+            else
+                projstr += arg + "\n";
         }
         list.clear();
         list = projectOptions->getOptions();
@@ -2327,57 +2340,6 @@ void MainWindow::updateReferenceTree(QString fileName, QString text)
 
 void MainWindow::referenceTreeClicked(QModelIndex index)
 {
-}
-
-/*
- * TODO: add ctrl-tab to cycle through tabs
- */
-void MainWindow::setEditorTab(int num, QString shortName, QString fileName, QString text)
-{
-    QPlainTextEdit *editor = editors->at(num);
-    fileChangeDisable = true;
-    editor->setPlainText(text);
-
-    /* connect later when we can handle multiple popup events
-     */
-#if ENABLE_CTRL_RIGHTCLICK_FIND
-    connect(editor,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(editorMenu(QPoint)));
-    editor->setContextMenuPolicy(Qt::CustomContextMenu);
-#endif
-
-    fileChangeDisable = false;
-    editorTabs->setTabText(num,shortName);
-    editorTabs->setTabToolTip(num,fileName);
-    editorTabs->setCurrentIndex(num);
-}
-
-void MainWindow::editorMenu(QPoint point)
-{
-#if ENABLE_CTRL_RIGHTCLICK_FIND
-    Qt::KeyboardModifiers keybm = QApplication::keyboardModifiers();
-    if(keybm & Qt::ControlModifier){
-        findDeclaration(point);
-    }
-    else {
-        QPlainTextEdit *ed = editors->at(editorTabs->currentIndex());
-        QTextCursor cur = ed->textCursor();
-        QList<QAction*> list = edpopup->actions();
-        if(cur.selectedText().length() == 0) {
-            list.at(2)->setEnabled(false);
-            list.at(3)->setEnabled(false);
-        }
-        else {
-            list.at(2)->setEnabled(true);
-            list.at(3)->setEnabled(true);
-        }
-        if(ed->canPaste())
-            list.at(4)->setEnabled(true);
-        else
-            list.at(4)->setEnabled(false);
-
-        edpopup->popup(QCursor::pos());
-    }
-#endif
 }
 
 void MainWindow::enumeratePorts()
@@ -2489,6 +2451,56 @@ void MainWindow::setupEditor()
     connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
     highlighter = new Highlighter(editor->document());
     editors->append(editor);
+}
+/*
+ * TODO: add ctrl-tab to cycle through tabs
+ */
+void MainWindow::setEditorTab(int num, QString shortName, QString fileName, QString text)
+{
+    QPlainTextEdit *editor = editors->at(num);
+    fileChangeDisable = true;
+    editor->setPlainText(text);
+
+    /* connect later when we can handle multiple popup events
+     */
+#if ENABLE_CTRL_RIGHTCLICK_FIND
+    connect(editor,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(editorMenu(QPoint)));
+    editor->setContextMenuPolicy(Qt::CustomContextMenu);
+#endif
+
+    fileChangeDisable = false;
+    editorTabs->setTabText(num,shortName);
+    editorTabs->setTabToolTip(num,fileName);
+    editorTabs->setCurrentIndex(num);
+}
+
+void MainWindow::editorMenu(QPoint point)
+{
+#if ENABLE_CTRL_RIGHTCLICK_FIND
+    Qt::KeyboardModifiers keybm = QApplication::keyboardModifiers();
+    if(keybm & Qt::ControlModifier){
+        findDeclaration(point);
+    }
+    else {
+        QPlainTextEdit *ed = editors->at(editorTabs->currentIndex());
+        QTextCursor cur = ed->textCursor();
+        QList<QAction*> list = edpopup->actions();
+        if(cur.selectedText().length() == 0) {
+            list.at(2)->setEnabled(false);
+            list.at(3)->setEnabled(false);
+        }
+        else {
+            list.at(2)->setEnabled(true);
+            list.at(3)->setEnabled(true);
+        }
+        if(ed->canPaste())
+            list.at(4)->setEnabled(true);
+        else
+            list.at(4)->setEnabled(false);
+
+        edpopup->popup(QCursor::pos());
+    }
+#endif
 }
 
 /*
