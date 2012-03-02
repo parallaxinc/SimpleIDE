@@ -135,6 +135,9 @@ void ReplaceDialog::findNextClicked()
     }
     else {
         editor->activateWindow();
+        QTextCursor cur = editor->textCursor();
+        cur.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
+        editor->setTextCursor(cur);
     }
 
 }
@@ -167,6 +170,9 @@ void ReplaceDialog::findPrevClicked()
     }
     else {
         editor->activateWindow();
+        QTextCursor cur = editor->textCursor();
+        cur.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor);
+        editor->setTextCursor(cur);
     }
 }
 
@@ -209,11 +215,6 @@ void ReplaceDialog::replaceNextClicked()
 
     editor->setCenterOnScroll(true);
 
-    QTextCursor cur = editor->textCursor();
-    cur.movePosition(QTextCursor::StartOfWord, QTextCursor::MoveAnchor);
-    cur.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor);
-    editor->setTextCursor(cur);
-
     if(edtext.contains(text,Qt::CaseInsensitive)) {
         if(editor->find(text,getFlags()) == true) {
             QString s = editor->textCursor().selectedText();
@@ -240,6 +241,9 @@ void ReplaceDialog::replaceNextClicked()
         editor->activateWindow();
         editor->textCursor().removeSelectedText();
         editor->textCursor().insertText(replaceEdit->text());
+        QTextCursor cur = editor->textCursor();
+        cur.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
+        editor->setTextCursor(cur);
     }
 }
 
@@ -256,11 +260,6 @@ void ReplaceDialog::replacePrevClicked()
     QString edtext = editor->toPlainText();
 
     editor->setCenterOnScroll(true);
-
-    QTextCursor cur = editor->textCursor();
-    cur.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
-    cur.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor);
-    editor->setTextCursor(cur);
 
     if(edtext.contains(text,Qt::CaseInsensitive)) {
         if(editor->find(text,getFlags(QTextDocument::FindBackward)) == true) {
@@ -288,6 +287,9 @@ void ReplaceDialog::replacePrevClicked()
         editor->activateWindow();
         editor->textCursor().removeSelectedText();
         editor->textCursor().insertText(replaceEdit->text());
+        QTextCursor cur = editor->textCursor();
+        cur.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor);
+        editor->setTextCursor(cur);
     }
 }
 
@@ -367,6 +369,7 @@ void ReplaceDialog::accept()
 
 void ReplaceDialog::setEditor(QPlainTextEdit *ed)
 {
+    findEdit->setFocus();
     editor = ed;
 }
 

@@ -31,7 +31,6 @@ SOURCES += main.cpp \
     asideconfig.cpp \
     asideboard.cpp \
     cbuildtree.cpp \
-    finddialog.cpp \
     projectoptions.cpp \
     replacedialog.cpp \
     aboutdialog.cpp
@@ -52,7 +51,6 @@ HEADERS += mainwindow.h \
     asideboard.h \
     asideconfig.h \
     cbuildtree.h \
-    finddialog.h \
     projectoptions.h \
     Sleeper.h \
     replacedialog.h \
@@ -77,4 +75,3 @@ win32 {
     DEFINES += WINVER=0x0501 # needed for mingw to pull in appropriate dbt business...probably a better way to do this
     LIBS += -lsetupapi
 }
-
