@@ -350,7 +350,7 @@ void MainWindow::openFile(const QString &path)
             fileName = fileName.trimmed();
             proj.close();
         }
-        updateProjectTree(fileName,"");
+        updateProjectTree(fileName);
     }
     else {
         if(fileName.length())
@@ -467,7 +467,7 @@ void MainWindow::newProjectAccepted()
     }
     projectFile = path+"/"+name+".side";
     setCurrentProject(projectFile);
-    updateProjectTree(mainName,"");
+    updateProjectTree(mainName);
     openFile(projectFile);
 
 }
@@ -493,7 +493,7 @@ void MainWindow::openProject(const QString &path)
             fileName = fileName.trimmed();
             proj.close();
         }
-        updateProjectTree(fileName,"");
+        updateProjectTree(fileName);
     }
     openFileName(fileName);
     if(projectFile.length() == 0) {
@@ -1044,7 +1044,7 @@ void MainWindow::setProject()
     QString fileName = editorTabs->tabToolTip(index);
     if(fileName.length() != 0)
     {
-        updateProjectTree(fileName,"");
+        updateProjectTree(fileName);
         setCurrentProject(projectFile);
     }
     else {
@@ -1899,12 +1899,18 @@ void MainWindow::closeTab(int tab)
     fileChangeDisable = false;
 }
 
-void MainWindow::changeTab(int index)
+void MainWindow::changeTab(bool checked)
 {
-/*
-    if(editorTabs->count() == 1)
-        setProject();
-*/
+    /* checked is a QAction menu state.
+     * we don't really care about it
+     */
+    if(checked) return; // compiler happy :)
+
+    int n = editorTabs->currentIndex();
+    if(n < editorTabs->count()-1)
+        editorTabs->setCurrentIndex(n+1);
+    else
+        editorTabs->setCurrentIndex(0);
 }
 
 void MainWindow::addToolButton(QToolBar *bar, QToolButton *btn, QString imgfile)
@@ -1962,7 +1968,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     editorTabs = new QTabWidget(this);
     editorTabs->setTabsClosable(true);
     connect(editorTabs,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
-    connect(editorTabs,SIGNAL(currentChanged(int)),this,SLOT(changeTab(int)));
+    //connect(editorTabs,SIGNAL(currentChanged(int)),this,SLOT(changeTab(int)));
     rightSplit->addWidget(editorTabs);
 
     compileStatus = new QPlainTextEdit(this);
@@ -2145,7 +2151,7 @@ void MainWindow::addProjectFile()
                 file.close();
             }
         }
-        updateProjectTree(sourcePath(projectFile)+mainFile,"");
+        updateProjectTree(sourcePath(projectFile)+mainFile);
     }
 }
 
@@ -2195,7 +2201,7 @@ void MainWindow::deleteProjectFile()
             file.close();
         }
     }
-    updateProjectTree(sourcePath(projectFile)+mainFile,"");
+    updateProjectTree(sourcePath(projectFile)+mainFile);
 }
 
 void MainWindow::showProjectFile()
@@ -2261,7 +2267,7 @@ void MainWindow::saveProjectOptions()
 /*
  * update project tree and options by reading from project.side file
  */
-void MainWindow::updateProjectTree(QString fileName, QString text)
+void MainWindow::updateProjectTree(QString fileName)
 {
     QString projName = this->shortFileName(fileName);
     projName = projName.mid(0,projName.lastIndexOf("."));
@@ -2338,14 +2344,6 @@ void MainWindow::updateProjectTree(QString fileName, QString text)
     projectTree->setModel(projectModel);
     projectTree->hide();
     projectTree->show();
-}
-
-void MainWindow::updateReferenceTree(QString fileName, QString text)
-{
-}
-
-void MainWindow::referenceTreeClicked(QModelIndex index)
-{
 }
 
 void MainWindow::enumeratePorts()
@@ -2609,6 +2607,8 @@ void MainWindow::setupFileMenu()
     editMenu->addSeparator();
     editMenu->addAction(QIcon(":/images/redo.png"), tr("&Redo"), this, SLOT(redoChange()), QKeySequence::Redo);
     editMenu->addAction(QIcon(":/images/undo.png"), tr("&Undo"), this, SLOT(undoChange()), QKeySequence::Undo);
+
+    editMenu->addAction(tr("Next Tab"),this,SLOT(changeTab(bool)),QKeySequence::NextChild);
 
     QMenu *debugMenu = new QMenu(tr("&Debug"), this);
     menuBar()->addMenu(debugMenu);
