@@ -1152,6 +1152,8 @@ void MainWindow::setCurrentBoard(int index)
 
 void MainWindow::setCurrentPort(int index)
 {
+    if(index < 0)
+        return;
     portName = cbPort->itemText(index);
     cbPort->setCurrentIndex(index);
     cbPort->setToolTip(friendlyPortName.at(index));
@@ -2050,98 +2052,98 @@ void MainWindow::projectTreeClicked(QModelIndex index)
 /*
  * add a new project file
  * save new filelist and options to project.side file
- *
- * TODO: don't let users add *.* as a file name.
  */
 void MainWindow::addProjectFile()
 {
     fileDialog.setDirectory(sourcePath(projectFile));
 
-#ifdef OPEN_MULTIPLE_FILES
     // this is on the wish list and not finished yet
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
-    fileDialog.getOpenFileNames(this,
-        tr("Add File"), lastPath, tr(SOURCE_FILE_TYPES));
-#else
+    QStringList files = fileDialog.getOpenFileNames(this, tr("Add File"), lastPath, tr(SOURCE_FILE_TYPES));
 
-    QString fileName;
-    fileName = fileDialog.getOpenFileName(this, tr("Add File"), lastPath, tr(SOURCE_FILE_TYPES));
-    if(fileName.length() > 0)
+    foreach(QString fileName, files) {
+        //fileName = fileDialog.getOpenFileName(this, tr("Add File"), lastPath, tr(SOURCE_FILE_TYPES));
+        /*
+         * Cancel makes filename blank. If fileName is blank, don't add.
+         */
+        if(fileName.length() == 0)
+            return;
+        /*
+         * Don't let users add *.* as a file name.
+         */
+        if(fileName.contains('\*'))
+            return;
+
         lastPath = sourcePath(fileName);
-    /*
-     * Cancel makes filename blank. If fileName is blank, don't add.
-     */
-    if(fileName.length() == 0)
-        return;
 
-    QString ext = fileName.mid(fileName.lastIndexOf("."));
-    if(ext.length()) {
-        ext = ext.toLower();
-        if(ext == ".cog") {
-            // don't copy .cog files
-        }
-        else if(ext == ".dat") {
-            // don't copy .dat files
-        }
-        else if(ext == ".o") {
-            // don't copy .o files
-        }
-        else if(ext == ".out") {
-            // don't copy .out files
-        }
-        else if(ext == ".side") {
-            // don't copy .side files
-        }
-        else {
-            QFile copy(sourcePath(projectFile)+this->shortFileName(fileName));
-            QString copystr = "";
-            QFile reader(fileName);
-            if(reader.open(QFile::ReadOnly | QFile::Text)) {
-                copystr = reader.readAll();
-                reader.close();
+        QString ext = fileName.mid(fileName.lastIndexOf("."));
+        if(ext.length()) {
+            ext = ext.toLower();
+            if(ext == ".cog") {
+                // don't copy .cog files
             }
-            if(copy.open(QFile::WriteOnly | QFile::Text)) {
-                copy.write(copystr.toAscii());
-                copy.close();
+            else if(ext == ".dat") {
+                // don't copy .dat files
+            }
+            else if(ext == ".o") {
+                // don't copy .o files
+            }
+            else if(ext == ".out") {
+                // don't copy .out files
+            }
+            else if(ext == ".side") {
+                // don't copy .side files
+            }
+            else {
+                QFile copy(sourcePath(projectFile)+this->shortFileName(fileName));
+                QString copystr = "";
+                QFile reader(fileName);
+                if(reader.open(QFile::ReadOnly | QFile::Text)) {
+                    copystr = reader.readAll();
+                    reader.close();
+                }
+                if(copy.open(QFile::WriteOnly | QFile::Text)) {
+                    copy.write(copystr.toAscii());
+                    copy.close();
+                }
             }
         }
+
+        QString projstr = "";
+        QStringList list;
+        QString mainFile;
+
+        QFile file(projectFile);
+        if(file.exists()) {
+            if(file.open(QFile::ReadOnly | QFile::Text)) {
+                projstr = file.readAll();
+                file.close();
+            }
+            list = projstr.split("\n");
+            mainFile = list[0];
+            projstr = "";
+            for(int n = 0; n < list.length(); n++) {
+                QString arg = list[n];
+                if(!arg.length())
+                    continue;
+                if(arg.at(0) == '>')
+                    continue;
+                projstr += arg + "\n";
+            }
+            projstr += this->shortFileName(fileName) + "\n";
+            list.clear();
+            list = projectOptions->getOptions();
+
+            foreach(QString arg, list) {
+                projstr += ">"+arg+"\n";
+            }
+            if(file.open(QFile::WriteOnly | QFile::Text)) {
+                file.write(projstr.toAscii());
+                file.close();
+            }
+        }
+        updateProjectTree(sourcePath(projectFile)+mainFile,"");
     }
-
-    QString projstr = "";
-    QStringList list;
-    QString mainFile;
-
-    QFile file(projectFile);
-    if(file.exists()) {
-        if(file.open(QFile::ReadOnly | QFile::Text)) {
-            projstr = file.readAll();
-            file.close();
-        }
-        list = projstr.split("\n");
-        mainFile = list[0];
-        projstr = "";
-        for(int n = 0; n < list.length(); n++) {
-            QString arg = list[n];
-            if(!arg.length())
-                continue;
-            if(arg.at(0) == '>')
-                continue;
-            projstr += arg + "\n";
-        }
-        projstr += this->shortFileName(fileName) + "\n";
-        list.clear();
-        list = projectOptions->getOptions();
-
-        foreach(QString arg, list) {
-            projstr += ">"+arg+"\n";
-        }
-        if(file.open(QFile::WriteOnly | QFile::Text)) {
-            file.write(projstr.toAscii());
-            file.close();
-        }
-    }
-    updateProjectTree(sourcePath(projectFile)+mainFile,"");
-#endif
 }
 
 /*
