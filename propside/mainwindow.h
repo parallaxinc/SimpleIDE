@@ -63,9 +63,8 @@ public slots:
     void aboutShow();
     void helpShow();
     void projectTreeClicked(QModelIndex index);
-    void referenceTreeClicked(QModelIndex index);
     void closeTab(int index = 0);
-    void changeTab(int index);
+    void changeTab(bool trig);
     void setCurrentBoard(int index);
     void setCurrentPort(int index);
     void connectButton();
@@ -158,8 +157,7 @@ private:
     void setupToolBars();
     void setupProjectTools(QSplitter *vsplit);
     void addToolButton(QToolBar *bar, QToolButton *btn, QString imgfile);
-    void updateProjectTree(QString fileName, QString text);
-    void updateReferenceTree(QString fileName, QString text);
+    void updateProjectTree(QString fileName);
     void setEditorTab(int num, QString shortName, QString fileName, QString text);
     QString shortFileName(QString fileName);
     QString sourcePath(QString file);
