@@ -149,6 +149,16 @@ void Properties::browseWorkspace()
         filenames = fileDialog.selectedFiles();
     if(filenames.length() > 0)
         pathName = filenames.at(0);
+
+    QString s = QDir::fromNativeSeparators(pathName);
+    if(s.length() == 0)
+        return;
+    if(s.indexOf('/') > -1) {
+        if(s.mid(s.length()-1) != "/")
+            s += "/";
+    }
+
+    leditWorkspace->setText(s);
 }
 
 void Properties::accept()
