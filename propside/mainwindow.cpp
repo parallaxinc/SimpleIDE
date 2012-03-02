@@ -756,7 +756,7 @@ void MainWindow::fileChanged()
         }
     }
 
-    QString curtext = ed->toPlainText().trimmed();
+    QString curtext = ed->toPlainText();
     QString fileName = editorTabs->tabToolTip(index);
     QFile file(fileName);
     if(file.exists() == false) {
@@ -766,7 +766,7 @@ void MainWindow::fileChanged()
     int ret = 0;
     if(file.open(QFile::ReadOnly | QFile::Text))
     {
-        text = file.readAll().trimmed();
+        text = file.readAll();
         file.close();
         ret = text.compare(curtext);
         if(ret == 0) {
@@ -2462,9 +2462,7 @@ void MainWindow::setupEditor()
     highlighter = new Highlighter(editor->document());
     editors->append(editor);
 }
-/*
- * TODO: add ctrl-tab to cycle through tabs
- */
+
 void MainWindow::setEditorTab(int num, QString shortName, QString fileName, QString text)
 {
     QPlainTextEdit *editor = editors->at(num);
@@ -2514,8 +2512,9 @@ void MainWindow::editorMenu(QPoint point)
 }
 
 /*
- * TODO: why don't icons show up in linux?
- * TODO: save as? pencil on a disk?
+ * TODO: Why don't icons show up in linux? deferred.
+ * QtCreator has the same problem Windows OK, Linux not OK.
+ * TODO: save as? pencil on a disk? deferred.
  */
 void MainWindow::setupFileMenu()
 {
