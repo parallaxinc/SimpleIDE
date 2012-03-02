@@ -1,5 +1,6 @@
 /*
  * Replace is similar to Find.
+ * TODO: put findNext in find and __findNext in replace and try replace up/down.
  */
 
 #include <QtGui>

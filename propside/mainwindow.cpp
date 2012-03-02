@@ -229,6 +229,13 @@ void MainWindow::getApplicationSettings()
         /* load boards in case there were changes */
         aSideConfig->loadBoards(aSideCfgFile);
     }
+
+    QVariant wrkv = settings->value(workspaceKey);
+    if(wrkv.canConvert(QVariant::String)) {
+        QString s = wrkv.toString();
+        if(s.length() == 0)
+            propDialog->showProperties();
+    }
 }
 
 void MainWindow::exitSave()
@@ -399,6 +406,7 @@ void MainWindow::openFileName(QString fileName)
  */
 void MainWindow::closeFile()
 {
+    // TODO ... test for change and ask if ok to close.
     int index = editorTabs->currentIndex();
     if(index > -1)
         closeTab(index);
@@ -721,6 +729,9 @@ void MainWindow::saveAsFile(const QString &path)
     }
 }
 
+/*
+ * TODO: make star go away if possible. read/compare to text?
+ */
 void MainWindow::fileChanged()
 {
     if(fileChangeDisable)
@@ -1013,12 +1024,14 @@ int MainWindow::showDeclaration(QString tagline)
     return linenum;
 }
 
+// TODO add redoAllChanges
 void MainWindow::redoChange()
 {
     QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
     if(editor)
         editor->redo();
 }
+// TODO add undoAllChanges
 void MainWindow::undoChange()
 {
     QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
@@ -1762,10 +1775,13 @@ void MainWindow::procReadyRead()
                     progress->setValue(100*progCount/progMax);
                 }
             }
+#if 0
+            // can't do this otherwise error info gets lost.
             else
             if(line.contains("error:",Qt::CaseInsensitive)) {
                 status->setText(status->text()+line+" ");
             }
+#endif
             else {
                 compileStatus->insertPlainText(line+eol);
             }
@@ -2023,6 +2039,8 @@ void MainWindow::projectTreeClicked(QModelIndex index)
 /*
  * add a new project file
  * save new filelist and options to project.side file
+ *
+ * TODO: don't let users add *.* as a file name.
  */
 void MainWindow::addProjectFile()
 {
@@ -2313,6 +2331,9 @@ void MainWindow::referenceTreeClicked(QModelIndex index)
 {
 }
 
+/*
+ * TODO: add ctrl-tab to cycle through tabs
+ */
 void MainWindow::setEditorTab(int num, QString shortName, QString fileName, QString text)
 {
     QPlainTextEdit *editor = editors->at(num);
@@ -2472,6 +2493,10 @@ void MainWindow::setupEditor()
     editors->append(editor);
 }
 
+/*
+ * TODO: why don't icons show up in linux?
+ * TODO: save as? pencil on a disk?
+ */
 void MainWindow::setupFileMenu()
 {
     QMenu *fileMenu = new QMenu(tr("&File"), this);
