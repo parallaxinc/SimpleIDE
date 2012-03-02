@@ -1024,14 +1024,13 @@ int MainWindow::showDeclaration(QString tagline)
     return linenum;
 }
 
-// TODO add redoAllChanges
 void MainWindow::redoChange()
 {
     QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
     if(editor)
         editor->redo();
 }
-// TODO add undoAllChanges
+
 void MainWindow::undoChange()
 {
     QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
