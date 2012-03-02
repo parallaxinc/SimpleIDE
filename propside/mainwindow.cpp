@@ -726,7 +726,7 @@ void MainWindow::saveAsFile(const QString &path)
 }
 
 /*
- * TODO: make star go away if possible. read/compare to text?
+ * make star go away if no changes.
  */
 void MainWindow::fileChanged()
 {
@@ -756,16 +756,20 @@ void MainWindow::fileChanged()
         }
     }
 
-    QString curtext = ed->toPlainText();
+    QString curtext = ed->toPlainText().trimmed();
     QString fileName = editorTabs->tabToolTip(index);
-    if(!QFile::exists(fileName))
-        return;
     QFile file(fileName);
-    if(file.open(QFile::ReadOnly))
+    if(file.exists() == false) {
+        return;
+    }
+    QString text;
+    int ret = 0;
+    if(file.open(QFile::ReadOnly | QFile::Text))
     {
-        QString text = file.readAll();
+        text = file.readAll().trimmed();
         file.close();
-        if(text == curtext) {
+        ret = text.compare(curtext);
+        if(ret == 0) {
             if(name.at(name.length()-1) == '*')
                 editorTabs->setTabText(index, this->shortFileName(fileName));
             return;
@@ -2071,7 +2075,7 @@ void MainWindow::addProjectFile()
         /*
          * Don't let users add *.* as a file name.
          */
-        if(fileName.contains('\*'))
+        if(fileName.contains('*'))
             return;
 
         lastPath = sourcePath(fileName);
