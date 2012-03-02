@@ -1154,6 +1154,7 @@ void MainWindow::setCurrentPort(int index)
 {
     portName = cbPort->itemText(index);
     cbPort->setCurrentIndex(index);
+    cbPort->setToolTip(friendlyPortName.at(index));
     if(portName.length()) {
         portListener->init(portName, BAUD115200);  // signals get hooked up internally
     }
@@ -2345,6 +2346,7 @@ void MainWindow::referenceTreeClicked(QModelIndex index)
 void MainWindow::enumeratePorts()
 {
     if(cbPort != NULL) cbPort->clear();
+    friendlyPortName.clear();
     QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
     QStringList stringlist;
     QString name;
@@ -2361,15 +2363,20 @@ void MainWindow::enumeratePorts()
         name = ports.at(i).portName;
         if(name.lastIndexOf('\\') > -1)
             name = name.mid(name.lastIndexOf('\\')+1);
-        if(name.contains(QString("LPT"),Qt::CaseInsensitive) == false)
+        if(name.contains(QString("LPT"),Qt::CaseInsensitive) == false) {
+            friendlyPortName.append(ports.at(i).friendName);
             cbPort->addItem(name);
+        }
 #elif defined(Q_WS_MAC)
         name = ports.at(i).portName;
-        if(name.indexOf("usbserial") > -1)
+        if(name.indexOf("usbserial") > -1) {
             cbPort->addItem(name);
+            friendlyPortName.append(ports.at(i).friendName);
+        }
 #else
         name = ports.at(i).physName;
         cbPort->addItem(name);
+        friendlyPortName.append(ports.at(i).friendName);
 #endif
     }
 }
