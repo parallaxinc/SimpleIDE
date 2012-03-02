@@ -55,6 +55,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* start with an empty file if fresh install */
     newFile();
 
+    /* setup gui components */
+    setupFileMenu();
+    setupHelpMenu();
+    setupToolBars();
+
+    /* show gui */
+    QApplication::processEvents();
+
     /* get app settings at startup and before any compiler call */
     getApplicationSettings();
 
@@ -66,14 +74,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* set up ctag tool */
     ctags = new CTags(aSideCompilerPath);
-
-    /* setup gui components */
-    setupFileMenu();
-    setupHelpMenu();
-    setupToolBars();
-
-    /* show gui */
-    QApplication::processEvents();
 
     initBoardTypes();
 
@@ -231,10 +231,8 @@ void MainWindow::getApplicationSettings()
     }
 
     QVariant wrkv = settings->value(workspaceKey);
-    if(wrkv.canConvert(QVariant::String)) {
-        QString s = wrkv.toString();
-        if(s.length() == 0)
-            propDialog->showProperties();
+    if(wrkv.canConvert(QVariant::String) == false) {
+        propDialog->showProperties();
     }
 }
 

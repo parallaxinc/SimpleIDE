@@ -131,6 +131,9 @@ void NewProject::reject()
 
 void NewProject::showDialog()
 {
+    int fontSize = path->fontInfo().pixelSize();
+    setMinimumWidth(mypath.length()*fontSize+100);
+
     mypath = getCurrentPath();
     path->setText(mypath+name->text());
     this->setWindowTitle(QString(ASideGuiKey)+tr(" New Project"));
