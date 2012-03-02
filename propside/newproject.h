@@ -18,7 +18,7 @@ public:
 signals:
 
 public slots:
-    void nameChanged(QString s);
+    void nameChanged();
     void browsePath();
     void accept();
     void reject();

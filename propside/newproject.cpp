@@ -1,19 +1,25 @@
 #include "newproject.h"
 #include "properties.h"
 
+/*
+ * Path is not saved in linux without installer - added workspace to properties dialog.
+ */
 NewProject::NewProject(QWidget *parent) : QDialog(parent)
 {
-    name = new QLineEdit(tr("project"), this);
-    connect(name,SIGNAL(textChanged(QString)),this,SLOT(nameChanged(QString)));
-
     mypath = getCurrentPath();
     path = new QLineEdit(mypath,this);
-    path->setText(mypath+name->text());
-    QLabel *nameLabel = new QLabel(tr("Project Name"));
-    QLabel *pathLabel = new QLabel(tr("Folder"));
+    path->setToolTip(tr("Directory for new project."));
 
     QPushButton *btnBrowsePath = new QPushButton(this);
     btnBrowsePath->setText(tr("Browse"));
+
+    name = new QLineEdit(this);
+    name->setToolTip(tr("New project name and sub-directory."));
+    connect(name,SIGNAL(textChanged(QString)),this,SLOT(nameChanged()));
+
+    path->setText(mypath+name->text());
+    QLabel *nameLabel = new QLabel(tr("Project Name"));
+    QLabel *pathLabel = new QLabel(tr("Folder"));
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     connect(btnBrowsePath, SIGNAL(clicked()), this, SLOT(browsePath()));
@@ -22,11 +28,11 @@ NewProject::NewProject(QWidget *parent) : QDialog(parent)
 
     QVBoxLayout *blay = new QVBoxLayout(this);
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(nameLabel,0,0,1,1);
-    layout->addWidget(name,0,1,1,1);
-    layout->addWidget(pathLabel,1,0,1,1);
-    layout->addWidget(path,1,1,1,1);
-    layout->addWidget(btnBrowsePath,1,2,1,1);
+    layout->addWidget(nameLabel,1,0,1,1);
+    layout->addWidget(name,1,1,1,1);
+    layout->addWidget(pathLabel,0,0,1,1);
+    layout->addWidget(path,0,1,1,1);
+    layout->addWidget(btnBrowsePath,0,2,1,1);
 
     blay->addLayout(layout);
     blay->addWidget(buttonBox);
@@ -44,7 +50,7 @@ NewProject::~NewProject()
     delete path;
 }
 
-void NewProject::nameChanged(QString s)
+void NewProject::nameChanged()
 {
     path->setText(mypath+name->text());
 }
@@ -68,8 +74,14 @@ void NewProject::browsePath()
     QString pathName;
     QString fullname = mypath; //+name->text();
     QFileDialog fileDialog(this,tr("New Project Folder"),fullname,tr("Project Folder (*)"));
-    fileDialog.setFileMode(QFileDialog::Directory);
     QStringList filenames;
+    fileDialog.setOptions(QFileDialog::ShowDirsOnly);
+    fileDialog.setViewMode(QFileDialog::Detail);
+    fileDialog.setFileMode(QFileDialog::Directory);
+    if(mypath.at(mypath.length()-1) == '/')
+        mypath = mypath.left(mypath.length()-1);
+    fileDialog.selectFile(mypath);
+
     if(fileDialog.exec())
         filenames = fileDialog.selectedFiles();
     if(filenames.length() > 0)
@@ -96,8 +108,20 @@ void NewProject::browsePath()
 
 void NewProject::accept()
 {
-    path->setText(mypath+name->text());
-    done(QDialog::Accepted);
+    if(name->text().length()<1) {
+        QMessageBox::information(this,
+                 tr("Need Project Name"),
+                 tr("Please enter a project name."),QMessageBox::Ok);
+        return;
+    }
+    int rc = QMessageBox::question(this,
+                 tr("Confirm New Project"),
+                 tr("Create new project file \"")+name->text()+".side\""+tr(" in\n")+path->text()+tr("?"),
+                 QMessageBox::Yes, QMessageBox::No);
+    if(rc == QMessageBox::Yes) {
+        path->setText(mypath+name->text());
+        done(QDialog::Accepted);
+    }
 }
 
 void NewProject::reject()
@@ -110,7 +134,7 @@ void NewProject::showDialog()
     mypath = getCurrentPath();
     path->setText(mypath+name->text());
     this->setWindowTitle(QString(ASideGuiKey)+tr(" New Project"));
-    this->show();
+    this->exec();
 }
 
 QString NewProject::getName()
