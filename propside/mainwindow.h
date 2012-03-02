@@ -207,6 +207,7 @@ private:
 
     QComboBox       *cbBoard;
     QComboBox       *cbPort;
+    QStringList     friendlyPortName;
     QToolButton     *btnConnected;
     Console         *termEditor;
     PortListener     *portListener;
