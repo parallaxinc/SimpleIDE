@@ -28,6 +28,7 @@ signals:
 public slots:
     void browseCompiler();
     void browseIncludes();
+    void browseWorkspace();
     void accept();
     void reject();
     void showProperties();
@@ -35,6 +36,7 @@ public slots:
 private:
     QLineEdit   *leditCompiler;
     QLineEdit   *leditIncludes;
+    QLineEdit   *leditWorkspace;
     QString     compilerstr;
     QString     includesstr;
     QString     mypath;
