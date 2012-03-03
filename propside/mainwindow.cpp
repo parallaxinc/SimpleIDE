@@ -279,6 +279,8 @@ void MainWindow::exitSave()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    if(event->type()) {}; // silence compiler
+
     /* never leave port open */
     portListener->close();
 
@@ -554,7 +556,7 @@ void MainWindow::closeProject()
 }
 
 
-void MainWindow::openRecentProject(const QString &proj)
+void MainWindow::openRecentProject()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action)
@@ -1109,7 +1111,8 @@ void MainWindow::setCurrentPort(int index)
         return;
     portName = cbPort->itemText(index);
     cbPort->setCurrentIndex(index);
-    cbPort->setToolTip(friendlyPortName.at(index));
+    if(friendlyPortName.length() > 0)
+        cbPort->setToolTip(friendlyPortName.at(index));
     if(portName.length()) {
         portListener->init(portName, BAUD115200);  // signals get hooked up internally
     }
@@ -2323,13 +2326,13 @@ void MainWindow::enumeratePorts()
 #elif defined(Q_WS_MAC)
         name = ports.at(i).portName;
         if(name.indexOf("usbserial") > -1) {
-            cbPort->addItem(name);
             friendlyPortName.append(ports.at(i).friendName);
+            cbPort->addItem(name);
         }
 #else
         name = ports.at(i).physName;
-        cbPort->addItem(name);
         friendlyPortName.append(ports.at(i).friendName);
+        cbPort->addItem(name);
 #endif
     }
 }
@@ -2485,8 +2488,7 @@ void MainWindow::setupFileMenu()
     for (int i = 0; i < MaxRecentFiles; ++i) {
         recentFileActs[i] = new QAction(this);
         recentFileActs[i]->setVisible(false);
-        connect(recentFileActs[i], SIGNAL(triggered()),
-                this, SLOT(openRecentFile()));
+        connect(recentFileActs[i], SIGNAL(triggered()),this, SLOT(openRecentFile()));
     }
 
     for (int i = 0; i < MaxRecentFiles; ++i)
@@ -2516,8 +2518,7 @@ void MainWindow::setupFileMenu()
     for (int i = 0; i < MaxRecentProjects; ++i) {
         recentProjectActs[i] = new QAction(this);
         recentProjectActs[i]->setVisible(false);
-        connect(recentProjectActs[i], SIGNAL(triggered()),
-                this, SLOT(openRecentProject()));
+        connect(recentProjectActs[i], SIGNAL(triggered()),this, SLOT(openRecentProject()));
     }
 
     for (int i = 0; i < MaxRecentProjects; ++i)

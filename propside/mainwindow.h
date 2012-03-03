@@ -23,7 +23,6 @@
 #include "hardware.h"
 #include "projectoptions.h"
 #include "cbuildtree.h"
-#include "finddialog.h"
 #include "replacedialog.h"
 #include "aboutdialog.h"
 #include "ctags.h"
@@ -122,7 +121,7 @@ public slots:
 
     void setCurrentProject(const QString &fileName);
     void updateRecentProjectActions();
-    void openRecentProject(const QString &path = QString());
+    void openRecentProject();
 
     void editorMenu(QPoint point);
 
