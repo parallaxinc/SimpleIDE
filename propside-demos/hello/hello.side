@@ -1,0 +1,7 @@
+hello.c
+>compiler=C
+>memtype=cog
+>optimize=-Os
+>-m32bit-doubles
+>-fno-exceptions
+>-s
