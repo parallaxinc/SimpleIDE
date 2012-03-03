@@ -246,7 +246,7 @@ void MainWindow::exitSave()
         QString tabName = editorTabs->tabText(tab);
         if(tabName.at(tabName.length()-1) == '*')
         {
-            mbox.setInformativeText(tr("Save File: ") + tabName.mid(0,tabName.indexOf(" *")) + tr(" ?"));
+            mbox.setInformativeText(tr("Save File? ") + tabName.mid(0,tabName.indexOf(" *")));
             if(saveAll)
             {
                 saveFileByTabIndex(tab);
@@ -716,6 +716,7 @@ void MainWindow::saveAsFile(const QString &path)
                 file.write(data.toAscii());
                 file.close();
             }
+            setCurrentFile(fileName);
         }
     } catch(...) {
     }
@@ -1833,7 +1834,7 @@ void MainWindow::closeTab(int tab)
     QString tabName = editorTabs->tabText(tab);
     if(tabName.at(tabName.length()-1) == '*')
     {
-        mbox.setInformativeText(tr("Save File: ") + tabName.mid(0,tabName.indexOf(" *")) + tr(" ?"));
+        mbox.setInformativeText(tr("Save File? ") + tabName.mid(0,tabName.indexOf(" *")));
         int ret = mbox.exec();
         if(ret == QMessageBox::Save)
             saveFileByTabIndex(tab);

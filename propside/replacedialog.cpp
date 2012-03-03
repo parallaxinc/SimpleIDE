@@ -6,6 +6,8 @@
 #include <QtGui>
 #include "replacedialog.h"
 
+#define USE_REGEX 0
+
 ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
 {
     int row = 0;
@@ -14,6 +16,7 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
 
     QLabel *findLabel = new QLabel(tr("Find text:"));
     findEdit = new QLineEdit;
+    connect(findEdit,SIGNAL(textChanged(QString)),this,SLOT(findChanged(QString)));
     QLabel *replaceLabel = new QLabel(tr("Replace with:"));
     replaceEdit = new QLineEdit;
 
@@ -22,15 +25,15 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
     findNextButton->setToolTip(tr("Find Next"));
     findPrevButton = new QToolButton();
     findPrevButton->setIcon(QIcon(":/images/previous.png"));
-    findNextButton->setToolTip(tr("Find Previous"));
+    findPrevButton->setToolTip(tr("Find Previous"));
     findText = "";
 
     replaceNextButton = new QToolButton();
     replaceNextButton->setIcon(QIcon(":/images/next.png"));
-    replaceNextButton->setToolTip(tr("Replace Next"));
+    replaceNextButton->setToolTip(tr("Replace and Find Next"));
     replacePrevButton = new QToolButton();
     replacePrevButton->setIcon(QIcon(":/images/previous.png"));
-    replacePrevButton->setToolTip(tr("Replace Previous"));
+    replacePrevButton->setToolTip(tr("Replace and Find Previous"));
     replaceText = "";
     replaceAllButton = new QPushButton(tr("Replace All"));
 
@@ -44,6 +47,13 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
     caseSensitiveButton->setIcon(QIcon(":/images/case.png"));
     caseSensitiveButton->setCheckable(true);
 
+#if USE_REGEX
+    regexButton = new QToolButton(this);
+    regexButton->setToolTip(tr("RegEx Function"));
+    regexButton->setIcon(QIcon(":/images/dotstar.png"));
+    regexButton->setCheckable(true);
+#endif
+
     QHBoxLayout *optLayout = new QHBoxLayout();
 
     okButton = new QPushButton(tr("&OK"));
@@ -56,6 +66,9 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
 
     optLayout->addWidget(wholeWordButton);
     optLayout->addWidget(caseSensitiveButton);
+#if USE_REGEX
+    optLayout->addWidget(regexButton);
+#endif
     layout->addLayout(optLayout,row,++col,span,span);
 
     row++;
@@ -82,6 +95,7 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
     connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
 
     editor = NULL;
+    findPosition = 0;
 }
 
 QTextDocument::FindFlag ReplaceDialog::getFlags(int prev)
@@ -94,18 +108,51 @@ QTextDocument::FindFlag ReplaceDialog::getFlags(int prev)
     return (QTextDocument::FindFlag) flags;
 }
 
+/*
+ * Find text for user as typed in find line edit box.
+ */
+void ReplaceDialog::findChanged(QString text)
+{
+    if(editor == NULL)
+        return;
+    QTextCursor cur = editor->textCursor();
+    cur.setPosition(findPosition,QTextCursor::MoveAnchor);
+    editor->setTextCursor(cur);
+
+#if USE_REGEX
+    if(regexButton->isChecked()) {
+        QRegExp reg(text);
+        QTextDocument *ted = const_cast<QTextDocument *>(editor->document());
+        cur = ted->find(reg,findPosition,getFlags());
+        editor->setTextCursor(cur);
+    }
+    else
+    {
+        /* non regex version */
+        editor->find(text,getFlags());
+    }
+#else
+    QRegExp reg(text);
+    reg.setPatternSyntax(QRegExp::RegExp2);
+    QTextDocument *ted = const_cast<QTextDocument *>(editor->document());
+    cur = ted->find(reg,findPosition,getFlags());
+    editor->setTextCursor(cur);
+#endif
+
+}
+
 void ReplaceDialog::findClicked()
 {
     QString text = findEdit->text();
 
     if (text.isEmpty()) {
-        //QMessageBox::information(this, tr("Empty Field"),tr("Please enter text."));
         return;
     } else {
         findText = text;
         hide();
     }
 }
+
 void ReplaceDialog::findNextClicked()
 {
     if(editor == NULL)
@@ -117,7 +164,27 @@ void ReplaceDialog::findNextClicked()
 
     editor->setCenterOnScroll(true);
 
-    if(edtext.contains(text,Qt::CaseInsensitive)) {
+#if USE_REGEX
+    if(regexButton->isChecked()) {
+        QRegExp reg(text);
+        QTextDocument *ted = const_cast<QTextDocument *>(editor->document());
+        QTextCursor cur = ted->find(reg,findPosition,getFlags());
+        if(cur.hasSelection()) {
+            count++;
+        }
+        else {
+            if(showBeginMessage(tr("Find"))) {
+                QTextCursor cur = ted->find(reg,findPosition,getFlags());
+                if(cur.hasSelection()) {
+                    count++;
+                }
+            }
+        }
+        editor->setTextCursor(cur);
+    }
+    else
+#endif
+    {
         if(editor->find(text,getFlags()) == true) {
             count++;
         }
@@ -129,15 +196,9 @@ void ReplaceDialog::findNextClicked()
             }
         }
     }
-    if(count == 0) {
-        QMessageBox::information(this, tr("Text Not Found"),
-            tr("Can't find text: \"%1\"").arg(text));
-    }
-    else {
-        editor->activateWindow();
-        QTextCursor cur = editor->textCursor();
-        cur.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
-        editor->setTextCursor(cur);
+
+    if(count > 0) {
+        findPosition = editor->textCursor().position();
     }
 
 }
@@ -152,27 +213,49 @@ void ReplaceDialog::findPrevClicked()
 
     editor->setCenterOnScroll(true);
 
-    if(edtext.contains(text,Qt::CaseInsensitive)) {
-        if(editor->find(text,getFlags(QTextDocument::FindBackward)) == true) {
+#if USE_REGEX
+    if(regexButton->isChecked()) {
+        QRegExp reg(text);
+        QTextDocument *ted = const_cast<QTextDocument *>(editor->document());
+        QTextCursor cur = ted->find(reg,findPosition,getFlags(QTextDocument::FindBackward));
+        if(cur.hasSelection()) {
             count++;
         }
         else {
-            if(showEndMessage(tr("Find"))) {
-                if(editor->find(text,getFlags(QTextDocument::FindBackward)) == true) {
+            if(showBeginMessage(tr("Find"))) {
+                QTextCursor cur = ted->find(reg,findPosition,getFlags(QTextDocument::FindBackward));
+                if(cur.hasSelection()) {
                     count++;
                 }
             }
         }
-    }
-    if(count == 0) {
-        QMessageBox::information(this, tr("Text Not Found"),
-            tr("Can't find text: \"%1\"").arg(text));
-    }
-    else {
-        editor->activateWindow();
-        QTextCursor cur = editor->textCursor();
-        cur.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor);
         editor->setTextCursor(cur);
+    }
+    else
+#endif
+    {
+        if(edtext.contains(text,Qt::CaseInsensitive)) {
+            if(editor->find(text,getFlags(QTextDocument::FindBackward)) == true) {
+                count++;
+            }
+            else {
+                if(showEndMessage(tr("Find"))) {
+                    if(editor->find(text,getFlags(QTextDocument::FindBackward)) == true) {
+                        count++;
+                    }
+                }
+            }
+        }
+    }
+
+    if(count > 0) {
+        QTextCursor cur = editor->textCursor();
+        int len = cur.selectedText().length();
+        cur.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor);
+        cur.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor);
+        cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor,len);
+        editor->setTextCursor(cur);
+        findPosition = editor->textCursor().position();
     }
 }
 
@@ -194,7 +277,6 @@ void ReplaceDialog::replaceClicked()
     QString text = replaceEdit->text();
 
     if (text.isEmpty()) {
-        //QMessageBox::information(this, tr("Empty Field"),tr("Please enter text."));
         return;
     } else {
         replaceText = text;
@@ -209,41 +291,11 @@ void ReplaceDialog::replaceNextClicked()
     if(editor == NULL)
         return;
 
-    int count = 0;
-    QString text = findEdit->text();
-    QString edtext = editor->toPlainText();
-
-    editor->setCenterOnScroll(true);
-
-    if(edtext.contains(text,Qt::CaseInsensitive)) {
-        if(editor->find(text,getFlags()) == true) {
-            QString s = editor->textCursor().selectedText();
-            if(s.isEmpty() == false) {
-                count++;
-            }
-        }
-        else {
-            if(showBeginMessage(tr("Replace"))) {
-                if(editor->find(text,getFlags()) == true) {
-                    QString s = editor->textCursor().selectedText();
-                    if(s.isEmpty() == false) {
-                        count++;
-                    }
-                }
-            }
-        }
-    }
-    if(count == 0) {
-        QMessageBox::information(this, tr("Text Not Found"),
-            tr("Can't find text: \"%1\"").arg(text));
-    }
-    else {
-        editor->activateWindow();
+    QString s = editor->textCursor().selectedText();
+    if(s.length()) {
         editor->textCursor().removeSelectedText();
         editor->textCursor().insertText(replaceEdit->text());
-        QTextCursor cur = editor->textCursor();
-        cur.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
-        editor->setTextCursor(cur);
+        findNextClicked();
     }
 }
 
@@ -255,41 +307,15 @@ void ReplaceDialog::replacePrevClicked()
     if(editor == NULL)
         return;
 
-    int count = 0;
-    QString text = findEdit->text();
-    QString edtext = editor->toPlainText();
-
-    editor->setCenterOnScroll(true);
-
-    if(edtext.contains(text,Qt::CaseInsensitive)) {
-        if(editor->find(text,getFlags(QTextDocument::FindBackward)) == true) {
-            QString s = editor->textCursor().selectedText();
-            if(s.isEmpty() == false) {
-                count++;
-            }
-        }
-        else {
-            if(showEndMessage(tr("Replace"))) {
-                if(editor->find(text,getFlags(QTextDocument::FindBackward)) == true) {
-                    QString s = editor->textCursor().selectedText();
-                    if(s.isEmpty() == false) {
-                        count++;
-                    }
-                }
-            }
-        }
-    }
-    if(count == 0) {
-        QMessageBox::information(this, tr("Text Not Found"),
-            tr("Can't find text: \"%1\"").arg(text));
-    }
-    else {
-        editor->activateWindow();
+    QString s = editor->textCursor().selectedText();
+    if(s.length()) {
         editor->textCursor().removeSelectedText();
         editor->textCursor().insertText(replaceEdit->text());
+
         QTextCursor cur = editor->textCursor();
         cur.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor);
         editor->setTextCursor(cur);
+        findPrevClicked();
     }
 }
 
@@ -301,14 +327,18 @@ void ReplaceDialog::replaceAllClicked()
         return;
 
     QString edtext = editor->toPlainText();
-    do
-    {
-        if (edtext.contains(text,Qt::CaseInsensitive)) {
-            editor->setCenterOnScroll(true);
-            editor->find(text,getFlags());
-        }
-        QString s = editor->textCursor().selectedText();
-        if(s.isEmpty() == false) {
+    editor->setCenterOnScroll(true);
+
+    QString s = editor->textCursor().selectedText();
+    if(s.length()>0) {
+        editor->textCursor().removeSelectedText();
+        editor->textCursor().insertText(replaceEdit->text());
+        count++;
+    }
+    while(edtext.contains(text,Qt::CaseInsensitive)) {
+        editor->find(text,getFlags());
+        s = editor->textCursor().selectedText();
+        if(s.length()>0) {
             editor->textCursor().removeSelectedText();
             editor->textCursor().insertText(replaceEdit->text());
             count++;
@@ -318,11 +348,10 @@ void ReplaceDialog::replaceAllClicked()
                 break;
         }
         edtext = editor->toPlainText();
-    } while(edtext.contains(text,Qt::CaseInsensitive));
+    }
 
     QMessageBox::information(this, tr("Replace Done"),
         tr("Replaced %1 instances of \"%2\".").arg(count).arg(text));
-
 }
 
 QString ReplaceDialog::getReplaceText()
@@ -372,4 +401,3 @@ void ReplaceDialog::setEditor(QPlainTextEdit *ed)
     findEdit->setFocus();
     editor = ed;
 }
-

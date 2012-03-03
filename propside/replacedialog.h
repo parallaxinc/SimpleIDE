@@ -27,6 +27,7 @@ public:
     void setEditor(QPlainTextEdit *ed);
 
 public slots:
+    void findChanged(QString text);
     void findClicked();
     void findNextClicked();
     void findPrevClicked();
@@ -53,8 +54,13 @@ private:
 
     QToolButton *caseSensitiveButton;
     QToolButton *wholeWordButton;
+    QToolButton *regexButton;
 
     QGridLayout *layout;
+
+    /* last find position */
+    int         findPosition;
+    int         wasClicked;
 };
 
 #endif
