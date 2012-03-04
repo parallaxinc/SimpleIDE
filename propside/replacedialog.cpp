@@ -122,6 +122,7 @@ void ReplaceDialog::findChanged(QString text)
 #if USE_REGEX
     if(regexButton->isChecked()) {
         QRegExp reg(text);
+        reg.setPatternSyntax(QRegExp::RegExp2);
         QTextDocument *ted = const_cast<QTextDocument *>(editor->document());
         cur = ted->find(reg,findPosition,getFlags());
         editor->setTextCursor(cur);
@@ -132,11 +133,7 @@ void ReplaceDialog::findChanged(QString text)
         editor->find(text,getFlags());
     }
 #else
-    QRegExp reg(text);
-    reg.setPatternSyntax(QRegExp::RegExp2);
-    QTextDocument *ted = const_cast<QTextDocument *>(editor->document());
-    cur = ted->find(reg,findPosition,getFlags());
-    editor->setTextCursor(cur);
+    editor->find(text,getFlags());
 #endif
 
 }
