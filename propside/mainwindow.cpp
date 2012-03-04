@@ -385,7 +385,7 @@ void MainWindow::openFileName(QString fileName)
                     }
                 }
             }
-            if(editorTabs->tabText(0) == untitledstr) {
+            if(editorTabs->tabText(0).contains(untitledstr)) {
                 setEditorTab(0, sname, fileName, data);
                 return;
             }
@@ -759,6 +759,12 @@ void MainWindow::fileChanged()
     QString fileName = editorTabs->tabToolTip(index);
     QFile file(fileName);
     if(file.exists() == false) {
+        if(curtext.length() > 0) {
+            if(name.at(name.length()-1) != '*') {
+                name += tr(" *");
+                editorTabs->setTabText(index, name);
+            }
+        }
         return;
     }
     QString text;
@@ -1837,10 +1843,15 @@ void MainWindow::closeTab(int tab)
     QString tabName = editorTabs->tabText(tab);
     if(tabName.at(tabName.length()-1) == '*')
     {
-        mbox.setInformativeText(tr("Save File? ") + tabName.mid(0,tabName.indexOf(" *")));
-        int ret = mbox.exec();
-        if(ret == QMessageBox::Save)
-            saveFileByTabIndex(tab);
+        if(editorTabs->tabText(tab).contains(untitledstr)) {
+            saveAsFile(editors->at(tab)->toolTip());
+        }
+        else {
+            mbox.setInformativeText(tr("Save File? ") + tabName.mid(0,tabName.indexOf(" *")));
+            int ret = mbox.exec();
+            if(ret == QMessageBox::Save)
+                saveFileByTabIndex(tab);
+        }
     }
 
     editors->at(tab)->setPlainText("");
