@@ -412,7 +412,7 @@ void MainWindow::closeAll()
 {
     saveProjectOptions();
     setWindowTitle(QString(ASideGuiKey));
-    this->projectOptions->clearOptions();
+    // this->projectOptions->clearOptions();
     if(projectModel != NULL) {
         delete projectModel;
         projectModel = NULL;
@@ -493,12 +493,14 @@ void MainWindow::openProject(const QString &path)
         updateProjectTree(fileName);
     }
     openFileName(fileName);
+    /* for old project manager method only
     if(projectFile.length() == 0) {
         setProject();
     }
     else if(editorTabs->count() == 1) {
         setProject();
     }
+    */
 }
 
 /*
@@ -541,9 +543,10 @@ void MainWindow::closeProject()
         }
     }
 
-    /* clean project manager selections
+    /* This causes us to lose project information on next load.
+     * Not sure why. Leave it out for now.
      */
-    this->projectOptions->clearOptions();
+    //projectOptions->clearOptions();
 
     /* close project manager side bar
      */
@@ -2235,7 +2238,7 @@ void MainWindow::saveProjectOptions()
             if(!arg.length())
                 continue;
             if(arg.at(0) == '>')
-                projectOptions->setOptions(arg);
+                continue;
             else
                 projstr += arg + "\n";
         }
