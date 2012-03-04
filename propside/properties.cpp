@@ -183,5 +183,6 @@ void Properties::showProperties()
     compilerstr = leditCompiler->text();
     includesstr = leditIncludes->text();
     this->setWindowTitle(QString(ASideGuiKey)+tr(" Compiler Properties"));
-    this->exec();
+    this->show();
+    this->activateWindow();
 }
