@@ -5,7 +5,7 @@
 #define APPWINDOW_MIN_HEIGHT 530
 #define APPWINDOW_MIN_WIDTH 780
 #define EDITOR_MIN_WIDTH 500
-#define PROJECT_WIDTH 230
+#define PROJECT_WIDTH 250
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
 #define ENABLE_CTRL_RIGHTCLICK_FIND 0
@@ -914,7 +914,7 @@ void MainWindow::findDeclarationInfo()
            "One of these methods should find a function declaration.\n"\
            "1) Use \"Ctrl+Right Mouse Click\" over the symbol name.\n" \
            "2) Put the cursor on the symbol and use the keyboard shortcut for " \
-           "\"Menu->Edit->Find Declaration\".\n"),
+           "\"Menu->Edit->Find Function\".\n"),
         QMessageBox::Ok);
 #else
     QMessageBox::information(this,
@@ -922,7 +922,7 @@ void MainWindow::findDeclarationInfo()
         tr("Please note: library functions will not be found.\n\n" \
            "To find a function declaration, "\
            "put the cursor on the symbol and use the keyboard shortcut for " \
-           "\"Menu->Edit->Find Declaration\".\n"),
+           "\"Menu->Edit->Find Function\".\n"),
         QMessageBox::Ok);
 #endif
 }
