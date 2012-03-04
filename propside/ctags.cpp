@@ -27,25 +27,52 @@ int CTags::runCtags(QString path)
     if(ctagsFound == false)
         return rc;
 
-    projectPath = path;
+    /* if project file in path is not valid, return false
+     */
+    if(path.length() < 1)
+        return rc;
+
+    QFile proj(path);
+    if(proj.exists() == false)
+        return rc;
+
+    if(proj.open(QFile::ReadOnly | QFile::Text) == false)
+        return rc;
+
+    QString pstr = proj.readAll();
+    proj.close();
+
+    /* add project files to ctags list so we don't zoom in unrelated files
+     */
+    QStringList plist = pstr.split("\n");
+    for(int n = plist.length()-1; n >= 0; n--) {
+        QString s = plist.at(n);
+        if(s.length() < 1) {
+            plist.removeAt(n);
+            continue;
+        }
+        if(s.at(0) == '>') {
+            plist.removeAt(n);
+            continue;
+        }
+    }
+
+    projectPath = QDir::fromNativeSeparators(path);
+    projectPath = projectPath.mid(0,projectPath.lastIndexOf("/")+1);
 
     connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
     connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
 
     process->setProcessChannelMode(QProcess::MergedChannels);
-    process->setWorkingDirectory(path);
+    process->setWorkingDirectory(projectPath);
 
     args.append("--format=1");
 
-    QDir dir(path);
-    dir.setFilter(QDir::Files);
-    QFileInfoList fileList = dir.entryInfoList();
-    foreach(QFileInfo file, fileList) {
-        if(file.fileName().contains(".out"))
-            continue;
-        args.append(path+file.fileName());
-    }
+    /* append project files */
+    foreach(QString argstr, plist)
+        if(argstr.length() > 0)
+            args.append(projectPath+argstr);
 
     procDone = false;
     process->start(ctagsProgram,args);
@@ -61,12 +88,15 @@ int CTags::runCtags(QString path)
 
 void CTags::procError(QProcess::ProcessError code)
 {
-    qDebug() << "procError " << code;
+    mutex.lock();
+    procDone = true;
+    mutex.unlock();
+    // qDebug() << "procError " << code;
 }
 
 void CTags::procReadyRead()
 {
-    qDebug() << "procReadyRead :" << process->readAllStandardOutput();
+    // qDebug() << "procReadyRead :" << process->readAllStandardOutput();
 }
 
 void CTags::procFinished(int code, QProcess::ExitStatus status)
@@ -78,7 +108,7 @@ void CTags::procFinished(int code, QProcess::ExitStatus status)
     procDone = true;
     mutex.unlock();
 
-    qDebug() << "procFinished " << code << " " << status << ":" << process->readAllStandardOutput();
+    // qDebug() << "runCtags procFinished " << code << " " << status << ":" << process->readAllStandardOutput();
 }
 
 bool CTags::enabled()

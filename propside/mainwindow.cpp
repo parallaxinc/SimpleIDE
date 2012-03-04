@@ -8,7 +8,6 @@
 #define PROJECT_WIDTH 270
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
-#define ENABLE_CTRL_RIGHTCLICK_FIND 0
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -52,6 +51,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* start with an empty file if fresh install */
     newFile();
 
+    /* get app settings at startup and before any compiler call */
+    getApplicationSettings();
+
+    /* set up ctag tool */
+    ctags = new CTags(aSideCompilerPath);
+
     /* setup gui components */
     setupFileMenu();
     setupHelpMenu();
@@ -60,17 +65,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* show gui */
     QApplication::processEvents();
 
-    /* get app settings at startup and before any compiler call */
-    getApplicationSettings();
-
     /* get user's last open path */
     QVariant  lastfile = settings->value(lastFileNameKey);
     if(lastfile.canConvert(QVariant::String)) {
         lastPath = sourcePath(lastfile.toString());
     }
-
-    /* set up ctag tool */
-    ctags = new CTags(aSideCompilerPath);
 
     initBoardTypes();
 
@@ -322,7 +321,7 @@ void MainWindow::newFile()
     int tab = editors->count()-1;
     editorTabs->addTab(editors->at(tab),(const QString&)untitledstr);
     editorTabs->setCurrentIndex(tab);
-    QPlainTextEdit *ed = editors->at(tab);
+    Editor *ed = editors->at(tab);
     ed->setFocus();
     fileChangeDisable = false;
 }
@@ -734,7 +733,7 @@ void MainWindow::fileChanged()
 
     int index = editorTabs->currentIndex();
     QString name = editorTabs->tabText(index);
-    QPlainTextEdit *ed = editors->at(index);
+    Editor *ed = editors->at(index);
     QTextCursor cur = ed->textCursor();
     int cpos = cur.position();
     if(cpos > 0) {
@@ -810,19 +809,19 @@ void MainWindow::zipFile(const QString &path)
 
 void MainWindow::copyFromFile()
 {
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor)
         editor->copy();
 }
 void MainWindow::cutFromFile()
 {
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor)
         editor->cut();
 }
 void MainWindow::pasteToFile()
 {
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor)
         editor->paste();
 }
@@ -840,7 +839,7 @@ void MainWindow::replaceInFile()
     if(!replaceDialog)
         return;
 
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
 
     replaceDialog->clearFindText();
     QString text = editors->at(editorTabs->currentIndex())->textCursor().selectedText();
@@ -854,44 +853,37 @@ void MainWindow::replaceInFile()
     replaceDialog->activateWindow();
 }
 
-void MainWindow::replaceNextInFile()
-{
-}
-void MainWindow::replacePrevInFile()
-{
-}
-void MainWindow::replaceAllInFile()
-{
-}
-
 void MainWindow::findDeclaration(QPoint point)
 {
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
     QTextCursor cur = editor->cursorForPosition(point);
     findDeclaration(cur);
 }
 
 void MainWindow::findDeclaration()
 {
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
     QTextCursor cur = editor->textCursor();
     findDeclaration(cur);
 }
 
 void MainWindow::findDeclaration(QTextCursor cur)
 {
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor) {
-        ctags->runCtags(sourcePath(projectFile));
         /* find word */
-        cur.movePosition(QTextCursor::StartOfWord,QTextCursor::MoveAnchor);
-        cur.movePosition(QTextCursor::EndOfWord,QTextCursor::KeepAnchor);
+        cur.select(QTextCursor::WordUnderCursor);
         editor->setTextCursor(cur);
         QString text = cur.selectedText();
+        if(text.length() > 0 && text.at(0).isLetter()) {
+            ctags->runCtags(projectFile);
+        }
+        else {
+            return;
+        }
 
         /* find line for traceback */
-        cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-        cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+        cur.select(QTextCursor::LineUnderCursor);
 
         int index = editorTabs->currentIndex();
         QString fileName = editorTabs->tabToolTip(index);
@@ -911,49 +903,89 @@ void MainWindow::findDeclaration(QTextCursor cur)
     }
 }
 
+bool MainWindow::isTagged(QString text)
+{
+    bool rc = false;
+
+    if(text.length() == 0) {
+        findDeclarationInfo();
+        return rc;
+    }
+    if(text.length() > 0 && text.at(0).isLetter()) {
+        ctags->runCtags(projectFile);
+    }
+    else {
+        return rc;
+    }
+
+    QString tagline = ctags->findTag(text);
+
+    if(tagline.length() == 0)
+        return rc;
+    QString file = ctags->getFile(tagline);
+    if(file.length() == 0)
+        return rc;
+    int  linenum = ctags->getLine(tagline);
+    if(linenum < 0)
+        return rc;
+
+    return true;
+}
+
 void MainWindow::findDeclarationInfo()
 {
-#if ENABLE_CTRL_RIGHTCLICK_FIND
     QMessageBox::information(this,
-        tr("Find Function Declaration"),
-        tr("Please note: library functions will not be found\n\n" \
-           "One of these methods should find a function declaration.\n"\
-           "1) Use \"Ctrl+Right Mouse Click\" over the symbol name.\n" \
-           "2) Put the cursor on the symbol and use the keyboard shortcut for " \
-           "\"Menu->Edit->Find Function\".\n"),
+        tr("Find Declaration"),
+        tr("Please note: library declarations will not be found.\n" \
+           "Mouse Over + Ctrl highlights valid declarations.\n\n" \
+           "One of these methods should find a declaration.\n\n"\
+           "1) Use \"Ctrl+Left Mouse Click\" over the name.\n\n" \
+           "2) Put the cursor on the symbol name and use the keyboard shortcut for " \
+           "\"Menu->Edit->Find Declaration\".\n"),
         QMessageBox::Ok);
-#else
-    QMessageBox::information(this,
-        tr("Find Function Declaration"),
-        tr("Please note: library functions will not be found.\n\n" \
-           "To find a function declaration, "\
-           "put the cursor on the symbol and use the keyboard shortcut for " \
-           "\"Menu->Edit->Find Function\".\n"),
-        QMessageBox::Ok);
-#endif
 }
 
 void MainWindow::prevDeclaration()
 {
     QString tagline = ctags->tagPop();
     if(tagline.indexOf("/ ") == 0) {
+#if 0
         QMessageBox::information(this,
-            tr("Back from Declaration"),tr("Can't go back. The \"Find Function Declaration\" stack is empty."),
+            tr("Back from Declaration"),tr("Can't go back. The \"Find Declaration\" stack is empty."),
             QMessageBox::Ok);
+#endif
         return;
     }
     if(tagline.length() > 0) {
         showDeclaration(tagline);
     }
     else {
+#if 0
         QMessageBox::information(this,
-            tr("Back from Declaration"),tr("Can't go back. The \"Find Function Declaration\" stack is empty."),
+            tr("Back from Declaration"),tr("Can't go back. The \"Find Declaration\" stack is empty."),
             QMessageBox::Ok);
+#endif
     }
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
-    QTextCursor cur = editor->textCursor();
-    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-    //editor->setTextCursor(cur);
+    Editor *editor = editors->at(editorTabs->currentIndex());
+    QStringList list = tagline.split("\t");
+    QString word;
+    if(list.length() > 1) {
+        word = list.at(2);
+        word = word.trimmed();
+        editor->find(word);
+        if(word.contains("("))
+            word = word.mid(0,word.indexOf("("));
+        word = word.trimmed();
+        if(word.contains(" "))
+            word = word.mid(0,word.indexOf(" "));
+        word = word.trimmed();
+    }
+    if(word.length()>0) {
+        QTextCursor cur = editor->textCursor();
+        word = cur.selectedText();
+        cur.setPosition(cur.anchor());
+        editor->setTextCursor(cur);
+    }
 }
 
 int MainWindow::showDeclaration(QString tagline)
@@ -968,7 +1000,7 @@ int MainWindow::showDeclaration(QString tagline)
     if(linenum < 0)
         return rc;
     this->openFileName(file);
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
     editor->setCenterOnScroll(true);
     QTextCursor cur = editor->textCursor();
     //cur.setPosition(linenum,QTextCursor::MoveAnchor);
@@ -977,21 +1009,21 @@ int MainWindow::showDeclaration(QString tagline)
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
     //cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
     editor->setTextCursor(cur);
-    QString res = cur.selectedText();
-    qDebug() << res;
+    //QString res = cur.selectedText();
+    //qDebug() << res;
     return linenum;
 }
 
 void MainWindow::redoChange()
 {
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor)
         editor->redo();
 }
 
 void MainWindow::undoChange()
 {
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor)
         editor->undo();
 }
@@ -1204,7 +1236,7 @@ int  MainWindow::runBuild(void)
     /* Calculate the number of compile steps for progress.
      * Skip empty lines and don't count ">" parameters.
      */
-    int maxprogress = list.length()-1;
+    int maxprogress = list.length();
 
     /* If we don't have a list we can't compile!
      */
@@ -1489,7 +1521,7 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
     if(projectOptions->getStripElf().length())
         args.append(projectOptions->getStripElf());
 
-    qDebug() << args;
+    //qDebug() << args;
     return args;
 }
 
@@ -1563,7 +1595,7 @@ QStringList MainWindow::getLoaderParameters(QString copts)
     for (int n = 0; n < olist.length(); n++)
         args.append(olist[n]);
 
-    qDebug() << args;
+    //qDebug() << args;
     return args;
 }
 
@@ -1657,7 +1689,11 @@ void MainWindow::procError(QProcess::ProcessError error)
     QVariant name = process->property("Name");
     compileStatus->appendPlainText(name.toString() + tr(" error ... (%1)").arg(error));
     compileStatus->appendPlainText(process->readAllStandardOutput());
+    procMutex.lock();
+    procDone = true;
+    procMutex.unlock();
 }
+
 void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if(procDone == true)
@@ -1674,15 +1710,6 @@ void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
     QString s = status->text().mid(len-8);
     if(s.contains("done.",Qt::CaseInsensitive) == false)
         status->setText(status->text()+" done.");
-#if 0
-    QVariant myterm = process->property("Terminal");
-    if(myterm.toBool() && exitCode == 0) {
-        btnConnected->setChecked(true);
-        term->getEditor()->setPlainText("");
-        portListener->open();
-        term->show();
-    }
-#endif
 }
 
 void MainWindow::procReadyRead()
@@ -1756,7 +1783,7 @@ int  MainWindow::checkBuildStart(QProcess *proc, QString progName)
 {
     QMessageBox mbox;
     mbox.setStandardButtons(QMessageBox::Ok);
-    qDebug() << QDir::currentPath();
+    //qDebug() << QDir::currentPath();
     if(!proc->waitForStarted()) {
         mbox.setInformativeText(progName+tr(" Could not start."));
         mbox.exec();
@@ -1775,7 +1802,7 @@ void MainWindow::showBuildStart(QString progName, QStringList args)
     QString argstr = "";
     for(int n = 0; n < args.length(); n++)
         argstr += " "+args[n];
-    qDebug() << progName+argstr;
+    //qDebug() << progName+argstr;
     compileStatus->insertPlainText(shortFileName(progName)+argstr+"\n");
     compileStatus->moveCursor(QTextCursor::End);
 }
@@ -1824,12 +1851,12 @@ int  MainWindow::buildResult(int exitStatus, int exitCode, QString progName, QSt
 
 void MainWindow::compilerError(QProcess::ProcessError error)
 {
-    qDebug() << error;
+    //qDebug() << error;
 }
 
 void MainWindow::compilerFinished(int exitCode, QProcess::ExitStatus status)
 {
-    qDebug() << exitCode << status;
+    //qDebug() << exitCode << status;
 }
 
 
@@ -1926,7 +1953,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     vsplit->addWidget(rightSplit);
 
     /* project editors */
-    editors = new QVector<QPlainTextEdit*>();
+    editors = new QVector<Editor*>();
 
     /* project editor tabs */
     editorTabs = new QTabWidget(this);
@@ -1991,7 +2018,7 @@ void MainWindow::compileStatusClicked(void)
         openFileName(file);
     }
 
-    QPlainTextEdit *editor = editors->at(editorTabs->currentIndex());
+    Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor != NULL)
     {
         n = QString(list[1]).toInt();
@@ -2266,7 +2293,7 @@ void MainWindow::updateProjectTree(QString fileName)
         QString main = list.at(0);
         QString mains = main.mid(0,main.lastIndexOf("."));
         QString projs = projName.mid(0,projName.lastIndexOf("."));
-        if(mains.compare(projs) == 0) {
+        if(mains.compare(projs) == 0 && list.length() > 1) {
             QString s;
             list.removeAt(0);
             list.sort();
@@ -2418,10 +2445,10 @@ void MainWindow::setupEditor()
     font.setFixedPitch(true);
     font.setPointSize(10);
 
-    QPlainTextEdit *editor = new QPlainTextEdit(this);
+    Editor *editor = new Editor(this);
     editor->setTabStopWidth(40);
     editor->setFont(font);
-    editor->setLineWrapMode(QPlainTextEdit::NoWrap);
+    editor->setLineWrapMode(Editor::NoWrap);
     connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
     highlighter = new Highlighter(editor->document());
     editors->append(editor);
@@ -2429,16 +2456,9 @@ void MainWindow::setupEditor()
 
 void MainWindow::setEditorTab(int num, QString shortName, QString fileName, QString text)
 {
-    QPlainTextEdit *editor = editors->at(num);
+    Editor *editor = editors->at(num);
     fileChangeDisable = true;
     editor->setPlainText(text);
-
-    /* connect later when we can handle multiple popup events
-     */
-#if ENABLE_CTRL_RIGHTCLICK_FIND
-    connect(editor,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(editorMenu(QPoint)));
-    editor->setContextMenuPolicy(Qt::CustomContextMenu);
-#endif
 
     fileChangeDisable = false;
     editorTabs->setTabText(num,shortName);
@@ -2448,13 +2468,14 @@ void MainWindow::setEditorTab(int num, QString shortName, QString fileName, QStr
 
 void MainWindow::editorMenu(QPoint point)
 {
-#if ENABLE_CTRL_RIGHTCLICK_FIND
+#if 0
+    // use something like this later for debug? or move to editor.cpp?
     Qt::KeyboardModifiers keybm = QApplication::keyboardModifiers();
     if(keybm & Qt::ControlModifier){
         findDeclaration(point);
     }
     else {
-        QPlainTextEdit *ed = editors->at(editorTabs->currentIndex());
+        Editor *ed = editors->at(editorTabs->currentIndex());
         QTextCursor cur = ed->textCursor();
         QList<QAction*> list = edpopup->actions();
         if(cur.selectedText().length() == 0) {
@@ -2538,7 +2559,7 @@ void MainWindow::setupFileMenu()
     updateRecentProjectActions();
 
     projMenu->addSeparator();
-    projMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F5);
+    projMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
 
     QMenu *editMenu = new QMenu(tr("&Edit"), this);
     menuBar()->addMenu(editMenu);
@@ -2558,7 +2579,7 @@ void MainWindow::setupFileMenu()
     if(ctags->enabled()) {
         editMenu->addSeparator();
         editMenu->addAction(QIcon(":/images/back.png"),tr("Go &Back"), this, SLOT(prevDeclaration()), QKeySequence::Back);
-        editMenu->addAction(QIcon(":/images/forward.png"),tr("Find Function"), this, SLOT(findDeclaration()), QKeySequence::Forward);
+        editMenu->addAction(QIcon(":/images/forward.png"),tr("Find Declaration"), this, SLOT(findDeclaration()), QKeySequence::Forward);
     }
 
     editMenu->addSeparator();
@@ -2665,7 +2686,7 @@ void MainWindow::setupToolBars()
         QToolButton *btnFindDef = new QToolButton(this);
         addToolButton(browseToolBar, btnFindDef, QString(":/images/forward.png"));
         connect(btnFindDef,SIGNAL(clicked()),this,SLOT(findDeclaration()));
-        btnFindDef->setToolTip("Find Function Declaration");
+        btnFindDef->setToolTip("Find Declaration (Ctrl+Left Click");
     }
 
 

@@ -27,7 +27,7 @@
 #include "aboutdialog.h"
 #include "ctags.h"
 #include "newproject.h"
-//#include "texteditor.h"
+#include "editor.h"
 
 #define untitledstr "Untitled"
 
@@ -97,9 +97,6 @@ public slots:
     void editCommand();
     void systemCommand();
     void replaceInFile();
-    void replaceNextInFile();
-    void replacePrevInFile();
-    void replaceAllInFile();
     void redoChange();
     void undoChange();
     void findDeclaration();
@@ -107,6 +104,7 @@ public slots:
     void findDeclaration(QTextCursor cur);
     void prevDeclaration();
     int  showDeclaration(QString tagline);
+    bool isTagged(QString text);
     void findDeclarationInfo();
 
     void compileStatusClicked();
@@ -180,7 +178,7 @@ private:
     QSplitter       *rightSplit;
 
     QTabWidget      *editorTabs;
-    QVector<QPlainTextEdit*> *editors;
+    QVector<Editor*> *editors;
     bool            fileChangeDisable;
     QMenu           *edpopup;
 
