@@ -59,7 +59,6 @@ Source: "LGPL_EXCEPTION.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\ctags58\README"; DestDir: "{app}\ctags-readme.txt"; Flags: ignoreversion
 Source: "..\ctags58\COPYING"; DestDir: "{app}\ctags-license.txt"; Flags: ignoreversion
 Source: "..\icons\24x24-free-application-icons\readme.txt"; DestDir: "{app}\bin\aha-soft-license.txt"; Flags: ignoreversion
-;Source: "..\doc\xBasicIDEUserGuide.doc"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "{#MyQtPath}\mingw\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\mingw\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -69,7 +68,6 @@ Source: "..\propside-demos\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversio
 Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyGccPath}\*"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
-;Source: "C:\bstc\bstc.exe"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -89,7 +87,7 @@ Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; Flags: UninsDeleteKey;
 Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: Compiler; ValueData: {code:GetCompilerDir}\bin\propeller-elf-gcc.exe; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: Includes; ValueData: {code:GetCompilerDir}\propeller-load\; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: Workspace; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey;
+Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: Workspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
 
 [Code]
 var

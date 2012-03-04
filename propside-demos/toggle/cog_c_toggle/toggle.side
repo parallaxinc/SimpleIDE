@@ -9,3 +9,4 @@ toggle.h
 >-fno-exceptions
 >-Dprintf=__simple_printf
 >-s
+>BOARD::HUB
