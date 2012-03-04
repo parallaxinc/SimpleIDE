@@ -7,3 +7,4 @@ init.c
 >-fno-exceptions
 >-lpthread
 >-s
+>BOARD::HUB

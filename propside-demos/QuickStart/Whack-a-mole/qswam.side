@@ -4,3 +4,4 @@ qswam.c
 >optimize=-Os
 >-fno-exceptions
 >-s
+>BOARD::QUICKSTART

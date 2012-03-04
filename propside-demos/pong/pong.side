@@ -7,3 +7,4 @@ vga.h
 >-fno-exceptions
 >-Dprintf=__simple_printf
 >-s
+>BOARD::C3

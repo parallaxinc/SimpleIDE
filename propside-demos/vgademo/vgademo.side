@@ -11,3 +11,4 @@ text2.c
 >optimize=-Os
 >-fno-exceptions
 >-s
+>BOARD::C3
