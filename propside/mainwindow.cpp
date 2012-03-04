@@ -5,7 +5,7 @@
 #define APPWINDOW_MIN_HEIGHT 530
 #define APPWINDOW_MIN_WIDTH 780
 #define EDITOR_MIN_WIDTH 500
-#define PROJECT_WIDTH 250
+#define PROJECT_WIDTH 270
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
 #define ENABLE_CTRL_RIGHTCLICK_FIND 0
