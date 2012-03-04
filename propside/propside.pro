@@ -16,6 +16,7 @@ DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=5
 DEFINES += FIXVERSION=0
 SOURCES += main.cpp \
+    editor.cpp \
     ctags.cpp \
     mainwindow.cpp \
     treemodel.cpp \
@@ -35,6 +36,7 @@ SOURCES += main.cpp \
     replacedialog.cpp \
     aboutdialog.cpp
 HEADERS += mainwindow.h \
+    editor.h \
     ctags.h \
     highlighter.h \
     treemodel.h \
