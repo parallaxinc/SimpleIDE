@@ -7,3 +7,4 @@ toggle.cc
 >-Dprintf=__simple_printf
 >-fno-rtti
 >-s
+>BOARD::HUB

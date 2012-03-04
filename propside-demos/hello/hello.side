@@ -5,3 +5,4 @@ hello.c
 >-m32bit-doubles
 >-fno-exceptions
 >-s
+>BOARD::HUB

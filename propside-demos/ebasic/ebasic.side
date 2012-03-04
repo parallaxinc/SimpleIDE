@@ -20,3 +20,4 @@ osint_posix.c
 >-fno-exceptions
 >defs::-DPROPELLER_GCC -DUSE_FDS
 >-s
+>BOARD::EEPROM
