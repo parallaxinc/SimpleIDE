@@ -1,3 +1,8 @@
 tv.c
 TV.spin
 tv.h
+>compiler=C
+>memtype=lmm
+>optimize=-Os
+>-fno-exceptions
+>BOARD::C3

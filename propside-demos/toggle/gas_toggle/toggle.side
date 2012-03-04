@@ -7,3 +7,4 @@ toggle_firmware.s
 >-fno-exceptions
 >-Dprintf=__simple_printf
 >-s
+>BOARD::HUB

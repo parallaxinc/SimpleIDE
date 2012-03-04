@@ -6,3 +6,4 @@ toggle.c
 >-fno-exceptions
 >-lpthread
 >-s
+>BOARD::EEPROM
