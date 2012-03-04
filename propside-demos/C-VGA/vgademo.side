@@ -8,4 +8,4 @@ vga.cogc
 >-fno-exceptions
 >-Dprintf=__simple_printf
 >-s
->BOARD::HUB
+>BOARD::C3
