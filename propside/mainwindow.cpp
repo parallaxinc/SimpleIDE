@@ -661,11 +661,12 @@ void MainWindow::saveFile(const QString &path)
         QString data = editors->at(n)->toPlainText();
         if(fileName.isEmpty())
             fileName = fileDialog.getSaveFileName(this, tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
-        if(fileName.length() > 0)
-            lastPath = sourcePath(fileName);
         if (fileName.isEmpty())
             return;
-        this->editorTabs->setTabText(n,shortFileName(fileName));
+        if(fileName.length() > 0)
+            lastPath = sourcePath(fileName);
+        editorTabs->setTabText(n,shortFileName(fileName));
+        editorTabs->setTabToolTip(n,fileName);
         if (!fileName.isEmpty()) {
             QFile file(fileName);
             if (file.open(QFile::WriteOnly | QFile::Text)) {
@@ -683,8 +684,11 @@ void MainWindow::saveFileByTabIndex(int tab)
     try {
         QString fileName = editorTabs->tabToolTip(tab);
         QString data = editors->at(tab)->toPlainText();
-
-        this->editorTabs->setTabText(tab,shortFileName(fileName));
+        if(fileName.length() < 1) {
+            qDebug() << "saveFileByTabIndex filename invalid tooltip " << tab;
+            return;
+        }
+        editorTabs->setTabText(tab,shortFileName(fileName));
         if (!fileName.isEmpty()) {
             QFile file(fileName);
             if (file.open(QFile::WriteOnly | QFile::Text)) {

@@ -680,10 +680,10 @@ bool QextSerialPort::open(OpenMode mode)
     if (mode == QIODevice::NotOpen)
         return isOpen();
     if (!isOpen()) {
-        qDebug() << "trying to open file" << port.toAscii();
+        //qDebug() << "trying to open file" << port.toAscii();
         //note: linux 2.6.21 seems to ignore O_NDELAY flag
         if ((fd = ::open(port.toAscii() ,O_RDWR | O_NOCTTY | O_NDELAY)) != -1) {
-            qDebug("file opened succesfully");
+            //qDebug("file opened succesfully");
 
             setOpenMode(mode);              // Flag the port as opened
             tcgetattr(fd, &old_termios);    // Save the old termios

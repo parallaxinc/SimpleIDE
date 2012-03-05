@@ -108,7 +108,7 @@ QStringList ProjectOptions::getOptions()
     else
         args.append(board+"::");
 
-    qDebug() << args;
+    //qDebug() << args;
     return args;
 }
 
