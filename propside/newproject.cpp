@@ -18,13 +18,21 @@ NewProject::NewProject(QWidget *parent) : QDialog(parent)
     connect(name,SIGNAL(textChanged(QString)),this,SLOT(nameChanged()));
 
     path->setText(mypath+name->text());
+    QLabel *pathLabel = new QLabel(tr("Workspace"));
     QLabel *nameLabel = new QLabel(tr("Project Name"));
-    QLabel *pathLabel = new QLabel(tr("Folder"));
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     connect(btnBrowsePath, SIGNAL(clicked()), this, SLOT(browsePath()));
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+
+    QLabel *create = new QLabel(this);
+    create->setText(tr("Creating a new project:"));
+    create->setFont(QFont(this->font().family(),this->font().pointSize()*1.5,QFont::Bold));
+    QLabel *inst = new QLabel(this);
+    inst->setText(tr(" 1) Choose project workspace.\n 2) Set project name.\n\n" \
+            "A project folder with project name will be created in the workspace.\n" \
+            "The new folder will have a main .c file and a .side project file.\n"));
 
     QVBoxLayout *blay = new QVBoxLayout(this);
     QGridLayout *layout = new QGridLayout();
@@ -34,7 +42,10 @@ NewProject::NewProject(QWidget *parent) : QDialog(parent)
     layout->addWidget(path,0,1,1,1);
     layout->addWidget(btnBrowsePath,0,2,1,1);
 
+    blay->addWidget(create);
+    blay->addWidget(inst);
     blay->addLayout(layout);
+    blay->addWidget(new QLabel(this));
     blay->addWidget(buttonBox);
     setLayout(blay);
     buttonBox->setFocus();
