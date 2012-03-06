@@ -17,6 +17,7 @@ public:
 
 public slots:
     void toggleEnable();
+    void setPortEnabled(bool value);
     void clearScreen();
     void copyFromFile();
     void cutFromFile();
