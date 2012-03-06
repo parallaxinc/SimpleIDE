@@ -5,7 +5,6 @@
         <file>images/saveasfile.png</file>
         <file>images/savefile.png</file>
         <file>images/build.png</file>
-        <file>images/reset.png</file>
         <file>images/zip.png</file>
         <file>images/hardware.png</file>
         <file>images/print.png</file>
@@ -50,5 +49,6 @@
         <file>images/CovertBeanie32.png</file>
         <file>images/Delete.png</file>
         <file>images/SimpleIDE6.png</file>
+        <file>images/reset.png</file>
     </qresource>
 </RCC>

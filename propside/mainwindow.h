@@ -67,6 +67,7 @@ public slots:
     void setCurrentBoard(int index);
     void setCurrentPort(int index);
     void connectButton();
+    void portResetButton();
     void terminalClosed();
     void setProject();
     void hardware();

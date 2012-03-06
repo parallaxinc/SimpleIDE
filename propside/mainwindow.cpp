@@ -2386,8 +2386,9 @@ void MainWindow::connectButton()
 {
     if(btnConnected->isChecked()) {
         term->getEditor()->setPortEnable(true);
-        term->activateWindow();
         term->show();
+        term->setPortEnabled(true);
+        term->activateWindow();
         term->getEditor()->setFocus();
         portListener->open();
     }
@@ -2395,6 +2396,12 @@ void MainWindow::connectButton()
         portListener->close();
         term->hide();
     }
+}
+
+void MainWindow::portResetButton()
+{
+    portListener->close();
+    portListener->open();
 }
 
 QString MainWindow::shortFileName(QString fileName)
@@ -2736,6 +2743,10 @@ void MainWindow::setupToolBars()
     btnConnected->setCheckable(true);
     connect(btnConnected,SIGNAL(clicked()),this,SLOT(connectButton()));
 
+    QToolButton *reset = new QToolButton(this);
+    reset->setToolTip(tr("Reset Port"));
+    connect(reset,SIGNAL(clicked()),this,SLOT(portResetButton()));
+
     QToolButton *btnPortScan = new QToolButton(this);
     btnPortScan->setToolTip(tr("Rescan Serial Ports"));
     connect(btnPortScan,SIGNAL(clicked()),this,SLOT(enumeratePorts()));
@@ -2745,6 +2756,7 @@ void MainWindow::setupToolBars()
     connect(btnLoadBoards,SIGNAL(clicked()),this,SLOT(initBoardTypes()));
 
     addToolButton(ctrlToolBar, btnConnected, QString(":/images/console.png"));
+    addToolButton(ctrlToolBar, reset, QString(":/images/reset.png"));
     addToolButton(ctrlToolBar, btnPortScan, QString(":/images/refresh.png"));
     ctrlToolBar->addWidget(cbPort);
     addToolButton(ctrlToolBar, btnLoadBoards, QString(":/images/hardware.png"));

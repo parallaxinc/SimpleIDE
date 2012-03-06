@@ -84,6 +84,19 @@ void Terminal::toggleEnable()
     QApplication::processEvents();
 }
 
+void Terminal::setPortEnabled(bool value)
+{
+    if(value) {
+        buttonEnable->setText("Disable");
+        termEditor->setPortEnable(true);
+    }
+    else {
+        buttonEnable->setText("Enable");
+        termEditor->setPortEnable(false);
+    }
+    QApplication::processEvents();
+}
+
 void Terminal::copyFromFile()
 {
     termEditor->copy();
