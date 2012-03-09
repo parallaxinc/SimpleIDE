@@ -139,6 +139,9 @@ void Properties::browseWorkspace()
         if(path.at(path.length()-1) == '/')
             path = path.mid(0,path.lastIndexOf("/"));
     }
+    else {
+        path = QDir::rootPath();
+    }
     QFileDialog fileDialog(this,tr("Project Workspace"),path,tr("Project Workspace (*)"));
 
     QStringList filenames;
