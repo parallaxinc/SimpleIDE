@@ -1270,6 +1270,19 @@ int  MainWindow::runBuild(void)
     }
     maxprogress++;
 
+    QFile aout(sourcePath(projectFile)+"a.out");
+    if(aout.exists()) {
+        if(aout.remove() == false) {
+            int rc = QMessageBox::question(this,
+                tr("Can't Remove File"),
+                tr("Can't Remove output file before build.\n"\
+                   "Please close any program using the file \"a.out\".\n"\
+                   "Continue?"),
+                QMessageBox::No, QMessageBox::Yes);
+            if(rc == QMessageBox::No)
+                return -1;
+        }
+    }
     /* Run through file list and compile according to extension.
      */
     for(int n = 0; n < list.length(); n++) {
@@ -1312,7 +1325,11 @@ int  MainWindow::runBuild(void)
     rc = runCompiler(clist);
     Sleeper::ms(250);
     progress->hide();
-    compileStatus->appendPlainText("Build Done.\n");
+
+    if(rc == 0)
+        compileStatus->appendPlainText("Done. Build Succeeded!\n");
+    else
+        compileStatus->appendPlainText("Done. Build Failed! Click error messages above to debug.\n");
 
     return rc;
 }
