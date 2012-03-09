@@ -31,6 +31,9 @@ private:
     QLineEdit   *name;
     QLineEdit   *path;
     QString     mypath;
+
+    QPushButton *okButton;
+    QPushButton *cancelButton;
 };
 
 #endif // NEWPROJECT_H

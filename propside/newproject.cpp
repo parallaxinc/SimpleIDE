@@ -26,6 +26,13 @@ NewProject::NewProject(QWidget *parent) : QDialog(parent)
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
+    okButton = (QPushButton*) buttonBox->buttons().at(0);
+    cancelButton = (QPushButton*) buttonBox->buttons().at(1);
+    if(okButton->text().contains("cancel",Qt::CaseInsensitive)) {
+        okButton = (QPushButton*) buttonBox->buttons().at(1);
+        cancelButton = (QPushButton*) buttonBox->buttons().at(1);
+    }
+
     QLabel *create = new QLabel(this);
     create->setText(tr("Creating a new project:"));
     create->setFont(QFont(this->font().family(),this->font().pointSize()*1.5,QFont::Bold));
@@ -64,6 +71,16 @@ NewProject::~NewProject()
 void NewProject::nameChanged()
 {
     path->setText(mypath+name->text());
+    QDir path(mypath);
+    okButton->setDisabled(true);
+    if(path.exists()) {
+        if(name->text().length() > 0) {
+            /* make sure our new path is not a file */
+            QFile isFile(mypath+name->text());
+            if(isFile.exists() == false)
+                okButton->setEnabled(true);
+        }
+    }
 }
 
 QString NewProject::getCurrentPath()
@@ -147,6 +164,15 @@ void NewProject::showDialog()
 
     mypath = getCurrentPath();
     path->setText(mypath+name->text());
+
+    if(okButton == NULL)
+        return;
+    if(cancelButton == NULL)
+        return;
+
+    /* disable OK button until user has satisfied criteria. */
+    okButton->setDisabled(true);
+
     this->setWindowTitle(QString(ASideGuiKey)+tr(" New Project"));
     this->exec();
 }
