@@ -1126,7 +1126,7 @@ void MainWindow::aboutShow()
 
 void MainWindow::helpShow()
 {
-    QString license(ASideGuiKey+tr(" is an MIT Licensed Open-Source IDE.<br/>It was developed with Open-Source QT and uses QT shared libraries under LGPLv2.1.<br/><br/>"));
+    QString license(ASideGuiKey+tr(" is an MIT Licensed Open Source IDE. It was developed with Open Source QT and uses QT shared libraries under LGPLv2.1.<br/><br/>"));
     QString propgcc(ASideGuiKey+tr(" uses <a href=\"http://propgcc.googlecode.com\">Propeller GCC tool chain</a> based on GCC 4.6.1 under GPLv3. "));
     QString ctags(tr("It uses the <a href=\"http://ctags.sourceforge.net\">ctags</a> binary program built from sources under GPLv2 for source browsing. "));
     QString icons(tr("Most icons used are from <a href=\"http://www.small-icons.com/packs/24x24-free-application-icons.htm\">www.aha-soft.com 24x24 Free Application Icons</a> " \
