@@ -133,9 +133,12 @@ void Properties::browseWorkspace()
 {
     QSettings settings(publisherKey, ASideGuiKey,this);
     QVariant vpath = settings.value(workspaceKey,QVariant("~/."));
-    QString path = vpath.toString();
-    if(path.at(path.length()-1) == '/')
-        path = path.mid(0,path.lastIndexOf("/"));
+    QString path = "";
+    if(vpath.canConvert(QVariant::String)) {
+        path = vpath.toString();
+        if(path.at(path.length()-1) == '/')
+            path = path.mid(0,path.lastIndexOf("/"));
+    }
     QFileDialog fileDialog(this,tr("Project Workspace"),path,tr("Project Workspace (*)"));
 
     QStringList filenames;
