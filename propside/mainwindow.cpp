@@ -1126,21 +1126,21 @@ void MainWindow::aboutShow()
 
 void MainWindow::helpShow()
 {
-    QString license(tr("SimpleIDE is an MIT License open-source IDE.<br/>SimpleIDE is built Qt libraries under LGPLv2.1<br/><br/>"));
-    QString icons(tr("Most Icons: <a href=\"http://www.small-icons.com/packs/24x24-free-application-icons.htm\">www.aha-soft.com 24x24 Free Application Icons</a>" \
-                     "<br/>with Creative Commons Attribution-Share Alike 3.0 License.<br/>"));
-    QString ctags(tr("Uses <a href=\"http://ctags.sourceforge.net\">ctags</a> binary program under GPLv2 for source browsing.<br/>"));
-    QString propgcc(tr("Uses <a href=\"http://propgcc.googlecode.com\">Propeller GCC tool chain</a> GCC 4.6.1 base under GPLv3<br/>"));
-    QString sources(tr("All IDE, ctags, and icon sources kept in <a href=\"http://propside.googlecode.com\">SimpleIDE repository</a>.<br/><br/>" \
-                       "All license documents included in the Simple-IDE package."));
+    QString license(ASideGuiKey+tr(" is an MIT Licensed Open-Source IDE.<br/>It was developed with Open-Source QT and uses QT shared libraries under LGPLv2.1.<br/><br/>"));
+    QString propgcc(ASideGuiKey+tr(" uses <a href=\"http://propgcc.googlecode.com\">Propeller GCC tool chain</a> based on GCC 4.6.1 under GPLv3. "));
+    QString ctags(tr("It uses the <a href=\"http://ctags.sourceforge.net\">ctags</a> binary program built from sources under GPLv2 for source browsing. "));
+    QString icons(tr("Most icons used are from <a href=\"http://www.small-icons.com/packs/24x24-free-application-icons.htm\">www.aha-soft.com 24x24 Free Application Icons</a> " \
+                     "and used according to Creative Commons Attribution 3.0 License.<br/><br/>"));
+    QString sources(tr("All sources are available at the <a href=\"http://propside.googlecode.com\">repository</a>.<br/>" \
+                       "All license text is included in the package."));
 
     QMessageBox::about(this, ASideGuiKey+tr(" help"),
-        tr("<p><b>")+ASideGuiKey+tr("</b> is an integrated C development environment <br/>"\
-           "which manages Propeller GCC program builds, and <br/>" \
+        tr("<p><b>")+ASideGuiKey+tr("</b> is an integrated C development environment "\
+           "which manages Propeller GCC program builds, and " \
            "loads programs to Propeller for many board types.</p>") +
         tr("Visit <a href=\"https://sites.google.com/site/propellergcc/simpleide\">")+
         ASideGuiKey+tr("</a> on the web for help and more information.<br/><br/>")+
-        license+icons+ctags+propgcc+sources);
+        license+propgcc+ctags+icons+sources);
     //QMessageBox::aboutQt(this,tr("About Qt"));
 }
 
@@ -1312,6 +1312,7 @@ int  MainWindow::runBuild(void)
     rc = runCompiler(clist);
     Sleeper::ms(250);
     progress->hide();
+    compileStatus->appendPlainText("Build Done.\n");
 
     return rc;
 }
