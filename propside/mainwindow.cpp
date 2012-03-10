@@ -903,7 +903,13 @@ void MainWindow::findDeclaration(QTextCursor cur)
 
         int index = editorTabs->currentIndex();
         QString fileName = editorTabs->tabToolTip(index);
-        QString currentTag = "/\t" + fileName + "\t" + cur.selectedText();
+        int currentLine  = cur.blockNumber();
+
+        /* we append :currentLine to filename for good lookup on return from stack
+         */
+        QString currentTag = "/\t" +
+            fileName + ":" + QString("%1").arg(currentLine) +
+            "\t" + cur.selectedText();
 
         if(text.length() == 0) {
             findDeclarationInfo();
@@ -911,6 +917,8 @@ void MainWindow::findDeclaration(QTextCursor cur)
         }
         QString tagLine = ctags->findTag(text);
 
+        /* if we have a good declaration, push stack and enable back button
+         */
         if(showDeclaration(tagLine) > -1) {
             ctags->tagPush(currentTag);
             btnBrowseBack->setEnabled(true);
@@ -1009,14 +1017,32 @@ void MainWindow::prevDeclaration()
 int MainWindow::showDeclaration(QString tagline)
 {
     int rc = -1;
+    int  linenum = 0;
+
     if(tagline.length() == 0)
         return rc;
     QString file = ctags->getFile(tagline);
     if(file.length() == 0)
         return rc;
-    int  linenum = ctags->getLine(tagline);
-    if(linenum < 0)
-        return rc;
+
+    /* if the file has a line number in it, use it.
+     */
+    QString line = "";
+    if(file.indexOf(':') > -1)
+        line = file.mid(file.indexOf(':')+1);
+
+    if(line.length() > 0) {
+        /* got a line number. convert and trunc file */
+        linenum = line.toInt();
+        file = file.mid(0,file.indexOf(':'));
+    }
+    else {
+        /* get regex line from tags */
+        linenum = ctags->getLine(tagline);
+        if(linenum < 0)
+            return rc;
+    }
+
     this->openFileName(file);
     Editor *editor = editors->at(editorTabs->currentIndex());
     editor->setCenterOnScroll(true);
