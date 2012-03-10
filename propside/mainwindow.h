@@ -242,6 +242,8 @@ private:
     QAction *separatorProjectAct;
 
     CTags           *ctags;
+    QToolButton     *btnBrowseBack;
+    QToolButton     *btnFindDef;
     NewProject      *newProjDialog;
 
     QString         lastPath;

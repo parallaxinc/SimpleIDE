@@ -879,9 +879,18 @@ void MainWindow::findDeclaration(QTextCursor cur)
     Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor) {
         /* find word */
-        cur.select(QTextCursor::WordUnderCursor);
-        editor->setTextCursor(cur);
         QString text = cur.selectedText();
+        qDebug() << "findDeclaration " << text;
+
+        if(text.length() == 0) {
+            //cur.select(QTextCursor::WordUnderCursor);
+            cur.movePosition(QTextCursor::StartOfWord,QTextCursor::MoveAnchor);
+            cur.movePosition(QTextCursor::EndOfWord,QTextCursor::KeepAnchor);
+            text = cur.selectedText();
+        }
+        qDebug() << "findDeclaration " << text;
+        editor->setTextCursor(cur);
+
         if(text.length() > 0 && text.at(0).isLetter()) {
             ctags->runCtags(projectFile);
         }
@@ -904,6 +913,7 @@ void MainWindow::findDeclaration(QTextCursor cur)
 
         if(showDeclaration(tagLine) > -1) {
             ctags->tagPush(currentTag);
+            btnBrowseBack->setEnabled(true);
         }
         else
             findDeclarationInfo();
@@ -941,6 +951,14 @@ bool MainWindow::isTagged(QString text)
 
 void MainWindow::findDeclarationInfo()
 {
+#if defined(Q_WS_MAC)
+     QMessageBox::information(this,
+         tr("Find Declaration"),
+         tr("Use \"Command+]\" to find a declaration.\n" \
+            "Use \"Command+[\" to go back.\n\n" \
+            "Library declarations will not be found.\n"),
+         QMessageBox::Ok);
+#else
     QMessageBox::information(this,
         tr("Find Declaration"),
         tr("Please note: library declarations will not be found.\n" \
@@ -950,19 +968,16 @@ void MainWindow::findDeclarationInfo()
            "2) Put the cursor on the symbol name and use the keyboard shortcut for " \
            "\"Menu->Edit->Find Declaration\".\n"),
         QMessageBox::Ok);
+#endif
 }
 
 void MainWindow::prevDeclaration()
 {
     QString tagline = ctags->tagPop();
-    if(tagline.indexOf("/ ") == 0) {
-#if 0
-        QMessageBox::information(this,
-            tr("Back from Declaration"),tr("Can't go back. The \"Find Declaration\" stack is empty."),
-            QMessageBox::Ok);
-#endif
-        return;
+    if(tagline.indexOf("/") == 0) {
+        btnBrowseBack->setEnabled(false);
     }
+
     if(tagline.length() > 0) {
         showDeclaration(tagline);
     }
@@ -972,6 +987,7 @@ void MainWindow::prevDeclaration()
             tr("Back from Declaration"),tr("Can't go back. The \"Find Declaration\" stack is empty."),
             QMessageBox::Ok);
 #endif
+        btnBrowseBack->setEnabled(false);
     }
     Editor *editor = editors->at(editorTabs->currentIndex());
     QStringList list = tagline.split("\t");
@@ -1010,14 +1026,14 @@ int MainWindow::showDeclaration(QString tagline)
     Editor *editor = editors->at(editorTabs->currentIndex());
     editor->setCenterOnScroll(true);
     QTextCursor cur = editor->textCursor();
-    //cur.setPosition(linenum,QTextCursor::MoveAnchor);
     cur.movePosition(QTextCursor::Start);
     cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,linenum);
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-    //cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+    cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+    QString res = cur.selectedText();
+    qDebug() << res;
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
     editor->setTextCursor(cur);
-    //QString res = cur.selectedText();
-    //qDebug() << res;
     return linenum;
 }
 
@@ -2710,12 +2726,13 @@ void MainWindow::setupToolBars()
 
     if(ctags->enabled()) {
         browseToolBar = addToolBar(tr("Source Browser"));
-        QToolButton *btnBrowseBack = new QToolButton(this);
+        btnBrowseBack = new QToolButton(this);
         addToolButton(browseToolBar, btnBrowseBack, QString(":/images/back.png"));
         connect(btnBrowseBack,SIGNAL(clicked()),this,SLOT(prevDeclaration()));
         btnBrowseBack->setToolTip("Back");
+        btnBrowseBack->setEnabled(false);
 
-        QToolButton *btnFindDef = new QToolButton(this);
+        btnFindDef = new QToolButton(this);
         addToolButton(browseToolBar, btnFindDef, QString(":/images/forward.png"));
         connect(btnFindDef,SIGNAL(clicked()),this,SLOT(findDeclaration()));
         btnFindDef->setToolTip("Find Declaration (Ctrl+Left Click");
