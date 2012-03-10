@@ -973,20 +973,15 @@ void MainWindow::findDeclarationInfo()
 
 void MainWindow::prevDeclaration()
 {
-    QString tagline = ctags->tagPop();
-    if(tagline.indexOf("/") == 0) {
+    if(ctags->tagCount() == 0) {
         btnBrowseBack->setEnabled(false);
+        return;
     }
-
+    QString tagline = ctags->tagPop();
     if(tagline.length() > 0) {
         showDeclaration(tagline);
     }
-    else {
-#if 0
-        QMessageBox::information(this,
-            tr("Back from Declaration"),tr("Can't go back. The \"Find Declaration\" stack is empty."),
-            QMessageBox::Ok);
-#endif
+    if(ctags->tagCount() == 0) {
         btnBrowseBack->setEnabled(false);
     }
     Editor *editor = editors->at(editorTabs->currentIndex());
