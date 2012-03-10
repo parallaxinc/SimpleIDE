@@ -136,7 +136,11 @@ void Properties::browseWorkspace()
     QString path = "";
     if(vpath.canConvert(QVariant::String)) {
         path = vpath.toString();
-        if(path.at(path.length()-1) == '/')
+        int len = path.length()-1;
+        if(len < 0)
+            path = QDir::rootPath();
+        else
+        if(path.at(len) == '/')
             path = path.mid(0,path.lastIndexOf("/"));
     }
     else {
