@@ -1206,6 +1206,8 @@ void MainWindow::checkAndSaveFiles()
 
     saveProjectOptions();
 
+    /* check for project file changes
+     */
     QString title = projectModel->getTreeName();
     QString modTitle = title + " *";
     for(int tab = editorTabs->count()-1; tab > -1; tab--)
@@ -1218,22 +1220,8 @@ void MainWindow::checkAndSaveFiles()
         }
     }
 
-    /* check for tabs out of project scope that are
-     * not saved and war user.
+    /* check for project files name changes
      */
-    for(int tab = editorTabs->count()-1; tab > -1; tab--)
-    {
-        QString tabName = editorTabs->tabText(tab);
-        if(tabName.at(tabName.length()-1) == '*')
-        {
-            QMessageBox::information(this,
-                tr("Not a Project File"),
-                tr("The file \"")+tabName+tr("\" is not part of the current project.\n") +
-                tr("Please save and add the file to the project to build it."),
-                QMessageBox::Ok);
-        }
-    }
-
     int len = projectModel->rowCount();
     for(int n = 0; n < len; n++)
     {
@@ -1253,6 +1241,23 @@ void MainWindow::checkAndSaveFiles()
             }
         }
     }
+
+    /* check for tabs out of project scope that are
+     * not saved and war user.
+     */
+    for(int tab = editorTabs->count()-1; tab > -1; tab--)
+    {
+        QString tabName = editorTabs->tabText(tab);
+        if(tabName.at(tabName.length()-1) == '*')
+        {
+            QMessageBox::information(this,
+                tr("Not a Project File"),
+                tr("The file \"")+tabName+tr("\" is not part of the current project.\n") +
+                tr("Please save and add the file to the project to build it."),
+                QMessageBox::Ok);
+        }
+    }
+
 }
 
 int  MainWindow::checkCompilerInfo()
@@ -1380,10 +1385,44 @@ int  MainWindow::runBuild(void)
     Sleeper::ms(250);
     progress->hide();
 
-    if(rc == 0)
+    if(rc == 0) {
         compileStatus->appendPlainText("Done. Build Succeeded!\n");
-    else
-        compileStatus->appendPlainText("Done. Build Failed! Click error messages above to debug.\n");
+    }
+    else {
+        compileStatus->appendPlainText("Done. Build Failed!\n");
+        if(compileStatus->toPlainText().indexOf("error:",Qt::CaseInsensitive) > 0) {
+            compileStatus->appendPlainText("Click error messages above to debug.\n");
+        }
+        if(compileStatus->toPlainText().indexOf("undefined reference",Qt::CaseInsensitive) > 0) {
+            QStringList ssplit = compileStatus->toPlainText().split("undefined reference to ", QString::SkipEmptyParts, Qt::CaseInsensitive);
+            if(ssplit.count() > 0) {
+                QString msg = ssplit.at(1);
+                QStringList msplit = msg.split("collect");
+                if(msplit.count() > 0) {
+                    QString mstr = msplit.at(0);
+                    if(mstr.indexOf("`__") == 0) {
+                        mstr = mstr.mid(2);
+                        mstr = mstr.trimmed();
+                        mstr = mstr.mid(0,mstr.length()-1);
+                    }
+                    compileStatus->appendPlainText("Check source for bad function call or global variable name "+mstr+"\n");
+                }
+                else {
+                    compileStatus->appendPlainText("Check source for bad function call or global variable name "+ssplit.at(1)+"\n");
+                }
+                return rc;
+            }
+        }
+        if(compileStatus->toPlainText().indexOf("overflowed by", Qt::CaseInsensitive) > 0) {
+            compileStatus->appendPlainText("Your program is too big for the memory model selected for the project.");
+            return rc;
+        }
+        if(compileStatus->toPlainText().indexOf("Error: Relocation overflows", Qt::CaseInsensitive) > 0) {
+            compileStatus->appendPlainText("Your program is too big for the memory model selected for the project.");
+            return rc;
+        }
+        compileStatus->appendPlainText("Check source for bad function call or global variable name.\n");
+    }
 
     return rc;
 }
