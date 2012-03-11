@@ -1075,14 +1075,23 @@ void MainWindow::setProject()
 {
     int index = editorTabs->currentIndex();
     QString fileName = editorTabs->tabToolTip(index);
-    if(fileName.length() != 0)
+
+    if(fileName.length() == 0) {
+        int rc = QMessageBox::question(this,
+            tr("Save As"),
+            tr("Would you like to save this file and set a project using it?"),
+            QMessageBox::Yes, QMessageBox::No);
+        if(rc == QMessageBox::Yes) {
+            saveAsFile();
+            updateProjectTree(fileName);
+            setCurrentProject(projectFile);
+        }
+    }
+    fileName = editorTabs->tabToolTip(index);
+    if(fileName.length() > 0)
     {
         updateProjectTree(fileName);
         setCurrentProject(projectFile);
-    }
-    else {
-        delete projectModel;
-        projectModel = NULL;
     }
 }
 
