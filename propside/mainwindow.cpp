@@ -963,18 +963,17 @@ void MainWindow::findDeclarationInfo()
      QMessageBox::information(this,
          tr("Find Declaration"),
          tr("Use \"Command+]\" to find a declaration.\n" \
+            "Also \"Command+Left Click\" finds a declaration.\n" \
             "Use \"Command+[\" to go back.\n\n" \
             "Library declarations will not be found.\n"),
          QMessageBox::Ok);
 #else
     QMessageBox::information(this,
         tr("Find Declaration"),
-        tr("Please note: library declarations will not be found.\n" \
-           "Mouse Over + Ctrl highlights valid declarations.\n\n" \
-           "One of these methods should find a declaration.\n\n"\
-           "1) Use \"Ctrl+Left Mouse Click\" over the name.\n\n" \
-           "2) Put the cursor on the symbol name and use the keyboard shortcut for " \
-           "\"Menu->Edit->Find Declaration\".\n"),
+        tr("Use \"Alt+Right Arrow\" to find a declaration.\n" \
+           "Also \"Ctrl+Left Click\" finds a declaration.\n" \
+           "Use \"Alt+Left Arrow\" to go back.\n\n" \
+           "Library declarations will not be found.\n"),
         QMessageBox::Ok);
 #endif
 }
@@ -1028,13 +1027,13 @@ int MainWindow::showDeclaration(QString tagline)
     /* if the file has a line number in it, use it.
      */
     QString line = "";
-    if(file.indexOf(':') > -1)
-        line = file.mid(file.indexOf(':')+1);
+    if(file.lastIndexOf(':') > 3)
+        line = file.mid(file.lastIndexOf(':')+1);
 
     if(line.length() > 0) {
         /* got a line number. convert and trunc file */
         linenum = line.toInt();
-        file = file.mid(0,file.indexOf(':'));
+        file = file.mid(0,file.lastIndexOf(':'));
     }
     else {
         /* get regex line from tags */
