@@ -1218,6 +1218,22 @@ void MainWindow::checkAndSaveFiles()
         }
     }
 
+    /* check for tabs out of project scope that are
+     * not saved and war user.
+     */
+    for(int tab = editorTabs->count()-1; tab > -1; tab--)
+    {
+        QString tabName = editorTabs->tabText(tab);
+        if(tabName.at(tabName.length()-1) == '*')
+        {
+            QMessageBox::information(this,
+                tr("Not a Project File"),
+                tr("The file \"")+tabName+tr("\" is not part of the current project.\n") +
+                tr("Please save and add the file to the project to build it."),
+                QMessageBox::Ok);
+        }
+    }
+
     int len = projectModel->rowCount();
     for(int n = 0; n < len; n++)
     {
@@ -1288,6 +1304,8 @@ int  MainWindow::runBuild(void)
 
     btnConnected->setChecked(false);
     portListener->close(); // disconnect uart before use
+
+    checkAndSaveFiles();
 
     progress->show();
     programSize->setText("");
@@ -1422,8 +1440,6 @@ int  MainWindow::runBstc(QString spinfile)
     args.append("-c");
     args.append(shortFileName(spinfile));
 
-    checkAndSaveFiles();
-
     /* run the bstc program */
 #if defined(Q_WS_WIN32)
     QString bstc = "bstc";
@@ -1454,8 +1470,6 @@ int  MainWindow::runCogObjCopy(QString datfile)
     args.append(".text="+datfile);
     args.append(datfile);
 
-    checkAndSaveFiles();
-
     /* run objcopy */
     QString objcopy = "propeller-elf-objcopy";
     rc = startProgram(objcopy, sourcePath(projectFile), args);
@@ -1483,8 +1497,6 @@ int  MainWindow::runObjCopy(QString datfile)
     args.append(datfile);
     args.append(objfile);
 
-    checkAndSaveFiles();
-
     /* run objcopy to make a spin .dat file into an object file */
     QString objcopy = "propeller-elf-objcopy";
     rc = startProgram(objcopy, sourcePath(projectFile), args);
@@ -1506,8 +1518,6 @@ int  MainWindow::runGAS(QString gasfile)
     args.append("-o");
     args.append(objfile);
     args.append(gasfile);
-
-    checkAndSaveFiles();
 
     /* run the as program */
     QString gas = "propeller-elf-as";
@@ -1603,9 +1613,6 @@ int  MainWindow::runCompiler(QStringList copts)
     }
 
     QStringList args = getCompilerParameters(copts);
-
-    checkAndSaveFiles();
-
     QString compstr;
 
 #if defined(Q_WS_WIN32)
