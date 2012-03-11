@@ -14,7 +14,6 @@
         <file>images/helphint.png</file>
         <file>images/helpsymbol.png</file>
         <file>images/exit.png</file>
-        <file>images/project.png</file>
         <file>images/find.png</file>
         <file>images/redo.png</file>
         <file>images/undo.png</file>
@@ -50,5 +49,6 @@
         <file>images/Delete.png</file>
         <file>images/SimpleIDE6.png</file>
         <file>images/reset.png</file>
+        <file>images/project.png</file>
     </qresource>
 </RCC>

@@ -961,7 +961,7 @@ void MainWindow::findDeclarationInfo()
 {
 #if defined(Q_WS_MAC)
      QMessageBox::information(this,
-         tr("Find Declaration"),
+         tr("Browse Declaration"),
          tr("Use \"Command+]\" to find a declaration.\n" \
             "Also \"Command+Left Click\" finds a declaration.\n" \
             "Use \"Command+[\" to go back.\n\n" \
@@ -969,7 +969,7 @@ void MainWindow::findDeclarationInfo()
          QMessageBox::Ok);
 #else
     QMessageBox::information(this,
-        tr("Find Declaration"),
+        tr("Browse Declaration"),
         tr("Use \"Alt+Right Arrow\" to find a declaration.\n" \
            "Also \"Ctrl+Left Click\" finds a declaration.\n" \
            "Use \"Alt+Left Arrow\" to go back.\n\n" \
@@ -2664,7 +2664,7 @@ void MainWindow::setupFileMenu()
     projMenu->addAction(QIcon(":/images/newproj.png"), tr("New Project"), this, SLOT(newProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_N);
     projMenu->addAction(QIcon(":/images/openproj.png"), tr("Open Project"), this, SLOT(openProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_O);
     projMenu->addAction(QIcon(":/images/closeproj.png"), tr("Save and Close Project"), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
-    projMenu->addAction(QIcon(":/images/treeproject.png"), tr("Set Project"), this, SLOT(setProject()), Qt::Key_F4);
+    projMenu->addAction(QIcon(":/images/project.png"), tr("Set Project"), this, SLOT(setProject()), Qt::Key_F4);
     //projMenu->addAction(QIcon(":/images/hardware.png"), tr("Load Board Types"), this, SLOT(hardware()), Qt::Key_F6);
 
     // recent project actions
@@ -2702,7 +2702,7 @@ void MainWindow::setupFileMenu()
     if(ctags->enabled()) {
         editMenu->addSeparator();
         editMenu->addAction(QIcon(":/images/back.png"),tr("Go &Back"), this, SLOT(prevDeclaration()), QKeySequence::Back);
-        editMenu->addAction(QIcon(":/images/forward.png"),tr("Find Declaration"), this, SLOT(findDeclaration()), QKeySequence::Forward);
+        editMenu->addAction(QIcon(":/images/forward.png"),tr("Browse Declaration"), this, SLOT(findDeclaration()), QKeySequence::Forward);
     }
 
     editMenu->addSeparator();
@@ -2711,13 +2711,13 @@ void MainWindow::setupFileMenu()
 
     editMenu->addAction(tr("Next Tab"),this,SLOT(changeTab(bool)),QKeySequence::NextChild);
 
-    QMenu *debugMenu = new QMenu(tr("&Debug"), this);
-    menuBar()->addMenu(debugMenu);
+    QMenu *programMenu = new QMenu(tr("&Program"), this);
+    menuBar()->addMenu(programMenu);
 
-    debugMenu->addAction(QIcon(":/images/runconsole.png"), tr("Run Console"), this, SLOT(programDebug()), Qt::Key_F8);
-    debugMenu->addAction(QIcon(":/images/build.png"), tr("Build"), this, SLOT(programBuild()), Qt::Key_F9);
-    debugMenu->addAction(QIcon(":/images/run.png"), tr("Run"), this, SLOT(programRun()), Qt::Key_F10);
-    debugMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn"), this, SLOT(programBurnEE()), Qt::Key_F11);
+    programMenu->addAction(QIcon(":/images/runconsole.png"), tr("Run Console"), this, SLOT(programDebug()), Qt::Key_F8);
+    programMenu->addAction(QIcon(":/images/build.png"), tr("Build"), this, SLOT(programBuild()), Qt::Key_F9);
+    programMenu->addAction(QIcon(":/images/run.png"), tr("Run"), this, SLOT(programRun()), Qt::Key_F10);
+    programMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn"), this, SLOT(programBurnEE()), Qt::Key_F11);
 
 
     /* add editor popup context menu */
@@ -2775,7 +2775,7 @@ void MainWindow::setupToolBars()
     addToolButton(projToolBar, btnProjectNew, QString(":/images/newproj.png"));
     addToolButton(projToolBar, btnProjectOpen, QString(":/images/openproj.png"));
     addToolButton(projToolBar, btnProjectClose, QString(":/images/closeproj.png"));
-    addToolButton(projToolBar, btnProjectApp, QString(":/images/treeproject.png"));
+    addToolButton(projToolBar, btnProjectApp, QString(":/images/project.png"));
 
     connect(btnProjectNew,SIGNAL(clicked()),this,SLOT(newProject()));
     connect(btnProjectOpen,SIGNAL(clicked()),this,SLOT(openProject()));
@@ -2800,7 +2800,7 @@ void MainWindow::setupToolBars()
     btnProjectProperties->setToolTip(tr("Properties"));
 
     if(ctags->enabled()) {
-        browseToolBar = addToolBar(tr("Source Browser"));
+        browseToolBar = addToolBar(tr("Browser"));
         btnBrowseBack = new QToolButton(this);
         addToolButton(browseToolBar, btnBrowseBack, QString(":/images/back.png"));
         connect(btnBrowseBack,SIGNAL(clicked()),this,SLOT(prevDeclaration()));
@@ -2810,32 +2810,32 @@ void MainWindow::setupToolBars()
         btnFindDef = new QToolButton(this);
         addToolButton(browseToolBar, btnFindDef, QString(":/images/forward.png"));
         connect(btnFindDef,SIGNAL(clicked()),this,SLOT(findDeclaration()));
-        btnFindDef->setToolTip("Find Declaration (Ctrl+Left Click");
+        btnFindDef->setToolTip("Browse (Ctrl+Left Click");
     }
 
 
-    debugToolBar = addToolBar(tr("Debug"));
-    QToolButton *btnDebugDebugTerm = new QToolButton(this);
-    QToolButton *btnDebugRun = new QToolButton(this);
-    QToolButton *btnDebugBuild = new QToolButton(this);
-    QToolButton *btnDebugBurnEEP = new QToolButton(this);
+    programToolBar = addToolBar(tr("Program"));
+    QToolButton *btnProgramDebugTerm = new QToolButton(this);
+    QToolButton *btnProgramRun = new QToolButton(this);
+    QToolButton *btnProgramBuild = new QToolButton(this);
+    QToolButton *btnProgramBurnEEP = new QToolButton(this);
 
-    addToolButton(debugToolBar, btnDebugBuild, QString(":/images/build.png"));
-    addToolButton(debugToolBar, btnDebugBurnEEP, QString(":/images/burnee.png"));
-    addToolButton(debugToolBar, btnDebugRun, QString(":/images/run.png"));
-    addToolButton(debugToolBar, btnDebugDebugTerm, QString(":/images/runconsole.png"));
+    addToolButton(programToolBar, btnProgramBuild, QString(":/images/build.png"));
+    addToolButton(programToolBar, btnProgramBurnEEP, QString(":/images/burnee.png"));
+    addToolButton(programToolBar, btnProgramRun, QString(":/images/run.png"));
+    addToolButton(programToolBar, btnProgramDebugTerm, QString(":/images/runconsole.png"));
 
-    connect(btnDebugBuild,SIGNAL(clicked()),this,SLOT(programBuild()));
-    connect(btnDebugBurnEEP,SIGNAL(clicked()),this,SLOT(programBurnEE()));
-    connect(btnDebugDebugTerm,SIGNAL(clicked()),this,SLOT(programDebug()));
-    connect(btnDebugRun,SIGNAL(clicked()),this,SLOT(programRun()));
+    connect(btnProgramBuild,SIGNAL(clicked()),this,SLOT(programBuild()));
+    connect(btnProgramBurnEEP,SIGNAL(clicked()),this,SLOT(programBurnEE()));
+    connect(btnProgramDebugTerm,SIGNAL(clicked()),this,SLOT(programDebug()));
+    connect(btnProgramRun,SIGNAL(clicked()),this,SLOT(programRun()));
 
-    btnDebugBuild->setToolTip(tr("Build"));
-    btnDebugBurnEEP->setToolTip(tr("Burn EEPROM"));
-    btnDebugRun->setToolTip(tr("Run"));
-    btnDebugDebugTerm->setToolTip(tr("Run Console"));
+    btnProgramBuild->setToolTip(tr("Build"));
+    btnProgramBurnEEP->setToolTip(tr("Burn EEPROM"));
+    btnProgramRun->setToolTip(tr("Run"));
+    btnProgramDebugTerm->setToolTip(tr("Run Console"));
 
-    ctrlToolBar = addToolBar(tr("Control"));
+    ctrlToolBar = addToolBar(tr("Hardware"));
     ctrlToolBar->setLayoutDirection(Qt::RightToLeft);
     cbBoard = new QComboBox(this);
     cbPort = new QComboBox(this);

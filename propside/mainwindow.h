@@ -172,7 +172,7 @@ private:
     QToolBar        *projToolBar;
     QToolBar        *propToolBar;
     QToolBar        *browseToolBar;
-    QToolBar        *debugToolBar;
+    QToolBar        *programToolBar;
     QToolBar        *ctrlToolBar;
 
     QSplitter       *leftSplit;
