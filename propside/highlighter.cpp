@@ -136,18 +136,18 @@ void Highlighter::highlightC()
         highlightingRules.append(rule);
     }
 
-    // single line comments
-    singleLineCommentFormat.setForeground(Qt::darkGreen);
-    rule.pattern = QRegExp("//[^\n]*");
-    rule.format = singleLineCommentFormat;
-    highlightingRules.append(rule);
-
     // quoted strings
     quotationFormat.setForeground(Qt::red);
     rule.pattern = QRegExp("[\"].*[\"]");
     rule.format = quotationFormat;
     highlightingRules.append(rule);
     rule.pattern = QRegExp("[<][a-z,A-Z].*[>]");
+    highlightingRules.append(rule);
+
+    // single line comments
+    singleLineCommentFormat.setForeground(Qt::darkGreen);
+    rule.pattern = QRegExp("//[^\n]*");
+    rule.format = singleLineCommentFormat;
     highlightingRules.append(rule);
 
     // multilineline comments
