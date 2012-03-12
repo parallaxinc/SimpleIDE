@@ -134,6 +134,7 @@ private:
     int  runCogObjCopy(QString datfile);
     int  runObjCopy(QString datfile);
     int  runGAS(QString datfile);
+    int  runPexMake(QString fileName);
     QStringList getCompilerParameters(QStringList options);
     int  runCompiler(QStringList options);
     QStringList getLoaderParameters(QString options);

@@ -1338,6 +1338,8 @@ int  MainWindow::runBuild(void)
     }
     maxprogress++;
 
+    /* remove a.out before build
+     */
     QFile aout(sourcePath(projectFile)+"a.out");
     if(aout.exists()) {
         if(aout.remove() == false) {
@@ -1351,6 +1353,25 @@ int  MainWindow::runBuild(void)
                 return -1;
         }
     }
+
+    /* remove projectFile.pex before build
+     */
+    QString pexFile = projectFile;
+    pexFile = pexFile.mid(0,pexFile.lastIndexOf("."))+".pex";
+    QFile pex(pexFile);
+    if(pex.exists()) {
+        if(pex.remove() == false) {
+            int rc = QMessageBox::question(this,
+                tr("Can't Remove File"),
+                tr("Can't Remove output file before build.\n"\
+                   "Please close any program using the file \"")+pexFile+"\".\n" \
+                   "Continue?",
+                QMessageBox::No, QMessageBox::Yes);
+            if(rc == QMessageBox::No)
+                return -1;
+        }
+    }
+
     /* Run through file list and compile according to extension.
      */
     for(int n = 0; n < list.length(); n++) {
@@ -1395,7 +1416,10 @@ int  MainWindow::runBuild(void)
     progress->hide();
 
     if(rc == 0) {
-        compileStatus->appendPlainText("Done. Build Succeeded!\n");
+        if(runPexMake("a.out") == 0)
+            compileStatus->appendPlainText("Done. Build Succeeded!\n");
+        else
+            compileStatus->appendPlainText("Done. Build Failed!\nCould not make autoexec.pex\n");
     }
     else {
         compileStatus->appendPlainText("Done. Build Failed!\n");
@@ -1571,6 +1595,45 @@ int  MainWindow::runGAS(QString gasfile)
     QString gas = "propeller-elf-as";
     rc = startProgram(gas, sourcePath(projectFile), args);
 
+    return rc;
+}
+
+int  MainWindow::runPexMake(QString fileName)
+{
+    int rc = 0;
+
+    getApplicationSettings();
+    if(checkCompilerInfo()) {
+        return -1;
+    }
+
+    QString pexFile = projectFile;
+    pexFile = sourcePath(projectFile) + "a.pex";
+    QString autoexec = sourcePath(projectFile) + "autoexec.pex";
+    QFile pex(pexFile);
+    if(pex.exists()) {
+        pex.remove();
+    }
+    QFile apex(autoexec);
+    if(apex.exists()) {
+        apex.remove();
+    }
+
+    QStringList args;
+    args.append("-x");
+    args.append(fileName);
+
+    /* run the as program */
+    QString prog = "propeller-load";
+    rc = startProgram(prog, sourcePath(projectFile), args);
+
+    if(rc == 0) {
+        QFile npex(pexFile);
+        if(npex.exists()) {
+            npex.copy(autoexec);
+            npex.remove();
+        }
+    }
     return rc;
 }
 
