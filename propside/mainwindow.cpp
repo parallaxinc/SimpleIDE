@@ -125,6 +125,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     // old hardware dialog configuration feature
     //  hardwareDialog = new Hardware(this);
     //  connect(hardwareDialog,SIGNAL(accepted()),this,SLOT(initBoardTypes()));
+
+    int tab = editorTabs->currentIndex();
+    if(tab > -1) {
+        Editor *ed = editors->at(tab);
+        ed->setFocus();
+        ed->raise();
+    }
 }
 
 void MainWindow::keyHandler(QKeyEvent* event)
