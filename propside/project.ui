@@ -25,7 +25,7 @@
      <x>0</x>
      <y>0</y>
      <width>269</width>
-     <height>320</height>
+     <height>321</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -57,6 +57,9 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="toolTip">
+      <string>Select where the code will run. Use XMMC for read-only devices like EEPROM, Flash, or SD Card.</string>
+     </property>
     </widget>
     <widget class="QLabel" name="labelOptimization">
      <property name="geometry">
@@ -79,6 +82,9 @@
        <width>101</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="toolTip">
+      <string>Usually -Os is best for creating smaller code.</string>
      </property>
     </widget>
     <widget class="QLabel" name="labelcompiler">
@@ -103,6 +109,9 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="toolTip">
+      <string>Choose project compiler. C can compile simple C++ programs.</string>
+     </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxMathlib">
      <property name="geometry">
@@ -113,6 +122,9 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="toolTip">
+      <string>Check to include the floating point math library.</string>
+     </property>
      <property name="text">
       <string>Math Lib</string>
      </property>
@@ -121,10 +133,13 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>170</y>
+       <y>180</y>
        <width>131</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to use 32 bit doubles. Default is 64 bit doubles.</string>
      </property>
      <property name="text">
       <string>32bit Double</string>
@@ -139,6 +154,9 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="toolTip">
+      <string>Check to use the pthread library.</string>
+     </property>
      <property name="text">
       <string>Pthread Lib</string>
      </property>
@@ -147,10 +165,13 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>140</y>
+       <y>160</y>
        <width>131</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to use smaller simple printf.</string>
      </property>
      <property name="text">
       <string>Simple printf</string>
@@ -160,10 +181,13 @@
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>110</y>
+       <y>140</y>
        <width>121</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="toolTip">
+      <string>Enable all compiler warnings.</string>
      </property>
      <property name="text">
       <string>All Warnings</string>
@@ -173,10 +197,13 @@
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>140</y>
+       <y>160</y>
        <width>121</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to not use the COG level Cache.</string>
      </property>
      <property name="text">
       <string>No FCache</string>
@@ -186,10 +213,13 @@
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>170</y>
+       <y>180</y>
        <width>121</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to enable exception handling in C++.</string>
      </property>
      <property name="text">
       <string>Exceptions</string>
@@ -199,10 +229,13 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>110</y>
+       <y>140</y>
        <width>131</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to remove debug information from the program. Gives better size estimate.</string>
      </property>
      <property name="text">
       <string>Strip ELF</string>
@@ -232,6 +265,32 @@
      </property>
      <property name="toolTip">
       <string>Other Linker Options</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxLoadType">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>100</y>
+       <width>101</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Use only if you need to the board to run an SD card resident .pex program.</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelLoadType">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>SD Card Load Type</string>
      </property>
     </widget>
    </widget>

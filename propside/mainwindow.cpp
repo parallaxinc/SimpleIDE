@@ -9,10 +9,6 @@
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
 
-static const char *loadTypeNormal = "Normal";
-static const char *loadTypeSDxmmc = "SD XMMC";
-static const char *loadTypeSDload = "SD Load";
-
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     /* setup application registry info */
@@ -1212,11 +1208,6 @@ void MainWindow::setCurrentPort(int index)
     }
 }
 
-void MainWindow::setCurrentLoadType(int index)
-{
-    cbLoadType->setToolTip(loadTypeList->at(index));
-}
-
 void MainWindow::checkAndSaveFiles()
 {
     if(projectModel == NULL)
@@ -1424,11 +1415,14 @@ int  MainWindow::runBuild(void)
     Sleeper::ms(250);
     progress->hide();
 
+    if(projectOptions->getLoadType().compare(ProjectOptions::loadTypeNormal) != 0) {
+        rc = runPexMake("a.out");
+        if(rc != 0)
+            compileStatus->appendPlainText("Could not make AUTORUN.PEX\n");
+    }
+
     if(rc == 0) {
-        if(runPexMake("a.out") == 0)
-            compileStatus->appendPlainText("Done. Build Succeeded!\n");
-        else
-            compileStatus->appendPlainText("Done. Build Failed!\nCould not make autoexec.pex\n");
+        compileStatus->appendPlainText("Done. Build Succeeded!\n");
     }
     else {
         compileStatus->appendPlainText("Done. Build Failed!\n");
@@ -1456,11 +1450,11 @@ int  MainWindow::runBuild(void)
             }
         }
         if(compileStatus->toPlainText().indexOf("overflowed by", Qt::CaseInsensitive) > 0) {
-            compileStatus->appendPlainText("Your program is too big for the memory model selected for the project.");
+            compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
             return rc;
         }
         if(compileStatus->toPlainText().indexOf("Error: Relocation overflows", Qt::CaseInsensitive) > 0) {
-            compileStatus->appendPlainText("Your program is too big for the memory model selected for the project.");
+            compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
             return rc;
         }
         compileStatus->appendPlainText("Check source for bad function call or global variable name.\n");
@@ -1618,7 +1612,7 @@ int  MainWindow::runPexMake(QString fileName)
 
     QString pexFile = projectFile;
     pexFile = sourcePath(projectFile) + "a.pex";
-    QString autoexec = sourcePath(projectFile) + "autoexec.pex";
+    QString autoexec = sourcePath(projectFile) + "AUTORUN.PEX";
     QFile pex(pexFile);
     if(pex.exists()) {
         pex.remove();
@@ -1708,6 +1702,19 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
     if(projectOptions->getLinkOptions().length())
         args.append(projectOptions->getLinkOptions());
 
+    /* SD card load RAM */
+    if(projectOptions->getLoadType().compare(ProjectOptions::loadTypeSDload) == 0) {
+        QString mems = projectOptions->getMemModel();
+        if(mems.compare(ProjectOptions::memTypeXMM,Qt::CaseInsensitive) == 0) {
+            args.append("-T");
+            args.append("xmm_ram.ld");
+        }
+        else if(mems.compare(ProjectOptions::memTypeXMMC,Qt::CaseInsensitive) == 0) {
+            args.append("-T");
+            args.append("xmmc_ram.ld");
+        }
+    }
+
     /* strip */
     if(projectOptions->getStripElf().length())
         args.append(projectOptions->getStripElf());
@@ -1776,9 +1783,11 @@ QStringList MainWindow::getLoaderParameters(QString copts)
     args.append(portName);
     args.append(tr("-I"));
     args.append(aSideIncludes);
-    /* set working directory in process makes this unnecessary */
-    //args.append(srcpath+"a.out");
-    args.append("a.out");
+
+    /* if propeller-load parameters -l or -z in copts, don't append a.out */
+    if((copts.indexOf("-l") > 0 || copts.indexOf("-z") > 0) == false)
+        args.append("a.out");
+
     QStringList olist = copts.split(" ");
     for (int n = 0; n < olist.length(); n++)
         args.append(olist[n]);
@@ -1806,18 +1815,24 @@ int  MainWindow::runLoader(QString copts)
         process->setProperty("Terminal", QVariant(true));
     }
 
-    if(cbLoadType->currentText().compare(loadTypeSDxmmc) == 0) {
-        copts.append(" -z");
-        qDebug() << cbLoadType->currentText() << "load" << copts;
+    QString loadtype = projectOptions->getLoadType();
+    if(loadtype.length() > 0) {
+        if(loadtype.compare(ProjectOptions::loadTypeSDxmmc) == 0) {
+            copts.append(" -z");
+            //qDebug() << loadtype << "load" << copts;
+        }
+        else
+        if(loadtype.compare(ProjectOptions::loadTypeSDload) == 0) {
+            copts.append(" -l");
+            //qDebug() << loadtype << "load" << copts;
+        }
+        else
+        if(loadtype.compare(ProjectOptions::loadTypeNormal) == 0) {
+            //qDebug() << loadtype << "load" << copts;
+        }
     }
-    else
-    if(cbLoadType->currentText().compare(loadTypeSDload) == 0) {
-        copts.append(" -l");
-        qDebug() << cbLoadType->currentText() << "load" << copts;
-    }
-    else
-    if(cbLoadType->currentText().compare(loadTypeNormal) == 0) {
-        qDebug() << cbLoadType->currentText() << "load" << copts;
+    else {
+        //qDebug() << "no load type" << copts;
     }
 
     process->setProperty("Name", QVariant(aSideLoader));
@@ -2595,8 +2610,11 @@ void MainWindow::connectButton()
 
 void MainWindow::portResetButton()
 {
-    portListener->close();
+    //portListener->init(portName, BAUD115200);
     portListener->open();
+    portListener->close();
+    if(btnConnected->isChecked())
+        portListener->open();
 }
 
 QString MainWindow::shortFileName(QString fileName)
@@ -2919,22 +2937,6 @@ void MainWindow::setupToolBars()
     btnProgramBurnEEP->setToolTip(tr("Burn EEPROM"));
     btnProgramRun->setToolTip(tr("Run"));
     btnProgramDebugTerm->setToolTip(tr("Run Console"));
-
-    programToolBar->addSeparator();
-
-    cbLoadType = new QComboBox(this);
-    cbLoadType->setToolTip("Load Type");
-    cbLoadType->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    cbLoadType->addItem(loadTypeNormal);
-    cbLoadType->addItem(loadTypeSDxmmc);
-    cbLoadType->addItem(loadTypeSDload);
-    loadTypeList = new QStringList();
-    loadTypeList->append("Normal Load Type");
-    loadTypeList->append("Load and run code from SD card.");
-    loadTypeList->append("Load code from SD card to external memory.");
-    connect(cbLoadType,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentLoadType(int)));
-    programToolBar->addWidget(cbLoadType);
-    programToolBar->addSeparator();
 
     ctrlToolBar = addToolBar(tr("Hardware"));
     ctrlToolBar->setLayoutDirection(Qt::RightToLeft);

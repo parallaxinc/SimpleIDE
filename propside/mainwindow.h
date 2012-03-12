@@ -66,7 +66,6 @@ public slots:
     void changeTab(bool trig);
     void setCurrentBoard(int index);
     void setCurrentPort(int index);
-    void setCurrentLoadType(int index);
     void connectButton();
     void portResetButton();
     void terminalClosed();
@@ -199,8 +198,6 @@ private:
 
     QFileDialog     fileDialog;
 
-    QComboBox       *cbLoadType;
-    QStringList     *loadTypeList;
     QComboBox       *cbBoard;
     QComboBox       *cbPort;
     QStringList     friendlyPortName;
