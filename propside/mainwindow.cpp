@@ -9,6 +9,10 @@
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
 
+static const char *loadTypeNormal = "Normal";
+static const char *loadTypeSDxmmc = "SD XMMC";
+static const char *loadTypeSDload = "SD Load";
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     /* setup application registry info */
@@ -1208,6 +1212,11 @@ void MainWindow::setCurrentPort(int index)
     }
 }
 
+void MainWindow::setCurrentLoadType(int index)
+{
+    cbLoadType->setToolTip(loadTypeList->at(index));
+}
+
 void MainWindow::checkAndSaveFiles()
 {
     if(projectModel == NULL)
@@ -1795,6 +1804,20 @@ int  MainWindow::runLoader(QString copts)
     if(copts.indexOf(" -t") > 0) {
         copts = copts.mid(0,copts.indexOf(" -t"));
         process->setProperty("Terminal", QVariant(true));
+    }
+
+    if(cbLoadType->currentText().compare(loadTypeSDxmmc) == 0) {
+        copts.append(" -z");
+        qDebug() << cbLoadType->currentText() << "load" << copts;
+    }
+    else
+    if(cbLoadType->currentText().compare(loadTypeSDload) == 0) {
+        copts.append(" -l");
+        qDebug() << cbLoadType->currentText() << "load" << copts;
+    }
+    else
+    if(cbLoadType->currentText().compare(loadTypeNormal) == 0) {
+        qDebug() << cbLoadType->currentText() << "load" << copts;
     }
 
     process->setProperty("Name", QVariant(aSideLoader));
@@ -2782,7 +2805,6 @@ void MainWindow::setupFileMenu()
     programMenu->addAction(QIcon(":/images/run.png"), tr("Run"), this, SLOT(programRun()), Qt::Key_F10);
     programMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn"), this, SLOT(programBurnEE()), Qt::Key_F11);
 
-
     /* add editor popup context menu */
     edpopup = new QMenu(tr("Editor Popup"), this);
     edpopup->addAction(QIcon(":/images/undo.png"),tr("Undo"),this,SLOT(undoChange()));
@@ -2897,6 +2919,22 @@ void MainWindow::setupToolBars()
     btnProgramBurnEEP->setToolTip(tr("Burn EEPROM"));
     btnProgramRun->setToolTip(tr("Run"));
     btnProgramDebugTerm->setToolTip(tr("Run Console"));
+
+    programToolBar->addSeparator();
+
+    cbLoadType = new QComboBox(this);
+    cbLoadType->setToolTip("Load Type");
+    cbLoadType->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    cbLoadType->addItem(loadTypeNormal);
+    cbLoadType->addItem(loadTypeSDxmmc);
+    cbLoadType->addItem(loadTypeSDload);
+    loadTypeList = new QStringList();
+    loadTypeList->append("Normal Load Type");
+    loadTypeList->append("Load and run code from SD card.");
+    loadTypeList->append("Load code from SD card to external memory.");
+    connect(cbLoadType,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentLoadType(int)));
+    programToolBar->addWidget(cbLoadType);
+    programToolBar->addSeparator();
 
     ctrlToolBar = addToolBar(tr("Hardware"));
     ctrlToolBar->setLayoutDirection(Qt::RightToLeft);
