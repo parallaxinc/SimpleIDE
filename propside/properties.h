@@ -9,6 +9,8 @@
 #define separatorKey        "PathSeparator"
 #define configFileKey       "ConfigFile"
 #define workspaceKey        "Workspace"
+#define editorFontKey       "EditorFont"
+#define fontSizeKey         "FontSize"
 #define lastFileNameKey     "LastFileName"
 #define lastBoardNameKey    "LastBoardName"
 #define lastPortNameKey     "LastPortName"

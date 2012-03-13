@@ -80,6 +80,7 @@ public slots:
     void compilerError(QProcess::ProcessError error);
     void compilerFinished(int exitCode, QProcess::ExitStatus status);
     void closeEvent(QCloseEvent *event);
+    void quitProgram();
 
     void fileChanged();
     void keyHandler(QKeyEvent* event);
@@ -123,6 +124,9 @@ public slots:
     void openRecentProject();
 
     void editorMenu(QPoint point);
+    void fontDialog();
+    void fontBigger();
+    void fontSmaller();
 
 private:
     void exitSave();
@@ -181,6 +185,7 @@ private:
 
     QTabWidget      *editorTabs;
     QVector<Editor*> *editors;
+    QFont           editorFont;
     bool            fileChangeDisable;
     QMenu           *edpopup;
 

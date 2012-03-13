@@ -23,6 +23,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     propDialog = new Properties(this);
     connect(propDialog,SIGNAL(accepted()),this,SLOT(propertiesAccepted()));
 
+    /* setup user's editor font */
+    QVariant fontv = settings->value(editorFontKey, this->font());
+    if(fontv.canConvert(QVariant::String)) {
+        QString family = fontv.toString();
+        editorFont = QFont(family);
+    }
+    fontv = settings->value(fontSizeKey, this->font().pointSize());
+    if(fontv.canConvert(QVariant::Int)) {
+        int size = fontv.toInt();
+        editorFont.setPointSize(size);
+    }
+
+
     /* setup new project dialog */
     newProjDialog = new NewProject(this);
     connect(newProjDialog,SIGNAL(accepted()),this,SLOT(newProjectAccepted()));
@@ -286,7 +299,11 @@ void MainWindow::exitSave()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     if(event->type()) {}; // silence compiler
+    quitProgram();
+}
 
+void MainWindow::quitProgram()
+{
     /* never leave port open */
     portListener->close();
 
@@ -315,10 +332,18 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings->setValue(lastBoardNameKey,boardstr);
     settings->setValue(lastPortNameKey,portstr);
 
+    QString fontstr = editorFont.toString();
+    settings->setValue(editorFontKey,fontstr);
+
+    int fontsize = editorFont.pointSize();
+    settings->setValue(fontSizeKey,fontsize);
+
     delete replaceDialog;
     delete propDialog;
     delete projectOptions;
     delete term;
+
+    qApp->exit(0);
 }
 
 void MainWindow::newFile()
@@ -379,7 +404,8 @@ void MainWindow::openFileName(QString fileName)
         QFile file(fileName);
         if (file.open(QFile::ReadOnly))
         {
-            data = file.readAll();
+            QTextStream in(&file);
+            data = in.readAll();
             file.close();
             data.replace('\t',"    ");
             QString sname = this->shortFileName(fileName);
@@ -846,6 +872,61 @@ void MainWindow::editCommand()
 void MainWindow::systemCommand()
 {
 
+}
+
+void MainWindow::fontDialog()
+{
+    bool ok = false;
+
+    QFont font;
+    Editor *editor = editors->at(editorTabs->currentIndex());
+    if(editor) {
+        QFont edfont = editor->font();
+        font = QFontDialog::getFont(&ok, edfont);
+    }
+    else {
+        font = QFontDialog::getFont(&ok, this->font());
+    }
+
+    if(ok) {
+        for(int n = editors->count()-1; n >= 0; n--) {
+            Editor *ed = editors->at(n);
+            ed->setFont(font);
+        }
+        editorFont = font;
+    }
+}
+
+void MainWindow::fontBigger()
+{
+    Editor *editor = editors->at(editorTabs->currentIndex());
+    if(editor) {
+        QFont font = editor->font();
+        int size = font.pointSize()*10/8;
+        if(size < 90)
+            font.setPointSize(size);
+        for(int n = editors->count()-1; n >= 0; n--) {
+            Editor *ed = editors->at(n);
+            ed->setFont(font);
+        }
+        editorFont = font;
+    }
+}
+
+void MainWindow::fontSmaller()
+{
+    Editor *editor = editors->at(editorTabs->currentIndex());
+    if(editor) {
+        QFont font = editor->font();
+        int size = font.pointSize()*8/10;
+        if(size > 3)
+            font.setPointSize(size);
+        for(int n = editors->count()-1; n >= 0; n--) {
+            Editor *ed = editors->at(n);
+            ed->setFont(font);
+        }
+        editorFont = font;
+    }
 }
 
 void MainWindow::replaceInFile()
@@ -2427,11 +2508,16 @@ void MainWindow::showProjectFile()
     if(vs.canConvert(QVariant::String))
     {
         fileName = vs.toString();
+
         /* Temporarily disallow opening .spin files
          * until we know how to handle them.
-         */
         if(fileName.indexOf(".spin",Qt::CaseInsensitive) < 0)
             openFileName(sourcePath(projectFile)+fileName);
+         */
+
+        /* openFileName knows how to read spin files
+         */
+        openFileName(sourcePath(projectFile)+fileName);
     }
 }
 
@@ -2674,14 +2760,11 @@ void MainWindow::initBoardTypes()
 
 void MainWindow::setupEditor()
 {
-    QFont font;
-    font.setFamily("Courier");
-    font.setFixedPitch(true);
-    font.setPointSize(10);
-
     Editor *editor = new Editor(this);
     editor->setTabStopWidth(40);
-    editor->setFont(font);
+
+    /* font is user's preference */
+    editor->setFont(editorFont);
     editor->setLineWrapMode(Editor::NoWrap);
     connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
     highlighter = new Highlighter(editor->document());
@@ -2767,7 +2850,7 @@ void MainWindow::setupFileMenu()
     // fileMenu->addAction(QIcon(":/images/print.png"), tr("Print"), this, SLOT(printFile()), QKeySequence::Print);
     // fileMenu->addAction(QIcon(":/images/zip.png"), tr("Archive"), this, SLOT(zipFile()), 0);
 
-    fileMenu->addAction(QIcon(":/images/exit.png"), tr("E&xit"), qApp, SLOT(quit()), QKeySequence::Quit);
+    fileMenu->addAction(QIcon(":/images/exit.png"), tr("E&xit"), this, SLOT(quitProgram()), QKeySequence::Quit);
 
     QMenu *projMenu = new QMenu(tr("&Project"), this);
     menuBar()->addMenu(projMenu);
@@ -2820,6 +2903,12 @@ void MainWindow::setupFileMenu()
     editMenu->addAction(QIcon(":/images/redo.png"), tr("&Redo"), this, SLOT(redoChange()), QKeySequence::Redo);
     editMenu->addAction(QIcon(":/images/undo.png"), tr("&Undo"), this, SLOT(undoChange()), QKeySequence::Undo);
 
+    editMenu->addSeparator();
+    editMenu->addAction(tr("Font"), this, SLOT(fontDialog()));
+    editMenu->addAction(tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence::ZoomIn);
+    editMenu->addAction(tr("Smallerer Font"), this, SLOT(fontSmaller()), QKeySequence::ZoomOut);
+
+    editMenu->addSeparator();
     editMenu->addAction(tr("Next Tab"),this,SLOT(changeTab(bool)),QKeySequence::NextChild);
 
     QMenu *programMenu = new QMenu(tr("&Program"), this);
