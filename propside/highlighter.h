@@ -80,6 +80,7 @@ protected:
     QTextCharFormat multiLineCommentFormat;
     QTextCharFormat quotationFormat;
     QTextCharFormat functionFormat;
+    QTextCharFormat numberFormat;
 };
 
 #endif

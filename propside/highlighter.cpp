@@ -53,6 +53,15 @@ void Highlighter::highlightC()
 {
     HighlightingRule rule;
 
+    // numbers
+    numberFormat.setForeground(Qt::magenta);
+    numberFormat.setFontWeight(QFont::Bold);
+    rule.format = numberFormat;
+    rule.pattern = QRegExp("[0-9]*[0-9]");
+    highlightingRules.append(rule);
+    rule.pattern = QRegExp("0x*[0-9,a-f,A-F]");
+    highlightingRules.append(rule);
+
     // do "functions" first so we can override if names are keywords
     functionFormat.setFontItalic(true);
     functionFormat.setForeground(Qt::blue);
