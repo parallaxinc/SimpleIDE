@@ -2906,7 +2906,7 @@ void MainWindow::setupFileMenu()
     editMenu->addSeparator();
     editMenu->addAction(tr("Font"), this, SLOT(fontDialog()));
     editMenu->addAction(tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence::ZoomIn);
-    editMenu->addAction(tr("Smallerer Font"), this, SLOT(fontSmaller()), QKeySequence::ZoomOut);
+    editMenu->addAction(tr("Smaller Font"), this, SLOT(fontSmaller()), QKeySequence::ZoomOut);
 
     editMenu->addSeparator();
     editMenu->addAction(tr("Next Tab"),this,SLOT(changeTab(bool)),QKeySequence::NextChild);
