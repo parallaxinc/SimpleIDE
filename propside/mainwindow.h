@@ -28,6 +28,7 @@
 #include "ctags.h"
 #include "newproject.h"
 #include "editor.h"
+#include "gdb.h"
 
 #define untitledstr "Untitled"
 
@@ -143,6 +144,7 @@ private:
     int  runCompiler(QStringList options);
     QStringList getLoaderParameters(QString options);
     int  runLoader(QString options);
+    void debugCompileLoad();
     int  startProgram(QString program, QString workpath, QStringList args);
     int  checkBuildStart(QProcess *proc, QString progName);
     void showBuildStart(QString progName, QStringList args);
@@ -253,6 +255,8 @@ private:
     NewProject      *newProjDialog;
 
     QString         lastPath;
+
+    GDB             *gdb;
 };
 
 //! [0]

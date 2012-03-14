@@ -70,6 +70,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* set up ctag tool */
     ctags = new CTags(aSideCompilerPath);
 
+    /* setup the port listener */
+    portListener = new PortListener(this, termEditor);
+
+    /* setup the gdb class */
+    gdb = new GDB(editors, portListener, this);
+
     /* setup gui components */
     setupFileMenu();
     setupHelpMenu();
@@ -116,9 +122,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* tell port listener to use terminal editor for i/o */
     termEditor = term->getEditor();
-
-    /* setup the port listener */
-    portListener = new PortListener(this, termEditor);
 
     /* get available ports at startup */
     enumeratePorts();
@@ -1217,6 +1220,12 @@ void MainWindow::programDebug()
     term->activateWindow();
     term->show();
     term->getEditor()->setFocus();
+}
+
+
+void MainWindow::debugCompileLoad()
+{
+
 }
 
 void MainWindow::terminalClosed()
@@ -2901,6 +2910,18 @@ void MainWindow::setupFileMenu()
     programMenu->addAction(QIcon(":/images/build.png"), tr("Build"), this, SLOT(programBuild()), Qt::Key_F9);
     programMenu->addAction(QIcon(":/images/run.png"), tr("Run"), this, SLOT(programRun()), Qt::Key_F10);
     programMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn"), this, SLOT(programBurnEE()), Qt::Key_F11);
+
+#if GDBENABLE
+    QMenu *debugMenu = new QMenu(tr("&Debug"), this);
+    menuBar()->addMenu(debugMenu);
+
+    debugMenu->addAction(tr("Compile and Load"), this, SLOT(debugCompileLoad()), Qt::Key_F5);
+    debugMenu->addAction(tr("&Next Line"), gdb, SLOT(next()), Qt::ALT+Qt::Key_N);
+    debugMenu->addAction(tr("&Step In"), gdb, SLOT(step()), Qt::ALT+Qt::Key_S);
+    debugMenu->addAction(tr("&Finish Function"), gdb, SLOT(finish()), Qt::ALT+Qt::Key_F);
+    debugMenu->addAction(tr("&Backtrace"), gdb, SLOT(backtrace()), Qt::ALT+Qt::Key_B);
+    debugMenu->addAction(tr("&Until"), gdb, SLOT(until()), Qt::ALT+Qt::Key_U);
+#endif
 
     /* add editor popup context menu */
     edpopup = new QMenu(tr("Editor Popup"), this);

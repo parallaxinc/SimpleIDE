@@ -34,7 +34,8 @@ SOURCES += main.cpp \
     cbuildtree.cpp \
     projectoptions.cpp \
     replacedialog.cpp \
-    aboutdialog.cpp
+    aboutdialog.cpp \
+    gdb.cpp
 HEADERS += mainwindow.h \
     editor.h \
     ctags.h \
@@ -56,7 +57,8 @@ HEADERS += mainwindow.h \
     projectoptions.h \
     Sleeper.h \
     replacedialog.h \
-    aboutdialog.h
+    aboutdialog.h \
+    gdb.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui
