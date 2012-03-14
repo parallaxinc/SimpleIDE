@@ -774,25 +774,8 @@ void MainWindow::fileChanged()
     int index = editorTabs->currentIndex();
     QString name = editorTabs->tabText(index);
     Editor *ed = editors->at(index);
-    QTextCursor cur = ed->textCursor();
-    int cpos = cur.position();
-    if(cpos > 0) {
-        QString txt = ed->toPlainText();
-        char ch = txt[cpos-1].toAscii();
-        if(ch == '\t') {
-            int n = cur.columnNumber() % 4;
-            fileChangeDisable = true;
-            if(n) {
-                cur.movePosition(QTextCursor::Left,QTextCursor::KeepAnchor);
-                cur.removeSelectedText();
-                for(; n <= 4; n++) {
-                    ed->insertPlainText(" ");
-                }
-            }
-            fileChangeDisable = false;
-            return; // just do tabs
-        }
-    }
+
+    /* tab controls have been moved to the editor class */
 
     QString curtext = ed->toPlainText();
     QString fileName = editorTabs->tabToolTip(index);
