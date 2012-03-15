@@ -53,21 +53,30 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
     QVariant wrkv = settings.value(workspaceKey);
 
 #if defined(Q_WS_WIN32)
-    mypath = "c:/propgcc/";
+    mypath = "C:/propgcc/";
+    QString mygcc = mypath+"bin/propeller-elf-gcc.exe";
 #else
     mypath = "/opt/parallax/";
+    QString mygcc = mypath+"bin/propeller-elf-gcc";
 #endif
+    QString myinc = mypath+"propeller-load/";
 
     if(compv.canConvert(QVariant::String)) {
         QString s = compv.toString();
         s = QDir::fromNativeSeparators(s);
         leditCompiler->setText(s);
     }
+    else {
+        leditCompiler->setText(mygcc);
+    }
 
     if(incv.canConvert(QVariant::String)) {
         QString s = incv.toString();
         s = QDir::fromNativeSeparators(s);
         leditIncludes->setText(s);
+    }
+    else {
+        leditIncludes->setText(myinc);
     }
 
     if(wrkv.canConvert(QVariant::String)) {
