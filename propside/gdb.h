@@ -2,27 +2,56 @@
 #define GDB_H
 
 #include <QtCore>
-#include "editor.h"
-#include "PortListener.h"
+#include "terminal.h"
 
 class GDB : public QObject
 {
     Q_OBJECT
 public:
-    explicit GDB(QVector<Editor*> *editors, PortListener *port, QObject *parent = 0);
+    explicit GDB(QPlainTextEdit *terminal, QObject *parent = 0);
+    ~GDB();
 
-signals:
+    void load(QString gdbprog, QString path, QString target, QString image, QString port);
+    void setRunning(bool running);
+    void setReady(bool ready);
+    void sendCommand(QString command);
 
-public slots:
+    bool enabled();
+    void stop();
+    bool parseResponse(QString resp);
+
+    QString getResponseFile();
+    int     getResponseLine();
+
+    void kill();
+    void backtrace();
+    void runProgram();
     void next();
     void step();
+    void interrupt();
     void finish();
-    void backtrace();
     void until();
 
+signals:
+    void breakEvent();
+
+public slots:
+    void procStarted();
+    void procError(QProcess::ProcessError error);
+    void procFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void procReadyRead();
+
 private:
-    QVector<Editor*>    *editors;
-    PortListener        *port;
+    QPlainTextEdit  *status;
+    QProcess        *process;
+    QMutex          mutex;
+    bool            gdbRunning;
+    bool            gdbReady;
+
+    bool            programRunning;
+
+    QString         fileName;
+    int             lineNumber;
 };
 
 #endif // GDB_H
