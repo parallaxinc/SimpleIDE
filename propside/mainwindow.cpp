@@ -9,8 +9,6 @@
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
 
-#define GDBENABLE 0
-
 #define BUILD_TABNAME "Build Status"
 #define GDB_TABNAME "GDB Output"
 #define TOOL_TABNAME "Tool Output"
@@ -76,9 +74,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* set up ctag tool */
     ctags = new CTags(aSideCompilerPath);
 
-    /* setup the port listener */
-    portListener = new PortListener(this, termEditor);
-
     /* setup gui components */
     setupFileMenu();
     setupHelpMenu();
@@ -125,6 +120,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* tell port listener to use terminal editor for i/o */
     termEditor = term->getEditor();
+
+    /* setup the port listener */
+    portListener = new PortListener(this, termEditor);
 
     /* get available ports at startup */
     enumeratePorts();
@@ -1456,8 +1454,10 @@ int  MainWindow::runBuild(QString option)
 {
     int rc = 0;
 
+#if defined(GDBENABLE)
     /* stop debugger */
     gdb->stop();
+#endif
 
     QStringList clist;
     QFile file(projectFile);
@@ -2371,18 +2371,20 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     connect(compileStatus,SIGNAL(selectionChanged()),this,SLOT(compileStatusClicked()));
     statusTabs->addTab(compileStatus,tr(BUILD_TABNAME));
 
+#if defined(GDBENABLE)
     gdbStatus = new QPlainTextEdit(this);
     gdbStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
     /* setup the gdb class */
     gdb = new GDB(gdbStatus, this);
 
-#if GDBENABLE
     statusTabs->addTab(gdbStatus,tr(GDB_TABNAME));
 #endif
 
+#if defined(TOOLS)
     toolStatus = new QPlainTextEdit(this);
     toolStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
     statusTabs->addTab(toolStatus,tr(TOOL_TABNAME));
+#endif
 
     rightSplit->addWidget(statusTabs);
 
@@ -3019,7 +3021,7 @@ void MainWindow::setupFileMenu()
     editMenu->addAction(QIcon(":/images/undo.png"), tr("&Undo"), this, SLOT(undoChange()), QKeySequence::Undo);
 
     editMenu->addSeparator();
-    editMenu->addAction(tr("Font"), this, SLOT(fontDialog()));
+    editMenu->addAction(QIcon(":/images/Brush.png"), tr("Font"), this, SLOT(fontDialog()));
     editMenu->addAction(tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence::ZoomIn);
     editMenu->addAction(tr("Smaller Font"), this, SLOT(fontSmaller()), QKeySequence::ZoomOut);
 
@@ -3034,7 +3036,7 @@ void MainWindow::setupFileMenu()
     programMenu->addAction(QIcon(":/images/run.png"), tr("Run"), this, SLOT(programRun()), Qt::Key_F10);
     programMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn"), this, SLOT(programBurnEE()), Qt::Key_F11);
 
-#if GDBENABLE
+#if defined(GDBENABLE)
     QMenu *debugMenu = new QMenu(tr("&Debug"), this);
     menuBar()->addMenu(debugMenu);
 
