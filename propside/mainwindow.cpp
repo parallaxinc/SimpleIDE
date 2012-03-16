@@ -9,6 +9,12 @@
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
 
+#define GDBENABLE 0
+
+#define BUILD_TABNAME "Build Status"
+#define GDB_TABNAME "GDB Output"
+#define TOOL_TABNAME "Tool Output"
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     /* setup application registry info */
@@ -72,9 +78,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* setup the port listener */
     portListener = new PortListener(this, termEditor);
-
-    /* setup the gdb class */
-    gdb = new GDB(editors, portListener, this);
 
     /* setup gui components */
     setupFileMenu();
@@ -1188,26 +1191,26 @@ void MainWindow::propertiesAccepted()
 
 void MainWindow::programBuild()
 {
-    runBuild();
+    runBuild("");
 }
 
 void MainWindow::programBurnEE()
 {
-    if(runBuild())
+    if(runBuild(""))
         return;
     runLoader("-e");
 }
 
 void MainWindow::programRun()
 {
-    if(runBuild())
+    if(runBuild(""))
         return;
     runLoader("-r");
 }
 
 void MainWindow::programDebug()
 {
-    if(runBuild())
+    if(runBuild(""))
         return;
 
     if(runLoader("-r -t"))
@@ -1225,7 +1228,84 @@ void MainWindow::programDebug()
 
 void MainWindow::debugCompileLoad()
 {
+    QString gdbprog("propeller-elf-gdb");
+#if defined(Q_WS_WIN32)
+    gdbprog += ".exe";
+#else
+    gdbprog = aSideCompilerPath + gdbprog;
+#endif
 
+    /* compile for debug */
+    if(runBuild("-g"))
+        return;
+
+    /* start debugger */
+    QString port = cbPort->currentText();
+
+    /* set gdb tab */
+    for(int n = statusTabs->count(); n >= 0; n--) {
+        if(statusTabs->tabText(n).compare(GDB_TABNAME) == 0) {
+            statusTabs->setCurrentIndex(n);
+            break;
+        }
+    }
+    gdb->load(gdbprog, sourcePath(projectFile), "gdbstub", "a.out", port);
+}
+
+void MainWindow::gdbShowLine()
+{
+    QString fileName = gdb->getResponseFile();
+    int number = gdb->getResponseLine();
+    qDebug() << "gdbShowLine" << fileName << number;
+
+    openFileName(sourcePath(projectFile)+fileName);
+    Editor *ed = editors->at(editorTabs->currentIndex());
+    if(ed) ed->setLineNumber(number);
+}
+
+void MainWindow::gdbKill()
+{
+    gdb->kill();
+}
+
+void MainWindow::gdbBacktrace()
+{
+    gdb->backtrace();
+}
+
+void MainWindow::gdbContinue()
+{
+    gdb->runProgram();
+}
+
+void MainWindow::gdbNext()
+{
+    gdb->next();
+}
+
+void MainWindow::gdbStep()
+{
+    gdb->step();
+}
+
+void MainWindow::gdbFinish()
+{
+    gdb->finish();
+}
+
+void MainWindow::gdbUntil()
+{
+    gdb->until();
+}
+
+void MainWindow::gdbBreak()
+{
+    gdbShowLine();
+}
+
+void MainWindow::gdbInterrupt()
+{
+    gdb->interrupt();
 }
 
 void MainWindow::terminalClosed()
@@ -1372,9 +1452,13 @@ QString MainWindow::sourcePath(QString srcpath)
     return srcpath;
 }
 
-int  MainWindow::runBuild(void)
+int  MainWindow::runBuild(QString option)
 {
     int rc = 0;
+
+    /* stop debugger */
+    gdb->stop();
+
     QStringList clist;
     QFile file(projectFile);
     QString proj = "";
@@ -1385,6 +1469,10 @@ int  MainWindow::runBuild(void)
 
     proj = proj.trimmed(); // kill extra white space
     QStringList list = proj.split("\n");
+
+    /* add option to build */
+    if(option.length() > 0)
+        clist.append(option);
 
     /* Calculate the number of compile steps for progress.
      * Skip empty lines and don't count ">" parameters.
@@ -1495,6 +1583,8 @@ int  MainWindow::runBuild(void)
     Sleeper::ms(250);
     progress->hide();
 
+    QTextCursor cur = compileStatus->textCursor();
+
     if(projectOptions->getLoadType().compare(ProjectOptions::loadTypeNormal) != 0) {
         rc = runPexMake("a.out");
         if(rc != 0)
@@ -1503,6 +1593,8 @@ int  MainWindow::runBuild(void)
 
     if(rc == 0) {
         compileStatus->appendPlainText("Done. Build Succeeded!\n");
+        cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+        compileStatus->setTextCursor(cur);
     }
     else {
         compileStatus->appendPlainText("Done. Build Failed!\n");
@@ -1526,20 +1618,28 @@ int  MainWindow::runBuild(void)
                 else {
                     compileStatus->appendPlainText("Check source for bad function call or global variable name "+ssplit.at(1)+"\n");
                 }
+                cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+                compileStatus->setTextCursor(cur);
                 return rc;
             }
         }
         if(compileStatus->toPlainText().indexOf("overflowed by", Qt::CaseInsensitive) > 0) {
             compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
+            cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+            compileStatus->setTextCursor(cur);
             return rc;
         }
         if(compileStatus->toPlainText().indexOf("Error: Relocation overflows", Qt::CaseInsensitive) > 0) {
             compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
+            cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+            compileStatus->setTextCursor(cur);
             return rc;
         }
         compileStatus->appendPlainText("Check source for bad function call or global variable name.\n");
     }
 
+    cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+    compileStatus->setTextCursor(cur);
     return rc;
 }
 
@@ -1731,6 +1831,11 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
     QString model = projectOptions->getMemModel();
 
     QStringList args;
+    if(copts.length() > 0) {
+        QString s = copts.at(0);
+        if(s.compare("-g") == 0)
+            args.append(s);
+    }
     args.append("-o");
     args.append("a.out");
     args.append(projectOptions->getOptimization());
@@ -2259,10 +2364,28 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     //connect(editorTabs,SIGNAL(currentChanged(int)),this,SLOT(changeTab(int)));
     rightSplit->addWidget(editorTabs);
 
+    statusTabs = new QTabWidget(this);
+
     compileStatus = new QPlainTextEdit(this);
     compileStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
     connect(compileStatus,SIGNAL(selectionChanged()),this,SLOT(compileStatusClicked()));
-    rightSplit->addWidget(compileStatus);
+    statusTabs->addTab(compileStatus,tr(BUILD_TABNAME));
+
+    gdbStatus = new QPlainTextEdit(this);
+    gdbStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
+    /* setup the gdb class */
+    gdb = new GDB(gdbStatus, this);
+
+#if GDBENABLE
+    statusTabs->addTab(gdbStatus,tr(GDB_TABNAME));
+#endif
+
+    toolStatus = new QPlainTextEdit(this);
+    toolStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
+    statusTabs->addTab(toolStatus,tr(TOOL_TABNAME));
+
+    rightSplit->addWidget(statusTabs);
+
 
     QList<int> rsizes = rightSplit->sizes();
     rsizes[0] = rightSplit->height()*3/4;
@@ -2752,7 +2875,7 @@ void MainWindow::initBoardTypes()
 
 void MainWindow::setupEditor()
 {
-    Editor *editor = new Editor(this);
+    Editor *editor = new Editor(gdb, this);
     editor->setTabStopWidth(40);
 
     /* font is user's preference */
@@ -2915,12 +3038,16 @@ void MainWindow::setupFileMenu()
     QMenu *debugMenu = new QMenu(tr("&Debug"), this);
     menuBar()->addMenu(debugMenu);
 
-    debugMenu->addAction(tr("Compile and Load"), this, SLOT(debugCompileLoad()), Qt::Key_F5);
-    debugMenu->addAction(tr("&Next Line"), gdb, SLOT(next()), Qt::ALT+Qt::Key_N);
-    debugMenu->addAction(tr("&Step In"), gdb, SLOT(step()), Qt::ALT+Qt::Key_S);
-    debugMenu->addAction(tr("&Finish Function"), gdb, SLOT(finish()), Qt::ALT+Qt::Key_F);
-    debugMenu->addAction(tr("&Backtrace"), gdb, SLOT(backtrace()), Qt::ALT+Qt::Key_B);
-    debugMenu->addAction(tr("&Until"), gdb, SLOT(until()), Qt::ALT+Qt::Key_U);
+    debugMenu->addAction(tr("%Debug Start"), this, SLOT(debugCompileLoad()), Qt::Key_F5);
+    debugMenu->addAction(tr("&Continue"), this, SLOT(gdbContinue()), Qt::ALT+Qt::Key_R);
+    debugMenu->addAction(tr("&Next Line"), this, SLOT(gdbNext()), Qt::ALT+Qt::Key_N);
+    debugMenu->addAction(tr("&Step In"), this, SLOT(gdbStep()), Qt::ALT+Qt::Key_S);
+    debugMenu->addAction(tr("&Finish Function"), this, SLOT(gdbFinish()), Qt::ALT+Qt::Key_F);
+    debugMenu->addAction(tr("&Backtrace"), this, SLOT(gdbBacktrace()), Qt::ALT+Qt::Key_B);
+    debugMenu->addAction(tr("&Until"), this, SLOT(gdbUntil()), Qt::ALT+Qt::Key_U);
+    debugMenu->addAction(tr("&Interrupt"), this, SLOT(gdbInterrupt()), Qt::ALT+Qt::Key_I);
+    debugMenu->addAction(tr("&Kill"), this, SLOT(gdbKill()), Qt::ALT+Qt::Key_K);
+    connect(gdb,SIGNAL(breakEvent()),this,SLOT(gdbBreak()));
 #endif
 
     /* add editor popup context menu */

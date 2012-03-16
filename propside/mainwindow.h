@@ -78,6 +78,19 @@ public slots:
     void programBurnEE();
     void programRun();
     void programDebug();
+
+    void debugCompileLoad();
+    void gdbShowLine();
+    void gdbKill();
+    void gdbBacktrace();
+    void gdbContinue();
+    void gdbNext();
+    void gdbStep();
+    void gdbFinish();
+    void gdbUntil();
+    void gdbInterrupt();
+    void gdbBreak();
+
     void compilerError(QProcess::ProcessError error);
     void compilerFinished(int exitCode, QProcess::ExitStatus status);
     void closeEvent(QCloseEvent *event);
@@ -133,7 +146,7 @@ private:
     void exitSave();
     void getApplicationSettings();
     int  checkCompilerInfo();
-    int  runBuild(void);
+    int  runBuild(QString option);
     int  runCOGC(QString filename);
     int  runBstc(QString spinfile);
     int  runCogObjCopy(QString datfile);
@@ -144,7 +157,6 @@ private:
     int  runCompiler(QStringList options);
     QStringList getLoaderParameters(QString options);
     int  runLoader(QString options);
-    void debugCompileLoad();
     int  startProgram(QString program, QString workpath, QStringList args);
     int  checkBuildStart(QProcess *proc, QString progName);
     void showBuildStart(QString progName, QStringList args);
@@ -256,7 +268,11 @@ private:
 
     QString         lastPath;
 
+    QTabWidget      *statusTabs;
     GDB             *gdb;
+    QPlainTextEdit  *gdbStatus;
+    QPlainTextEdit  *toolStatus;
+
 };
 
 //! [0]
