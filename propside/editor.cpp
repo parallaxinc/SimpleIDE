@@ -276,6 +276,7 @@ void Editor::resizeEvent(QResizeEvent *e)
 
 void Editor::highlightCurrentLine()
 {
+#if defined(GDBENABLE)
     if(gdb->enabled() == false)
         return;
 
@@ -294,6 +295,7 @@ void Editor::highlightCurrentLine()
     }
 
     setExtraSelections(extraSelections);
+#endif
 }
 
 //![cursorPositionChanged]

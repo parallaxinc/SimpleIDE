@@ -50,5 +50,6 @@
         <file>images/SimpleIDE6.png</file>
         <file>images/reset.png</file>
         <file>images/project.png</file>
+        <file>images/Brush.png</file>
     </qresource>
 </RCC>
