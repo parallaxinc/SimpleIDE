@@ -29,6 +29,7 @@
 #include "newproject.h"
 #include "editor.h"
 #include "gdb.h"
+#include "loader.h"
 
 #define untitledstr "Untitled"
 
@@ -221,9 +222,16 @@ private:
     QComboBox       *cbPort;
     QStringList     friendlyPortName;
     QToolButton     *btnConnected;
+
+#if defined(LOADER_TERMINAL)
+    Loader          *termEditor;
+#else
     Console         *termEditor;
-    PortListener     *portListener;
+#endif
+
+    PortListener    *portListener;
     Terminal        *term;
+
     int             termXpos;
     int             termYpos;
 
