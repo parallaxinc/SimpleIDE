@@ -1,11 +1,24 @@
 #include "terminal.h"
 
-Terminal::Terminal(QWidget *parent, PortListener *serialPort) : QDialog(parent)
+Terminal::Terminal(QWidget *parent) : QDialog(parent)
 {
-    QVBoxLayout *termLayout = new QVBoxLayout(this);
-    port = serialPort;
-
+#if !defined(LOADER_TERMINAL)
     termEditor = new Console(parent);
+#endif
+    init();
+}
+
+Terminal::Terminal(QLabel *status, QPlainTextEdit *compileStatus, QWidget *parent) : QDialog(parent)
+{
+#if defined(LOADER_TERMINAL)
+    termEditor = new Loader(status,compileStatus,this);
+#endif
+    init();
+}
+
+void Terminal::init()
+{
+    QVBoxLayout *termLayout = new QVBoxLayout();
     termEditor->setReadOnly(false);
     termEditor->setContextMenuPolicy(Qt::NoContextMenu);
 
@@ -16,7 +29,7 @@ Terminal::Terminal(QWidget *parent, PortListener *serialPort) : QDialog(parent)
     pasteAction->setShortcuts(QKeySequence::Paste);
     termEditor->addAction(pasteAction);
 
-    termEditor->setMaximumBlockCount(300);
+    termEditor->setMaximumBlockCount(1000);
     termLayout->addWidget(termEditor);
 
     QPushButton *buttonClear = new QPushButton(tr("Clear"),this);
@@ -40,10 +53,17 @@ Terminal::Terminal(QWidget *parent, PortListener *serialPort) : QDialog(parent)
     resize(640,400);
 }
 
+#if defined(LOADER_TERMINAL)
+Loader *Terminal::getEditor()
+{
+    return termEditor;
+}
+#else
 Console *Terminal::getEditor()
 {
     return termEditor;
 }
+#endif
 
 void Terminal::setPosition(int x, int y)
 {
@@ -55,14 +75,22 @@ void Terminal::setPosition(int x, int y)
 void Terminal::accept()
 {
     buttonEnable->setText("Disable");
+#if defined(LOADER_TERMINAL)
+    termEditor->kill();
+#else
     termEditor->setPortEnable(false);
+#endif
     done(QDialog::Accepted);
 }
 
 void Terminal::reject()
 {
     buttonEnable->setText("Disable");
+#if defined(LOADER_TERMINAL)
+    termEditor->kill();
+#else
     termEditor->setPortEnable(false);
+#endif
     done(QDialog::Rejected);
 }
 

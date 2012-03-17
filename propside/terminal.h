@@ -4,16 +4,20 @@
 #include <QtGui>
 #include "console.h"
 #include "PortListener.h"
+#include "loader.h"
 
 class Terminal : public QDialog
 {
     Q_OBJECT
 public:
-    explicit Terminal(QWidget *parent, PortListener *serialPort);
-    Console *getEditor();
+    explicit Terminal(QWidget *parent);
+    explicit Terminal(QLabel *status, QPlainTextEdit *compileStatus, QWidget *parent);
     void setPosition(int x, int y);
     void accept();
     void reject();
+
+private:
+    void init();
 
 public slots:
     void toggleEnable();
@@ -23,9 +27,19 @@ public slots:
     void cutFromFile();
     void pasteToFile();
 
+#if defined(LOADER_TERMINAL)
+public:
+    Loader  *getEditor();
 private:
-    Console      *termEditor;
-    PortListener *port;
+    Loader  *termEditor;
+#else
+public:
+    Console *getEditor();
+private:
+    Console *termEditor;
+#endif
+
+private:
     QPushButton  *buttonEnable;
 };
 

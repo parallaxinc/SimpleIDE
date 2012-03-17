@@ -6,16 +6,27 @@
 # hook terminal to loader
 QT += core \
     gui
-TARGET = SimpleIDE
+
+TARGET   = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 
-# EVENT_DRIVEN QEXTSERIALPORT causes zombie procs
+# EVENT_DRIVEN QEXTSERIALPORT causes zombie procs on windows
 # DEFINES += EVENT_DRIVEN
+
+# GDBENABLE is not ready, and will only be used for development testing
+# DEFINES += GDBENABLE
+
+# LOADER_TERMINAL should be standard release config
+# If it is not defined, the old potentially problematic port IO will be used.
+DEFINES += LOADER_TERMINAL
+
+# These define the version number in Menu->About
+#
 DEFINES += IDEVERSION=0
-DEFINES += MINVERSION=5
-DEFINES += FIXVERSION=3
-#DEFINES += GDBENABLE
+DEFINES += MINVERSION=6
+DEFINES += FIXVERSION=0
+
 SOURCES += main.cpp \
     editor.cpp \
     ctags.cpp \
@@ -36,7 +47,8 @@ SOURCES += main.cpp \
     projectoptions.cpp \
     replacedialog.cpp \
     aboutdialog.cpp \
-    gdb.cpp
+    gdb.cpp \
+    loader.cpp
 HEADERS += mainwindow.h \
     editor.h \
     ctags.h \
@@ -59,7 +71,8 @@ HEADERS += mainwindow.h \
     Sleeper.h \
     replacedialog.h \
     aboutdialog.h \
-    gdb.h
+    gdb.h \
+    loader.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui

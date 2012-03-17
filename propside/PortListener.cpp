@@ -43,6 +43,9 @@ bool PortListener::open()
     if(!textEditor) // no text editor, no open
         return false;
 
+    if(terminal == NULL)
+        return false;
+
     if(port == NULL)
         return false;
 
@@ -95,12 +98,14 @@ void PortListener::onDsrChanged(bool status)
 
 void PortListener::updateReady()
 {
-    terminal->updateReady(port);
+    if(terminal != NULL)
+        terminal->updateReady(port);
 }
 
 void PortListener::updateReady(QextSerialPort* port)
 {
-    terminal->updateReady(port);
+    if(terminal != NULL)
+        terminal->updateReady(port);
 }
 
 /*
