@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>461</width>
+    <height>314</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>260</y>
-     <width>341</width>
+     <y>270</y>
+     <width>391</width>
      <height>31</height>
     </rect>
    </property>
@@ -33,8 +33,8 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>10</y>
-     <width>156</width>
+     <y>20</y>
+     <width>201</width>
      <height>20</height>
     </rect>
    </property>
@@ -46,8 +46,8 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>40</y>
-     <width>123</width>
+     <y>50</y>
+     <width>201</width>
      <height>20</height>
     </rect>
    </property>
@@ -59,8 +59,8 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>70</y>
-     <width>164</width>
+     <y>80</y>
+     <width>201</width>
      <height>20</height>
     </rect>
    </property>
@@ -72,8 +72,8 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>100</y>
-     <width>145</width>
+     <y>110</y>
+     <width>201</width>
      <height>20</height>
     </rect>
    </property>
@@ -85,8 +85,8 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>130</y>
-     <width>153</width>
+     <y>140</y>
+     <width>201</width>
      <height>20</height>
     </rect>
    </property>
@@ -98,8 +98,8 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>160</y>
-     <width>139</width>
+     <y>170</y>
+     <width>201</width>
      <height>20</height>
     </rect>
    </property>
@@ -111,8 +111,8 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>190</y>
-     <width>156</width>
+     <y>200</y>
+     <width>201</width>
      <height>20</height>
     </rect>
    </property>
@@ -124,8 +124,8 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>220</y>
-     <width>127</width>
+     <y>230</y>
+     <width>201</width>
      <height>20</height>
     </rect>
    </property>
@@ -136,9 +136,9 @@
   <widget class="QCheckBox" name="cbBackSpace">
    <property name="geometry">
     <rect>
-     <x>200</x>
-     <y>10</y>
-     <width>107</width>
+     <x>240</x>
+     <y>20</y>
+     <width>211</width>
      <height>20</height>
     </rect>
    </property>
@@ -149,9 +149,9 @@
   <widget class="QCheckBox" name="cbTab">
    <property name="geometry">
     <rect>
-     <x>200</x>
-     <y>40</y>
-     <width>68</width>
+     <x>240</x>
+     <y>50</y>
+     <width>211</width>
      <height>20</height>
     </rect>
    </property>
@@ -162,9 +162,9 @@
   <widget class="QCheckBox" name="cbLineFeed">
    <property name="geometry">
     <rect>
-     <x>200</x>
-     <y>70</y>
-     <width>110</width>
+     <x>240</x>
+     <y>80</y>
+     <width>211</width>
      <height>20</height>
     </rect>
    </property>
@@ -175,9 +175,9 @@
   <widget class="QCheckBox" name="cbClearToEOL">
    <property name="geometry">
     <rect>
-     <x>200</x>
-     <y>100</y>
-     <width>167</width>
+     <x>240</x>
+     <y>110</y>
+     <width>211</width>
      <height>20</height>
     </rect>
    </property>
@@ -188,9 +188,9 @@
   <widget class="QCheckBox" name="cbClearLinesBelow">
    <property name="geometry">
     <rect>
-     <x>200</x>
-     <y>130</y>
-     <width>156</width>
+     <x>240</x>
+     <y>140</y>
+     <width>211</width>
      <height>20</height>
     </rect>
    </property>
@@ -201,9 +201,9 @@
   <widget class="QCheckBox" name="cbNewLine">
    <property name="geometry">
     <rect>
-     <x>200</x>
-     <y>160</y>
-     <width>107</width>
+     <x>240</x>
+     <y>170</y>
+     <width>211</width>
      <height>20</height>
     </rect>
    </property>
@@ -214,9 +214,9 @@
   <widget class="QCheckBox" name="cbPositionCursorX">
    <property name="geometry">
     <rect>
-     <x>200</x>
-     <y>190</y>
-     <width>161</width>
+     <x>240</x>
+     <y>200</y>
+     <width>211</width>
      <height>20</height>
     </rect>
    </property>
@@ -227,9 +227,9 @@
   <widget class="QCheckBox" name="cbPositionCursorY">
    <property name="geometry">
     <rect>
-     <x>200</x>
-     <y>220</y>
-     <width>161</width>
+     <x>240</x>
+     <y>230</y>
+     <width>211</width>
      <height>20</height>
     </rect>
    </property>

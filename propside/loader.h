@@ -7,7 +7,7 @@ class Loader : public QPlainTextEdit
 {
     Q_OBJECT
 public:
-    explicit Loader(QLabel *mainstatus, QPlainTextEdit *compileStatus, QWidget *parent);
+    explicit Loader(QLabel *mainstatus, QPlainTextEdit *compileStatus, QProgressBar *progressBar, QWidget *parent);
     ~Loader();
 
     int  load(QString prog, QString path, QStringList args);
@@ -40,6 +40,7 @@ private:
 
     QLabel          *status;
     QPlainTextEdit  *compiler;
+    QProgressBar    *progress;
     QPlainTextEdit  *console;
     QProcess        *process;
     QMutex          mutex;

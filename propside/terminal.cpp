@@ -8,10 +8,10 @@ Terminal::Terminal(QWidget *parent) : QDialog(parent)
     init();
 }
 
-Terminal::Terminal(QLabel *status, QPlainTextEdit *compileStatus, QWidget *parent) : QDialog(parent)
+Terminal::Terminal(QLabel *status, QPlainTextEdit *compileStatus, QProgressBar *progressBar, QWidget *parent) : QDialog(parent)
 {
 #if defined(LOADER_TERMINAL)
-    termEditor = new Loader(status,compileStatus,this);
+    termEditor = new Loader(status,compileStatus,progressBar,this);
 #endif
     init();
 }
