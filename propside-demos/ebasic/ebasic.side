@@ -17,6 +17,7 @@ osint_posix.c
 >compiler=C
 >memtype=xmmc
 >optimize=-Os
+>loadtype=SD Load RAM
 >-fno-exceptions
 >defs::-DPROPELLER_GCC -DUSE_FDS
 >-s

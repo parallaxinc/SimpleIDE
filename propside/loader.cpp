@@ -12,6 +12,8 @@ Loader::Loader(QLabel *mainstatus, QPlainTextEdit *compileStatus, QProgressBar *
     setRunning(false);
     setDisableIO(true);
     setReadOnly(false);
+
+    process = new QProcess();
 }
 
 Loader::~Loader()
@@ -24,8 +26,7 @@ int Loader::load(QString program, QString workpath, QStringList args)
     this->program = program;
     this->workpath = workpath;
 
-    process = new QProcess();
-
+    stop();
     connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
     connect(process, SIGNAL(started()),this,SLOT(procStarted()));
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
@@ -72,8 +73,6 @@ int Loader::reload(QString port)
     }
 
     stop();
-    process = new QProcess();
-
     connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
     connect(process, SIGNAL(started()),this,SLOT(procStarted()));
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
@@ -135,7 +134,8 @@ bool Loader::enabled()
 void Loader::stop()
 {
     if(running) {
-        delete process;
+        process->kill();
+        //delete process; // can't just delete on Mac
     }
     setRunning(false);
     setReady(false);
