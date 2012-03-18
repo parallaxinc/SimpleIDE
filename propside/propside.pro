@@ -17,9 +17,9 @@ DEFINES += QEXTSERIALPORT_LIB
 # GDBENABLE is not ready, and will only be used for development testing
 # DEFINES += GDBENABLE
 
-# LOADER_TERMINAL should be standard release config
+# LOADER_TERMINAL should be standard release config for Linux/Windows for now
 # If it is not defined, the old potentially problematic port IO will be used.
-DEFINES += LOADER_TERMINAL
+# DEFINES += LOADER_TERMINAL - move to Linux/Windows profile only
 
 # These define the version number in Menu->About
 #
@@ -79,6 +79,8 @@ FORMS += hardware.ui \
 RESOURCES += resources.qrc
 unix:SOURCES += posix_qextserialport.cpp
 unix:!macx:SOURCES += qextserialenumerator_unix.cpp
+unix:!macx:DEFINES += LOADER_TERMINAL
+win32:DEFINES += LOADER_TERMINAL
 macx { 
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += -framework \
@@ -86,7 +88,7 @@ macx {
         -framework \
         CoreFoundation
 }
-win32 { 
+win32 {
     RC_FILE = myapp.rc
     SOURCES += win_qextserialport.cpp \
         qextserialenumerator_win.cpp

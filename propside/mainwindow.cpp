@@ -1257,7 +1257,7 @@ void MainWindow::debugCompileLoad()
             break;
         }
     }
-    gdb->load(gdbprog, sourcePath(projectFile), "gdbstub", "a.out", port);
+    gdb->load(gdbprog, sourcePath(projectFile), aSideCompilerPath+"gdbstub", "a.out", port);
 }
 
 void MainWindow::gdbShowLine()
