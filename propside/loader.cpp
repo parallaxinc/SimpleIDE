@@ -10,6 +10,7 @@ Loader::Loader(QLabel *mainstatus, QPlainTextEdit *compileStatus, QWidget *paren
     compiler = compileStatus;
     setRunning(false);
     setDisableIO(true);
+    setReadOnly(false);
 }
 
 Loader::~Loader()
@@ -69,6 +70,7 @@ int Loader::reload(QString port)
         }
     }
 
+    stop();
     process = new QProcess();
 
     connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
@@ -154,31 +156,9 @@ void Loader::keyPressEvent(QKeyEvent* e)
     if(this->disableIO)
         return;
 
-    switch(key)
-    {
-    case Qt::Key_Enter:
-    case Qt::Key_Return:
-        key = '\n';
-        break;
-    case Qt::Key_Backspace:
-        key = '\b';
-        break;
-    default:
-        if(key & Qt::Key_Escape)
-            return;
-        QChar c = e->text().at(0);
-        key = (int)c.toAscii();
-        break;
-    }
-    QByteArray barry;
-    barry.append((char)key);
-    process->write(barry);
-
-    QPlainTextEdit::keyPressEvent(e);
-
-#if 0
     if(e->matches((QKeySequence::Copy))) {
         copy();
+        return;
     }
     if(e->matches((QKeySequence::Paste))) {
         QClipboard *clip = QApplication::clipboard();
@@ -188,28 +168,36 @@ void Loader::keyPressEvent(QKeyEvent* e)
         process->write(barry);
         return;
     }
-    else {
-        if(QApplication::keyboardModifiers() == 0) {
-            //qDebug() << "keyPressEvent" << key;
-            QByteArray barry;
-            if(key == Qt::Key_Enter || key == Qt::Key_Return)
-                barry.append('\n');
-            else
-                barry.append((char)key);
-            process->write(barry);
-        }
+
+    switch(key)
+    {
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+            key = '\n';
+            break;
+        case Qt::Key_Backspace:
+            key = '\b';
+            break;
+        default:
+            if(key & Qt::Key_Escape)
+                return;
+            QChar c = e->text().at(0);
+            key = (int)c.toAscii();
+            break;
     }
-#endif
+    QByteArray barry;
+    barry.append((char)key);
+    process->write(barry);
 }
 
 void Loader::mousePressEvent(QMouseEvent* e)
 {
-
+    QPlainTextEdit::mousePressEvent(e);
 }
 
 void Loader::mouseMoveEvent(QMouseEvent* e)
 {
-
+    QPlainTextEdit::mouseMoveEvent(e);
 }
 
 void Loader::procStarted()
@@ -232,30 +220,27 @@ void Loader::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
 void Loader::procReadyRead()
 {
     QTextCursor cur;
-    QString s = process->readAllStandardOutput();
 
     if(this->disableIO)
         return;
 
-    if(s.contains("[ Entering terminal mode.",Qt::CaseInsensitive)) {
+    QString s = process->readAllStandardOutput();
+
+    if(s.contains("[ Entering terminal mode", Qt::CaseInsensitive)) {
         setReady(true);
-        QStringList list = s.split("\n");
-        if(list.count() > 0)
-            compiler->insertPlainText(list.at(0));
-        if(list.count() > 1)
-            s = list.at(1);
+        s = s.mid(s.indexOf("]")+1);
     }
 
     if(ready) {
         this->insertPlainText(s);
         cur = this->textCursor();
-        cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor);
+        cur.setPosition(this->toPlainText().length(), QTextCursor::MoveAnchor);
         this->setTextCursor(cur);
     }
     else {
         compiler->insertPlainText(s);
         cur = compiler->textCursor();
-        cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor);
+        cur.setPosition(compiler->toPlainText().length(), QTextCursor::MoveAnchor);
         compiler->setTextCursor(cur);
     }
 }
