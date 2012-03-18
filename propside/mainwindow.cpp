@@ -115,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* setup loader and port listener */
 #if defined(LOADER_TERMINAL)
     /* setup the terminal dialog box */
-    term = new Terminal(status, compileStatus, this);
+    term = new Terminal(status, compileStatus, progress, this);
     termEditor = term->getEditor();
 
     /* no console or editor for LOADER_TERMINAL */

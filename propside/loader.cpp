@@ -2,12 +2,13 @@
 #include "properties.h"
 #include "Sleeper.h"
 
-Loader::Loader(QLabel *mainstatus, QPlainTextEdit *compileStatus, QWidget *parent) :
+Loader::Loader(QLabel *mainstatus, QPlainTextEdit *compileStatus, QProgressBar *progressBar, QWidget *parent) :
     QPlainTextEdit(parent)
 {
     setFont(QFont("courier"));
     status   = mainstatus;
     compiler = compileStatus;
+    progress = progressBar;
     setRunning(false);
     setDisableIO(true);
     setReadOnly(false);
@@ -217,30 +218,58 @@ void Loader::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
     qDebug() << "Loader::procFinished" << exitCode << exitStatus;
 }
 
+
 void Loader::procReadyRead()
 {
-    QTextCursor cur;
-
     if(this->disableIO)
         return;
 
-    QString s = process->readAllStandardOutput();
+    QTextCursor cur;
+    QByteArray s = process->readAll();
 
-    if(s.contains("[ Entering terminal mode", Qt::CaseInsensitive)) {
-        setReady(true);
-        s = s.mid(s.indexOf("]")+1);
+    if(ready != true) {
+        /* propeller-load -t message:
+         * [ Entering terminal mode. Type ESC or Control-C to exit. ]\r\n
+         */
+        if(QString(s).contains(". ]", Qt::CaseInsensitive)) {
+            setReady(true);
+            status->setText(status->text()+" Loader done.");
+            progress->setValue(100);
+            Sleeper::ms(250);
+            progress->hide();
+            s = s.mid(s.indexOf("]")+1);
+        }
     }
 
     if(ready) {
-        this->insertPlainText(s);
+        /* Just doing insertPlainText(s) don't get it.
+         * Also we need to add character enable filters simiar to PST
+         */
+        for(int n = 0; n < s.length();n++) {
+            char ch = QChar(s.at(n)).toAscii();
+            //this->insertPlainText(QString(" %1").arg(ch, 2, 16, QChar('0')));
+            if(ch == '\0')
+                continue; // for now ignore 0's
+            if(ch == '\r')
+                continue; // for now ignore \r
+            if(ch == '\b') {
+                QString text = this->toPlainText();
+                this->setPlainText(text.mid(0,text.length()-1));
+                n+=2;
+                continue;
+            }
+            this->insertPlainText(QString(ch));
+        }
         cur = this->textCursor();
-        cur.setPosition(this->toPlainText().length(), QTextCursor::MoveAnchor);
+        cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor);
         this->setTextCursor(cur);
     }
     else {
+        /* insertPlainText OK here - it's not too critical
+         */
         compiler->insertPlainText(s);
         cur = compiler->textCursor();
-        cur.setPosition(compiler->toPlainText().length(), QTextCursor::MoveAnchor);
+        cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor);
         compiler->setTextCursor(cur);
     }
 }

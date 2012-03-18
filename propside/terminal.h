@@ -11,7 +11,7 @@ class Terminal : public QDialog
     Q_OBJECT
 public:
     explicit Terminal(QWidget *parent);
-    explicit Terminal(QLabel *status, QPlainTextEdit *compileStatus, QWidget *parent);
+    explicit Terminal(QLabel *status, QPlainTextEdit *compileStatus, QProgressBar *progressBar, QWidget *parent);
     void setPosition(int x, int y);
     void accept();
     void reject();
