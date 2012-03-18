@@ -12,8 +12,8 @@ int main(void)
 {
     int n = 1;
     printf("Hello World\n");
-    while(0) {
-        //waitcnt(CLKFREQ/5+CNT);
+    while(1) {
+        waitcnt(CLKFREQ/10+CNT);
         printf("Hello World %d\n", n);
         n++;
     }

@@ -11,21 +11,17 @@ TARGET   = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 
-# EVENT_DRIVEN QEXTSERIALPORT causes zombie procs on windows
+# EVENT_DRIVEN QEXTSERIALPORT causes zombie procs on windows works on Linux/Mac
 # DEFINES += EVENT_DRIVEN
 
 # GDBENABLE is not ready, and will only be used for development testing
 # DEFINES += GDBENABLE
 
-# LOADER_TERMINAL should be standard release config for Linux/Windows for now
-# If it is not defined, the old potentially problematic port IO will be used.
-# DEFINES += LOADER_TERMINAL - move to Linux/Windows profile only
-
 # These define the version number in Menu->About
 #
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=6
-DEFINES += FIXVERSION=0
+DEFINES += FIXVERSION=1
 
 SOURCES += main.cpp \
     editor.cpp \
@@ -77,11 +73,12 @@ FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui
 RESOURCES += resources.qrc
-unix:SOURCES += posix_qextserialport.cpp
+unix {
+    DEFINES += EVENT_DRIVEN
+    SOURCES += posix_qextserialport.cpp
+}
 unix:!macx:SOURCES += qextserialenumerator_unix.cpp
-unix:!macx:DEFINES += LOADER_TERMINAL
-win32:DEFINES += LOADER_TERMINAL
-macx { 
+macx {
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += -framework \
         IOKit \
@@ -89,6 +86,7 @@ macx {
         CoreFoundation
 }
 win32 {
+    # DEFINES += LOADER_TERMINAL
     RC_FILE = myapp.rc
     SOURCES += win_qextserialport.cpp \
         qextserialenumerator_win.cpp

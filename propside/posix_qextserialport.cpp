@@ -682,7 +682,8 @@ bool QextSerialPort::open(OpenMode mode)
     if (!isOpen()) {
         //qDebug() << "trying to open file" << port.toAscii();
         //note: linux 2.6.21 seems to ignore O_NDELAY flag
-        if ((fd = ::open(port.toAscii() ,O_RDWR | O_NOCTTY | O_NDELAY)) != -1) {
+        // added O_NONBLOCK so MAC OS doesn't go crazy
+        if ((fd = ::open(port.toAscii() ,O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK)) != -1) {
             //qDebug("file opened succesfully");
 
             setOpenMode(mode);              // Flag the port as opened
@@ -739,6 +740,7 @@ void QextSerialPort::close()
         flush();
         // Using both TCSAFLUSH and TCSANOW here discards any pending input
         tcsetattr(fd, TCSAFLUSH | TCSANOW, &old_termios);   // Restore termios
+        //tcsetattr(fd, TCSAFLUSH, &old_termios);   // Restore termios
         // Be a good QIODevice and call QIODevice::close() before POSIX close()
         //  so the aboutToClose() signal is emitted at the proper time
         QIODevice::close();	// Flag the device as closed
