@@ -2889,11 +2889,9 @@ void MainWindow::portResetButton()
         QMessageBox::information(this, tr("Port Required"), tr("Please select a port"), QMessageBox::Ok);
         return;
     }
-    if(termEditor->enabled() == false)
-        termEditor->reload(port);
-    termEditor->stop();
-    if(btnConnected->isChecked())
-        termEditor->reload(port);
+    termEditor->reload(port);
+    if(btnConnected->isChecked() == false)
+        termEditor->stop();
 #else
     portListener->open();
     portListener->close();
