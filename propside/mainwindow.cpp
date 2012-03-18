@@ -3113,7 +3113,7 @@ void MainWindow::setupFileMenu()
     QMenu *debugMenu = new QMenu(tr("&Debug"), this);
     menuBar()->addMenu(debugMenu);
 
-    debugMenu->addAction(tr("%Debug Start"), this, SLOT(debugCompileLoad()), Qt::Key_F5);
+    debugMenu->addAction(tr("&Debug Start"), this, SLOT(debugCompileLoad()), Qt::Key_F5);
     debugMenu->addAction(tr("&Continue"), this, SLOT(gdbContinue()), Qt::ALT+Qt::Key_R);
     debugMenu->addAction(tr("&Next Line"), this, SLOT(gdbNext()), Qt::ALT+Qt::Key_N);
     debugMenu->addAction(tr("&Step In"), this, SLOT(gdbStep()), Qt::ALT+Qt::Key_S);

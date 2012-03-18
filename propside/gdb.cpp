@@ -13,9 +13,7 @@ GDB::GDB(QPlainTextEdit *terminal, QObject *parent) :
 
 GDB::~GDB()
 {
-    delete process;
-    setRunning(false);
-    setReady(false);
+    stop();
 }
 
 void GDB::load(QString program, QString workpath, QString target, QString image, QString port)
@@ -26,6 +24,7 @@ void GDB::load(QString program, QString workpath, QString target, QString image,
     process->setProperty("Name", QVariant(program));
     process->setProperty("IsLoader", QVariant(false));
 
+    stop();
     connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
     connect(process, SIGNAL(started()),this,SLOT(procStarted()));
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
@@ -90,9 +89,9 @@ bool GDB::enabled()
 
 void GDB::stop()
 {
-    delete process;
-    process = new QProcess(this);
-
+    if(gdbRunning) {
+        process->close();
+    }
     setRunning(false);
     setReady(false);
 }
