@@ -10,14 +10,9 @@ const QString ProjectOptions::memTypeCOG = "COG";
 const QString ProjectOptions::memTypeXMM = "XMM";
 const QString ProjectOptions::memTypeXMMC = "XMMC";
 const QString ProjectOptions::optimization = "optimize";
-const QString ProjectOptions::loadtype = "loadtype";
 const QString ProjectOptions::cflags = "defs";
 const QString ProjectOptions::lflags = "linker";
 const QString ProjectOptions::board = "BOARD";
-
-const QString ProjectOptions::loadTypeNormal = "None";
-const QString ProjectOptions::loadTypeSDxmmc = "SD Run XMMC";
-const QString ProjectOptions::loadTypeSDload = "SD Load RAM";
 
 ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Project)
 {
@@ -35,10 +30,6 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
     ui->comboBoxOptimization->addItem("-O2 Speed");
     ui->comboBoxOptimization->addItem("-O1 Mixed");
     ui->comboBoxOptimization->addItem("-O0 None");
-
-    ui->comboBoxLoadType->addItem(loadTypeNormal);
-    ui->comboBoxLoadType->addItem(loadTypeSDxmmc);
-    ui->comboBoxLoadType->addItem(loadTypeSDload);
 
     ui->checkBox32bitDouble->setChecked(true);
     ui->checkBoxWarnAll->setChecked(false);
@@ -59,7 +50,6 @@ void ProjectOptions::clearOptions()
     ui->comboBoxCompiler->setCurrentIndex(0);
     ui->comboBoxMemoryMode->setCurrentIndex(0);
     ui->comboBoxOptimization->setCurrentIndex(0);
-    ui->comboBoxLoadType->setCurrentIndex(0);
     ui->checkBox32bitDouble->setChecked(false);
     ui->checkBoxWarnAll->setChecked(false);
     ui->checkBoxNoFcache->setChecked(false);
@@ -83,7 +73,6 @@ QStringList ProjectOptions::getOptions()
     args.append(compiler+"="+getCompiler());
     args.append(memtype+"="+getMemModel());
     args.append(optimization+"="+getOptimization());
-    args.append(loadtype+"="+getLoadType());
 
     if(get32bitDoubles().length())
         args.append(get32bitDoubles());
@@ -139,10 +128,6 @@ QString  ProjectOptions::getOptimization()
 {
     QStringList opts = ui->comboBoxOptimization->currentText().split(" ");
     return opts[0];
-}
-QString  ProjectOptions::getLoadType()
-{
-    return ui->comboBoxLoadType->currentText();
 }
 
 QString  ProjectOptions::get32bitDoubles()
@@ -236,10 +221,6 @@ void ProjectOptions::setOptions(QString s)
             if(name.compare(optimization) == 0) {
                 this->setOptimization(value);
             }
-            else
-            if(name.compare(loadtype) == 0) {
-                this->setLoadType(value);
-            }
         }
     }
     else {
@@ -306,17 +287,6 @@ void ProjectOptions::setOptimization(QString s)
         QString op = ui->comboBoxOptimization->itemText(n);
         if(op.contains(s, Qt::CaseInsensitive)) {
             ui->comboBoxOptimization->setCurrentIndex(n);
-            break;
-        }
-    }
-}
-void ProjectOptions::setLoadType(QString s)
-{
-    int n = ui->comboBoxLoadType->count();
-    while(--n > -1) {
-        QString op = ui->comboBoxLoadType->itemText(n);
-        if(op.compare(s, Qt::CaseInsensitive) == 0) {
-            ui->comboBoxLoadType->setCurrentIndex(n);
             break;
         }
     }

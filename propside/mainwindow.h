@@ -49,9 +49,10 @@ public slots:
     void terminalEditorTextChanged();
     void newFile();
     void openFile(const QString &path = QString());
-    void saveFile(const QString &path = QString());
+    void saveFile();
     void saveFileByTabIndex(int tab);
     void saveAsFile(const QString &path = QString());
+    void savePexFile();
     void printFile(const QString &path = QString());    // not implemented
     void zipFile(const QString &path = QString());      // not implemented
     void closeFile();
@@ -106,6 +107,7 @@ public slots:
     void addProjectFile();
     void deleteProjectFile();
     void showProjectFile();
+    void showAssemblyFile();
     void saveProjectOptions();
 
     void copyFromFile();
@@ -281,6 +283,8 @@ private:
     QPlainTextEdit  *gdbStatus;
     QPlainTextEdit  *toolStatus;
 
+    QToolButton *btnProgramDebugTerm;
+    QToolButton *btnProgramRun;
 };
 
 //! [0]

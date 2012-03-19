@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>270</width>
-    <height>320</height>
+    <height>281</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -25,7 +25,7 @@
      <x>0</x>
      <y>0</y>
      <width>270</width>
-     <height>320</height>
+     <height>281</height>
     </rect>
    </property>
    <property name="title">
@@ -51,7 +51,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>170</y>
+      <y>130</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -67,7 +67,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>200</y>
+      <y>160</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -77,19 +77,6 @@
     </property>
     <property name="text">
      <string>32bit Double</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="comboBoxLoadType">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>99</y>
-      <width>121</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="toolTip">
-     <string>Use only if you need to the board to run an SD card resident .pex program.</string>
     </property>
    </widget>
    <widget class="QLabel" name="labelcompiler">
@@ -109,7 +96,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>260</y>
+      <y>220</y>
       <width>251</width>
       <height>21</height>
      </rect>
@@ -122,7 +109,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>140</y>
+      <y>100</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -151,7 +138,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>230</y>
+      <y>190</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -180,7 +167,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>200</y>
+      <y>160</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -209,7 +196,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>230</y>
+      <y>190</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -225,7 +212,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>290</y>
+      <y>250</y>
       <width>251</width>
       <height>21</height>
      </rect>
@@ -247,24 +234,11 @@
      <string>Usually -Os is best for creating smaller code.</string>
     </property>
    </widget>
-   <widget class="QLabel" name="labelLoadType">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>99</y>
-      <width>131</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>SDCard Load Type</string>
-    </property>
-   </widget>
    <widget class="QCheckBox" name="checkBoxWarnAll">
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>140</y>
+      <y>100</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -280,7 +254,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>170</y>
+      <y>130</y>
       <width>121</width>
       <height>21</height>
      </rect>
