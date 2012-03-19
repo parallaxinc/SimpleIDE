@@ -90,25 +90,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     initBoardTypes();
 
-    /* these are read once per app startup */
-    QVariant lastportv  = settings->value(lastPortNameKey);
-    if(lastportv.canConvert(QVariant::String))
-        portName = lastportv.toString();
-
-    /* setup the first port displayed in the combo box */
-    if(cbPort->count() > 0) {
-        int ndx = 0;
-        if(portName.length() != 0) {
-            for(int n = cbPort->count()-1; n > -1; n--)
-                if(cbPort->itemText(n) == portName)
-                {
-                    ndx = n;
-                    break;
-                }
-        }
-        setCurrentPort(ndx);
-    }
-
     /* start a process object for the loader to use */
     process = new QProcess(this);
 
@@ -136,6 +117,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* get available ports at startup */
     enumeratePorts();
+
+    /* these are read once per app startup */
+    QVariant lastportv  = settings->value(lastPortNameKey);
+    if(lastportv.canConvert(QVariant::String))
+        portName = lastportv.toString();
+
+    /* setup the first port displayed in the combo box */
+    if(cbPort->count() > 0) {
+        int ndx = 0;
+        if(portName.length() != 0) {
+            for(int n = cbPort->count()-1; n > -1; n--)
+                if(cbPort->itemText(n) == portName)
+                {
+                    ndx = n;
+                    break;
+                }
+        }
+        setCurrentPort(ndx);
+    }
 
     /* load the last file into the editor to make user happy */
     QVariant lastfilev = settings->value(lastFileNameKey);
