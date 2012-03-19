@@ -32,7 +32,7 @@ void Console::keyPressEvent(QKeyEvent *event)
 }
 
 #if defined(EVENT_DRIVEN)
-enum { BUFFERSIZE = 128 };
+enum { BUFFERSIZE = 16 };
 #else
 enum { BUFFERSIZE = 32 };
 #endif
@@ -44,8 +44,45 @@ void Console::updateReady(QextSerialPort* port)
     if(length > BUFFERSIZE) length = BUFFERSIZE;
     length = port->readData(buffer, length);
 
-    if(isEnabled)
-        updateReady(buffer, length);
+    if(length < 1)
+        return;
+
+    QTextCursor cur = this->textCursor();
+    if(isEnabled) {
+        // always start at the end just in case someone clicked the window
+        moveCursor(QTextCursor::End);
+        for(int n = 0; n < length; n++)
+        {
+            char ch = buffer[n];
+            switch(ch)
+            {
+                case 0: {
+                    break;
+                }
+                case '\b': {
+                    QString text;
+                    text = toPlainText();
+                    setPlainText(text.mid(0,text.length()-1));
+                    n+=2;
+                    break;
+                }
+                case 0xD: {
+                    cur.insertText(QString(ch));
+                    break;
+                }
+                case 0xA: {
+                        cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+                    break;
+                }
+                default: {
+                    cur.insertText(QString(ch));
+                    break;
+                }
+            }
+        }
+        moveCursor(QTextCursor::End);
+    }
+    //updateReady(buffer, length);
 }
 
 void Console::updateReady(char *buff, int length)
@@ -54,7 +91,8 @@ void Console::updateReady(char *buff, int length)
     moveCursor(QTextCursor::End);
     for(int n = 0; n < length; n++)
     {
-        switch(buff[n])
+        char ch = buff[n];
+        switch(ch)
         {
             case 0: {
                 break;
@@ -67,14 +105,14 @@ void Console::updateReady(char *buff, int length)
                 break;
             }
             case 0xA: {
-                insertPlainText(QString(buff[n]));
+                insertPlainText(QString(ch));
                 break;
             }
             case 0xD: {
                 break;
             }
             default: {
-                insertPlainText(QString(buff[n]));
+                insertPlainText(QString(ch));
                 break;
             }
         }

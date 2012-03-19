@@ -1,5 +1,11 @@
 #include "asideconfig.h"
 
+const QString ASideConfig::SdRun  = "SdRun";
+const QString ASideConfig::SdLoad = "SdLoad";
+const QString ASideConfig::Serial = "Serial";
+const QString ASideConfig::IDE = "IDE:";
+const QString ASideConfig::SubDelimiter = "-";
+
 ASideConfig::ASideConfig()
 {
     boards = new QList<ASideBoard*>();
@@ -73,9 +79,52 @@ int ASideConfig::loadBoards(QString filePath)
             return 0;
         QString file = fileReader.readAll();
         name = name.mid(0,name.lastIndexOf("."));
+
+        /* add default board
         ASideBoard *board = newBoard(name.toUpper());
         if (board->parseConfig(file))
             boards->append(board);
+        */
+
+        QStringList list = file.split("\n",QString::SkipEmptyParts);
+        QStringList sublist;
+
+        /* find board subtypes */
+        foreach(QString s, list) {
+            if(s.contains("[",Qt::CaseInsensitive)) {
+                s = s.mid(s.indexOf("[")+1);
+                if(s.contains("]") == false) {
+                    /* badly formed board type. Ignore it */
+                    continue;
+                }
+                s = s.mid(0,s.indexOf("]"));
+                s = s.trimmed();
+                if(s.compare(name,Qt::CaseInsensitive) == 0) {
+                    sublist.append(name.toUpper());
+                    ASideBoard *board = newBoard(name.toUpper());
+                    if (board->parseConfig(file))
+                        boards->append(board);
+                }
+                else
+                    sublist.append(name.toUpper()+ASideConfig::SubDelimiter+s.toUpper());
+            }
+        }
+
+        /* add IDE control variants */
+        if(file.contains(ASideConfig::IDE,Qt::CaseInsensitive)) {
+            foreach(QString s, list) {
+                if(s.contains(ASideConfig::IDE,Qt::CaseInsensitive)) {
+                    s = s.mid(s.indexOf(ASideConfig::IDE)+ASideConfig::IDE.length());
+                    s = s.trimmed();
+                    foreach(QString nametype, sublist) {
+                        ASideBoard *board = newBoard(nametype.toUpper()+ASideConfig::SubDelimiter+s.toUpper());
+                        if (board->parseConfig(file))
+                            boards->append(board);
+                    }
+                }
+            }
+        }
+
         fileReader.close();
     }
     return boards->count();

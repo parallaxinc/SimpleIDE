@@ -7,6 +7,12 @@
 class ASideConfig
 {
 public:
+    static const QString SdRun;
+    static const QString SdLoad;
+    static const QString Serial;
+    static const QString IDE;
+    static const QString SubDelimiter;
+
     ASideConfig();
     ~ASideConfig();
 

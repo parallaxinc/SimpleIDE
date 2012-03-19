@@ -29,7 +29,7 @@ void Terminal::init()
     pasteAction->setShortcuts(QKeySequence::Paste);
     termEditor->addAction(pasteAction);
 
-    //termEditor->setMaximumBlockCount(1000);
+    termEditor->setMaximumBlockCount(100);
     termLayout->addWidget(termEditor);
 
     QPushButton *buttonClear = new QPushButton(tr("Clear"),this);

@@ -9,6 +9,10 @@
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
 
+#define SDRUN  "-SdRun"
+#define SDLOAD "-SdLoad"
+#define SERIAL "-Serial"
+
 #define BUILD_TABNAME "Build Status"
 #define GDB_TABNAME "GDB Output"
 #define TOOL_TABNAME "Tool Output"
@@ -698,7 +702,7 @@ void MainWindow::updateRecentProjectActions()
     separatorProjectAct->setVisible(numRecentProjects > 0);
 }
 
-void MainWindow::saveFile(const QString &path)
+void MainWindow::saveFile()
 {
     try {
         int n = this->editorTabs->currentIndex();
@@ -775,6 +779,11 @@ void MainWindow::saveAsFile(const QString &path)
     }
 }
 
+void MainWindow::savePexFile()
+{
+
+}
+
 /*
  * make star go away if no changes.
  */
@@ -822,6 +831,8 @@ void MainWindow::fileChanged()
 
 void MainWindow::printFile(const QString &path)
 {
+    if(path.isNull())
+        return;
     /*
     QString fileName = path;
     QString data = editor->toPlainText();
@@ -833,6 +844,8 @@ void MainWindow::printFile(const QString &path)
 
 void MainWindow::zipFile(const QString &path)
 {
+    if(path.isNull())
+        return;
     /*
     QString fileName = path;
     QString data = editor->toPlainText();
@@ -1209,6 +1222,10 @@ void MainWindow::programBurnEE()
 
 void MainWindow::programRun()
 {
+    // don't allow run if button is disabled
+    if(btnProgramRun->isEnabled() == false)
+        return;
+
     if(runBuild(""))
         return;
     runLoader("-r");
@@ -1216,6 +1233,10 @@ void MainWindow::programRun()
 
 void MainWindow::programDebug()
 {
+    // don't allow run if button is disabled
+    if(btnProgramDebugTerm->isEnabled() == false)
+        return;
+
     if(runBuild(""))
         return;
 
@@ -1361,6 +1382,15 @@ void MainWindow::setCurrentBoard(int index)
 {
     boardName = cbBoard->itemText(index);
     cbBoard->setCurrentIndex(index);
+    if(boardName.contains(ASideConfig::SubDelimiter+ASideConfig::SdLoad,Qt::CaseInsensitive) ||
+       boardName.contains(ASideConfig::SubDelimiter+ASideConfig::SdRun,Qt::CaseInsensitive)) {
+        btnProgramDebugTerm->setEnabled(false);
+        btnProgramRun->setEnabled(false);
+    }
+    else {
+        btnProgramDebugTerm->setEnabled(true);
+        btnProgramRun->setEnabled(true);
+    }
 }
 
 void MainWindow::setCurrentPort(int index)
@@ -1595,7 +1625,19 @@ int  MainWindow::runBuild(QString option)
 
     QTextCursor cur = compileStatus->textCursor();
 
-    if(projectOptions->getLoadType().compare(ProjectOptions::loadTypeNormal) != 0) {
+    bool runpex = false;
+    QString loadtype = cbBoard->currentText();
+    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
+        runpex = true;
+    }
+    else
+    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
+        runpex = true;
+    }
+    else
+    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::Serial, Qt::CaseInsensitive)) {
+    }
+    if(runpex) {
         rc = runPexMake("a.out");
         if(rc != 0)
             compileStatus->appendPlainText("Could not make AUTORUN.PEX\n");
@@ -1898,7 +1940,8 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
         args.append(projectOptions->getLinkOptions());
 
     /* SD card load RAM */
-    if(projectOptions->getLoadType().compare(ProjectOptions::loadTypeSDload) == 0) {
+    QString loadtype = cbBoard->currentText();
+    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
         QString mems = projectOptions->getMemModel();
         if(mems.compare(ProjectOptions::memTypeXMM,Qt::CaseInsensitive) == 0) {
             args.append("-T");
@@ -1970,6 +2013,8 @@ QStringList MainWindow::getLoaderParameters(QString copts)
 
     portName = cbPort->itemText(cbPort->currentIndex());
     boardName = cbBoard->itemText(cbBoard->currentIndex());
+    if(boardName.contains(ASideConfig::SubDelimiter))
+        boardName = boardName.mid(0,boardName.indexOf(ASideConfig::SubDelimiter));
 
     QStringList args;
     args.append(tr("-b"));
@@ -2014,24 +2059,19 @@ int  MainWindow::runLoader(QString copts)
         process->setProperty("Terminal", QVariant(true));
     }
 
-    QString loadtype = projectOptions->getLoadType();
-    if(loadtype.length() > 0) {
-        if(loadtype.compare(ProjectOptions::loadTypeSDxmmc) == 0) {
-            copts.append(" -z");
-            //qDebug() << loadtype << "load" << copts;
-        }
-        else
-        if(loadtype.compare(ProjectOptions::loadTypeSDload) == 0) {
-            copts.append(" -l");
-            //qDebug() << loadtype << "load" << copts;
-        }
-        else
-        if(loadtype.compare(ProjectOptions::loadTypeNormal) == 0) {
-            //qDebug() << loadtype << "load" << copts;
-        }
+    QString loadtype = cbBoard->currentText();
+    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
+        copts.append(" -z");
+        qDebug() << loadtype << copts;
     }
-    else {
-        //qDebug() << "no load type" << copts;
+    else
+        if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
+        copts.append(" -l");
+        qDebug() << loadtype << copts;
+    }
+    else
+    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::Serial, Qt::CaseInsensitive)) {
+        qDebug() << loadtype << copts;
     }
 
     QStringList args = getLoaderParameters(copts);
@@ -2298,12 +2338,12 @@ int  MainWindow::buildResult(int exitStatus, int exitCode, QString progName, QSt
 
 void MainWindow::compilerError(QProcess::ProcessError error)
 {
-    //qDebug() << error;
+    qDebug() << error;
 }
 
 void MainWindow::compilerFinished(int exitCode, QProcess::ExitStatus status)
 {
-    //qDebug() << exitCode << status;
+    qDebug() << exitCode << status;
 }
 
 
@@ -2382,6 +2422,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectMenu->addAction(tr("Add File"), this,SLOT(addProjectFile()));
     projectMenu->addAction(tr("Delete File"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
+    projectMenu->addAction(tr("Show C Assembly"), this,SLOT(showAssemblyFile()));
 
     projectOptions = new ProjectOptions(this);
     projectOptions->setMinimumWidth(PROJECT_WIDTH);
@@ -2390,8 +2431,8 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     leftSplit->addWidget(projectOptions);
 
     QList<int> lsizes = leftSplit->sizes();
-    lsizes[0] = leftSplit->height()*2/10;
-    lsizes[1] = leftSplit->height()*8/10;
+    lsizes[0] = leftSplit->height()*39/100;
+    lsizes[1] = leftSplit->height()*61/100;
     leftSplit->setSizes(lsizes);
 
     rightSplit = new QSplitter(this);
@@ -2425,7 +2466,6 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     statusTabs->addTab(gdbStatus,tr(GDB_TABNAME));
 #endif
 
-#define TOOLS
 #if defined(TOOLS)
     toolStatus = new QPlainTextEdit(this);
     toolStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
@@ -2682,6 +2722,14 @@ void MainWindow::showProjectFile()
          */
         openFileName(sourcePath(projectFile)+fileName);
     }
+}
+
+/*
+ * show assembly for a .c file
+ */
+void MainWindow::showAssemblyFile()
+{
+
 }
 
 /*
@@ -2975,6 +3023,8 @@ void MainWindow::setEditorTab(int num, QString shortName, QString fileName, QStr
 
 void MainWindow::editorMenu(QPoint point)
 {
+    if(point.isNull())
+        return;
 #if 0
     // use something like this later for debug? or move to editor.cpp?
     Qt::KeyboardModifiers keybm = QApplication::keyboardModifiers();
@@ -3083,23 +3133,28 @@ void MainWindow::setupFileMenu()
     editMenu->addSeparator();
     editMenu->addAction(QIcon(":/images/find.png"), tr("&Find and Replace"), this, SLOT(replaceInFile()), QKeySequence::Find);
 
-    if(ctags->enabled()) {
-        editMenu->addSeparator();
-        editMenu->addAction(QIcon(":/images/back.png"),tr("Go &Back"), this, SLOT(prevDeclaration()), QKeySequence::Back);
-        editMenu->addAction(QIcon(":/images/forward.png"),tr("Browse Declaration"), this, SLOT(findDeclaration()), QKeySequence::Forward);
-    }
-
     editMenu->addSeparator();
     editMenu->addAction(QIcon(":/images/redo.png"), tr("&Redo"), this, SLOT(redoChange()), QKeySequence::Redo);
     editMenu->addAction(QIcon(":/images/undo.png"), tr("&Undo"), this, SLOT(undoChange()), QKeySequence::Undo);
 
-    editMenu->addSeparator();
-    editMenu->addAction(QIcon(":/images/Brush.png"), tr("Font"), this, SLOT(fontDialog()));
-    editMenu->addAction(tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence::ZoomIn);
-    editMenu->addAction(tr("Smaller Font"), this, SLOT(fontSmaller()), QKeySequence::ZoomOut);
+    QMenu *toolsMenu = new QMenu(tr("&Tools"), this);
+    menuBar()->addMenu(toolsMenu);
 
-    editMenu->addSeparator();
-    editMenu->addAction(tr("Next Tab"),this,SLOT(changeTab(bool)),QKeySequence::NextChild);
+    //toolsMenu->addAction(QIcon(":/images/flashdrive.png"), tr("Save .PEX to SD Card"), this, SLOT(savePexFile()));
+
+    if(ctags->enabled()) {
+        toolsMenu->addSeparator();
+        toolsMenu->addAction(QIcon(":/images/back.png"),tr("Go &Back"), this, SLOT(prevDeclaration()), QKeySequence::Back);
+        toolsMenu->addAction(QIcon(":/images/forward.png"),tr("Browse Declaration"), this, SLOT(findDeclaration()), QKeySequence::Forward);
+    }
+
+    toolsMenu->addSeparator();
+    toolsMenu->addAction(QIcon(":/images/Brush.png"), tr("Font"), this, SLOT(fontDialog()));
+    toolsMenu->addAction(QIcon(":/images/resize-plus.png"), tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence::ZoomIn);
+    toolsMenu->addAction(QIcon(":/images/resize-minus.png"), tr("Smaller Font"), this, SLOT(fontSmaller()), QKeySequence::ZoomOut);
+
+    toolsMenu->addSeparator();
+    toolsMenu->addAction(tr("Next Tab"),this,SLOT(changeTab(bool)),QKeySequence::NextChild);
 
     QMenu *programMenu = new QMenu(tr("&Program"), this);
     menuBar()->addMenu(programMenu);
@@ -3220,8 +3275,8 @@ void MainWindow::setupToolBars()
 
 
     programToolBar = addToolBar(tr("Program"));
-    QToolButton *btnProgramDebugTerm = new QToolButton(this);
-    QToolButton *btnProgramRun = new QToolButton(this);
+    btnProgramDebugTerm = new QToolButton(this);
+    btnProgramRun = new QToolButton(this);
     QToolButton *btnProgramBuild = new QToolButton(this);
     QToolButton *btnProgramBurnEEP = new QToolButton(this);
 

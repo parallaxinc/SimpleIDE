@@ -24,14 +24,9 @@ public:
     static const QString memTypeXMM;
     static const QString memTypeXMMC;
     static const QString optimization;
-    static const QString loadtype;
     static const QString cflags;
     static const QString lflags;
     static const QString board;
-
-    static const QString loadTypeNormal;
-    static const QString loadTypeSDxmmc;
-    static const QString loadTypeSDload;
 
     explicit ProjectOptions(QWidget *parent = 0);
     ~ProjectOptions();
@@ -53,12 +48,10 @@ public:
     QString getCompOptions();
     QString getLinkOptions();
     QString getBoardType();
-    QString getLoadType();
 
     void setCompiler(QString s);
     void setMemModel(QString s);
     void setOptimization(QString s);
-    void setLoadType(QString s);
 
     void set32bitDoubles(bool s);
     void setWarnAll(bool s);
