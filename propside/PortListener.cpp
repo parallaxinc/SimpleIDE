@@ -117,8 +117,8 @@ void PortListener::run()
 {
     int len = 0;
     while(port->isOpen()) {
+        msleep(10);
         QApplication::processEvents();
-        msleep(50);
         if(QThread::currentThread() != this)
             continue;
         len = port->bytesAvailable();
