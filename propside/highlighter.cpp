@@ -57,9 +57,9 @@ void Highlighter::highlightC()
     numberFormat.setForeground(Qt::magenta);
     numberFormat.setFontWeight(QFont::Bold);
     rule.format = numberFormat;
-    rule.pattern = QRegExp("[0-9]*[0-9]");
+    rule.pattern = QRegExp("\\b\\d+");
     highlightingRules.append(rule);
-    rule.pattern = QRegExp("0x*[0-9,a-f,A-F]");
+    rule.pattern = QRegExp("\\b0x[0-9,a-f,A-F]*");
     highlightingRules.append(rule);
 
     // do "functions" first so we can override if names are keywords
@@ -138,6 +138,8 @@ void Highlighter::highlightC()
             << "\\bunassert\\b"
             << "\\bundef\\b"
             << "\\bwarning\\b"
+            << "\\bint\\d+_t"
+            << "\\buint\\d+_t"
             ;
     foreach (const QString &pattern, preprocessorPatterns) {
         rule.pattern = QRegExp(pattern);
