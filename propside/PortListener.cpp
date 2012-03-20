@@ -32,7 +32,7 @@ void PortListener::init(const QString & portName, BaudRateType baud)
     port->setParity(PAR_NONE);
     port->setDataBits(DATA_8);
     port->setStopBits(STOP_1);
-    port->setTimeout(500);
+    port->setTimeout(10);
 }
 
 void PortListener::setDtr(bool enable)
