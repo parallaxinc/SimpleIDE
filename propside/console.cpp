@@ -34,7 +34,7 @@ void Console::keyPressEvent(QKeyEvent *event)
 #if defined(EVENT_DRIVEN)
 enum { BUFFERSIZE = 128 };
 #else
-enum { BUFFERSIZE = 32 };
+enum { BUFFERSIZE = 64 };
 #endif
 
 void Console::updateReady(QextSerialPort* port)
@@ -58,7 +58,6 @@ void Console::updateReady(QextSerialPort* port)
     for(int n = 0; n < length; n++)
     {
         char ch = buffer[n];
-        text = toPlainText();
         //insertPlainText(QString(" %1").arg(ch, 2, 16, QChar('0')));
         switch(ch)
         {
@@ -68,23 +67,25 @@ void Console::updateReady(QextSerialPort* port)
                 break;
             }
             case '\b': {
+                text = toPlainText();
                 setPlainText(text.mid(0,text.length()-1));
                 moveCursor(QTextCursor::End);
                 break;
             }
             case '\n': {
-                setPlainText(text+ch);
-                moveCursor(QTextCursor::End);
+                cur.insertText(QString(ch));
                 break;
             }
             case '\r': {
                 char nc;
+                text = toPlainText();
+
                 /* handle corner cases for terminal because \r can come after \n
                  */
                 if(n+1 < length) {
                     nc = buffer[n+1];
                 }
-                else if(n+1 < BUFFERSIZE) {
+                else if(n+1 <= BUFFERSIZE) {
                     char bufft[1];
                     if(port->bytesAvailable() > 0) {
                         if(port->read(bufft,1) > -1) {
@@ -96,7 +97,7 @@ void Console::updateReady(QextSerialPort* port)
                 }
                 else {
                     length = port->bytesAvailable();
-                    if(length > BUFFERSIZE) length = BUFFERSIZE;
+                    if(length > BUFFERSIZE/4) length = BUFFERSIZE/4;
                     length = port->read(buffer, length);
                     n = 0;
                     nc = buffer[n];
@@ -123,8 +124,7 @@ void Console::updateReady(QextSerialPort* port)
                 break;
             }
             default: {
-                setPlainText(text+ch);
-                moveCursor(QTextCursor::End);
+                cur.insertText(QString(ch));
                 break;
             }
         }
