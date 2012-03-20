@@ -32,7 +32,7 @@ void Console::keyPressEvent(QKeyEvent *event)
 }
 
 #if defined(EVENT_DRIVEN)
-enum { BUFFERSIZE = 16 };
+enum { BUFFERSIZE = 128 };
 #else
 enum { BUFFERSIZE = 32 };
 #endif
@@ -66,12 +66,13 @@ void Console::updateReady(QextSerialPort* port)
                     n+=2;
                     break;
                 }
-                case 0xD: {
+                case '\n': {
                     cur.insertText(QString(ch));
                     break;
                 }
-                case 0xA: {
-                        cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+                case '\r': {
+                    cur.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
+                    setTextCursor(cur);
                     break;
                 }
                 default: {
@@ -80,42 +81,5 @@ void Console::updateReady(QextSerialPort* port)
                 }
             }
         }
-        moveCursor(QTextCursor::End);
     }
-    //updateReady(buffer, length);
-}
-
-void Console::updateReady(char *buff, int length)
-{
-    // always start at the end just in case someone clicked the window
-    moveCursor(QTextCursor::End);
-    for(int n = 0; n < length; n++)
-    {
-        char ch = buff[n];
-        switch(ch)
-        {
-            case 0: {
-                break;
-            }
-            case '\b': {
-                QString text;
-                text = toPlainText();
-                setPlainText(text.mid(0,text.length()-1));
-                n+=2;
-                break;
-            }
-            case 0xA: {
-                insertPlainText(QString(ch));
-                break;
-            }
-            case 0xD: {
-                break;
-            }
-            default: {
-                insertPlainText(QString(ch));
-                break;
-            }
-        }
-    }
-    moveCursor(QTextCursor::End);
 }

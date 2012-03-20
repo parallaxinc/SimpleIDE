@@ -13,7 +13,6 @@ public:
 
 private:
     bool isEnabled;
-    void updateReady(char *buff, int length);
 
 protected:
     void keyPressEvent(QKeyEvent* event);
