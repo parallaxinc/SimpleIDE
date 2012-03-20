@@ -42,43 +42,90 @@ void Console::updateReady(QextSerialPort* port)
     char buffer[BUFFERSIZE+1];
     int length = port->bytesAvailable();
     if(length > BUFFERSIZE) length = BUFFERSIZE;
-    length = port->readData(buffer, length);
+    length = port->read(buffer, length);
 
     if(length < 1)
         return;
 
+    if(isEnabled == false)
+        return;
+
+    QString text = "";
+
     QTextCursor cur = this->textCursor();
-    if(isEnabled) {
-        // always start at the end just in case someone clicked the window
-        moveCursor(QTextCursor::End);
-        for(int n = 0; n < length; n++)
+    // always start at the end just in case someone clicked the window
+    moveCursor(QTextCursor::End);
+    for(int n = 0; n < length; n++)
+    {
+        char ch = buffer[n];
+        text = toPlainText();
+        //insertPlainText(QString(" %1").arg(ch, 2, 16, QChar('0')));
+        switch(ch)
         {
-            char ch = buffer[n];
-            switch(ch)
-            {
-                case 0: {
-                    break;
+            case 0: {
+                setPlainText("");
+                moveCursor(QTextCursor::End);
+                break;
+            }
+            case '\b': {
+                setPlainText(text.mid(0,text.length()-1));
+                moveCursor(QTextCursor::End);
+                break;
+            }
+            case '\n': {
+                setPlainText(text+ch);
+                moveCursor(QTextCursor::End);
+                break;
+            }
+            case '\r': {
+                char nc;
+                /* handle corner cases for terminal because \r can come after \n
+                 */
+                if(n+1 < length) {
+                    nc = buffer[n+1];
                 }
-                case '\b': {
-                    QString text;
-                    text = toPlainText();
-                    setPlainText(text.mid(0,text.length()-1));
-                    n+=2;
-                    break;
+                else if(n+1 < BUFFERSIZE) {
+                    char bufft[1];
+                    if(port->bytesAvailable() > 0) {
+                        if(port->read(bufft,1) > -1) {
+                            buffer[n+1] = bufft[0];
+                            nc = buffer[n+1];
+                            length++;
+                        }
+                    }
                 }
-                case '\n': {
-                    cur.insertText(QString(ch));
-                    break;
+                else {
+                    length = port->bytesAvailable();
+                    if(length > BUFFERSIZE) length = BUFFERSIZE;
+                    length = port->read(buffer, length);
+                    n = 0;
+                    nc = buffer[n];
+                    // for loop incrs back to 0 for next round
+                    // we need to process nc == '\n' and other chars there
+                    n--;
                 }
-                case '\r': {
-                    cur.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
-                    setTextCursor(cur);
-                    break;
+
+                if(nc == '\n')
+                    continue;
+
+                int tlen = text.length();
+                int tcol = cur.block().length()-1;
+
+                tlen -= tcol;
+
+                // should never be < 0
+                if(tlen > -1) {
+                    text = text.mid(0,tlen);
+                    setPlainText(text);
+                    moveCursor(QTextCursor::End);
                 }
-                default: {
-                    cur.insertText(QString(ch));
-                    break;
-                }
+
+                break;
+            }
+            default: {
+                setPlainText(text+ch);
+                moveCursor(QTextCursor::End);
+                break;
             }
         }
     }
