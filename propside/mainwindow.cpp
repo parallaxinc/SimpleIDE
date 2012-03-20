@@ -610,8 +610,10 @@ void MainWindow::closeProject()
 void MainWindow::openRecentProject()
 {
     QAction *action = qobject_cast<QAction *>(sender());
-    if (action)
+    if (action) {
+        closeProject();
         openFile(action->data().toString());
+    }
 }
 
 
