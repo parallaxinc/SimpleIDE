@@ -2941,10 +2941,9 @@ void MainWindow::portResetButton()
     if(btnConnected->isChecked() == false)
         termEditor->stop();
 #else
-    portListener->open();
-    portListener->close();
-    if(btnConnected->isChecked())
-        portListener->open();
+    portListener->setDtr(true);
+    Sleeper::ms(50);
+    portListener->setDtr(false);
 #endif
 }
 

@@ -17,7 +17,6 @@ PortListener::PortListener(QObject *parent, Console *term) : QThread(parent)
     port = new QextSerialPort(QextSerialPort::Polling);
     connect(this, SIGNAL(updateEvent(QextSerialPort*)), this, SLOT(updateReady(QextSerialPort*)));
 #endif
-    port->setFlowControl(FLOW_OFF);
 }
 
 void PortListener::init(const QString & portName, BaudRateType baud)
