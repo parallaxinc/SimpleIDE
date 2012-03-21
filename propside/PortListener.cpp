@@ -117,7 +117,7 @@ void PortListener::run()
 {
     int len = 0;
     while(port->isOpen()) {
-        msleep(10);
+        msleep(25); // less than 25ms here is dangerous for windows
         QApplication::processEvents();
         if(QThread::currentThread() != this)
             continue;
