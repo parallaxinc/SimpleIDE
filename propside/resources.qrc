@@ -55,5 +55,6 @@
         <file>images/resize-plus.png</file>
         <file>images/flashdrive.png</file>
         <file>images/download.png</file>
+        <file>images/saveasfile2.png</file>
     </qresource>
 </RCC>

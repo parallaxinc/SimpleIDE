@@ -3067,7 +3067,7 @@ void MainWindow::setupFileMenu()
     fileMenu->addAction(QIcon(":/images/newfile.png"), tr("&New"), this, SLOT(newFile()), QKeySequence::New);
     fileMenu->addAction(QIcon(":/images/openfile.png"), tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
     fileMenu->addAction(QIcon(":/images/savefile.png"), tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
-    fileMenu->addAction(QIcon(":/images/saveasfile.png"), tr("Save &As"), this, SLOT(saveAsFile()),QKeySequence::SaveAs);
+    fileMenu->addAction(QIcon(":/images/saveasfile2.png"), tr("Save &As"), this, SLOT(saveAsFile()),QKeySequence::SaveAs);
 
     fileMenu->addAction(QIcon(":/images/Delete.png"),tr("Close"), this, SLOT(closeFile()));
     fileMenu->addAction(tr("Close All"), this, SLOT(closeAll()));
@@ -3205,7 +3205,7 @@ void MainWindow::setupToolBars()
     addToolButton(fileToolBar, btnFileNew, QString(":/images/newfile.png"));
     addToolButton(fileToolBar, btnFileOpen, QString(":/images/openfile.png"));
     addToolButton(fileToolBar, btnFileSave, QString(":/images/savefile.png"));
-    addToolButton(fileToolBar, btnFileSaveAs, QString(":/images/saveasfile.png"));
+    addToolButton(fileToolBar, btnFileSaveAs, QString(":/images/saveasfile2.png"));
     //addToolButton(fileToolBar, btnFilePrint, QString(":/images/print.png"));
     //addToolButton(fileToolBar, btnFileZip, QString(":/images/zip.png"));
 
