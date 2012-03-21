@@ -53,6 +53,8 @@ void Console::updateReady(QextSerialPort* port)
     QString text = "";
 
     QTextCursor cur = this->textCursor();
+    if(cur.block().length() > 200)
+        cur.insertBlock();
     // always start at the end just in case someone clicked the window
     moveCursor(QTextCursor::End);
     for(int n = 0; n < length; n++)
