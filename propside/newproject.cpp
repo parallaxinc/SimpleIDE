@@ -106,18 +106,23 @@ void NewProject::browsePath()
     fileDialog.setOptions(QFileDialog::ShowDirsOnly);
     fileDialog.setViewMode(QFileDialog::Detail);
     fileDialog.setFileMode(QFileDialog::Directory);
+    if(mypath.length() == 0) {
+        qDebug() << "mypath is empty.";
+    }
     if(mypath.at(mypath.length()-1) == '/')
         mypath = mypath.left(mypath.length()-1);
     fileDialog.selectFile(mypath);
+    mypath += "/";
 
     if(fileDialog.exec())
         filenames = fileDialog.selectedFiles();
     if(filenames.length() > 0)
         pathName = filenames.at(0);
 
-    mypath = QDir::fromNativeSeparators(pathName);
-    if(mypath.length() == 0)
+    QString s = QDir::fromNativeSeparators(pathName);
+    if(s.length() == 0)
         return;
+    mypath = s;
     if(mypath.indexOf("/") > -1) {
         if(mypath.mid(mypath.length()-1) != "/")
             mypath += "/";

@@ -379,7 +379,15 @@ void MainWindow::openFile(const QString &path)
     QString fileName = path;
 
     if (fileName.isNull()) {
+#if 1
+        /* this method uses a more flexible dialog box */
+        QFileDialog filed(this,tr("Open File"),lastPath,tr(SOURCE_FILE_TYPES));
+        filed.exec();
+        QStringList files = filed.selectedFiles();
+        fileName = files.at(0);
+#else
         fileName = fileDialog.getOpenFileName(this, tr("Open File"), lastPath, tr(SOURCE_FILE_TYPES));
+#endif
         if(fileName.length() > 0)
             lastPath = sourcePath(fileName);
     }
@@ -1918,17 +1926,24 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
         args.append("-fno-rtti");
 
     /* other compiler options */
-    if(projectOptions->getCompOptions().length())
-        args.append(projectOptions->getCompOptions());
+    if(projectOptions->getCompOptions().length()) {
+        QStringList complist = projectOptions->getCompOptions().split(" ");
+        foreach(QString compopt, complist) {
+            args.append(compopt);
+        }
+    }
 
     /* files */
     for(int n = 0; n < copts.length(); n++) {
+        args.append(copts[n]);
+#if 0
         if(copts[n].length() > 0) {
             if(copts[n].indexOf(".c") > 0) // x.c
                 args.append(copts[n]);
             else if(copts[n].indexOf(".o") > 0) // x.o
                 args.append(copts[n]);
         }
+#endif
     }
 
     /* libraries */
@@ -1938,8 +1953,12 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
         args.append(projectOptions->getPthreadLib());
 
     /* other linker options */
-    if(projectOptions->getLinkOptions().length())
-        args.append(projectOptions->getLinkOptions());
+    if(projectOptions->getLinkOptions().length()) {
+        QStringList linklist = projectOptions->getLinkOptions().split(" ");
+        foreach(QString linkopt, linklist) {
+            args.append(linkopt);
+        }
+    }
 
     /* SD card load RAM */
     QString loadtype = cbBoard->currentText();
@@ -2210,30 +2229,52 @@ void MainWindow::procReadyRead()
 #if defined(Q_WS_WIN32)
     QString eol("\r");
 #else
-    QString eol("");
+    QString eol("\n");
 #endif
 
-    QStringList lines = QString(bytes).split("\r\n");
+    QStringList lines = QString(bytes).split("\n",QString::SkipEmptyParts);
+    if(bytes.contains("bytes")) {
+        for (int n = 0; n < lines.length(); n++) {
+            QString line = lines[n];
+            if(line.length() > 0) {
+                if(line.indexOf("\r") > -1) {
+                    QStringList more = line.split("\r",QString::SkipEmptyParts);
+                    lines.removeAt(n);
+                    for(int m = more.length()-1; m > -1; m--) {
+                        QString ms = more.at(m);
+                        if(ms.contains("bytes",Qt::CaseInsensitive))
+                            lines.insert(n,more.at(m));
+                    }
+                }
+            }
+        }
+    }
     for (int n = 0; n < lines.length(); n++) {
         QString line = lines[n];
         if(line.length() > 0) {
+            compileStatus->moveCursor(QTextCursor::End);
             if(line.contains("Propeller Version",Qt::CaseInsensitive)) {
-                compileStatus->insertPlainText(eol+line+eol);
+                compileStatus->insertPlainText(line+eol);
                 progress->setValue(0);
             }
             else
             if(line.contains("loading",Qt::CaseInsensitive)) {
                 progMax = 0;
                 progress->setValue(0);
+                compileStatus->insertPlainText(line+eol);
             }
             else
             if(line.contains("writing",Qt::CaseInsensitive)) {
-                progress->setValue(50);
-                compileStatus->insertPlainText(line+eol);
+                progMax = 0;
+                progress->setValue(0);
             }
             else
             if(line.contains("Download OK",Qt::CaseInsensitive)) {
                 progress->setValue(100);
+                compileStatus->insertPlainText(line+eol);
+            }
+            else
+            if(line.contains("sent",Qt::CaseInsensitive)) {
                 compileStatus->insertPlainText(line+eol);
             }
             else
@@ -2242,6 +2283,7 @@ void MainWindow::procReadyRead()
                     QString bs = line.mid(0,line.indexOf(" "));
                     progMax = bs.toInt();
                     progMax /= 1024;
+                    progMax++;
                     progCount = 0;
                     if(progMax == 0) {
                         progress->setValue(100);
@@ -2251,6 +2293,8 @@ void MainWindow::procReadyRead()
                     progCount++;
                     progress->setValue(100*progCount/progMax);
                 }
+                compileStatus->moveCursor(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
+                compileStatus->insertPlainText(line);
             }
 #if 0
             // can't do this otherwise error info gets lost.
@@ -2262,8 +2306,8 @@ void MainWindow::procReadyRead()
             else {
                 compileStatus->insertPlainText(line+eol);
             }
-            compileStatus->moveCursor(QTextCursor::StartOfLine);
-            compileStatus->moveCursor(QTextCursor::End);
+            //compileStatus->moveCursor(QTextCursor::StartOfLine);
+            //compileStatus->moveCursor(QTextCursor::End);
         }
     }
 }
@@ -2407,7 +2451,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
 {
     /* container for project, etc... */
     leftSplit = new QSplitter(this);
-    leftSplit->setMinimumHeight(APPWINDOW_MIN_HEIGHT-60);
+    leftSplit->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
     leftSplit->setOrientation(Qt::Vertical);
     vsplit->addWidget(leftSplit);
 
@@ -2424,7 +2468,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectMenu->addAction(tr("Add File"), this,SLOT(addProjectFile()));
     projectMenu->addAction(tr("Delete File"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
-    projectMenu->addAction(tr("Show C Assembly"), this,SLOT(showAssemblyFile()));
+    //projectMenu->addAction(tr("Show C Assembly"), this,SLOT(showAssemblyFile()));
 
     projectOptions = new ProjectOptions(this);
     projectOptions->setMinimumWidth(PROJECT_WIDTH);
@@ -2432,13 +2476,8 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectOptions->setToolTip(tr("Project Options"));
     leftSplit->addWidget(projectOptions);
 
-    QList<int> lsizes = leftSplit->sizes();
-    lsizes[0] = leftSplit->height()*39/100;
-    lsizes[1] = leftSplit->height()*61/100;
-    leftSplit->setSizes(lsizes);
-
     rightSplit = new QSplitter(this);
-    rightSplit->setMinimumHeight(APPWINDOW_MIN_HEIGHT-50);
+    rightSplit->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
     rightSplit->setOrientation(Qt::Vertical);
     vsplit->addWidget(rightSplit);
 
@@ -2456,6 +2495,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
 
     compileStatus = new QPlainTextEdit(this);
     compileStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
+    compileStatus->setReadOnly(true);
     connect(compileStatus,SIGNAL(selectionChanged()),this,SLOT(compileStatusClicked()));
     statusTabs->addTab(compileStatus,tr(BUILD_TABNAME));
 
@@ -2724,14 +2764,6 @@ void MainWindow::showProjectFile()
          */
         openFileName(sourcePath(projectFile)+fileName);
     }
-}
-
-/*
- * show assembly for a .c file
- */
-void MainWindow::showAssemblyFile()
-{
-
 }
 
 /*
