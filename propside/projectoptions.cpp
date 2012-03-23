@@ -9,6 +9,8 @@ const QString ProjectOptions::memTypeLMM = "LMM";
 const QString ProjectOptions::memTypeCOG = "COG";
 const QString ProjectOptions::memTypeXMM = "XMM";
 const QString ProjectOptions::memTypeXMMC = "XMMC";
+const QString ProjectOptions::memTypeXMMSINGLE = "XMM-SINGLE";
+const QString ProjectOptions::memTypeXMMSPLIT = "XMM-SPLIT";
 const QString ProjectOptions::optimization = "optimize";
 const QString ProjectOptions::cflags = "defs";
 const QString ProjectOptions::lflags = "linker";
@@ -21,10 +23,22 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
     ui->comboBoxCompiler->addItem("C");
     ui->comboBoxCompiler->addItem("C++");
 
-    ui->comboBoxMemoryMode->addItem(memTypeLMM);
-    ui->comboBoxMemoryMode->addItem(memTypeCOG);
-    ui->comboBoxMemoryMode->addItem(memTypeXMM);
-    ui->comboBoxMemoryMode->addItem(memTypeXMMC);
+    QFile file("memorymodels.txt");
+    if(file.exists() && file.open(QFile::ReadOnly | QFile::Text)) {
+        QString s = file.readAll();
+        QStringList list = s.split("\n",QString::SkipEmptyParts);
+        for(int n = 0; n < list.length(); n++)
+            ui->comboBoxMemoryMode->addItem(list.at(n));
+        file.close();
+    }
+    else {
+        ui->comboBoxMemoryMode->addItem(memTypeLMM);
+        ui->comboBoxMemoryMode->addItem(memTypeCOG);
+        ui->comboBoxMemoryMode->addItem(memTypeXMM);
+        ui->comboBoxMemoryMode->addItem(memTypeXMMC);
+        ui->comboBoxMemoryMode->addItem(memTypeXMMSINGLE);
+        ui->comboBoxMemoryMode->addItem(memTypeXMMSPLIT);
+    }
 
     ui->comboBoxOptimization->addItem("-Os Size");
     ui->comboBoxOptimization->addItem("-O2 Speed");
