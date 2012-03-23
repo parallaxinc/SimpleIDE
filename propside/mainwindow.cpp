@@ -17,6 +17,9 @@
 #define GDB_TABNAME "GDB Output"
 #define TOOL_TABNAME "Tool Output"
 
+#define SHOW_ASM_EXTENTION ".asm"
+#define SHOW_ASMC_EXTENTION ".asmc"
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     /* setup application registry info */
@@ -594,8 +597,12 @@ void MainWindow::closeProject()
      */
     for(int n = 0; n < list.length(); n++) {
         for(int tab = editorTabs->count()-1; tab > -1; tab--) {
+            QString s = sourcePath(projectFile)+list.at(n);
             // close exact tab
-            if(editorTabs->tabToolTip(tab).compare(sourcePath(projectFile)+list.at(n)) == 0)
+            if(editorTabs->tabToolTip(tab).compare(s) == 0)
+                closeTab(tab);
+            s = s.mid(0,s.lastIndexOf('.'));
+            if(editorTabs->tabToolTip(tab).compare(s+SHOW_ASM_EXTENTION) == 0)
                 closeTab(tab);
         }
     }
@@ -1884,38 +1891,44 @@ int  MainWindow::runPexMake(QString fileName)
 
 QStringList MainWindow::getCompilerParameters(QStringList copts)
 {
+    QStringList args;
+    getCompilerParameters(copts, &args);
+    return args;
+}
+
+int MainWindow::getCompilerParameters(QStringList copts, QStringList *args)
+{
     // use the projectFile instead of the current tab file
-    QString srcpath = sourcePath(projectFile);
+    //QString srcpath = sourcePath(projectFile);
 
     portName = cbPort->itemText(cbPort->currentIndex());
     boardName = cbBoard->itemText(cbBoard->currentIndex());
 
     QString model = projectOptions->getMemModel();
 
-    QStringList args;
     if(copts.length() > 0) {
         QString s = copts.at(0);
         if(s.compare("-g") == 0)
-            args.append(s);
+            args->append(s);
     }
-    args.append("-o");
-    args.append("a.out");
-    args.append(projectOptions->getOptimization());
-    args.append("-m"+model);
+    args->append("-o");
+    args->append("a.out");
+    args->append(projectOptions->getOptimization());
+    args->append("-m"+model);
 
     if(projectOptions->getWarnAll().length())
-        args.append(projectOptions->getWarnAll());
+        args->append(projectOptions->getWarnAll());
     if(projectOptions->get32bitDoubles().length())
-        args.append(projectOptions->get32bitDoubles());
+        args->append(projectOptions->get32bitDoubles());
     if(projectOptions->getExceptions().length())
-        args.append(projectOptions->getExceptions());
+        args->append(projectOptions->getExceptions());
     if(projectOptions->getNoFcache().length())
-        args.append(projectOptions->getNoFcache());
+        args->append(projectOptions->getNoFcache());
 
     if(projectOptions->getSimplePrintf().length()) {
         /* don't use simple printf flag for COG model programs. */
         if(model.contains("cog",Qt::CaseInsensitive) == false)
-            args.append(projectOptions->getSimplePrintf());
+            args->append(projectOptions->getSimplePrintf());
         else {
             this->compileStatus->insertPlainText(tr("Ignoring")+" \"Simple printf\""+tr(" flag in COG mode program.")+"\n");
             this->compileStatus->moveCursor(QTextCursor::End);
@@ -1923,40 +1936,40 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
     }
 
     if(projectOptions->getCompiler().indexOf("++") > -1)
-        args.append("-fno-rtti");
+        args->append("-fno-rtti");
 
     /* other compiler options */
     if(projectOptions->getCompOptions().length()) {
-        QStringList complist = projectOptions->getCompOptions().split(" ");
+        QStringList complist = projectOptions->getCompOptions().split(" ",QString::SkipEmptyParts);
         foreach(QString compopt, complist) {
-            args.append(compopt);
+            args->append(compopt);
         }
     }
 
     /* files */
     for(int n = 0; n < copts.length(); n++) {
-        args.append(copts[n]);
+        args->append(copts[n]);
 #if 0
         if(copts[n].length() > 0) {
             if(copts[n].indexOf(".c") > 0) // x.c
-                args.append(copts[n]);
+                args->append(copts[n]);
             else if(copts[n].indexOf(".o") > 0) // x.o
-                args.append(copts[n]);
+                args->append(copts[n]);
         }
 #endif
     }
 
     /* libraries */
     if(projectOptions->getMathLib().length())
-        args.append(projectOptions->getMathLib());
+        args->append(projectOptions->getMathLib());
     if(projectOptions->getPthreadLib().length())
-        args.append(projectOptions->getPthreadLib());
+        args->append(projectOptions->getPthreadLib());
 
     /* other linker options */
     if(projectOptions->getLinkOptions().length()) {
-        QStringList linklist = projectOptions->getLinkOptions().split(" ");
+        QStringList linklist = projectOptions->getLinkOptions().split(" ",QString::SkipEmptyParts);
         foreach(QString linkopt, linklist) {
-            args.append(linkopt);
+            args->append(linkopt);
         }
     }
 
@@ -1965,21 +1978,20 @@ QStringList MainWindow::getCompilerParameters(QStringList copts)
     if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
         QString mems = projectOptions->getMemModel();
         if(mems.compare(ProjectOptions::memTypeXMM,Qt::CaseInsensitive) == 0) {
-            args.append("-T");
-            args.append("xmm_ram.ld");
+            args->append("-T");
+            args->append("xmm_ram.ld");
         }
         else if(mems.compare(ProjectOptions::memTypeXMMC,Qt::CaseInsensitive) == 0) {
-            args.append("-T");
-            args.append("xmmc_ram.ld");
+            args->append("-T");
+            args->append("xmmc_ram.ld");
         }
     }
 
     /* strip */
     if(projectOptions->getStripElf().length())
-        args.append(projectOptions->getStripElf());
+        args->append(projectOptions->getStripElf());
 
-    //qDebug() << args;
-    return args;
+    return args->length();
 }
 
 int  MainWindow::runCompiler(QStringList copts)
@@ -2468,7 +2480,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectMenu->addAction(tr("Add File"), this,SLOT(addProjectFile()));
     projectMenu->addAction(tr("Delete File"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
-    //projectMenu->addAction(tr("Show C Assembly"), this,SLOT(showAssemblyFile()));
+    projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
 
     projectOptions = new ProjectOptions(this);
     projectOptions->setMinimumWidth(PROJECT_WIDTH);
@@ -2890,6 +2902,105 @@ void MainWindow::updateProjectTree(QString fileName)
     projectTree->setModel(projectModel);
     projectTree->hide();
     projectTree->show();
+}
+
+/*
+ * show assembly for a .c file
+ */
+void MainWindow::showAssemblyFile()
+{
+    QString fileName;
+    QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
+    if(vs.canConvert(QVariant::String))
+        fileName = vs.toString();
+    if(makeDebugFiles(fileName))
+        return;
+    QString outfile = fileName.mid(0,fileName.lastIndexOf("."));
+    openFileName(sourcePath(projectFile)+outfile+SHOW_ASM_EXTENTION);
+}
+
+/*
+ * make debug info for a .c file
+ */
+int MainWindow::makeDebugFiles(QString fileName)
+{
+    if(fileName.length() == 0)
+        return -1;
+
+    if(projectModel == NULL || projectFile.isNull()) {
+        QMessageBox mbox(QMessageBox::Critical, "Error. No Project",
+            "Please select a tab and press F4 to set main project file.", QMessageBox::Ok);
+        mbox.exec();
+        return -1;
+    }
+
+    getApplicationSettings();
+    if(checkCompilerInfo()) {
+        QMessageBox mbox(QMessageBox::Critical, "Error. No Compiler",
+            "Please open propertes and set the compiler, loader path, and workspace.", QMessageBox::Ok);
+        mbox.exec();
+        return -1;
+    }
+
+    QString name = fileName.mid(0,fileName.lastIndexOf('.'));
+    QString projFile = name+".side";
+    bool ismain = false;
+    if(shortFileName(projectFile).compare(projFile) == 0)
+        ismain = true;
+
+    QStringList copts;
+    copts.append("-S");
+#if ENABLEMAP_TOOL
+    copts.append("--save-temps");
+    QString map = "-Map="+name+".rawmap";
+    copts.append("-Xlinker");
+    copts.append(map);
+#endif
+    copts.append(fileName);
+    QStringList args = getCompilerParameters(copts);
+    QString compstr;
+
+#if defined(Q_WS_WIN32)
+    compstr = shortFileName(aSideCompiler);
+#else
+    compstr = aSideCompiler;
+#endif
+
+    if(projectOptions->getCompiler().indexOf("++") > -1) {
+        compstr = compstr.mid(0,compstr.lastIndexOf("-")+1);
+        compstr+="c++";
+    }
+
+    removeArg(args,"-o");
+    removeArg(args,"a.out");
+    args.insert(0,name+SHOW_ASM_EXTENTION);
+    args.insert(0,"-o");
+
+    /* this is the final compile/link */
+    compileStatus->setPlainText("");
+    int rc = startProgram(compstr,sourcePath(projectFile),args);
+    if(rc) {
+        QMessageBox mbox(QMessageBox::Critical, "Compile Error",
+            "Please check the compiler, loader path, and workspace.", QMessageBox::Ok);
+        mbox.exec();
+        compileStatus->appendPlainText("Compile Debug Error.");
+        return -1;
+    }
+    compileStatus->appendPlainText("Done. Compile Debug Ok.");
+
+    return 0;
+}
+
+void MainWindow::removeArg(QStringList &list, QString arg)
+{
+    int len = list.length();
+    for(int n = 0; n < len; n++) {
+        QString s = list.at(n);
+        if(s.compare(arg) == 0) {
+            list.removeAt(n);
+            return;
+        }
+    }
 }
 
 void MainWindow::enumeratePorts()
