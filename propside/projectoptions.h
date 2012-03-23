@@ -23,6 +23,8 @@ public:
     static const QString memTypeLMM;
     static const QString memTypeXMM;
     static const QString memTypeXMMC;
+    static const QString memTypeXMMSINGLE;
+    static const QString memTypeXMMSPLIT;
     static const QString optimization;
     static const QString cflags;
     static const QString lflags;

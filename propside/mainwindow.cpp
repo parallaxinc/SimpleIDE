@@ -1973,20 +1973,6 @@ int MainWindow::getCompilerParameters(QStringList copts, QStringList *args)
         }
     }
 
-    /* SD card load RAM */
-    QString loadtype = cbBoard->currentText();
-    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
-        QString mems = projectOptions->getMemModel();
-        if(mems.compare(ProjectOptions::memTypeXMM,Qt::CaseInsensitive) == 0) {
-            args->append("-T");
-            args->append("xmm_ram.ld");
-        }
-        else if(mems.compare(ProjectOptions::memTypeXMMC,Qt::CaseInsensitive) == 0) {
-            args->append("-T");
-            args->append("xmmc_ram.ld");
-        }
-    }
-
     /* strip */
     if(projectOptions->getStripElf().length())
         args->append(projectOptions->getStripElf());
