@@ -107,7 +107,7 @@ public slots:
     void addProjectFile();
     void deleteProjectFile();
     void showProjectFile();
-    void showAssemblyFile();
+
     void saveProjectOptions();
 
     void copyFromFile();
@@ -156,11 +156,13 @@ private:
     int  runObjCopy(QString datfile);
     int  runGAS(QString datfile);
     int  runPexMake(QString fileName);
+    void removeArg(QStringList &list, QString arg);
     QStringList getCompilerParameters(QStringList options);
     int  runCompiler(QStringList options);
     QStringList getLoaderParameters(QString options);
     int  runLoader(QString options);
     int  startProgram(QString program, QString workpath, QStringList args);
+    int  startProgramTool(QString program, QString workpath, QStringList args);
     int  checkBuildStart(QProcess *proc, QString progName);
     void showBuildStart(QString progName, QStringList args);
     int  buildResult(int exitStatus, int exitCode, QString progName, QString result);
@@ -282,6 +284,10 @@ private:
     GDB             *gdb;
     QPlainTextEdit  *gdbStatus;
     QPlainTextEdit  *toolStatus;
+
+    int             compileIndex;
+    int             toolIndex;
+    int             gdbIndex;
 
     QToolButton *btnProgramDebugTerm;
     QToolButton *btnProgramRun;
