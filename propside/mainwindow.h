@@ -145,6 +145,9 @@ public slots:
     void fontBigger();
     void fontSmaller();
 
+    void showAssemblyFile();
+    int  makeDebugFiles(QString fileName);
+
 private:
     void exitSave();
     void getApplicationSettings();
@@ -158,6 +161,7 @@ private:
     int  runPexMake(QString fileName);
     void removeArg(QStringList &list, QString arg);
     QStringList getCompilerParameters(QStringList options);
+    int  getCompilerParameters(QStringList copts, QStringList *args);
     int  runCompiler(QStringList options);
     QStringList getLoaderParameters(QString options);
     int  runLoader(QString options);
