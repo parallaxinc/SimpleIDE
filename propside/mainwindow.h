@@ -30,6 +30,7 @@
 #include "editor.h"
 #include "gdb.h"
 #include "loader.h"
+#include "projecttree.h"
 
 #define untitledstr "Untitled"
 
@@ -215,7 +216,7 @@ private:
 
     QString         projectFile;
     CBuildTree      *projectModel;
-    QTreeView       *projectTree;
+    ProjectTree     *projectTree;
     CBuildTree      *referenceModel;
 #ifdef REFERENCE_TREE
     QTreeView       *referenceTree;

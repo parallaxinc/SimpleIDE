@@ -2454,7 +2454,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     vsplit->addWidget(leftSplit);
 
     /* project tree */
-    projectTree = new QTreeView(this);
+    projectTree = new ProjectTree(this);
     projectTree->setMinimumWidth(PROJECT_WIDTH);
     projectTree->setMaximumWidth(PROJECT_WIDTH);
     projectTree->setToolTip(tr("Current Project"));
@@ -2463,10 +2463,10 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
 
     // projectMenu is popup for projectTree
     projectMenu = new QMenu(QString("Project Menu"));
-    projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
-    projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
     projectMenu->addAction(tr("Add File"), this,SLOT(addProjectFile()));
     projectMenu->addAction(tr("Delete File"), this,SLOT(deleteProjectFile()));
+    projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
+    projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
 
     projectOptions = new ProjectOptions(this);
     projectOptions->setMinimumWidth(PROJECT_WIDTH);
@@ -2587,7 +2587,10 @@ void MainWindow::projectTreeClicked(QModelIndex index)
     if(projectModel == NULL)
         return;
     projectIndex = index;
-    projectMenu->popup(QCursor::pos());
+    if(projectTree->rightClick(false))
+        projectMenu->popup(QCursor::pos());
+    else
+        showProjectFile();
 }
 
 /*

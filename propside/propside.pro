@@ -6,23 +6,18 @@
 # hook terminal to loader
 QT += core \
     gui
-
-TARGET   = SimpleIDE
+TARGET = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 
 # EVENT_DRIVEN QEXTSERIALPORT causes zombie procs on windows works on Linux/Mac
 # DEFINES += EVENT_DRIVEN
-
 # GDBENABLE is not ready, and will only be used for development testing
 # DEFINES += GDBENABLE
-
 # These define the version number in Menu->About
-#
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=6
 DEFINES += FIXVERSION=1
-
 SOURCES += main.cpp \
     editor.cpp \
     ctags.cpp \
@@ -44,7 +39,8 @@ SOURCES += main.cpp \
     replacedialog.cpp \
     aboutdialog.cpp \
     gdb.cpp \
-    loader.cpp
+    loader.cpp \
+    projecttree.cpp
 HEADERS += mainwindow.h \
     editor.h \
     ctags.h \
@@ -68,24 +64,25 @@ HEADERS += mainwindow.h \
     replacedialog.h \
     aboutdialog.h \
     gdb.h \
-    loader.h
+    loader.h \
+    projecttree.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui
 RESOURCES += resources.qrc
-unix {
+unix { 
     DEFINES += EVENT_DRIVEN
     SOURCES += posix_qextserialport.cpp
 }
 unix:!macx:SOURCES += qextserialenumerator_unix.cpp
-macx {
+macx { 
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += -framework \
         IOKit \
         -framework \
         CoreFoundation
 }
-win32 {
+win32 { 
     # DEFINES += LOADER_TERMINAL
     RC_FILE = myapp.rc
     SOURCES += win_qextserialport.cpp \
