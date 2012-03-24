@@ -140,7 +140,6 @@ public slots:
     void updateRecentProjectActions();
     void openRecentProject();
 
-    void editorMenu(QPoint point);
     void fontDialog();
     void fontBigger();
     void fontSmaller();
