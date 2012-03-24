@@ -2584,11 +2584,12 @@ void MainWindow::compileStatusClicked(void)
 
 void MainWindow::projectTreeClicked(QModelIndex index)
 {
+    Qt::MouseButtons buttons = QApplication::mouseButtons();
+
     if(projectModel == NULL)
         return;
 
     projectIndex = index;
-    Qt::MouseButtons buttons = QApplication::mouseButtons();
     if(buttons == Qt::RightButton) {
         projectMenu->popup(QCursor::pos());
     }
@@ -2912,6 +2913,13 @@ int MainWindow::makeDebugFiles(QString fileName)
 {
     if(fileName.length() == 0)
         return -1;
+
+    if(fileName.contains(".h",Qt::CaseInsensitive) || fileName.contains(".spin",Qt::CaseInsensitive)) {
+        QMessageBox mbox(QMessageBox::Information, "Can't Show That",
+            "Can't show debug info on this type of file.", QMessageBox::Ok);
+        mbox.exec();
+        return -1;
+    }
 
     if(projectModel == NULL || projectFile.isNull()) {
         QMessageBox mbox(QMessageBox::Critical, "Error. No Project",
