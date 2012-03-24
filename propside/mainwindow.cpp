@@ -2458,15 +2458,15 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectTree->setMinimumWidth(PROJECT_WIDTH);
     projectTree->setMaximumWidth(PROJECT_WIDTH);
     projectTree->setToolTip(tr("Current Project"));
-    connect(projectTree,SIGNAL(pressed(QModelIndex)),this,SLOT(projectTreeClicked(QModelIndex)));
+    connect(projectTree,SIGNAL(clicked(QModelIndex)),this,SLOT(projectTreeClicked(QModelIndex)));
     leftSplit->addWidget(projectTree);
 
     // projectMenu is popup for projectTree
     projectMenu = new QMenu(QString("Project Menu"));
-    projectMenu->addAction(tr("Add File"), this,SLOT(addProjectFile()));
-    projectMenu->addAction(tr("Delete File"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
     projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
+    projectMenu->addAction(tr("Add File"), this,SLOT(addProjectFile()));
+    projectMenu->addAction(tr("Delete File"), this,SLOT(deleteProjectFile()));
 
     projectOptions = new ProjectOptions(this);
     projectOptions->setMinimumWidth(PROJECT_WIDTH);
@@ -2584,18 +2584,10 @@ void MainWindow::compileStatusClicked(void)
 
 void MainWindow::projectTreeClicked(QModelIndex index)
 {
-    Qt::MouseButtons buttons = QApplication::mouseButtons();
-
     if(projectModel == NULL)
         return;
-
     projectIndex = index;
-    if(buttons == Qt::RightButton) {
-        projectMenu->popup(QCursor::pos());
-    }
-    else {
-        showProjectFile();
-    }
+    projectMenu->popup(QCursor::pos());
 }
 
 /*
@@ -3159,42 +3151,9 @@ void MainWindow::setEditorTab(int num, QString shortName, QString fileName, QStr
     editorTabs->setCurrentIndex(num);
 }
 
-void MainWindow::editorMenu(QPoint point)
-{
-    if(point.isNull())
-        return;
-#if 0
-    // use something like this later for debug? or move to editor.cpp?
-    Qt::KeyboardModifiers keybm = QApplication::keyboardModifiers();
-    if(keybm & Qt::ControlModifier){
-        findDeclaration(point);
-    }
-    else {
-        Editor *ed = editors->at(editorTabs->currentIndex());
-        QTextCursor cur = ed->textCursor();
-        QList<QAction*> list = edpopup->actions();
-        if(cur.selectedText().length() == 0) {
-            list.at(2)->setEnabled(false);
-            list.at(3)->setEnabled(false);
-        }
-        else {
-            list.at(2)->setEnabled(true);
-            list.at(3)->setEnabled(true);
-        }
-        if(ed->canPaste())
-            list.at(4)->setEnabled(true);
-        else
-            list.at(4)->setEnabled(false);
-
-        edpopup->popup(QCursor::pos());
-    }
-#endif
-}
-
 /*
  * TODO: Why don't icons show up in linux? deferred.
  * QtCreator has the same problem Windows OK, Linux not OK.
- * TODO: save as? pencil on a disk? deferred.
  */
 void MainWindow::setupFileMenu()
 {
