@@ -117,6 +117,14 @@ void Properties::setupGeneral()
     tabSpaces.setText("4");
     tabSpaces.setAlignment(Qt::AlignHCenter);
     tlayout->addWidget(&tabSpaces);
+
+    QSettings settings(publisherKey, ASideGuiKey,this);
+    QVariant tabv = settings.value(tabSpacesKey);
+    if(tabv.canConvert(QVariant::Int)) {
+        QString s = tabv.toString();
+        tabSpaces.setText(s);
+    }
+
 }
 
 void Properties::setupHighlight()
@@ -338,6 +346,7 @@ void Properties::accept()
     settings.setValue(includesKey,leditIncludes->text());
     settings.setValue(configFileKey,leditIncludes->text());
     settings.setValue(workspaceKey,leditWorkspace->text());
+    settings.setValue(tabSpacesKey,tabSpaces.text());
     done(QDialog::Accepted);
 }
 
