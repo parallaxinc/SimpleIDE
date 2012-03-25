@@ -1,4 +1,10 @@
 /****************************************************************************
+  The basis of this code is the Qt Highlighter example having the copyright
+  below. This code is substanially different for choosing the rules, but
+  the basic highlighter mechanism is the same as the original.
+*****************************************************************************/
+
+/****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.

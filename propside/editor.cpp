@@ -40,6 +40,8 @@ void Editor::keyPressEvent (QKeyEvent *e)
         return;
     }
 
+    int tabSpaces = this->tabStopWidth()/10;
+
     /* if tab or shift tab, do block shift
      */
     int key = e->key();
@@ -61,76 +63,62 @@ void Editor::keyPressEvent (QKeyEvent *e)
 
             QTextBlock blocktext = cur.block();
             QStringList mylist;
-
-            /* move to beginning of block if necessary */
+            /* move to beginning of block if necessary
             if(curpos != curbeg) {
                 cur.setPosition(curbeg,QTextCursor::MoveAnchor);
                 blocktext = cur.block();
                 cur.setPosition(curend,QTextCursor::KeepAnchor);
             }
+             */
+            QString tab = "";
+            for(int n = tabSpaces; n > 0; n--) tab+=" ";
 
-            /* modify block until we're at current end + 1 */
-            while(blocktext.contains(curend+1) == false) {
-                QString s = blocktext.text();
-                if(s.length() == 0)
+            QString text = cur.selectedText();
+            int column = cur.columnNumber();
+            if(column > 0) {
+                cur.setPosition(curbeg-column,QTextCursor::MoveAnchor);
+                cur.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor, text.length()+column);
+                text = cur.selectedText();
+            }
+            mylist = text.split(QChar::ParagraphSeparator);
+            cur.removeSelectedText();
+
+            text = "";
+            for(int n = 0; n < mylist.length(); n++) {
+                QString s = mylist.at(n);
+                if(s.length() == 0 && n+1 == mylist.length())
                     break;
                 if(shift == false) {
-                    s = "    "+s;
+                    for(int n = tabSpaces; n > 0; n--) s = " " + s;
                 }
                 else {
-                    if(s.indexOf("    ") == 0)
-                        s = s.mid(4);
+                    if(s.indexOf(tab) == 0 || (n == 0 && column >= tabSpaces))
+                        s = s.mid(tabSpaces);
                 }
-                mylist.append(s);
-                blocktext = blocktext.next();
+                text += s;
+                if(n+1 < mylist.length())
+                    text += "\n";
             }
-
-            /* remove and replace block */
-            if(mylist.length() > 0) {
-                QString text = cur.selectedText();
-                /* blocks use PragraphSeparator */
-                text.replace(QChar::ParagraphSeparator,"\n");
-                bool addeol = false;
-                QChar ch = text[text.length()-1];
-                if(ch == '\n')
-                    addeol = true;
-                /* remove block */
-                cur.removeSelectedText();
-                text = "";
-                for(int n = 0; n < mylist.count(); n++) {
-                    QString s = mylist.at(n);
-                    text.append(s);
-                    if(n < mylist.count()-1)
-                       text.append("\n");
-                    else if(addeol)
-                        text.append("\n");
-                }
-                /* replace block */
-                cur.insertText(text);
-
-                /* highlight block for user just in case they want to change again */
-                cur.setPosition(curbeg,QTextCursor::MoveAnchor);
-                cur.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor,text.length());
-                this->setTextCursor(cur);
-            }
+            cur.insertText(text);
+            this->setTextCursor(cur);
         }
         /* no block selected */
         else {
             int cpos = cur.position();
             if(cpos > -1) {
-                int n = cur.columnNumber() % 4;
+                int n = cur.columnNumber() % tabSpaces;
                 if (shift == false) {
-                    for(; n < 4; n++)
+                    for(; n < tabSpaces; n++)
                         insertPlainText(" ");
                 }
                 else if(cur.columnNumber() != 0) {
                     QString st;
-                    for(; n < 4; n++) {
+                    for(; n < tabSpaces; n++) {
                         cur.movePosition(QTextCursor::Left,QTextCursor::KeepAnchor);
                         st = cur.selectedText();
                         if(st.length() == 1 && st.at(0) == ' ') {
                             cur.removeSelectedText();
-                            if(cur.columnNumber() % 4 == 0)
+                            if(cur.columnNumber() % tabSpaces == 0)
                                 break;
                         }
                         if(st.at(0) != ' ')

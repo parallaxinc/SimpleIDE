@@ -1223,6 +1223,10 @@ void MainWindow::propertiesAccepted()
 {
     getApplicationSettings();
     initBoardTypes();
+    for(int n = 0; n < editors->count(); n++) {
+        Editor *e = editors->at(n);
+        e->setTabStopWidth(propDialog->getTabSpaces()*10);
+    }
 }
 
 void MainWindow::programBuild()
@@ -3132,7 +3136,7 @@ void MainWindow::initBoardTypes()
 void MainWindow::setupEditor()
 {
     Editor *editor = new Editor(gdb, this);
-    editor->setTabStopWidth(40);
+    editor->setTabStopWidth(propDialog->getTabSpaces()*10);
 
     /* font is user's preference */
     editor->setFont(editorFont);
