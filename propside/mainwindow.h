@@ -54,6 +54,7 @@ public slots:
     void saveFileByTabIndex(int tab);
     void saveAsFile(const QString &path = QString());
     void savePexFile();
+    void downloadSdCard();
     void printFile(const QString &path = QString());    // not implemented
     void zipFile(const QString &path = QString());      // not implemented
     void closeFile();
