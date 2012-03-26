@@ -801,6 +801,11 @@ void MainWindow::savePexFile()
 
 }
 
+void MainWindow::downloadSdCard()
+{
+
+}
+
 /*
  * make star go away if no changes.
  */
@@ -1403,6 +1408,7 @@ void MainWindow::setCurrentBoard(int index)
 {
     boardName = cbBoard->itemText(index);
     cbBoard->setCurrentIndex(index);
+#if 0
     if(boardName.contains(ASideConfig::SubDelimiter+ASideConfig::SdLoad,Qt::CaseInsensitive) ||
        boardName.contains(ASideConfig::SubDelimiter+ASideConfig::SdRun,Qt::CaseInsensitive)) {
         btnProgramDebugTerm->setEnabled(false);
@@ -1412,6 +1418,7 @@ void MainWindow::setCurrentBoard(int index)
         btnProgramDebugTerm->setEnabled(true);
         btnProgramRun->setEnabled(true);
     }
+#endif
 }
 
 void MainWindow::setCurrentPort(int index)
@@ -2092,8 +2099,8 @@ int  MainWindow::runLoader(QString copts)
         copts.append(" -l");
         qDebug() << loadtype << copts;
     }
-    else
     if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::Serial, Qt::CaseInsensitive)) {
+        copts.append(" a.out");
         qDebug() << loadtype << copts;
     }
 
@@ -3244,7 +3251,10 @@ void MainWindow::setupFileMenu()
     QMenu *toolsMenu = new QMenu(tr("&Tools"), this);
     menuBar()->addMenu(toolsMenu);
 
-    //toolsMenu->addAction(QIcon(":/images/flashdrive.png"), tr("Save .PEX to SD Card"), this, SLOT(savePexFile()));
+#if defined(SD_TOOLS)
+    toolsMenu->addAction(QIcon(":/images/flashdrive.png"), tr("Save to SD Card"), this, SLOT(savePexFile()));
+    toolsMenu->addAction(QIcon(":/images/download.png"), tr("Download to SD Card"), this, SLOT(downloadSdCard()));
+#endif
 
     if(ctags->enabled()) {
         toolsMenu->addSeparator();
@@ -3377,6 +3387,17 @@ void MainWindow::setupToolBars()
         btnFindDef->setToolTip("Browse (Ctrl+Left Click");
     }
 
+#if defined(SD_TOOLS)
+    QToolBar *toolsToolBar = addToolBar(tr("Tools"));
+    QToolButton *btnDownloadSdCard = new QToolButton(this);
+    QToolButton *btnSaveToSdCard = new QToolButton(this);
+
+    addToolButton(toolsToolBar, btnSaveToSdCard, QString(":/images/flashdrive.png"));
+    addToolButton(toolsToolBar, btnDownloadSdCard, QString(":/images/download.png"));
+
+    connect(btnDownloadSdCard, SIGNAL(clicked()),this,SLOT(downloadSdCard()));
+    connect(btnSaveToSdCard, SIGNAL(clicked()),this,SLOT(savePexFile()));
+#endif
 
     programToolBar = addToolBar(tr("Program"));
     btnProgramDebugTerm = new QToolButton(this);
