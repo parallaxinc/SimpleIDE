@@ -812,12 +812,16 @@ void MainWindow::downloadSdCard()
         return;
     }
 
-    QString fileName = fileDialog.getOpenFileName(this, tr("Send File"), lastPath, tr(SOURCE_FILE_TYPES));
+    QString fileName = fileDialog.getOpenFileName(this, tr("Send File"), sourcePath(projectFile), "Any File (*)");
     if(fileName.length() > 0)
         lastPath = sourcePath(fileName);
 
     if (fileName.isEmpty())
         return;
+
+    btnConnected->setChecked(false);
+    portListener->close(); // disconnect uart before use
+    term->hide();
 
     progress->show();
     progress->setValue(0);
@@ -1634,9 +1638,6 @@ int  MainWindow::runBuild(QString option)
     if(maxprogress < 1)
         return -1;
 
-    btnConnected->setChecked(false);
-    portListener->close(); // disconnect uart before use
-
     checkAndSaveFiles();
 
     progress->show();
@@ -2157,6 +2158,11 @@ int  MainWindow::runLoader(QString copts)
         mbox.exec();
         return -1;
     }
+
+    btnConnected->setChecked(false);
+    portListener->close(); // disconnect uart before use
+    term->hide();
+
     progress->show();
     progress->setValue(0);
 
