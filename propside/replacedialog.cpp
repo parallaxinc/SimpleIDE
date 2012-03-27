@@ -116,16 +116,20 @@ void ReplaceDialog::findChanged(QString text)
     if(editor == NULL)
         return;
     QTextCursor cur = editor->textCursor();
+    cur.beginEditBlock();
     cur.setPosition(findPosition,QTextCursor::MoveAnchor);
     editor->setTextCursor(cur);
+    cur.endEditBlock();
 
 #if USE_REGEX
     if(regexButton->isChecked()) {
         QRegExp reg(text);
         reg.setPatternSyntax(QRegExp::RegExp2);
         QTextDocument *ted = const_cast<QTextDocument *>(editor->document());
+        cur.beginEditBlock();
         cur = ted->find(reg,findPosition,getFlags());
         editor->setTextCursor(cur);
+        cur.endEditBlock();
     }
     else
     {
@@ -290,8 +294,11 @@ void ReplaceDialog::replaceNextClicked()
 
     QString s = editor->textCursor().selectedText();
     if(s.length()) {
-        editor->textCursor().removeSelectedText();
-        editor->textCursor().insertText(replaceEdit->text());
+        QTextCursor cur = editor->textCursor();
+        cur.beginEditBlock();
+        cur.removeSelectedText();
+        cur.insertText(replaceEdit->text());
+        cur.endEditBlock();
         findNextClicked();
     }
 }
@@ -306,12 +313,14 @@ void ReplaceDialog::replacePrevClicked()
 
     QString s = editor->textCursor().selectedText();
     if(s.length()) {
-        editor->textCursor().removeSelectedText();
-        editor->textCursor().insertText(replaceEdit->text());
-
         QTextCursor cur = editor->textCursor();
+        cur.beginEditBlock();
+        cur.removeSelectedText();
+        cur.insertText(replaceEdit->text());
         cur.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor);
         editor->setTextCursor(cur);
+        cur.endEditBlock();
+
         findPrevClicked();
     }
 }
@@ -323,6 +332,7 @@ void ReplaceDialog::replaceAllClicked()
     if(editor == NULL)
         return;
 
+    editor->textCursor().beginEditBlock();
     QString edtext = editor->toPlainText();
     editor->setCenterOnScroll(true);
 
@@ -346,6 +356,7 @@ void ReplaceDialog::replaceAllClicked()
         }
         edtext = editor->toPlainText();
     }
+    editor->textCursor().endEditBlock();
 
     QMessageBox::information(this, tr("Replace Done"),
         tr("Replaced %1 instances of \"%2\".").arg(count).arg(text));
