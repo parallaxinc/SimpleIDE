@@ -2,6 +2,8 @@
 #include "qextserialenumerator.h"
 #include "Sleeper.h"
 
+#define SD_TOOLS
+
 #define APPWINDOW_MIN_HEIGHT 530
 #define APPWINDOW_MIN_WIDTH 780
 #define EDITOR_MIN_WIDTH 500
@@ -803,7 +805,86 @@ void MainWindow::savePexFile()
 
 void MainWindow::downloadSdCard()
 {
+    if(projectModel == NULL || projectFile.isNull()) {
+        QMessageBox mbox(QMessageBox::Critical, "Error No Project",
+            "Please select a tab and press F4 to set main project file.", QMessageBox::Ok);
+        mbox.exec();
+        return;
+    }
 
+    QString fileName = fileDialog.getOpenFileName(this, tr("Send File"), lastPath, tr(SOURCE_FILE_TYPES));
+    if(fileName.length() > 0)
+        lastPath = sourcePath(fileName);
+
+    if (fileName.isEmpty())
+        return;
+
+    progress->show();
+    progress->setValue(0);
+
+    getApplicationSettings();
+
+    QString copts;
+    copts.append("-f "+fileName);
+
+    QStringList args = getLoaderParameters(copts);
+    removeArg(args, "a.out");
+
+    btnConnected->setChecked(false);
+    portListener->close(); // disconnect uart before use
+
+    showBuildStart(aSideLoader,args);
+
+#if defined(LOADER_TERMINAL)
+    if(terminal) {
+        return termEditor->load(aSideLoader, sourcePath(projectFile), args);
+    }
+    else {
+        process->setProperty("Name", QVariant(aSideLoader));
+        process->setProperty("IsLoader", QVariant(true));
+
+        connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
+        connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
+        connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
+
+        process->setProcessChannelMode(QProcess::MergedChannels);
+        process->setWorkingDirectory(sourcePath(projectFile));
+
+        procMutex.lock();
+        procDone = false;
+        procMutex.unlock();
+
+        process->start(aSideLoader,args);
+
+        status->setText(status->text()+tr(" Loading ... "));
+
+        while(procDone == false)
+            QApplication::processEvents();
+
+    }
+#else
+    process->setProperty("Name", QVariant(aSideLoader));
+    process->setProperty("IsLoader", QVariant(true));
+
+    connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
+    connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
+    connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
+
+    process->setProcessChannelMode(QProcess::MergedChannels);
+    process->setWorkingDirectory(sourcePath(projectFile));
+
+    procMutex.lock();
+    procDone = false;
+    procMutex.unlock();
+
+    process->start(aSideLoader,args);
+
+    status->setText(status->text()+tr(" Loading ... "));
+
+    while(procDone == false)
+        QApplication::processEvents();
+
+#endif
 }
 
 /*
@@ -2058,7 +2139,7 @@ QStringList MainWindow::getLoaderParameters(QString copts)
     if((copts.indexOf("-l") > 0 || copts.indexOf("-z") > 0) == false)
         args.append("a.out");
 
-    QStringList olist = copts.split(" ");
+    QStringList olist = copts.split(" ",QString::SkipEmptyParts);
     for (int n = 0; n < olist.length(); n++)
         args.append(olist[n]);
 
@@ -3252,8 +3333,8 @@ void MainWindow::setupFileMenu()
     menuBar()->addMenu(toolsMenu);
 
 #if defined(SD_TOOLS)
-    toolsMenu->addAction(QIcon(":/images/flashdrive.png"), tr("Save to SD Card"), this, SLOT(savePexFile()));
-    toolsMenu->addAction(QIcon(":/images/download.png"), tr("Download to SD Card"), this, SLOT(downloadSdCard()));
+    //toolsMenu->addAction(QIcon(":/images/flashdrive.png"), tr("Save .PEX to Local SD Card"), this, SLOT(savePexFile()));
+    toolsMenu->addAction(QIcon(":/images/download.png"), tr("Send File to Target SD Card"), this, SLOT(downloadSdCard()));
 #endif
 
     if(ctags->enabled()) {
@@ -3389,14 +3470,16 @@ void MainWindow::setupToolBars()
 
 #if defined(SD_TOOLS)
     QToolBar *toolsToolBar = addToolBar(tr("Tools"));
+    //QToolButton *btnSaveToSdCard = new QToolButton(this);
+    //addToolButton(toolsToolBar, btnSaveToSdCard, QString(":/images/flashdrive.png"));
+    //connect(btnSaveToSdCard, SIGNAL(clicked()),this,SLOT(savePexFile()));
+    //btnSaveToSdCard->setToolTip(tr("Save AUTOEXEC.PEX to Local SD Card."));
+
     QToolButton *btnDownloadSdCard = new QToolButton(this);
-    QToolButton *btnSaveToSdCard = new QToolButton(this);
-
-    addToolButton(toolsToolBar, btnSaveToSdCard, QString(":/images/flashdrive.png"));
     addToolButton(toolsToolBar, btnDownloadSdCard, QString(":/images/download.png"));
-
     connect(btnDownloadSdCard, SIGNAL(clicked()),this,SLOT(downloadSdCard()));
-    connect(btnSaveToSdCard, SIGNAL(clicked()),this,SLOT(savePexFile()));
+    btnDownloadSdCard->setToolTip(tr("Send File to Target SD Card."));
+
 #endif
 
     programToolBar = addToolBar(tr("Program"));
