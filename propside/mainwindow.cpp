@@ -821,6 +821,7 @@ void MainWindow::downloadSdCard()
 
     progress->show();
     progress->setValue(0);
+    status->setText("");
 
     getApplicationSettings();
 
@@ -2394,7 +2395,10 @@ void MainWindow::procReadyRead()
             }
 #endif
             else {
-                compileStatus->insertPlainText(line+eol);
+                compileStatus->insertPlainText(line);
+                if(line.contains("verifying", Qt::CaseInsensitive) == false)
+                    if(line.contains("programming", Qt::CaseInsensitive) == false)
+                        compileStatus->insertPlainText(eol);
             }
             //compileStatus->moveCursor(QTextCursor::StartOfLine);
             //compileStatus->moveCursor(QTextCursor::End);

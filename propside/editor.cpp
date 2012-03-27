@@ -50,8 +50,8 @@ void Editor::keyPressEvent (QKeyEvent *e)
         QTextCursor cur = this->textCursor();
 
         int curbeg = cur.selectionStart();
-        int curend = cur.selectionEnd();
-        int curpos = cur.position();
+        //int curend = cur.selectionEnd();
+        //int curpos = cur.position();
 
         /* do we have shift ? */
         bool shift = false;
@@ -63,16 +63,12 @@ void Editor::keyPressEvent (QKeyEvent *e)
 
             QTextBlock blocktext = cur.block();
             QStringList mylist;
-            /* move to beginning of block if necessary
-            if(curpos != curbeg) {
-                cur.setPosition(curbeg,QTextCursor::MoveAnchor);
-                blocktext = cur.block();
-                cur.setPosition(curend,QTextCursor::KeepAnchor);
-            }
-             */
+
+            /* make tabs based on user preference - set by mainwindow */
             QString tab = "";
             for(int n = tabSpaces; n > 0; n--) tab+=" ";
 
+            /* highlight block from beginning of the first line to the last line */
             QString text = cur.selectedText();
             int column = cur.columnNumber();
             if(column > 0) {
@@ -80,9 +76,19 @@ void Editor::keyPressEvent (QKeyEvent *e)
                 cur.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor, text.length()+column);
                 text = cur.selectedText();
             }
+            if(text.length() == 0)
+                return;
+
+            /* get a list of the selected block. keep empty lines */
             mylist = text.split(QChar::ParagraphSeparator);
+
+            /* start a single undo/redo operation */
+            cur.beginEditBlock();
+
+            /* get rid of old block */
             cur.removeSelectedText();
 
+            /* indent list */
             text = "";
             for(int n = 0; n < mylist.length(); n++) {
                 QString s = mylist.at(n);
@@ -99,8 +105,13 @@ void Editor::keyPressEvent (QKeyEvent *e)
                 if(n+1 < mylist.length())
                     text += "\n";
             }
+
+            /* insert new block */
             cur.insertText(text);
             this->setTextCursor(cur);
+
+            /* end single undo/redo operation */
+            cur.endEditBlock();
         }
         /* no block selected */
         else {
