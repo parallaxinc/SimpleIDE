@@ -45,6 +45,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = 0);
+    Properties *propDialog;
 
 public slots:
     void terminalEditorTextChanged();
@@ -195,8 +196,6 @@ private:
     QString         aSideCfgFile;
     QString         aSideSeparator;
 
-    Highlighter     *highlighter;
-
     QToolBar        *fileToolBar;
     QToolBar        *projToolBar;
     QToolBar        *propToolBar;
@@ -243,8 +242,6 @@ private:
 
     int             termXpos;
     int             termYpos;
-
-    Properties      *propDialog;
 
     ASideConfig     *aSideConfig;
     QString         portName;

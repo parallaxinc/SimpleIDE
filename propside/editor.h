@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include "gdb.h"
+#include "highlighter.h"
 
 class LineNumberArea;
 
@@ -12,7 +13,9 @@ class Editor : public QPlainTextEdit
     Q_OBJECT
 public:
     Editor(GDB *gdb, QWidget *parent);
+    virtual ~Editor();
 
+    void setHighlights();
     void setLineNumber(int num);
 
 protected:
@@ -28,6 +31,7 @@ private:
     bool    ctrlPressed;
     GDB     *gdb;
 
+    Highlighter *highlighter;
 
 /* lineNumberArea support below this line: see Nokia Copyright below */
 public:

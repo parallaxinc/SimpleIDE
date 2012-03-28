@@ -65,6 +65,9 @@ public:
 
     int getTabSpaces();
     int getLoadDelay();
+    int setComboIndexByValue(QComboBox *combo, QString value);
+
+    Qt::GlobalColor getQtColor(int index);
 
 signals:
 
@@ -80,6 +83,7 @@ private:
 
     void setupFolders();
     void setupGeneral();
+    void addHighlights(QComboBox *box, QVector<PColor*> p);
     void setupHighlight();
 
     QTabWidget  tabWidget;
@@ -94,27 +98,28 @@ private:
     QLineEdit   tabSpaces;
     QLineEdit   loadDelay;
 
+    QToolButton hlNumButton;
+
     QCheckBox   hlEnable;
-    QComboBox   hlNumStyle;
+    QCheckBox   hlNumStyle;
     QCheckBox   hlNumWeight;
     QComboBox   hlNumColor;
-    QToolButton hlNumButton;
-    QComboBox   hlFuncStyle;
+    QCheckBox   hlFuncStyle;
     QCheckBox   hlFuncWeight;
     QComboBox   hlFuncColor;
-    QComboBox   hlKeyWordStyle;
+    QCheckBox   hlKeyWordStyle;
     QCheckBox   hlKeyWordWeight;
     QComboBox   hlKeyWordColor;
-    QComboBox   hlPreProcStyle;
+    QCheckBox   hlPreProcStyle;
     QCheckBox   hlPreProcWeight;
     QComboBox   hlPreProcColor;
-    QComboBox   hlQuoteStyle;
+    QCheckBox   hlQuoteStyle;
     QCheckBox   hlQuoteWeight;
     QComboBox   hlQuoteColor;
-    QComboBox   hlLineComStyle;
+    QCheckBox   hlLineComStyle;
     QCheckBox   hlLineComWeight;
     QComboBox   hlLineComColor;
-    QComboBox   hlBlockComStyle;
+    QCheckBox   hlBlockComStyle;
     QCheckBox   hlBlockComWeight;
     QComboBox   hlBlockComColor;
 
@@ -125,10 +130,19 @@ class PColor : public QColor
 {
 private:
     QString mName;
+    Qt::GlobalColor mValue;
 
 public:
-    PColor (QString name) { mName = name; }
-    QString getName() { return mName; }
+    PColor (QString name, Qt::GlobalColor value) {
+        mName = name;
+        mValue = value;
+    }
+    QString getName() {
+        return mName;
+    }
+    Qt::GlobalColor getValue() {
+        return mValue;
+    }
 
 };
 

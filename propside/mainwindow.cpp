@@ -1313,6 +1313,7 @@ void MainWindow::properties()
 {
     propDialog->showProperties();
 }
+
 void MainWindow::propertiesAccepted()
 {
     getApplicationSettings();
@@ -1320,6 +1321,7 @@ void MainWindow::propertiesAccepted()
     for(int n = 0; n < editors->count(); n++) {
         Editor *e = editors->at(n);
         e->setTabStopWidth(propDialog->getTabSpaces()*10);
+        e->setHighlights();
     }
 }
 
@@ -3233,7 +3235,6 @@ void MainWindow::setupEditor()
     editor->setFont(editorFont);
     editor->setLineWrapMode(Editor::NoWrap);
     connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
-    highlighter = new Highlighter(editor->document());
     editors->append(editor);
 }
 

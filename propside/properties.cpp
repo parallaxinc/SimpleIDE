@@ -9,7 +9,7 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 
     setupFolders();
     setupGeneral();
-    // setupHighlight();
+    setupHighlight();
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
@@ -148,6 +148,16 @@ void Properties::setupGeneral()
 
 }
 
+void Properties::addHighlights(QComboBox *box, QVector<PColor*> pcolor)
+{
+    for(int n = 0; n < pcolor.count(); n++) {
+        QPixmap pixmap(20,20);
+        pixmap.fill(pcolor.at(n)->getValue());
+        QIcon icon(pixmap);
+        box->addItem(icon, static_cast<PColor*>(propertyColors[n])->getName());
+    }
+}
+
 void Properties::setupHighlight()
 {
     QGridLayout *hlayout = new QGridLayout();
@@ -155,119 +165,324 @@ void Properties::setupHighlight()
     hlbox->setLayout(hlayout);
     tabWidget.addTab(hlbox,"Highlight");
 
-    propertyColors.insert(Properties::Black, new PColor("Black"));
-    propertyColors.insert(Properties::DarkGray, new PColor("Dark Gray"));
-    propertyColors.insert(Properties::Gray, new PColor("Gray"));
-    propertyColors.insert(Properties::LightGray, new PColor("Light Gray"));
-    propertyColors.insert(Properties::Blue, new PColor("Blue"));
-    propertyColors.insert(Properties::DarkBlue, new PColor("Dark Blue"));
-    propertyColors.insert(Properties::Cyan, new PColor("Cyan"));
-    propertyColors.insert(Properties::DarkCyan, new PColor("Dark Cyan"));
-    propertyColors.insert(Properties::Green, new PColor("Green"));
-    propertyColors.insert(Properties::DarkGreen, new PColor("Dark Green"));
-    propertyColors.insert(Properties::Magenta, new PColor("Magenta"));
-    propertyColors.insert(Properties::DarkMagenta, new PColor("Dark Magenta"));
-    propertyColors.insert(Properties::Red, new PColor("Red"));
-    propertyColors.insert(Properties::DarkRed, new PColor("Dark Red"));
-    propertyColors.insert(Properties::Yellow, new PColor("Yellow"));
-    propertyColors.insert(Properties::DarkYellow, new PColor("Dark Yellow"));
+    propertyColors.insert(Properties::Black, new PColor("Black", Qt::black));
+    propertyColors.insert(Properties::DarkGray, new PColor("Dark Gray", Qt::darkGray));
+    propertyColors.insert(Properties::Gray, new PColor("Gray",Qt::gray));
+    propertyColors.insert(Properties::LightGray, new PColor("Light Gray",Qt::lightGray));
+    propertyColors.insert(Properties::Blue, new PColor("Blue",Qt::blue));
+    propertyColors.insert(Properties::DarkBlue, new PColor("Dark Blue",Qt::darkBlue));
+    propertyColors.insert(Properties::Cyan, new PColor("Cyan",Qt::cyan));
+    propertyColors.insert(Properties::DarkCyan, new PColor("Dark Cyan",Qt::darkCyan));
+    propertyColors.insert(Properties::Green, new PColor("Green",Qt::green));
+    propertyColors.insert(Properties::DarkGreen, new PColor("Dark Green",Qt::darkGreen));
+    propertyColors.insert(Properties::Magenta, new PColor("Magenta",Qt::magenta));
+    propertyColors.insert(Properties::DarkMagenta, new PColor("Dark Magenta",Qt::darkMagenta));
+    propertyColors.insert(Properties::Red, new PColor("Red",Qt::red));
+    propertyColors.insert(Properties::DarkRed, new PColor("Dark Red",Qt::darkRed));
+    propertyColors.insert(Properties::Yellow, new PColor("Yellow",Qt::yellow));
+    propertyColors.insert(Properties::DarkYellow, new PColor("Dark Yellow",Qt::darkYellow));
 
     QStringList colorlist;
-    for(int n = 0; n < propertyColors.count(); n++)
+    for(int n = 0; n < propertyColors.count(); n++) {
         colorlist.append(static_cast<PColor*>(propertyColors[n])->getName());
+    }
+
+    QSettings settings(publisherKey, ASideGuiKey,this);
+    QVariant var;
 
     int hlrow = 0;
+
+    /*
+        hlEnableKey                 // not implemented
+
+        hlNumStyleKey               // Numeric style normal = 0 italic = 1
+        hlNumWeightKey              // bold weight checked
+        hlNumColorKey               // color integer
+        hlFuncStyleKey              // function style - see Numeric
+        hlFuncWeightKey             // bold weight checked
+        hlFuncColorKey              // color integer
+        hlKeyWordStyleKey
+        hlKeyWordWeightKey
+        hlKeyWordColorKey
+        hlPreProcStyleKey
+        hlPreProcWeightKey
+        hlPreProcColorKey
+        hlQuoteStyleKey
+        hlQuoteWeightKey
+        hlQuoteColorKey
+        hlLineComStyleKey
+        hlLineComWeightKey
+        hlLineComColorKey
+        hlBlockComStyleKey
+        hlBlockComWeightKey
+        hlBlockComColorKey
+      */
 
     QLabel *lNumStyle = new QLabel("Numbers");
     hlayout->addWidget(lNumStyle,hlrow,0);
     hlNumWeight.setText("Bold");
     hlNumWeight.setChecked(false);
     hlayout->addWidget(&hlNumWeight,hlrow,1);
-    hlNumStyle.addItem("Normal");
-    hlNumStyle.addItem("Italic");
+    hlNumStyle.setText("Italic");
+    hlNumStyle.setChecked(false);
     hlayout->addWidget(&hlNumStyle,hlrow,2);
-    hlNumColor.addItems(colorlist);
+    addHighlights(&hlNumColor, propertyColors);
     hlayout->addWidget(&hlNumColor,hlrow,3);
     hlNumColor.setCurrentIndex(Properties::Magenta);
     hlrow++;
+
+    var = settings.value(hlNumWeightKey,true);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlNumWeight.setChecked(var.toBool());
+        settings.setValue(hlNumWeightKey,var.toBool());
+    }
+
+    var = settings.value(hlNumStyleKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlNumStyle.setChecked(var.toBool());
+        settings.setValue(hlNumStyleKey,var.toBool());
+    }
+
+    var = settings.value(hlNumColorKey,Properties::Magenta);
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
+        int n = var.toInt();
+        hlNumColor.setCurrentIndex(n);
+        settings.setValue(hlNumColorKey,n);
+    }
 
     QLabel *lFuncStyle = new QLabel("Functions");
     hlayout->addWidget(lFuncStyle,hlrow,0);
     hlFuncWeight.setText("Bold");
     hlFuncWeight.setChecked(false);
     hlayout->addWidget(&hlFuncWeight,hlrow,1);
-    hlFuncStyle.addItem("Normal");
-    hlFuncStyle.addItem("Italic");
+    hlFuncStyle.setText("Italic");
+    hlFuncStyle.setChecked(false);
     hlayout->addWidget(&hlFuncStyle,hlrow,2);
-    hlFuncColor.addItems(colorlist);
+    addHighlights(&hlFuncColor, propertyColors);
     hlayout->addWidget(&hlFuncColor,hlrow,3);
     hlFuncColor.setCurrentIndex(Properties::Blue);
     hlrow++;
 
+    var = settings.value(hlFuncWeightKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlFuncWeight.setChecked(var.toBool());
+        settings.setValue(hlFuncWeightKey,var.toBool());
+    }
+
+    var = settings.value(hlFuncStyleKey,true);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlFuncStyle.setChecked(var.toBool());
+        settings.setValue(hlFuncStyleKey,var.toBool());
+    }
+
+    var = settings.value(hlFuncColorKey,Properties::Blue);
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
+        int n = var.toInt();
+        hlFuncColor.setCurrentIndex(n);
+        settings.setValue(hlFuncColorKey,n);
+    }
+
+
     QLabel *lKeyWordStyle = new QLabel("Key Words");
     hlayout->addWidget(lKeyWordStyle,hlrow,0);
     hlKeyWordWeight.setText("Bold");
-    hlKeyWordWeight.setChecked(false);
+    hlKeyWordWeight.setChecked(true);
     hlayout->addWidget(&hlKeyWordWeight,hlrow,1);
-    hlKeyWordStyle.addItem("Normal");
-    hlKeyWordStyle.addItem("Italic");
+    hlKeyWordStyle.setText("Italic");
+    hlKeyWordStyle.setChecked(false);
     hlayout->addWidget(&hlKeyWordStyle,hlrow,2);
-    hlKeyWordColor.addItems(colorlist);
+    addHighlights(&hlKeyWordColor, propertyColors);
     hlayout->addWidget(&hlKeyWordColor,hlrow,3);
     hlKeyWordColor.setCurrentIndex(Properties::DarkBlue);
     hlrow++;
+
+    var = settings.value(hlKeyWordWeightKey,true);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlKeyWordWeight.setChecked(var.toBool());
+        settings.setValue(hlKeyWordWeightKey,var.toBool());
+    }
+
+    var = settings.value(hlKeyWordStyleKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlKeyWordStyle.setChecked(var.toBool());
+        settings.setValue(hlKeyWordStyleKey,var.toBool());
+    }
+
+    var = settings.value(hlKeyWordColorKey,Properties::DarkBlue);
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
+        int n = var.toInt();
+        hlKeyWordColor.setCurrentIndex(n);
+        settings.setValue(hlKeyWordColorKey,n);
+    }
 
     QLabel *lPreProcStyle = new QLabel("Pre-Processor");
     hlayout->addWidget(lPreProcStyle,hlrow,0);
     hlPreProcWeight.setText("Bold");
     hlPreProcWeight.setChecked(false);
     hlayout->addWidget(&hlPreProcWeight,hlrow,1);
-    hlPreProcStyle.addItem("Normal");
-    hlPreProcStyle.addItem("Italic");
+    hlPreProcStyle.setText("Italic");
+    hlPreProcStyle.setChecked(false);
     hlayout->addWidget(&hlPreProcStyle,hlrow,2);
-    hlPreProcColor.addItems(colorlist);
+    addHighlights(&hlPreProcColor, propertyColors);
     hlayout->addWidget(&hlPreProcColor,hlrow,3);
     hlPreProcColor.setCurrentIndex(Properties::DarkYellow);
     hlrow++;
+
+    var = settings.value(hlPreProcWeightKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlPreProcWeight.setChecked(var.toBool());
+        settings.setValue(hlPreProcWeightKey,var.toBool());
+    }
+
+    var = settings.value(hlPreProcStyleKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlPreProcStyle.setChecked(var.toBool());
+        settings.setValue(hlPreProcStyleKey,var.toBool());
+    }
+
+    var = settings.value(hlPreProcColorKey,Properties::DarkYellow);
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
+        int n = var.toInt();
+        hlPreProcColor.setCurrentIndex(n);
+        settings.setValue(hlPreProcColorKey,n);
+    }
 
     QLabel *lQuoteStyle = new QLabel("Quotes");
     hlayout->addWidget(lQuoteStyle,hlrow,0);
     hlQuoteWeight.setText("Bold");
     hlQuoteWeight.setChecked(false);
     hlayout->addWidget(&hlQuoteWeight,hlrow,1);
-    hlQuoteStyle.addItem("Normal");
-    hlQuoteStyle.addItem("Italic");
+    hlQuoteStyle.setText("Italic");
+    hlQuoteStyle.setChecked(false);
     hlayout->addWidget(&hlQuoteStyle,hlrow,2);
-    hlQuoteColor.addItems(colorlist);
+    addHighlights(&hlQuoteColor, propertyColors);
     hlayout->addWidget(&hlQuoteColor,hlrow,3);
     hlQuoteColor.setCurrentIndex(Properties::Red);
     hlrow++;
+
+    var = settings.value(hlQuoteWeightKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlQuoteWeight.setChecked(var.toBool());
+        settings.setValue(hlQuoteWeightKey,var.toBool());
+    }
+
+    var = settings.value(hlQuoteStyleKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlQuoteStyle.setChecked(var.toBool());
+        settings.setValue(hlQuoteStyleKey,var.toBool());
+    }
+
+    var = settings.value(hlQuoteColorKey,Properties::Red);
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
+        int n = var.toInt();
+        hlQuoteColor.setCurrentIndex(n);
+        settings.setValue(hlQuoteColorKey,n);
+    }
 
     QLabel *lLineComStyle = new QLabel("Line Comments");
     hlayout->addWidget(lLineComStyle,hlrow,0);
     hlLineComWeight.setText("Bold");
     hlLineComWeight.setChecked(false);
     hlayout->addWidget(&hlLineComWeight,hlrow,1);
-    hlLineComStyle.addItem("Normal");
-    hlLineComStyle.addItem("Italic");
+    hlLineComStyle.setText("Italic");
+    hlLineComStyle.setChecked(false);
     hlayout->addWidget(&hlLineComStyle,hlrow,2);
-    hlLineComColor.addItems(colorlist);
+    addHighlights(&hlLineComColor, propertyColors);
     hlayout->addWidget(&hlLineComColor,hlrow,3);
     hlLineComColor.setCurrentIndex(Properties::Green);
     hlrow++;
+
+    var = settings.value(hlLineComWeightKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlLineComWeight.setChecked(var.toBool());
+        settings.setValue(hlLineComWeightKey,var.toBool());
+    }
+
+    var = settings.value(hlLineComStyleKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlLineComStyle.setChecked(var.toBool());
+        settings.setValue(hlLineComStyleKey,var.toBool());
+    }
+
+    var = settings.value(hlLineComColorKey,Properties::DarkGreen);
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
+        int n = var.toInt();
+        hlLineComColor.setCurrentIndex(n);
+        settings.setValue(hlLineComColorKey,n);
+    }
 
     QLabel *lBlockComStyle = new QLabel("Block Comments");
     hlayout->addWidget(lBlockComStyle,hlrow,0);
     hlBlockComWeight.setText("Bold");
     hlBlockComWeight.setChecked(false);
     hlayout->addWidget(&hlBlockComWeight,hlrow,1);
-    hlBlockComStyle.addItem("Normal");
-    hlBlockComStyle.addItem("Italic");
+    hlBlockComStyle.setText("Italic");
+    hlBlockComStyle.setChecked(false);
     hlayout->addWidget(&hlBlockComStyle,hlrow,2);
-    hlBlockComColor.addItems(colorlist);
+    addHighlights(&hlBlockComColor, propertyColors);
     hlayout->addWidget(&hlBlockComColor,hlrow,3);
     hlBlockComColor.setCurrentIndex(Properties::Green);
     hlrow++;
+
+    var = settings.value(hlBlockComWeightKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlBlockComWeight.setChecked(var.toBool());
+        settings.setValue(hlBlockComWeightKey,var.toBool());
+    }
+
+    var = settings.value(hlBlockComStyleKey,false);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        hlBlockComStyle.setChecked(var.toBool());
+        settings.setValue(hlBlockComStyleKey,var.toBool());
+    }
+
+    var = settings.value(hlBlockComColorKey,Properties::DarkGreen);
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
+        int n = var.toInt();
+        hlBlockComColor.setCurrentIndex(n);
+        settings.setValue(hlBlockComColorKey,n);
+    }
+
+}
+
+Qt::GlobalColor Properties::getQtColor(int index)
+{
+    if(index > -1 && index < propertyColors.count()) {
+        return static_cast<PColor*>(propertyColors.at(index))->getValue();
+    }
+    return Qt::black; // just return black on failure
+}
+
+int  Properties::setComboIndexByValue(QComboBox *combo, QString value)
+{
+    for(int n = combo->count()-1; n > -1; n--) {
+        if(combo->itemText(n).compare(value) == 0) {
+            combo->setCurrentIndex(n);
+            return n;
+        }
+    }
+    return -1;
 }
 
 void Properties::browseCompiler()
@@ -363,12 +578,38 @@ void Properties::browseWorkspace()
 void Properties::accept()
 {
     QSettings settings(publisherKey, ASideGuiKey,this);
+
     settings.setValue(compilerKey,leditCompiler->text());
     settings.setValue(includesKey,leditIncludes->text());
     settings.setValue(configFileKey,leditIncludes->text());
     settings.setValue(workspaceKey,leditWorkspace->text());
+
     settings.setValue(tabSpacesKey,tabSpaces.text());
+
     settings.setValue(loadDelayKey,loadDelay.text());
+
+    settings.setValue(hlNumStyleKey,hlNumStyle.isChecked());
+    settings.setValue(hlNumWeightKey,hlNumWeight.isChecked());
+    settings.setValue(hlNumColorKey,hlNumColor.currentIndex());
+    settings.setValue(hlFuncStyleKey,hlFuncStyle.isChecked());
+    settings.setValue(hlFuncWeightKey,hlFuncWeight.isChecked());
+    settings.setValue(hlFuncColorKey,hlFuncColor.currentIndex());
+    settings.setValue(hlKeyWordStyleKey,hlKeyWordStyle.isChecked());
+    settings.setValue(hlKeyWordWeightKey,hlKeyWordWeight.isChecked());
+    settings.setValue(hlKeyWordColorKey,hlKeyWordColor.currentIndex());
+    settings.setValue(hlPreProcStyleKey,hlPreProcStyle.isChecked());
+    settings.setValue(hlPreProcWeightKey,hlPreProcWeight.isChecked());
+    settings.setValue(hlPreProcColorKey,hlPreProcColor.currentIndex());
+    settings.setValue(hlQuoteStyleKey,hlQuoteStyle.isChecked());
+    settings.setValue(hlQuoteWeightKey,hlQuoteWeight.isChecked());
+    settings.setValue(hlQuoteColorKey,hlQuoteColor.currentIndex());
+    settings.setValue(hlLineComStyleKey,hlLineComStyle.isChecked());
+    settings.setValue(hlLineComWeightKey,hlLineComWeight.isChecked());
+    settings.setValue(hlLineComColorKey,hlLineComColor.currentIndex());
+    settings.setValue(hlBlockComStyleKey,hlBlockComStyle.isChecked());
+    settings.setValue(hlBlockComWeightKey,hlBlockComWeight.isChecked());
+    settings.setValue(hlBlockComColorKey,hlBlockComColor.currentIndex());
+
     done(QDialog::Accepted);
 }
 
