@@ -612,7 +612,7 @@ void MainWindow::closeProject()
     /* This causes us to lose project information on next load.
      * Not sure why. Leave it out for now.
      */
-    //projectOptions->clearOptions();
+    projectOptions->clearOptions();
 
     /* close project manager side bar
      */
@@ -811,6 +811,9 @@ void MainWindow::downloadSdCard()
         mbox.exec();
         return;
     }
+
+    if (runBuild(""))
+        return;
 
     QString fileName = fileDialog.getOpenFileName(this, tr("Send File"), sourcePath(projectFile), "Any File (*)");
     if(fileName.length() > 0)
@@ -1494,17 +1497,6 @@ void MainWindow::setCurrentBoard(int index)
 {
     boardName = cbBoard->itemText(index);
     cbBoard->setCurrentIndex(index);
-#if 0
-    if(boardName.contains(ASideConfig::SubDelimiter+ASideConfig::SdLoad,Qt::CaseInsensitive) ||
-       boardName.contains(ASideConfig::SubDelimiter+ASideConfig::SdRun,Qt::CaseInsensitive)) {
-        btnProgramDebugTerm->setEnabled(false);
-        btnProgramRun->setEnabled(false);
-    }
-    else {
-        btnProgramDebugTerm->setEnabled(true);
-        btnProgramRun->setEnabled(true);
-    }
-#endif
 }
 
 void MainWindow::setCurrentPort(int index)
@@ -1738,15 +1730,12 @@ int  MainWindow::runBuild(QString option)
 
     bool runpex = false;
     QString loadtype = cbBoard->currentText();
-    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
+    if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
         runpex = true;
     }
     else
-    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
+    if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
         runpex = true;
-    }
-    else
-    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::Serial, Qt::CaseInsensitive)) {
     }
     if(runpex) {
         rc = runPexMake("a.out");
@@ -2126,8 +2115,8 @@ QStringList MainWindow::getLoaderParameters(QString copts)
 
     portName = cbPort->itemText(cbPort->currentIndex());
     boardName = cbBoard->itemText(cbBoard->currentIndex());
-    if(boardName.contains(ASideConfig::SubDelimiter))
-        boardName = boardName.mid(0,boardName.indexOf(ASideConfig::SubDelimiter));
+    if(boardName.contains(ASideConfig::UserDelimiter))
+        boardName = boardName.mid(0,boardName.indexOf(ASideConfig::UserDelimiter));
 
     QStringList args;
     args.append(tr("-b"));
@@ -2178,17 +2167,13 @@ int  MainWindow::runLoader(QString copts)
     }
 
     QString loadtype = cbBoard->currentText();
-    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
-        copts.append(" -z");
+    if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
+        copts.append(" -z a.out");
         qDebug() << loadtype << copts;
     }
     else
-        if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
-        copts.append(" -l");
-        qDebug() << loadtype << copts;
-    }
-    if(loadtype.contains(ASideConfig::SubDelimiter+ASideConfig::Serial, Qt::CaseInsensitive)) {
-        copts.append(" a.out");
+        if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
+        copts.append(" -l a.out");
         qDebug() << loadtype << copts;
     }
 
@@ -2870,6 +2855,9 @@ void MainWindow::saveProjectOptions()
     QString projstr = "";
     QStringList list;
 
+    if(projectModel == NULL)
+        return;
+
     if(projectFile.length() > 0)
         setWindowTitle(QString(ASideGuiKey)+" "+projectFile);
 
@@ -2893,7 +2881,7 @@ void MainWindow::saveProjectOptions()
         list.clear();
         list = projectOptions->getOptions();
         foreach(QString arg, list) {
-            if(arg.compare(ProjectOptions::board+"::") == 0)
+            if(arg.contains(ProjectOptions::board+"::"))
                 projstr += ">"+ProjectOptions::board+"::"+cbBoard->currentText()+"\n";
             else
                 projstr += ">"+arg+"\n";
