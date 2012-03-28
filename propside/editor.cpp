@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "properties.h"
 #include "mainwindow.h"
 
 Editor::Editor(GDB *gdebug, QWidget *parent) : QPlainTextEdit(parent)
@@ -13,6 +14,22 @@ Editor::Editor(GDB *gdebug, QWidget *parent) : QPlainTextEdit(parent)
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
     updateLineNumberAreaWidth(0);
+
+    highlighter = NULL;
+    setHighlights();
+}
+
+Editor::~Editor()
+{
+    delete highlighter;
+}
+
+void Editor::setHighlights()
+{
+    Properties *p = static_cast<MainWindow*>(mainwindow)->propDialog;
+    if(highlighter != NULL)
+        delete highlighter;
+    highlighter = new Highlighter(this->document(), p);
 }
 
 void Editor::setLineNumber(int num)

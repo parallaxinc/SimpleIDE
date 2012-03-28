@@ -1,4 +1,11 @@
 /****************************************************************************
+  The basis of this code is the Qt Highlighter example having the copyright
+  below. This code is substanially different for choosing the rules, and it
+  adds registry selection for highlight attributes, but the basic highlighter
+  mechanism is the same as the original.
+*****************************************************************************/
+
+/****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
@@ -46,6 +53,8 @@
 #include <QHash>
 #include <QTextCharFormat>
 
+#include "properties.h"
+
 QT_BEGIN_NAMESPACE
 class QTextDocument;
 QT_END_NAMESPACE
@@ -55,7 +64,13 @@ class Highlighter : public QSyntaxHighlighter
     Q_OBJECT
 
 public:
-    Highlighter(QTextDocument *parent = 0);
+    Highlighter(QTextDocument *parent, Properties *prop);
+
+    bool getStyle(QString key,  bool *italic);
+    bool getWeight(QString key, QFont::Weight *weight);
+    bool getColor(QString key,  Qt::GlobalColor *color);
+
+    void getProperties();
 
     void highlightC();
     void highlightSpin();
@@ -81,6 +96,30 @@ protected:
     QTextCharFormat quotationFormat;
     QTextCharFormat functionFormat;
     QTextCharFormat numberFormat;
+
+    Properties      *properties;
+
+    bool            hlNumStyle;
+    QFont::Weight   hlNumWeight;
+    Qt::GlobalColor hlNumColor;
+    bool            hlFuncStyle;
+    QFont::Weight   hlFuncWeight;
+    Qt::GlobalColor hlFuncColor;
+    bool            hlKeyWordStyle;
+    QFont::Weight   hlKeyWordWeight;
+    Qt::GlobalColor hlKeyWordColor;
+    bool            hlPreProcStyle;
+    QFont::Weight   hlPreProcWeight;
+    Qt::GlobalColor hlPreProcColor;
+    bool            hlQuoteStyle;
+    QFont::Weight   hlQuoteWeight;
+    Qt::GlobalColor hlQuoteColor;
+    bool            hlLineComStyle;
+    QFont::Weight   hlLineComWeight;
+    Qt::GlobalColor hlLineComColor;
+    bool            hlBlockComStyle;
+    QFont::Weight   hlBlockComWeight;
+    Qt::GlobalColor hlBlockComColor;
 };
 
 #endif

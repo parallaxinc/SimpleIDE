@@ -1,7 +1,8 @@
 /****************************************************************************
   The basis of this code is the Qt Highlighter example having the copyright
-  below. This code is substanially different for choosing the rules, but
-  the basic highlighter mechanism is the same as the original.
+  below. This code is substanially different for choosing the rules, and it
+  adds registry selection for highlight attributes, but the basic highlighter
+  mechanism is the same as the original.
 *****************************************************************************/
 
 /****************************************************************************
@@ -49,19 +50,119 @@
 #include "highlighter.h"
 
 //! [0]
-Highlighter::Highlighter(QTextDocument *parent)
+Highlighter::Highlighter(QTextDocument *parent, Properties *prop)
     : QSyntaxHighlighter(parent)
 {
+    properties = prop;
     highlightC();
+}
+
+bool Highlighter::getStyle(QString key, bool *italic)
+{
+    QSettings settings(publisherKey, ASideGuiKey, this);
+    QVariant var = settings.value(key, false);
+
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        *italic = var.toBool();
+        return true;
+    }
+    return false;
+}
+
+bool Highlighter::getWeight(QString key, QFont::Weight *weight)
+{
+    QSettings settings(publisherKey, ASideGuiKey, this);
+    QVariant var = settings.value(key, false);
+
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        *weight = var.toBool() ? QFont::Bold : QFont::Normal;
+        return true;
+    }
+    return false;
+}
+
+bool Highlighter::getColor(QString key, Qt::GlobalColor *color)
+{
+    QSettings settings(publisherKey, ASideGuiKey, this);
+    QVariant var = settings.value(key, false);
+
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
+        int n = var.toInt();
+        *color = (Qt::GlobalColor) properties->getQtColor(n);
+        return true;
+    }
+    return false;
+}
+
+void Highlighter::getProperties()
+{
+    bool   style;
+    QFont::Weight   weight;
+    Qt::GlobalColor color;
+
+    if(getStyle(hlNumStyleKey,&style))
+        hlNumStyle = style;
+    if(getWeight(hlNumWeightKey, &weight))
+        hlNumWeight = weight;
+    if(getColor(hlNumColorKey, &color))
+        hlNumColor = color;
+
+    if(getStyle(hlFuncStyleKey,&style))
+        hlFuncStyle = style;
+    if(getWeight(hlFuncWeightKey, &weight))
+        hlFuncWeight = weight;
+    if(getColor(hlFuncColorKey, &color))
+        hlFuncColor = color;
+
+    if(getStyle(hlKeyWordStyleKey,&style))
+        hlKeyWordStyle = style;
+    if(getWeight(hlKeyWordWeightKey, &weight))
+        hlKeyWordWeight = weight;
+    if(getColor(hlKeyWordColorKey, &color))
+        hlKeyWordColor = color;
+
+    if(getStyle(hlPreProcStyleKey,&style))
+        hlPreProcStyle = style;
+    if(getWeight(hlPreProcWeightKey, &weight))
+        hlPreProcWeight = weight;
+    if(getColor(hlPreProcColorKey, &color))
+        hlPreProcColor = color;
+
+    if(getStyle(hlQuoteStyleKey,&style))
+        hlQuoteStyle = style;
+    if(getWeight(hlQuoteWeightKey, &weight))
+        hlQuoteWeight = weight;
+    if(getColor(hlQuoteColorKey, &color))
+        hlQuoteColor = color;
+
+    if(getStyle(hlLineComStyleKey,&style))
+        hlLineComStyle = style;
+    if(getWeight(hlLineComWeightKey, &weight))
+        hlLineComWeight = weight;
+    if(getColor(hlLineComColorKey, &color))
+        hlLineComColor = color;
+
+    if(getStyle(hlBlockComStyleKey,&style))
+        hlBlockComStyle = style;
+    if(getWeight(hlBlockComWeightKey, &weight))
+        hlBlockComWeight = weight;
+    if(getColor(hlBlockComColorKey, &color))
+        hlBlockComColor = color;
 }
 
 void Highlighter::highlightC()
 {
+    getProperties();
+
     HighlightingRule rule;
 
     // numbers
-    numberFormat.setForeground(Qt::magenta);
-    numberFormat.setFontWeight(QFont::Bold);
+    numberFormat.setForeground(hlNumColor);
+    numberFormat.setFontWeight(hlNumWeight);
+    numberFormat.setFontItalic(hlNumStyle);
     rule.format = numberFormat;
     rule.pattern = QRegExp("\\b\\d+");
     highlightingRules.append(rule);
@@ -69,15 +170,17 @@ void Highlighter::highlightC()
     highlightingRules.append(rule);
 
     // do "functions" first so we can override if names are keywords
-    functionFormat.setFontItalic(true);
-    functionFormat.setForeground(Qt::blue);
+    functionFormat.setFontItalic(hlFuncStyle);
+    functionFormat.setForeground(hlFuncColor);
+    functionFormat.setFontWeight(hlFuncWeight);
     rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
     rule.format = functionFormat;
     highlightingRules.append(rule);
 
     // handle C keywords
-    keywordFormat.setForeground(Qt::darkBlue);
-    keywordFormat.setFontWeight(QFont::Bold);
+    keywordFormat.setForeground(hlKeyWordColor);
+    keywordFormat.setFontWeight(hlKeyWordWeight);
+    keywordFormat.setFontItalic(hlKeyWordStyle);
     QStringList keywordPatterns;
     keywordPatterns
             << "\\bauto\\b"
@@ -123,9 +226,9 @@ void Highlighter::highlightC()
         highlightingRules.append(rule);
     }
 
-    preprocessorFormat.setForeground(Qt::darkYellow);
-    preprocessorFormat.setFontWeight(QFont::Bold);
-    //preprocessorFormat.setFontItalic(true);
+    preprocessorFormat.setFontItalic(hlPreProcStyle);
+    preprocessorFormat.setForeground(hlPreProcColor);
+    preprocessorFormat.setFontWeight(hlPreProcWeight);
     QStringList preprocessorPatterns;
     preprocessorPatterns
             << "\\bassert\\b"
@@ -154,7 +257,10 @@ void Highlighter::highlightC()
     }
 
     // quoted strings
-    quotationFormat.setForeground(Qt::red);
+    quotationFormat.setFontItalic(hlQuoteStyle);
+    quotationFormat.setForeground(hlQuoteColor);
+    quotationFormat.setFontWeight(hlQuoteWeight);
+
     rule.pattern = QRegExp("[\"].*[\"]");
     rule.format = quotationFormat;
     highlightingRules.append(rule);
@@ -162,13 +268,17 @@ void Highlighter::highlightC()
     highlightingRules.append(rule);
 
     // single line comments
-    singleLineCommentFormat.setForeground(Qt::darkGreen);
+    singleLineCommentFormat.setFontItalic(hlLineComStyle);
+    singleLineCommentFormat.setForeground(hlLineComColor);
+    singleLineCommentFormat.setFontWeight(hlLineComWeight);
     rule.pattern = QRegExp("//[^\n]*");
     rule.format = singleLineCommentFormat;
     highlightingRules.append(rule);
 
     // multilineline comments
-    multiLineCommentFormat.setForeground(Qt::darkGreen);
+    multiLineCommentFormat.setFontItalic(hlBlockComStyle);
+    multiLineCommentFormat.setForeground(hlBlockComColor);
+    multiLineCommentFormat.setFontWeight(hlBlockComWeight);
     commentStartExpression = QRegExp("/\\*");
     commentEndExpression = QRegExp("\\*/");
 
@@ -180,6 +290,8 @@ void Highlighter::highlightC()
 void Highlighter::highlightSpin()
 {
     this->parent();
+
+    getProperties();
 
     HighlightingRule rule;
 
@@ -234,16 +346,16 @@ void Highlighter::highlightSpin()
         highlightingRules.append(rule);
     }
 
+    // quoted strings
+    quotationFormat.setForeground(Qt::red);
+    rule.pattern = QRegExp("[\"].*[\"]");
+    rule.format = quotationFormat;
+    highlightingRules.append(rule);
+
     // single line comments
     singleLineCommentFormat.setForeground(Qt::darkGreen);
     rule.pattern = QRegExp("//[^\n]*");
     rule.format = singleLineCommentFormat;
-    highlightingRules.append(rule);
-
-    // quoted strings
-    quotationFormat.setForeground(Qt::red);
-    rule.pattern = QRegExp("[<\"].*[\">]");
-    rule.format = quotationFormat;
     highlightingRules.append(rule);
 
     // multilineline comments
