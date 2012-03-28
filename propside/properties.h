@@ -18,6 +18,8 @@
 #define lastTermYposKey     "LastTermYposition"
 
 #define tabSpacesKey        "TabSpacesCount"
+#define loadDelayKey        "LoadDelay_us"
+
 #define hlEnableKey         "HighlightEnable"
 #define hlNumStyleKey       "HighlightNumberStyle"
 #define hlNumWeightKey      "HighlightNumberWeight"
@@ -62,6 +64,7 @@ public:
         LastColor };
 
     int getTabSpaces();
+    int getLoadDelay();
 
 signals:
 
@@ -89,6 +92,7 @@ private:
     QString     mypath;
 
     QLineEdit   tabSpaces;
+    QLineEdit   loadDelay;
 
     QCheckBox   hlEnable;
     QComboBox   hlNumStyle;

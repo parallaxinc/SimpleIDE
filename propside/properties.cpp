@@ -106,24 +106,45 @@ void Properties::setupFolders()
 
 void Properties::setupGeneral()
 {
-    QHBoxLayout *tlayout = new QHBoxLayout();
+    int row = 0;
+    QGridLayout *tlayout = new QGridLayout();
     QFrame *tbox = new QFrame();
     tbox->setLayout(tlayout);
     tabWidget.addTab(tbox," General ");
 
+    QSettings settings(publisherKey, ASideGuiKey,this);
+    QVariant var;
+
+    QLabel *lBlank = new QLabel("",tbox);
+    tlayout->addWidget(lBlank,row++,0);
+
     QLabel *ltabs = new QLabel("Editor Tab Space Count",tbox);
-    tlayout->addWidget(ltabs);
+    tlayout->addWidget(ltabs,row,0);
     tabSpaces.setMaximumWidth(40);
     tabSpaces.setText("4");
     tabSpaces.setAlignment(Qt::AlignHCenter);
-    tlayout->addWidget(&tabSpaces);
+    tlayout->addWidget(&tabSpaces,row++,1);
 
-    QSettings settings(publisherKey, ASideGuiKey,this);
-    QVariant tabv = settings.value(tabSpacesKey);
-    if(tabv.canConvert(QVariant::Int)) {
-        QString s = tabv.toString();
+    var = settings.value(tabSpacesKey);
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
         tabSpaces.setText(s);
     }
+
+    QLabel *lLoadDelay = new QLabel("Loader Delay",tbox);
+    tlayout->addWidget(lLoadDelay,row,0);
+    loadDelay.setMaximumWidth(40);
+    loadDelay.setText("0");
+    loadDelay.setAlignment(Qt::AlignHCenter);
+    tlayout->addWidget(&loadDelay,row++,1);
+
+    var = settings.value(loadDelayKey);
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
+        loadDelay.setText(s);
+    }
+
+    tlayout->addWidget(lBlank,row++,0);
 
 }
 
@@ -347,6 +368,7 @@ void Properties::accept()
     settings.setValue(configFileKey,leditIncludes->text());
     settings.setValue(workspaceKey,leditWorkspace->text());
     settings.setValue(tabSpacesKey,tabSpaces.text());
+    settings.setValue(loadDelayKey,loadDelay.text());
     done(QDialog::Accepted);
 }
 
@@ -368,4 +390,9 @@ void Properties::showProperties()
 int Properties::getTabSpaces()
 {
     return tabSpaces.text().toInt();
+}
+
+int Properties::getLoadDelay()
+{
+    return loadDelay.text().toInt();
 }
