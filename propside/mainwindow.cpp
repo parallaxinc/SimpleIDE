@@ -2119,12 +2119,17 @@ QStringList MainWindow::getLoaderParameters(QString copts)
         boardName = boardName.mid(0,boardName.indexOf(ASideConfig::UserDelimiter));
 
     QStringList args;
-    args.append(tr("-b"));
+    if(this->propDialog->getLoadDelay() > 0) {
+        args.append(QString("-S%1").arg(this->propDialog->getLoadDelay()));
+    }
+    args.append("-b");
     args.append(boardName);
-    args.append(tr("-p"));
+    args.append("-p");
     args.append(portName);
-    args.append(tr("-I"));
+#if 0
+    args.append("-I");
     args.append(aSideIncludes);
+#endif
 
     /* if propeller-load parameters -l or -z in copts, don't append a.out */
     if((copts.indexOf("-l") > 0 || copts.indexOf("-z") > 0) == false)
