@@ -12,6 +12,7 @@ public:
     static const QString Serial;
     static const QString IDE;
     static const QString SubDelimiter;
+    static const QString UserDelimiter;
 
     ASideConfig();
     ~ASideConfig();

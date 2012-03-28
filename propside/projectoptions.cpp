@@ -254,7 +254,7 @@ void ProjectOptions::setOptions(QString s)
             setExceptions(true);
         }
         else
-        if(s.contains("lmath")) {
+        if(s.contains("lm")) {
             setMathLib(true);
         }
         else
