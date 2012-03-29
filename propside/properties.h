@@ -63,6 +63,8 @@ public:
         Yellow, DarkYellow,
         LastColor };
 
+    void cleanSettings();
+
     int getTabSpaces();
     int getLoadDelay();
     int setComboIndexByValue(QComboBox *combo, QString value);
