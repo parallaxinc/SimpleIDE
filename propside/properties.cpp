@@ -7,6 +7,9 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 {
     this->setWindowTitle(QString(ASideGuiKey)+tr(" Properties"));
 
+    /* clean for testing only */
+    // cleanSettings();
+
     setupFolders();
     setupGeneral();
     setupHighlight();
@@ -21,6 +24,55 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 
     setWindowFlags(Qt::Tool);
     resize(400,260);
+}
+
+void Properties::cleanSettings()
+{
+    QSettings settings(publisherKey, ASideGuiKey,this);
+
+    settings.remove(compilerKey);
+    settings.remove(includesKey);
+    settings.remove(separatorKey);
+    settings.remove(configFileKey);
+    settings.remove(workspaceKey);
+    settings.remove(editorFontKey);
+    settings.remove(fontSizeKey);
+    settings.remove(lastFileNameKey);
+    settings.remove(lastBoardNameKey);
+    settings.remove(lastPortNameKey);
+    settings.remove(lastTermXposKey);
+    settings.remove(lastTermYposKey);
+
+    settings.remove(tabSpacesKey);
+    settings.remove(loadDelayKey);
+
+    settings.remove(hlEnableKey);
+    settings.remove(hlNumStyleKey);
+    settings.remove(hlNumWeightKey);
+    settings.remove(hlNumColorKey);
+    settings.remove(hlFuncStyleKey);
+    settings.remove(hlFuncWeightKey);
+    settings.remove(hlFuncColorKey);
+    settings.remove(hlKeyWordStyleKey);
+    settings.remove(hlKeyWordWeightKey);
+    settings.remove(hlKeyWordColorKey);
+    settings.remove(hlPreProcStyleKey);
+    settings.remove(hlPreProcWeightKey);
+    settings.remove(hlPreProcColorKey);
+    settings.remove(hlQuoteStyleKey);
+    settings.remove(hlQuoteWeightKey);
+    settings.remove(hlQuoteColorKey);
+    settings.remove(hlLineComStyleKey);
+    settings.remove(hlLineComWeightKey);
+    settings.remove(hlLineComColorKey);
+    settings.remove(hlBlockComStyleKey);
+    settings.remove(hlBlockComWeightKey);
+    settings.remove(hlBlockComColorKey);
+
+    settings.remove(ASideGuiKey);
+    settings.remove(publisherComKey);
+    settings.remove(publisherKey);
+
 }
 
 void Properties::setupFolders()
