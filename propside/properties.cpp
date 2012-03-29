@@ -29,50 +29,16 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 void Properties::cleanSettings()
 {
     QSettings settings(publisherKey, ASideGuiKey,this);
+    QStringList list = settings.allKeys();
 
-    settings.remove(compilerKey);
-    settings.remove(includesKey);
-    settings.remove(separatorKey);
-    settings.remove(configFileKey);
-    settings.remove(workspaceKey);
-    settings.remove(editorFontKey);
-    settings.remove(fontSizeKey);
-    settings.remove(lastFileNameKey);
-    settings.remove(lastBoardNameKey);
-    settings.remove(lastPortNameKey);
-    settings.remove(lastTermXposKey);
-    settings.remove(lastTermYposKey);
+    foreach(QString key, list) {
+        if(key.indexOf(ASideGuiKey) == 0) {
+            settings.remove(key);
+        }
+    }
 
-    settings.remove(tabSpacesKey);
-    settings.remove(loadDelayKey);
-
-    settings.remove(hlEnableKey);
-    settings.remove(hlNumStyleKey);
-    settings.remove(hlNumWeightKey);
-    settings.remove(hlNumColorKey);
-    settings.remove(hlFuncStyleKey);
-    settings.remove(hlFuncWeightKey);
-    settings.remove(hlFuncColorKey);
-    settings.remove(hlKeyWordStyleKey);
-    settings.remove(hlKeyWordWeightKey);
-    settings.remove(hlKeyWordColorKey);
-    settings.remove(hlPreProcStyleKey);
-    settings.remove(hlPreProcWeightKey);
-    settings.remove(hlPreProcColorKey);
-    settings.remove(hlQuoteStyleKey);
-    settings.remove(hlQuoteWeightKey);
-    settings.remove(hlQuoteColorKey);
-    settings.remove(hlLineComStyleKey);
-    settings.remove(hlLineComWeightKey);
-    settings.remove(hlLineComColorKey);
-    settings.remove(hlBlockComStyleKey);
-    settings.remove(hlBlockComWeightKey);
-    settings.remove(hlBlockComColorKey);
-
-    settings.remove(ASideGuiKey);
     settings.remove(publisherComKey);
     settings.remove(publisherKey);
-
 }
 
 void Properties::setupFolders()
@@ -198,6 +164,20 @@ void Properties::setupGeneral()
 
     tlayout->addWidget(lBlank,row++,0);
 
+    QLabel *lreset = new QLabel("Reset Signal",tbox);
+    tlayout->addWidget(lreset,row,0);
+    resetType.addItem("DTR");
+    resetType.addItem("RTS");
+    resetType.setCurrentIndex((int)DTR);
+    tlayout->addWidget(&resetType,row++,1);
+
+    var = settings.value(resetTypeKey,(int)DTR);
+    if(var.canConvert(QVariant::Int)) {
+        QString s = var.toString();
+        resetType.setCurrentIndex(var.toInt());
+    }
+
+    tlayout->addWidget(lBlank,row++,0);
 }
 
 void Properties::addHighlights(QComboBox *box, QVector<PColor*> pcolor)
@@ -637,8 +617,8 @@ void Properties::accept()
     settings.setValue(workspaceKey,leditWorkspace->text());
 
     settings.setValue(tabSpacesKey,tabSpaces.text());
-
     settings.setValue(loadDelayKey,loadDelay.text());
+    settings.setValue(resetTypeKey,resetType.currentIndex());
 
     settings.setValue(hlNumStyleKey,hlNumStyle.isChecked());
     settings.setValue(hlNumWeightKey,hlNumWeight.isChecked());
@@ -688,4 +668,9 @@ int Properties::getTabSpaces()
 int Properties::getLoadDelay()
 {
     return loadDelay.text().toInt();
+}
+
+Properties::Reset Properties::getResetType()
+{
+    return (Reset) resetType.currentIndex();
 }

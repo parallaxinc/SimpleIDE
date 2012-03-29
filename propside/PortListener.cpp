@@ -39,6 +39,11 @@ void PortListener::setDtr(bool enable)
     this->port->setDtr(enable);
 }
 
+void PortListener::setRts(bool enable)
+{
+    this->port->setRts(enable);
+}
+
 bool PortListener::open()
 {
     if(!textEditor) // no text editor, no open

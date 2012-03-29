@@ -15,6 +15,7 @@ public:
     PortListener(QObject *parent, Console *term);
     void init(const QString &portName, BaudRateType baud);
     void setDtr(bool enable);
+    void setRts(bool enable);
     bool open();
     void close();
     bool isOpen();
