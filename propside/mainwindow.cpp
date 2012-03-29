@@ -636,13 +636,13 @@ void MainWindow::openRecentProject()
 
 void MainWindow::setCurrentFile(const QString &fileName)
 {
-    QStringList files = settings->value("recentFileList").toStringList();
+    QStringList files = settings->value(recentFilesKey).toStringList();
     files.removeAll(fileName);
     files.prepend(fileName);
     while (files.size() > MaxRecentFiles)
         files.removeLast();
 
-    settings->setValue("recentFileList", files);
+    settings->setValue(recentFilesKey, files);
 
     foreach (QWidget *widget, QApplication::topLevelWidgets()) {
         MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
@@ -653,7 +653,7 @@ void MainWindow::setCurrentFile(const QString &fileName)
 
 void MainWindow::updateRecentFileActions()
 {
-    QStringList files = settings->value("recentFileList").toStringList();
+    QStringList files = settings->value(recentFilesKey).toStringList();
 
     int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
 
@@ -685,13 +685,13 @@ void MainWindow::setCurrentProject(const QString &fileName)
 {
     projectFile = fileName;
 
-    QStringList files = settings->value("recentProjectList").toStringList();
+    QStringList files = settings->value(recentProjectsKey).toStringList();
     files.removeAll(fileName);
     files.prepend(fileName);
     while (files.size() > MaxRecentProjects)
         files.removeLast();
 
-    settings->setValue("recentProjectList", files);
+    settings->setValue(recentProjectsKey, files);
 
     foreach (QWidget *widget, QApplication::topLevelWidgets()) {
         MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
@@ -702,7 +702,7 @@ void MainWindow::setCurrentProject(const QString &fileName)
 
 void MainWindow::updateRecentProjectActions()
 {
-    QStringList projects = settings->value("recentProjectList").toStringList();
+    QStringList projects = settings->value(recentProjectsKey).toStringList();
 
     int numRecentProjects = qMin(projects.size(), (int)MaxRecentProjects);
 
@@ -2124,6 +2124,9 @@ QStringList MainWindow::getLoaderParameters(QString copts)
     if(this->propDialog->getLoadDelay() > 0) {
         args.append(QString("-S%1").arg(this->propDialog->getLoadDelay()));
     }
+    if(this->propDialog->getResetType() == Properties::RTS) {
+        args.append("-R");
+    }
     args.append("-b");
     args.append(boardName);
     args.append("-p");
@@ -3172,9 +3175,16 @@ void MainWindow::portResetButton()
     if(btnConnected->isChecked() == false)
         termEditor->stop();
 #else
-    portListener->setDtr(true);
-    Sleeper::ms(50);
-    portListener->setDtr(false);
+    if(propDialog->getResetType() == Properties::DTR) {
+        portListener->setDtr(true);
+        Sleeper::ms(50);
+        portListener->setDtr(false);
+    }
+    else {
+        portListener->setRts(true);
+        Sleeper::ms(50);
+        portListener->setRts(false);
+    }
 #endif
 }
 

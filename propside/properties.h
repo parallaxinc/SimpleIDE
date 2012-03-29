@@ -1,47 +1,48 @@
 #ifndef PROPERTIES_H
 #define PROPERTIES_H
 
-#define publisherKey        "MicroCSource"
-#define publisherComKey     "MicroCSource.com"
+#define publisherKey        "Parallax"
+#define publisherComKey     "Parallax.com"
 #define ASideGuiKey         "SimpleIDE"
-#define compilerKey         "Compiler"
-#define includesKey         "Includes"
-#define separatorKey        "PathSeparator"
-#define configFileKey       "ConfigFile"
-#define workspaceKey        "Workspace"
-#define editorFontKey       "EditorFont"
-#define fontSizeKey         "FontSize"
-#define lastFileNameKey     "LastFileName"
-#define lastBoardNameKey    "LastBoardName"
-#define lastPortNameKey     "LastPortName"
-#define lastTermXposKey     "LastTermXposition"
-#define lastTermYposKey     "LastTermYposition"
-
-#define tabSpacesKey        "TabSpacesCount"
-#define loadDelayKey        "LoadDelay_us"
-
-#define hlEnableKey         "HighlightEnable"
-#define hlNumStyleKey       "HighlightNumberStyle"
-#define hlNumWeightKey      "HighlightNumberWeight"
-#define hlNumColorKey       "HighlightNumberColor"
-#define hlFuncStyleKey      "HighlightFunctionStyle"
-#define hlFuncWeightKey     "HighlightFunctionWeight"
-#define hlFuncColorKey      "HighlightFunctionColor"
-#define hlKeyWordStyleKey   "HighlightKeyWordTypeStyle"
-#define hlKeyWordWeightKey  "HighlightKeyWordTypeWeight"
-#define hlKeyWordColorKey   "HighlightKeyWordTypeColor"
-#define hlPreProcStyleKey   "HighlightPreProcTypeStyle"
-#define hlPreProcWeightKey  "HighlightPreProcTypeWeight"
-#define hlPreProcColorKey   "HighlightPreProcTypeColor"
-#define hlQuoteStyleKey     "HighlightQuoteTypeStyle"
-#define hlQuoteWeightKey    "HighlightQuoteTypeWeight"
-#define hlQuoteColorKey     "HighlightQuoteTypeColor"
-#define hlLineComStyleKey   "HighlightLineCommmentTypeStyle"
-#define hlLineComWeightKey  "HighlightLineCommmentTypeWeight"
-#define hlLineComColorKey   "HighlightLineCommmentTypeColor"
-#define hlBlockComStyleKey  "HighlightBlockCommentTypeStyle"
-#define hlBlockComWeightKey "HighlightBlockCommentTypeWeight"
-#define hlBlockComColorKey  "HighlightBlockCommentTypeColor"
+#define compilerKey         "SimpleIDE_Compiler"
+#define includesKey         "SimpleIDE_Includes"
+#define separatorKey        "SimpleIDE_PathSeparator"
+#define configFileKey       "SimpleIDE_ConfigFile"
+#define workspaceKey        "SimpleIDE_Workspace"
+#define editorFontKey       "SimpleIDE_EditorFont"
+#define fontSizeKey         "SimpleIDE_FontSize"
+#define lastFileNameKey     "SimpleIDE_LastFileName"
+#define lastBoardNameKey    "SimpleIDE_LastBoardName"
+#define lastPortNameKey     "SimpleIDE_LastPortName"
+#define lastTermXposKey     "SimpleIDE_LastTermXposition"
+#define lastTermYposKey     "SimpleIDE_LastTermYposition"
+#define recentFilesKey      "SimpleIDE_recentFileList"
+#define recentProjectsKey   "SimpleIDE_recentProjectsList"
+#define tabSpacesKey        "SimpleIDE_TabSpacesCount"
+#define loadDelayKey        "SimpleIDE_LoadDelay_us"
+#define resetTypeKey        "SimpleIDE_ResetType"
+#define hlEnableKey         "SimpleIDE_HighlightEnable"
+#define hlNumStyleKey       "SimpleIDE_HighlightNumberStyle"
+#define hlNumWeightKey      "SimpleIDE_HighlightNumberWeight"
+#define hlNumColorKey       "SimpleIDE_HighlightNumberColor"
+#define hlFuncStyleKey      "SimpleIDE_HighlightFunctionStyle"
+#define hlFuncWeightKey     "SimpleIDE_HighlightFunctionWeight"
+#define hlFuncColorKey      "SimpleIDE_HighlightFunctionColor"
+#define hlKeyWordStyleKey   "SimpleIDE_HighlightKeyWordTypeStyle"
+#define hlKeyWordWeightKey  "SimpleIDE_HighlightKeyWordTypeWeight"
+#define hlKeyWordColorKey   "SimpleIDE_HighlightKeyWordTypeColor"
+#define hlPreProcStyleKey   "SimpleIDE_HighlightPreProcTypeStyle"
+#define hlPreProcWeightKey  "SimpleIDE_HighlightPreProcTypeWeight"
+#define hlPreProcColorKey   "SimpleIDE_HighlightPreProcTypeColor"
+#define hlQuoteStyleKey     "SimpleIDE_HighlightQuoteTypeStyle"
+#define hlQuoteWeightKey    "SimpleIDE_HighlightQuoteTypeWeight"
+#define hlQuoteColorKey     "SimpleIDE_HighlightQuoteTypeColor"
+#define hlLineComStyleKey   "SimpleIDE_HighlightLineCommmentTypeStyle"
+#define hlLineComWeightKey  "SimpleIDE_HighlightLineCommmentTypeWeight"
+#define hlLineComColorKey   "SimpleIDE_HighlightLineCommmentTypeColor"
+#define hlBlockComStyleKey  "SimpleIDE_HighlightBlockCommentTypeStyle"
+#define hlBlockComWeightKey "SimpleIDE_HighlightBlockCommentTypeWeight"
+#define hlBlockComColorKey  "SimpleIDE_HighlightBlockCommentTypeColor"
 
 #include <QtGui>
 
@@ -63,6 +64,7 @@ public:
         Yellow, DarkYellow,
         LastColor };
 
+
     void cleanSettings();
 
     int getTabSpaces();
@@ -70,6 +72,9 @@ public:
     int setComboIndexByValue(QComboBox *combo, QString value);
 
     Qt::GlobalColor getQtColor(int index);
+
+    enum Reset { DTR=0, RTS };
+    Reset getResetType();
 
 signals:
 
@@ -99,6 +104,7 @@ private:
 
     QLineEdit   tabSpaces;
     QLineEdit   loadDelay;
+    QComboBox   resetType;
 
     QToolButton hlNumButton;
 
