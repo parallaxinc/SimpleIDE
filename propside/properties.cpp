@@ -647,8 +647,36 @@ void Properties::accept()
 
 void Properties::reject()
 {
+    // TODO: restore everything to settings values.
     leditCompiler->setText(compilerstr);
     leditIncludes->setText(includesstr);
+    leditWorkspace->setText(workspacestr);
+
+    tabSpaces.setText(tabSpacesStr);
+    loadDelay.setText(loadDelayStr);
+    resetType.setCurrentIndex(resetTypeEnum);
+    hlNumStyle.setChecked(hlNumStyleBool);
+    hlNumWeight.setChecked(hlNumWeightBool);
+    hlNumColor.setCurrentIndex(hlNumColorIndex);
+    hlFuncStyle.setChecked(hlFuncStyleBool);
+    hlFuncStyle.setChecked(hlFuncWeightBool);
+    hlFuncColor.setCurrentIndex(hlFuncColorIndex);
+    hlKeyWordStyle.setChecked(hlKeyWordStyleBool);
+    hlKeyWordWeight.setChecked(hlKeyWordWeightBool);
+    hlKeyWordColor.setCurrentIndex(hlKeyWordColorIndex);
+    hlPreProcStyle.setChecked(hlPreProcStyleBool);
+    hlPreProcWeight.setChecked(hlPreProcWeightBool);
+    hlPreProcColor.setCurrentIndex(hlPreProcColorIndex);
+    hlQuoteStyle.setChecked(hlQuoteStyleBool);
+    hlQuoteWeight.setChecked(hlQuoteWeightBool);
+    hlQuoteColor.setCurrentIndex(hlQuoteColorIndex);
+    hlLineComStyle.setChecked(hlLineComStyleBool);
+    hlLineComWeight.setChecked(hlLineComWeightBool);
+    hlLineComColor.setCurrentIndex(hlLineComColorIndex);
+    hlBlockComStyle.setChecked(hlBlockComStyleBool);
+    hlBlockComWeight.setChecked(hlBlockComWeightBool);
+    hlBlockComColor.setCurrentIndex(hlBlockComColorIndex);
+
     done(QDialog::Rejected);
 }
 
@@ -656,7 +684,34 @@ void Properties::showProperties()
 {
     compilerstr = leditCompiler->text();
     includesstr = leditIncludes->text();
+    workspacestr = leditWorkspace->text();
+    tabSpacesStr = tabSpaces.text();
+    loadDelayStr = loadDelay.text();
+    resetTypeEnum = (Reset)resetType.currentIndex();
+    hlNumStyleBool = hlNumStyle.isChecked();
+    hlNumWeightBool = hlNumWeight.isChecked();
+    hlNumColorIndex = hlNumColor.currentIndex();
+    hlFuncStyleBool = hlFuncStyle.isChecked();
+    hlFuncWeightBool = hlFuncStyle.isChecked();
+    hlFuncColorIndex = hlFuncColor.currentIndex();
+    hlKeyWordStyleBool = hlKeyWordStyle.isChecked();
+    hlKeyWordWeightBool = hlKeyWordWeight.isChecked();
+    hlKeyWordColorIndex = hlKeyWordColor.currentIndex();
+    hlPreProcStyleBool = hlPreProcStyle.isChecked();
+    hlPreProcWeightBool = hlPreProcWeight.isChecked();
+    hlPreProcColorIndex = hlPreProcColor.currentIndex();
+    hlQuoteStyleBool = hlQuoteStyle.isChecked();
+    hlQuoteWeightBool = hlQuoteWeight.isChecked();
+    hlQuoteColorIndex = hlQuoteColor.currentIndex();
+    hlLineComStyleBool = hlLineComStyle.isChecked();
+    hlLineComWeightBool = hlLineComWeight.isChecked();
+    hlLineComColorIndex = hlLineComColor.currentIndex();
+    hlBlockComStyleBool = hlBlockComStyle.isChecked();
+    hlBlockComWeightBool = hlBlockComWeight.isChecked();
+    hlBlockComColorIndex = hlBlockComColor.currentIndex();
+
     this->show();
+    this->raise();
     this->activateWindow();
 }
 

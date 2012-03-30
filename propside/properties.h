@@ -94,13 +94,40 @@ private:
     void setupHighlight();
 
     QTabWidget  tabWidget;
+    QString     mypath;
+
+    QString     compilerstr;
+    QString     includesstr;
+    QString     workspacestr;
+    QString     tabSpacesStr;
+    QString     loadDelayStr;
+    Reset       resetTypeEnum;
+
+    bool         hlNumStyleBool;
+    bool         hlNumWeightBool;
+    int          hlNumColorIndex;
+    bool         hlFuncStyleBool;
+    bool         hlFuncWeightBool;
+    int          hlFuncColorIndex;
+    bool         hlKeyWordStyleBool;
+    bool         hlKeyWordWeightBool;
+    int          hlKeyWordColorIndex;
+    bool         hlPreProcStyleBool;
+    bool         hlPreProcWeightBool;
+    int          hlPreProcColorIndex;
+    bool         hlQuoteStyleBool;
+    bool         hlQuoteWeightBool;
+    int          hlQuoteColorIndex;
+    bool         hlLineComStyleBool;
+    bool         hlLineComWeightBool;
+    int          hlLineComColorIndex;
+    bool         hlBlockComStyleBool;
+    bool         hlBlockComWeightBool;
+    int          hlBlockComColorIndex;
 
     QLineEdit   *leditCompiler;
     QLineEdit   *leditIncludes;
     QLineEdit   *leditWorkspace;
-    QString     compilerstr;
-    QString     includesstr;
-    QString     mypath;
 
     QLineEdit   tabSpaces;
     QLineEdit   loadDelay;
@@ -109,6 +136,7 @@ private:
     QToolButton hlNumButton;
 
     QCheckBox   hlEnable;
+
     QCheckBox   hlNumStyle;
     QCheckBox   hlNumWeight;
     QComboBox   hlNumColor;
