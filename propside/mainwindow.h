@@ -47,6 +47,8 @@ public:
     MainWindow(QWidget *parent = 0);
     Properties *propDialog;
 
+    enum DumpType { DumpNormal, DumpReadSizes, DumpCat, DumpOff };
+
 public slots:
     void terminalEditorTextChanged();
     void newFile();
@@ -134,6 +136,8 @@ public slots:
     void procError(QProcess::ProcessError error);
     void procFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void procReadyRead();
+    void procReadyReadCat();
+    void procReadyReadSizes();
 
     void setCurrentFile(const QString &fileName);
     void updateRecentFileActions();
@@ -167,7 +171,7 @@ private:
     int  runCompiler(QStringList options);
     QStringList getLoaderParameters(QString options);
     int  runLoader(QString options);
-    int  startProgram(QString program, QString workpath, QStringList args);
+    int  startProgram(QString program, QString workpath, QStringList args, DumpType dump = DumpOff);
     int  startProgramTool(QString program, QString workpath, QStringList args);
     int  checkBuildStart(QProcess *proc, QString progName);
     void showBuildStart(QString progName, QStringList args);
@@ -287,9 +291,8 @@ private:
     QPlainTextEdit  *gdbStatus;
     QPlainTextEdit  *toolStatus;
 
-    int             compileIndex;
-    int             toolIndex;
-    int             gdbIndex;
+    int             codeSize;
+    int             memorySize;
 
     QToolButton *btnProgramDebugTerm;
     QToolButton *btnProgramRun;
