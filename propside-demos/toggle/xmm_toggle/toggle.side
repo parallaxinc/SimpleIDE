@@ -2,8 +2,5 @@ toggle.c
 >compiler=C
 >memtype=xmmc
 >optimize=-Os
->-m32bit-doubles
 >-fno-exceptions
->-lpthread
->-s
 >BOARD::EEPROM

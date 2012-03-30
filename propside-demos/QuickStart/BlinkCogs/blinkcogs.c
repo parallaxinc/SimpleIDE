@@ -5,9 +5,22 @@
  * same rate and time to demonstrate the precision of the
  * _start_cog_thread method. This program and method uses
  * 8 LMM C program COG "threads" of execution simultaneously.
+ *
+ * This program should be compiled with the LMM memory model.
+ * A printf can be enabled for showing COGs started by changing DPRINTF.
  */
+
+/* To enable printf change this to #define DPRINTF 1 */
+#define DPRINTF 0
+
 #include <stdio.h>
 #include <propeller.h>
+
+#if DPRINTF
+#define printf __simple_printf
+#else
+#define printf
+#endif
 
 #define COGS 8
 #define STACK_SIZE 16

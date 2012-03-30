@@ -10,5 +10,4 @@ text2.c
 >memtype=xmmc
 >optimize=-Os
 >-fno-exceptions
->-s
->BOARD::C3
+>BOARD::C3F

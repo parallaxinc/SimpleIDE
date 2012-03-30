@@ -4,6 +4,19 @@
  * toggle pins, using the pthreads interface
  * The cog makes all IO except 30/31 toggle.
  *
+ * Pthreads allow full Symmetric Multi Processing on propeller.
+ * That is programs can run more than 8 threads on propeller
+ * although at the cost of lost determinism and lost preemption. 
+ *
+ * Pthreads programs should not use waitcnt or simple_printf.
+ * The subject can be difficult for beginning programmers since
+ * threads are non-preemtive multi tasked and requires the
+ * the programmer to understand yielding to other threads.
+ *
+ * All of these drawbacks can be avoided on Propeller because
+ * of it's architecture using other programming techniques found
+ * in the other toggle demos.
+ *
  * Copyright (c) 2011 Parallax, Inc.
  * MIT Licensed (see at end of file for exact terms)
  */
@@ -75,7 +88,7 @@ int main (int argc,  char* argv[])
 }
 
 /* +--------------------------------------------------------------------
- * ¦  TERMS OF USE: MIT License
+ *   TERMS OF USE: MIT License
  * +--------------------------------------------------------------------
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files

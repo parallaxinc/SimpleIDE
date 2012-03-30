@@ -3,8 +3,5 @@ vga.h
 >compiler=C
 >memtype=cog
 >optimize=-Os
->-m32bit-doubles
 >-fno-exceptions
->-Dprintf=__simple_printf
->-s
 >BOARD::C3
