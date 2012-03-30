@@ -2097,14 +2097,19 @@ int  MainWindow::runCompiler(QStringList copts)
 
     /* this is the final compile/link */
     rc = startProgram(compstr,sourcePath(projectFile),args);
+    if(rc != 0)
+        return rc;
+
+    args.clear();
+    args.append("-h");
+    args.append("a.out");
+    rc = startProgram("propeller-elf-objdump",sourcePath(projectFile),args,this->DumpReadSizes);
 
     /*
      * Report program size
      * Use the projectFile instead of the current tab file
      */
-    QString srcpath = sourcePath(projectFile);
-    QFile aout(srcpath+"a.out");
-    QString ssize = QString("Compiled %L1 Bytes").arg(aout.size());
+    QString ssize = QString("Code Size %L1 bytes (%L2 total)").arg(codeSize).arg(memorySize);
     programSize->setText(ssize);
 
     return rc;
@@ -2250,7 +2255,7 @@ int  MainWindow::runLoader(QString copts)
 #endif
 }
 
-int  MainWindow::startProgram(QString program, QString workpath, QStringList args)
+int  MainWindow::startProgram(QString program, QString workpath, QStringList args, DumpType dump)
 {
     /*
      * this is the asynchronous method.
@@ -2265,7 +2270,13 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
     process->setProperty("Name", QVariant(program));
     process->setProperty("IsLoader", QVariant(false));
 
-    connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
+    if(dump == this->DumpReadSizes) {
+        disconnect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
+        connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyReadSizes()));
+    }
+    else {
+        connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
+    }
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
     connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
 
@@ -2279,6 +2290,8 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
      */
     while(procDone == false)
         QApplication::processEvents();
+
+    disconnect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyReadSizes()));
 
     progress->hide();
     return process->exitCode();
@@ -2310,6 +2323,60 @@ void MainWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
     QString s = status->text().mid(len-8);
     if(s.contains("done.",Qt::CaseInsensitive) == false)
         status->setText(status->text()+" done.");
+}
+
+/*
+ * save for cat dumps
+ */
+void MainWindow::procReadyReadCat()
+{
+
+}
+
+/*
+ * read program sizes from objdump -h
+ */
+void MainWindow::procReadyReadSizes()
+{
+    int rc;
+    bool ok;
+    QByteArray bytes = process->readAllStandardOutput();
+    if(bytes.length() == 0)
+        return;
+    this->codeSize = 0;
+    this->memorySize = 0;
+    QStringList lines = QString(bytes).split("\n",QString::SkipEmptyParts);
+    for (int n = 0; n < lines.length(); n++) {
+        QString line = lines[n];
+        if(line.length() > 0) {
+            QString ms = line.mid(line.indexOf("."));
+            QRegExp regex("[ \t]");
+            QStringList more = line.split(regex,QString::SkipEmptyParts);
+            if(ms.contains(".bss",Qt::CaseInsensitive)) {
+                if(more.length() > 3) {
+                    rc = more.at(3).toInt(&ok,16);
+                    if(ok) this->codeSize = rc;
+                }
+                rc = more.at(3).toInt(&ok,16);
+                if(ok) {
+                    this->codeSize = rc;
+                    rc = more.at(2).toInt(&ok,16);
+                    if(ok) this->memorySize = this->codeSize + rc;
+                }
+            }
+            else
+            if(ms.contains(".heap",Qt::CaseInsensitive)) {
+                if(more.length() > 3) {
+                    rc = more.at(3).toInt(&ok,16);
+                    if(ok) {
+                        this->memorySize = rc;
+                        rc = more.at(2).toInt(&ok,16);
+                        if(ok) this->memorySize += rc;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void MainWindow::procReadyRead()
