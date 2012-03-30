@@ -90,6 +90,9 @@ void Properties::setupFolders()
 #if defined(Q_WS_WIN32)
     mypath = "C:/propgcc/";
     QString mygcc = mypath+"bin/propeller-elf-gcc.exe";
+#elif defined(Q_WS_MAC)
+    mypath = "/Volume/SimpleIDE/parallax/";
+    QString mygcc = mypath+"bin/propeller-elf-gcc";
 #else
     mypath = "/opt/parallax/";
     QString mygcc = mypath+"bin/propeller-elf-gcc";
@@ -525,7 +528,9 @@ void Properties::browseCompiler()
 #else
     QFileDialog fileDialog(this,  tr("Select Compiler"), mypath+"bin/propeller-elf-gcc", "Compiler (propeller-elf-gcc)");
 #endif
-    fileDialog.exec();
+    int rc = fileDialog.exec();
+    if(rc == QDialog::Rejected)
+        return;
     QStringList files = fileDialog.selectedFiles();
     QString fileName = files.at(0);
 
@@ -549,8 +554,11 @@ void Properties::browseIncludes()
     fileDialog.setFileMode(QFileDialog::Directory);
     fileDialog.selectFile(mypath+"propeller-load");
 
-    if(fileDialog.exec())
-        filenames = fileDialog.selectedFiles();
+    int rc = fileDialog.exec();
+    if(rc == QDialog::Rejected)
+        return;
+
+    filenames = fileDialog.selectedFiles();
     if(filenames.length() > 0)
         pathName = filenames.at(0);
 
@@ -591,8 +599,12 @@ void Properties::browseWorkspace()
     fileDialog.setViewMode(QFileDialog::Detail);
     fileDialog.setFileMode(QFileDialog::Directory);
     fileDialog.selectFile(path);
-    if(fileDialog.exec())
-        filenames = fileDialog.selectedFiles();
+
+    int rc = fileDialog.exec();
+    if(rc == QDialog::Rejected)
+        return;
+
+    filenames = fileDialog.selectedFiles();
     if(filenames.length() > 0)
         pathName = filenames.at(0);
 
