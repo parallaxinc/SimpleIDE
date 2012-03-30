@@ -2109,6 +2109,7 @@ int  MainWindow::runCompiler(QStringList copts)
      * Report program size
      * Use the projectFile instead of the current tab file
      */
+    if(codeSize == 0) codeSize = memorySize;
     QString ssize = QString("Code Size %L1 bytes (%L2 total)").arg(codeSize).arg(memorySize);
     programSize->setText(ssize);
 
