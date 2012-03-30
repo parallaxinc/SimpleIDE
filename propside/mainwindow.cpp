@@ -541,8 +541,8 @@ void MainWindow::openProject(const QString &path)
             lastPath = sourcePath(fileName);
     }
     if(fileName.indexOf(".side") > 0) {
-        // save old project options before loading new one
-        saveProjectOptions();
+        // save and close old project options before loading new one
+        closeProject();
         // load new project
         projectFile = fileName;
         setCurrentProject(projectFile);
