@@ -1,7 +1,6 @@
 qswam.c
 >compiler=C
 >memtype=lmm
->optimize=-O0
->loadtype=None
+>optimize=-Os
 >-fno-exceptions
 >BOARD::QUICKSTART

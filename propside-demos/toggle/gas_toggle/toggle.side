@@ -3,8 +3,5 @@ toggle_firmware.s
 >compiler=C
 >memtype=lmm
 >optimize=-Os
->-m32bit-doubles
 >-fno-exceptions
->-Dprintf=__simple_printf
->-s
 >BOARD::HUB

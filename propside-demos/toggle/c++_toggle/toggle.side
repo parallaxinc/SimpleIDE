@@ -1,10 +1,7 @@
 toggle.cc
 >compiler=C++
->memtype=xmmc
+>memtype=cog
 >optimize=-O2
->-m32bit-doubles
 >-fno-exceptions
->-Dprintf=__simple_printf
 >-fno-rtti
->-s
 >BOARD::HUB

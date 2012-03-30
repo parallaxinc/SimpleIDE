@@ -1,8 +1,8 @@
 hello.c
 >compiler=C
->memtype=lmm
+>memtype=cog
 >optimize=-Os
->loadtype=None
 >-fno-exceptions
+>-Dprintf=__simple_printf
 >-s
 >BOARD::HUB
