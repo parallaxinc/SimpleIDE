@@ -57,10 +57,8 @@ if test $? != 0; then
    exit 1
 fi
 
-@echo "run hdiutil to make a .dmg"
-@echo "hdiutil create -format UDBZ -quiet -srcfolder SimpleIDE ${DMG}"
-if test $? != 0; then
-   echo "hdiutil create ${DMG} failed."
-   exit 1
-fi
+echo "now run hdiutil to make a .dmg"
+echo ""
+echo "hdiutil create -format UDBZ -srcfolder SimpleIDE SimpleIDE"
+echo ""
 exit 0
