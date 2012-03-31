@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-5-1"
+#define MyAppVersion "0-6-2"
 #define MyAppPublisher "MicroCSource"
 #define MyAppURL "www.MicroCSource.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -56,9 +56,9 @@ Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; F
 Source: "IDE_LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_2_1.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_EXCEPTION.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\ctags58\README"; DestDir: "{app}\ctags-readme.txt"; Flags: ignoreversion
-Source: "..\ctags58\COPYING"; DestDir: "{app}\ctags-license.txt"; Flags: ignoreversion
-Source: "..\icons\24x24-free-application-icons\readme.txt"; DestDir: "{app}\bin\aha-soft-license.txt"; Flags: ignoreversion
+Source: ..\ctags58\README; DestDir: {app}; Flags: ignoreversion; DestName: ctags-readme.txt; 
+Source: ..\ctags58\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: ctags-license.txt; 
+Source: ..\icons\24x24-free-application-icons\readme.txt; DestDir: {app}; Flags: ignoreversion; DestName: aha-soft-license.txt; 
 
 Source: "{#MyQtPath}\mingw\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\mingw\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -84,10 +84,10 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 [Registry]
 Root: HKCU; SubKey: Software\MicroCSource; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: Compiler; ValueData: {code:GetCompilerDir}\bin\propeller-elf-gcc.exe; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: Includes; ValueData: {code:GetCompilerDir}\propeller-load\; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: Workspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
+Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Compiler; ValueData: {code:GetCompilerDir}\bin\propeller-elf-gcc.exe; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Includes; ValueData: {code:GetCompilerDir}\propeller-load\; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Workspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
 
 [Code]
 var
