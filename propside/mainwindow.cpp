@@ -2341,6 +2341,7 @@ void MainWindow::procReadyReadSizes()
 {
     int rc;
     bool ok;
+    int xmmsize = 0x0fffffff;
     QByteArray bytes = process->readAllStandardOutput();
     if(bytes.length() == 0)
         return;
@@ -2356,13 +2357,13 @@ void MainWindow::procReadyReadSizes()
             if(ms.contains(".bss",Qt::CaseInsensitive)) {
                 if(more.length() > 3) {
                     rc = more.at(3).toInt(&ok,16);
-                    if(ok) this->codeSize = rc;
+                    if(ok) this->codeSize = rc & xmmsize;
                 }
                 rc = more.at(3).toInt(&ok,16);
                 if(ok) {
-                    this->codeSize = rc;
+                    this->codeSize = rc & xmmsize;
                     rc = more.at(2).toInt(&ok,16);
-                    if(ok) this->memorySize = this->codeSize + rc;
+                    if(ok) this->memorySize = this->codeSize + rc & xmmsize;
                 }
             }
             else
