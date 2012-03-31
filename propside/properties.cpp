@@ -106,6 +106,7 @@ void Properties::setupFolders()
     }
     else {
         leditCompiler->setText(mygcc);
+        settings.setValue(compilerKey,mygcc);
     }
 
     if(incv.canConvert(QVariant::String)) {
@@ -115,6 +116,7 @@ void Properties::setupFolders()
     }
     else {
         leditIncludes->setText(myinc);
+        settings.setValue(includesKey,myinc);
     }
 
     if(wrkv.canConvert(QVariant::String)) {
