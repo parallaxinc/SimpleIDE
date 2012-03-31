@@ -23,7 +23,7 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
     layout->addWidget(buttonBox);
 
     setWindowFlags(Qt::Tool);
-    resize(400,260);
+    resize(600,260);
 }
 
 void Properties::cleanSettings()
@@ -44,7 +44,7 @@ void Properties::cleanSettings()
 void Properties::setupFolders()
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
-    QGroupBox *box = new QGroupBox();
+    QFrame *box = new QFrame();
     box->setLayout(layout);
     tabWidget.addTab(box," Folders ");
 
