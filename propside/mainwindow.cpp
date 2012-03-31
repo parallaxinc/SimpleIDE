@@ -942,27 +942,30 @@ void MainWindow::fileChanged()
 
 void MainWindow::printFile()
 {
-    QPrinter printer(QPrinterInfo(), QPrinter::PrinterResolution);
+    QPrinter printer;
 
     int tab = editorTabs->currentIndex();
     Editor *ed = editors->at(tab);
     QString name = editorTabs->tabText(tab);
     name = name.mid(0,name.lastIndexOf("."));
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_WS_WIN32) || defined(Q_WS_MAC)
     printer.setDocName(name);
 #else
     printer.setOutputFormat(QPrinter::PdfFormat);
     printer.setOutputFileName(this->lastPath+name+".pdf");
 #endif
 
-    QPrintDialog dialog(&printer, this);
-    dialog.setWindowTitle(tr("Print Document"));
-    int rc = dialog.exec();
+    QPrintDialog *dialog = new QPrintDialog(&printer, this);
+    dialog->setWindowTitle(tr("Print Document"));
+    if (ed->textCursor().hasSelection())
+        dialog->addEnabledOption(QAbstractPrintDialog::PrintSelection);
+    int rc = dialog->exec();
 
     if(rc == QDialog::Accepted) {
         ed->print(&printer);
     }
+    delete dialog;
 }
 
 void MainWindow::copyFromFile()
