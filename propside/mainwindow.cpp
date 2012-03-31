@@ -940,30 +940,29 @@ void MainWindow::fileChanged()
     }
 }
 
-void MainWindow::printFile(const QString &path)
+void MainWindow::printFile()
 {
-    if(path.isNull())
-        return;
-    /*
-    QString fileName = path;
-    QString data = editor->toPlainText();
+    QPrinter printer(QPrinterInfo(), QPrinter::PrinterResolution);
 
-    if (!fileName.isEmpty()) {
+    int tab = editorTabs->currentIndex();
+    Editor *ed = editors->at(tab);
+    QString name = editorTabs->tabText(tab);
+    name = name.mid(0,name.lastIndexOf("."));
+
+#if defined(Q_WS_WIN32)
+    printer.setDocName(name);
+#else
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(this->lastPath+name+".pdf");
+#endif
+
+    QPrintDialog dialog(&printer, this);
+    dialog.setWindowTitle(tr("Print Document"));
+    int rc = dialog.exec();
+
+    if(rc == QDialog::Accepted) {
+        ed->print(&printer);
     }
-    */
-}
-
-void MainWindow::zipFile(const QString &path)
-{
-    if(path.isNull())
-        return;
-    /*
-    QString fileName = path;
-    QString data = editor->toPlainText();
-
-    if (!fileName.isEmpty()) {
-    }
-    */
 }
 
 void MainWindow::copyFromFile()
@@ -2363,7 +2362,7 @@ void MainWindow::procReadyReadSizes()
                 if(ok) {
                     this->codeSize = rc & xmmsize;
                     rc = more.at(2).toInt(&ok,16);
-                    if(ok) this->memorySize = this->codeSize + rc & xmmsize;
+                    if(ok) this->memorySize = this->codeSize + (rc & xmmsize);
                 }
             }
             else
@@ -3345,6 +3344,7 @@ void MainWindow::setupFileMenu()
 
     fileMenu->addAction(QIcon(":/images/Delete.png"),tr("Close"), this, SLOT(closeFile()));
     fileMenu->addAction(tr("Close All"), this, SLOT(closeAll()));
+    fileMenu->addAction(QIcon(":/images/print.png"), tr("Print"), this, SLOT(printFile()), QKeySequence::Print);
 
     // recent file actions
     separatorFileAct = fileMenu->addSeparator();
@@ -3361,9 +3361,6 @@ void MainWindow::setupFileMenu()
     updateRecentFileActions();
 
     fileMenu->addSeparator();
-
-    // fileMenu->addAction(QIcon(":/images/print.png"), tr("Print"), this, SLOT(printFile()), QKeySequence::Print);
-    // fileMenu->addAction(QIcon(":/images/zip.png"), tr("Archive"), this, SLOT(zipFile()), 0);
 
     fileMenu->addAction(QIcon(":/images/exit.png"), tr("E&xit"), this, SLOT(quitProgram()), QKeySequence::Quit);
 
@@ -3476,28 +3473,25 @@ void MainWindow::setupToolBars()
     QToolButton *btnFileOpen = new QToolButton(this);
     QToolButton *btnFileSave = new QToolButton(this);
     QToolButton *btnFileSaveAs = new QToolButton(this);
-    //QToolButton *btnFilePrint = new QToolButton(this);
-    //QToolButton *btnFileZip = new QToolButton(this);
+    QToolButton *btnFilePrint = new QToolButton(this);
 
     addToolButton(fileToolBar, btnFileNew, QString(":/images/newfile.png"));
     addToolButton(fileToolBar, btnFileOpen, QString(":/images/openfile.png"));
     addToolButton(fileToolBar, btnFileSave, QString(":/images/savefile.png"));
     addToolButton(fileToolBar, btnFileSaveAs, QString(":/images/saveasfile2.png"));
-    //addToolButton(fileToolBar, btnFilePrint, QString(":/images/print.png"));
-    //addToolButton(fileToolBar, btnFileZip, QString(":/images/zip.png"));
+    addToolButton(fileToolBar, btnFilePrint, QString(":/images/print.png"));
 
     connect(btnFileNew,SIGNAL(clicked()),this,SLOT(newFile()));
     connect(btnFileOpen,SIGNAL(clicked()),this,SLOT(openFile()));
     connect(btnFileSave,SIGNAL(clicked()),this,SLOT(saveFile()));
     connect(btnFileSaveAs,SIGNAL(clicked()),this,SLOT(saveAsFile()));
-    //connect(btnFilePrint,SIGNAL(clicked()),this,SLOT(printFile()));
-    //connect(btnFileZip,SIGNAL(clicked()),this,SLOT(zipFile()));
+    connect(btnFilePrint,SIGNAL(clicked()),this,SLOT(printFile()));
 
     btnFileNew->setToolTip(tr("New File"));
     btnFileOpen->setToolTip(tr("Open File"));
     btnFileSave->setToolTip(tr("Save File"));
     btnFileSaveAs->setToolTip(tr("Save As File"));
-    //btnFilePrint->setToolTip(tr("Print"));
+    btnFilePrint->setToolTip(tr("Print"));
     //btnFileZip->setToolTip(tr("Archive"));
 
     /*

@@ -58,8 +58,7 @@ public slots:
     void saveAsFile(const QString &path = QString());
     void savePexFile();
     void downloadSdCard();
-    void printFile(const QString &path = QString());    // not implemented
-    void zipFile(const QString &path = QString());      // not implemented
+    void printFile();
     void closeFile();
     void closeAll();
     void newProject();
