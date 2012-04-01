@@ -3,11 +3,7 @@
 #include "Sleeper.h"
 
 #define SD_TOOLS
-#if defined(Q_WS_MAC)
-#define APPWINDOW_MIN_HEIGHT 550
-#else
 #define APPWINDOW_MIN_HEIGHT 480
-#endif
 #define APPWINDOW_MIN_WIDTH 780
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 270
