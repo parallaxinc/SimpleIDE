@@ -1,0 +1,7 @@
+pong.c
+vga.h
+>compiler=C
+>memtype=cog
+>optimize=-Os
+>-fno-exceptions
+>BOARD::C3

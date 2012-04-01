@@ -1,0 +1,186 @@
+#ifndef PROPERTIES_H
+#define PROPERTIES_H
+
+#define publisherKey        "MicroCSource"
+#define publisherComKey     "MicroCSource.com"
+#define ASideGuiKey         "SimpleIDE"
+#define compilerKey         "SimpleIDE_Compiler"
+#define includesKey         "SimpleIDE_Includes"
+#define separatorKey        "SimpleIDE_PathSeparator"
+#define configFileKey       "SimpleIDE_ConfigFile"
+#define workspaceKey        "SimpleIDE_Workspace"
+#define editorFontKey       "SimpleIDE_EditorFont"
+#define fontSizeKey         "SimpleIDE_FontSize"
+#define lastFileNameKey     "SimpleIDE_LastFileName"
+#define lastBoardNameKey    "SimpleIDE_LastBoardName"
+#define lastPortNameKey     "SimpleIDE_LastPortName"
+#define lastTermXposKey     "SimpleIDE_LastTermXposition"
+#define lastTermYposKey     "SimpleIDE_LastTermYposition"
+#define recentFilesKey      "SimpleIDE_recentFileList"
+#define recentProjectsKey   "SimpleIDE_recentProjectsList"
+#define tabSpacesKey        "SimpleIDE_TabSpacesCount"
+#define loadDelayKey        "SimpleIDE_LoadDelay_us"
+#define resetTypeKey        "SimpleIDE_ResetType"
+#define hlEnableKey         "SimpleIDE_HighlightEnable"
+#define hlNumStyleKey       "SimpleIDE_HighlightNumberStyle"
+#define hlNumWeightKey      "SimpleIDE_HighlightNumberWeight"
+#define hlNumColorKey       "SimpleIDE_HighlightNumberColor"
+#define hlFuncStyleKey      "SimpleIDE_HighlightFunctionStyle"
+#define hlFuncWeightKey     "SimpleIDE_HighlightFunctionWeight"
+#define hlFuncColorKey      "SimpleIDE_HighlightFunctionColor"
+#define hlKeyWordStyleKey   "SimpleIDE_HighlightKeyWordTypeStyle"
+#define hlKeyWordWeightKey  "SimpleIDE_HighlightKeyWordTypeWeight"
+#define hlKeyWordColorKey   "SimpleIDE_HighlightKeyWordTypeColor"
+#define hlPreProcStyleKey   "SimpleIDE_HighlightPreProcTypeStyle"
+#define hlPreProcWeightKey  "SimpleIDE_HighlightPreProcTypeWeight"
+#define hlPreProcColorKey   "SimpleIDE_HighlightPreProcTypeColor"
+#define hlQuoteStyleKey     "SimpleIDE_HighlightQuoteTypeStyle"
+#define hlQuoteWeightKey    "SimpleIDE_HighlightQuoteTypeWeight"
+#define hlQuoteColorKey     "SimpleIDE_HighlightQuoteTypeColor"
+#define hlLineComStyleKey   "SimpleIDE_HighlightLineCommmentTypeStyle"
+#define hlLineComWeightKey  "SimpleIDE_HighlightLineCommmentTypeWeight"
+#define hlLineComColorKey   "SimpleIDE_HighlightLineCommmentTypeColor"
+#define hlBlockComStyleKey  "SimpleIDE_HighlightBlockCommentTypeStyle"
+#define hlBlockComWeightKey "SimpleIDE_HighlightBlockCommentTypeWeight"
+#define hlBlockComColorKey  "SimpleIDE_HighlightBlockCommentTypeColor"
+
+#include <QtGui>
+
+class PColor;
+
+class Properties : public QDialog
+{
+    Q_OBJECT
+public:
+    explicit Properties(QWidget *parent = 0);
+
+    enum Colors {
+        Black, DarkGray, Gray, LightGray,
+        Blue, DarkBlue,
+        Cyan, DarkCyan,
+        Green, DarkGreen,
+        Magenta, DarkMagenta,
+        Red, DarkRed,
+        Yellow, DarkYellow,
+        LastColor };
+
+
+    void cleanSettings();
+
+    int getTabSpaces();
+    int getLoadDelay();
+    int setComboIndexByValue(QComboBox *combo, QString value);
+
+    Qt::GlobalColor getQtColor(int index);
+
+    enum Reset { DTR=0, RTS };
+    Reset getResetType();
+
+signals:
+
+public slots:
+    void browseCompiler();
+    void browseIncludes();
+    void browseWorkspace();
+    void accept();
+    void reject();
+    void showProperties();
+
+private:
+
+    void setupFolders();
+    void setupGeneral();
+    void addHighlights(QComboBox *box, QVector<PColor*> p);
+    void setupHighlight();
+
+    QTabWidget  tabWidget;
+    QString     mypath;
+
+    QString     compilerstr;
+    QString     includesstr;
+    QString     workspacestr;
+    QString     tabSpacesStr;
+    QString     loadDelayStr;
+    Reset       resetTypeEnum;
+
+    bool         hlNumStyleBool;
+    bool         hlNumWeightBool;
+    int          hlNumColorIndex;
+    bool         hlFuncStyleBool;
+    bool         hlFuncWeightBool;
+    int          hlFuncColorIndex;
+    bool         hlKeyWordStyleBool;
+    bool         hlKeyWordWeightBool;
+    int          hlKeyWordColorIndex;
+    bool         hlPreProcStyleBool;
+    bool         hlPreProcWeightBool;
+    int          hlPreProcColorIndex;
+    bool         hlQuoteStyleBool;
+    bool         hlQuoteWeightBool;
+    int          hlQuoteColorIndex;
+    bool         hlLineComStyleBool;
+    bool         hlLineComWeightBool;
+    int          hlLineComColorIndex;
+    bool         hlBlockComStyleBool;
+    bool         hlBlockComWeightBool;
+    int          hlBlockComColorIndex;
+
+    QLineEdit   *leditCompiler;
+    QLineEdit   *leditIncludes;
+    QLineEdit   *leditWorkspace;
+
+    QLineEdit   tabSpaces;
+    QLineEdit   loadDelay;
+    QComboBox   resetType;
+
+    QToolButton hlNumButton;
+
+    QCheckBox   hlEnable;
+
+    QCheckBox   hlNumStyle;
+    QCheckBox   hlNumWeight;
+    QComboBox   hlNumColor;
+    QCheckBox   hlFuncStyle;
+    QCheckBox   hlFuncWeight;
+    QComboBox   hlFuncColor;
+    QCheckBox   hlKeyWordStyle;
+    QCheckBox   hlKeyWordWeight;
+    QComboBox   hlKeyWordColor;
+    QCheckBox   hlPreProcStyle;
+    QCheckBox   hlPreProcWeight;
+    QComboBox   hlPreProcColor;
+    QCheckBox   hlQuoteStyle;
+    QCheckBox   hlQuoteWeight;
+    QComboBox   hlQuoteColor;
+    QCheckBox   hlLineComStyle;
+    QCheckBox   hlLineComWeight;
+    QComboBox   hlLineComColor;
+    QCheckBox   hlBlockComStyle;
+    QCheckBox   hlBlockComWeight;
+    QComboBox   hlBlockComColor;
+
+    QVector<PColor*> propertyColors;
+};
+
+class PColor : public QColor
+{
+private:
+    QString mName;
+    Qt::GlobalColor mValue;
+
+public:
+    PColor (QString name, Qt::GlobalColor value) {
+        mName = name;
+        mValue = value;
+    }
+    QString getName() {
+        return mName;
+    }
+    Qt::GlobalColor getValue() {
+        return mValue;
+    }
+
+};
+
+
+#endif // PROPERTIES_H
