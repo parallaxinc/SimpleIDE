@@ -51,9 +51,46 @@ if test $? != 0; then
    exit 1
 fi
 
+cp ../propside/_SimpleIDE_UserGuide_.txt .
+if test $? != 0; then
+   echo "copy User Guide failed."
+   exit 1
+fi
+
 cp -r ../propside-demos/ demos
 if test $? != 0; then
    echo "copy propside-demos failed."
+   exit 1
+fi
+
+cp -r ../propside/IDE_LICENSE.txt .
+if test $? != 0; then
+   echo "copy propside-demos failed."
+   exit 1
+fi
+
+mkdir -p license
+cp -r ../../propside/icons/24x24-free-application-icons/readme.txt license/aha-soft-readme.txt
+if test $? != 0; then
+   echo "copy aha-soft license failed."
+   exit 1
+fi
+
+cp -r ../../propside/ctags-5.8/COPYING license/ctags-COPYING.txt
+if test $? != 0; then
+   echo "copy ctags copying failed."
+   exit 1
+fi
+
+cp -r ../../propside/ctags-5.8/README license/ctags-README.txt
+if test $? != 0; then
+   echo "copy ctags readme failed."
+   exit 1
+fi
+
+cp -r ../../propgcc/LICENSE.txt license/propgcc-license.txt
+if test $? != 0; then
+   echo "copy propgcc license failed."
    exit 1
 fi
 
