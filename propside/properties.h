@@ -73,7 +73,7 @@ public:
 
     Qt::GlobalColor getQtColor(int index);
 
-    enum Reset { DTR=0, RTS };
+    enum Reset { DTR=0, RTS, CFG, AUTO };
     Reset getResetType();
 
 signals:
