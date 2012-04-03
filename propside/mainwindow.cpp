@@ -2131,8 +2131,24 @@ QStringList MainWindow::getLoaderParameters(QString copts)
     if(this->propDialog->getLoadDelay() > 0) {
         args.append(QString("-S%1").arg(this->propDialog->getLoadDelay()));
     }
+    QString bname = this->cbBoard->currentText();
+    ASideBoard* board = aSideConfig->getBoardData(bname);
+    QString reset = board->get(ASideBoard::reset);
+
+    if(this->propDialog->getResetType() == Properties::CFG) {
+        if(reset.contains("RTS",Qt::CaseInsensitive))
+            args.append("-Dreset=rts");
+        else
+        if(reset.contains("DTR",Qt::CaseInsensitive))
+            args.append("-Dreset=dtr");
+    }
+    else
     if(this->propDialog->getResetType() == Properties::RTS) {
-        args.append("-R");
+        args.append("-Dreset=rts");
+    }
+    else
+    if(this->propDialog->getResetType() == Properties::DTR) {
+        args.append("-Dreset=dtr");
     }
     args.append("-b");
     args.append(boardName);
@@ -2184,6 +2200,11 @@ int  MainWindow::runLoader(QString copts)
     }
 
     QString loadtype = cbBoard->currentText();
+    if(loadtype.isEmpty() || loadtype.length() == 0) {
+        QMessageBox::critical(this,tr("Can't Load"),tr("Can't load an empty board type."),QMessageBox::Ok);
+        return -1;
+    }
+
     if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
         copts.append(" -z a.out");
         qDebug() << loadtype << copts;
@@ -3255,17 +3276,54 @@ void MainWindow::portResetButton()
     termEditor->reload(port);
     if(btnConnected->isChecked() == false)
         termEditor->stop();
+
 #else
-    if(propDialog->getResetType() == Properties::DTR) {
-        portListener->setDtr(true);
-        Sleeper::ms(50);
-        portListener->setDtr(false);
+
+    bool rts = false;
+
+    if(this->propDialog->getResetType() == Properties::CFG) {
+        QString bname = this->cbBoard->currentText();
+        ASideBoard* board = aSideConfig->getBoardData(bname);
+        if(board == NULL) {
+            QMessageBox::critical(this,tr("Can't Reset"),tr("Can't reset by CFG with an empty board type."),QMessageBox::Ok);
+            return;
+        }
+        QString reset = board->get(ASideBoard::reset);
+        if(reset.length() == 0)
+            rts = false;
+        else
+        if(reset.contains("RTS",Qt::CaseInsensitive))
+            rts = true;
+        else
+        if(reset.contains("DTR",Qt::CaseInsensitive))
+            rts = false;
+        else
+            rts = false;
     }
-    else {
+    else
+    if(this->propDialog->getResetType() == Properties::RTS) {
+        rts = true;
+    }
+    else
+    if(this->propDialog->getResetType() == Properties::DTR) {
+        rts = false;
+    }
+
+    bool isopen = portListener->isOpen();
+    if(isopen == false)
+        portListener->open();
+    if(rts) {
         portListener->setRts(true);
         Sleeper::ms(50);
         portListener->setRts(false);
     }
+    else {
+        portListener->setDtr(true);
+        Sleeper::ms(50);
+        portListener->setDtr(false);
+    }
+    if(isopen == false)
+        portListener->close();
 #endif
 }
 
