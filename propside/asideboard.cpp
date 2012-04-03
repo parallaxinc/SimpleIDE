@@ -6,6 +6,7 @@ const QString ASideBoard::clkmode = "clkmode";
 const QString ASideBoard::pllmode = "pllmode";
 const QString ASideBoard::clkfreq = "clkfreq";
 const QString ASideBoard::baudrate = "baudrate";
+const QString ASideBoard::reset = "reset";
 const QString ASideBoard::rxpin = "rxpin";
 const QString ASideBoard::txpin = "txpin";
 const QString ASideBoard::tvpin = "tvpin";
@@ -25,6 +26,7 @@ ASideBoard::ASideBoard()
     propNames->append("clkmode");
     propNames->append("clkfreq");
     propNames->append("baudrate");
+    propNames->append("reset");
     propNames->append("rxpin");
     propNames->append("txpin");
     propNames->append("tvpin");
@@ -142,6 +144,7 @@ QStringList *ASideBoard::getAll()
     al->append("clkfreq: " + get("clkfreq"));
     al->append("clkmode: " + get("clkmode"));
     al->append("baudrate: " + get("baudrate"));
+    al->append("reset: " + get("reset"));
     al->append("rxpin: " + get("rxpin"));
     al->append("txpin: " + get("txpin"));
     al->append("tvpin: " + get("tvpin"));
