@@ -173,10 +173,11 @@ void Properties::setupGeneral()
     tlayout->addWidget(lreset,row,0);
     resetType.addItem("DTR");
     resetType.addItem("RTS");
-    resetType.setCurrentIndex((int)DTR);
+    resetType.addItem("CFG");
+    resetType.setCurrentIndex((int)CFG);
     tlayout->addWidget(&resetType,row++,1);
 
-    var = settings.value(resetTypeKey,(int)DTR);
+    var = settings.value(resetTypeKey,(int)CFG);
     if(var.canConvert(QVariant::Int)) {
         QString s = var.toString();
         resetType.setCurrentIndex(var.toInt());

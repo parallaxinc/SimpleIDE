@@ -22,6 +22,7 @@ public:
     static const QString pllmode;
     static const QString clkfreq;
     static const QString baudrate;
+    static const QString reset;
     static const QString rxpin;
     static const QString txpin;
     static const QString tvpin;
@@ -43,6 +44,7 @@ private:
     QStringList *dataRam;
     QStringList *textRam;
     QList<int>  *pinList;
+    QString     resetType;
 
     QHash<QString, QString> propHash;
 };
