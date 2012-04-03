@@ -2614,9 +2614,11 @@ void MainWindow::addToolButton(QToolBar *bar, QToolButton *btn, QString imgfile)
 
 void MainWindow::setupProjectTools(QSplitter *vsplit)
 {
+    int adjust = 100;
+
     /* container for project, etc... */
     leftSplit = new QSplitter(this);
-    leftSplit->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
+    leftSplit->setMinimumHeight(APPWINDOW_MIN_HEIGHT-adjust);
     leftSplit->setOrientation(Qt::Vertical);
     vsplit->addWidget(leftSplit);
 
@@ -2641,8 +2643,15 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectOptions->setToolTip(tr("Project Options"));
     leftSplit->addWidget(projectOptions);
 
+    QList<int> lsizes = leftSplit->sizes();
+    lsizes[0] = leftSplit->height()*1/4;
+    lsizes[1] = leftSplit->height()*3/4;
+    leftSplit->setSizes(lsizes);
+
+    leftSplit->adjustSize();
+
     rightSplit = new QSplitter(this);
-    rightSplit->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
+    rightSplit->setMinimumHeight(APPWINDOW_MIN_HEIGHT-adjust);
     rightSplit->setOrientation(Qt::Vertical);
     vsplit->addWidget(rightSplit);
 
@@ -2681,11 +2690,12 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
 
     rightSplit->addWidget(statusTabs);
 
-
     QList<int> rsizes = rightSplit->sizes();
     rsizes[0] = rightSplit->height()*3/4;
     rsizes[1] = rightSplit->height()*1/4;
     rightSplit->setSizes(rsizes);
+
+    rightSplit->adjustSize();
 
     /* status bar for progressbar */
     QStatusBar *statusBar = new QStatusBar(this);
@@ -2703,6 +2713,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     statusBar->addWidget(status);
     statusBar->setMaximumHeight(22);
 
+    this->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
 }
 
 /*
