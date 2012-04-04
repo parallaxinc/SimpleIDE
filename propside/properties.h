@@ -65,7 +65,6 @@ public:
         LastColor };
 
 
-    void cleanSettings();
 
     int getTabSpaces();
     int getLoadDelay();
@@ -79,6 +78,7 @@ public:
 signals:
 
 public slots:
+    void cleanSettings();
     void browseCompiler();
     void browseIncludes();
     void browseWorkspace();
