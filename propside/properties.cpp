@@ -83,15 +83,14 @@ void Properties::setupFolders()
     layout->addWidget(gbWorkspace);
 
     QSettings settings(publisherKey, ASideGuiKey,this);
-    QVariant compv = settings.value(compilerKey);
-    QVariant incv = settings.value(includesKey);
-    QVariant wrkv = settings.value(workspaceKey);
 
 #if defined(Q_WS_WIN32)
     mypath = "C:/propgcc/";
     QString mygcc = mypath+"bin/propeller-elf-gcc.exe";
 #elif defined(Q_WS_MAC)
-    mypath = "/Volume/SimpleIDE/parallax/";
+    QString apath = QApplication::applicationFilePath();
+    apath = apath.mid(0,apath.lastIndexOf("/")+1);
+    mypath = apath+"../../../parallax/";
     QString mygcc = mypath+"bin/propeller-elf-gcc";
 #else
     mypath = "/opt/parallax/";
@@ -99,10 +98,22 @@ void Properties::setupFolders()
 #endif
     QString myinc = mypath+"propeller-load/";
 
+    // if(QFile::exists(mygcc)) qDebug() << "got it";
+
+    QVariant compv = settings.value(compilerKey,mygcc);
+    QVariant incv = settings.value(includesKey,myinc);
+    QVariant wrkv = settings.value(workspaceKey);
+
     if(compv.canConvert(QVariant::String)) {
         QString s = compv.toString();
-        s = QDir::fromNativeSeparators(s);
-        leditCompiler->setText(s);
+        if(s.length() > 0) {
+            s = QDir::fromNativeSeparators(s);
+            leditCompiler->setText(s);
+        }
+        else {
+            leditCompiler->setText(mygcc);
+            settings.setValue(compilerKey,mygcc);
+        }
     }
     else {
         leditCompiler->setText(mygcc);
@@ -111,8 +122,14 @@ void Properties::setupFolders()
 
     if(incv.canConvert(QVariant::String)) {
         QString s = incv.toString();
-        s = QDir::fromNativeSeparators(s);
-        leditIncludes->setText(s);
+        if(s.length() > 0) {
+            s = QDir::fromNativeSeparators(s);
+            leditIncludes->setText(s);
+        }
+        else {
+            leditIncludes->setText(myinc);
+            settings.setValue(includesKey,myinc);
+        }
     }
     else {
         leditIncludes->setText(myinc);
