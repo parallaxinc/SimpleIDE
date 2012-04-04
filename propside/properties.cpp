@@ -39,6 +39,8 @@ void Properties::cleanSettings()
 
     settings.remove(publisherComKey);
     settings.remove(publisherKey);
+
+    qApp->exit(0);
 }
 
 void Properties::setupFolders()
@@ -156,7 +158,6 @@ void Properties::setupGeneral()
     QVariant var;
 
     QLabel *lBlank = new QLabel("",tbox);
-    tlayout->addWidget(lBlank,row++,0);
 
     QLabel *ltabs = new QLabel("Editor Tab Space Count",tbox);
     tlayout->addWidget(ltabs,row,0);
@@ -184,8 +185,6 @@ void Properties::setupGeneral()
         loadDelay.setText(s);
     }
 
-    tlayout->addWidget(lBlank,row++,0);
-
     QLabel *lreset = new QLabel("Reset Signal",tbox);
     tlayout->addWidget(lreset,row,0);
     resetType.addItem("DTR");
@@ -200,7 +199,12 @@ void Properties::setupGeneral()
         resetType.setCurrentIndex(var.toInt());
     }
 
-    tlayout->addWidget(lBlank,row++,0);
+    QLabel *lclear = new QLabel("Clear options for next startup.",tbox);
+    tlayout->addWidget(lclear,row,0);
+    QPushButton *clearSettings = new QPushButton(tr("Clear and Exit"),this);
+    clearSettings->setToolTip(tr("Exit Program"));
+    connect(clearSettings,SIGNAL(clicked()),this,SLOT(cleanSettings()));
+    tlayout->addWidget(clearSettings,row,1);
 }
 
 void Properties::addHighlights(QComboBox *box, QVector<PColor*> pcolor)

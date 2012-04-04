@@ -3142,6 +3142,9 @@ int MainWindow::makeDebugFiles(QString fileName)
         ismain = true;
 
     QStringList copts;
+    if(fileName.contains(".cogc",Qt::CaseInsensitive)) {
+        copts.append("-xc");
+    }
     copts.append("-S");
 #if ENABLEMAP_TOOL
     copts.append("--save-temps");

@@ -9,14 +9,16 @@ if [ -e ${DMG} ]; then
    rm ${DMG}
 fi
 
-cd propside
+mkdir -p release
+cp -r propside/* release
+cd release
 qmake -config release
 if test $? != 0; then
    echo "qmake config failed."
    exit 1
 fi
 
-#make clean
+make clean
 make
 if test $? != 0; then
    echo "make failed."
@@ -32,7 +34,7 @@ fi
 
 cd SimpleIDE
 rm -rf SimpleIDE.app
-cp -r ../propside/SimpleIDE.app .
+cp -r ../release/SimpleIDE.app .
 if test $? != 0; then
    echo "copy SimpleIDE.app failed."
    exit 1
