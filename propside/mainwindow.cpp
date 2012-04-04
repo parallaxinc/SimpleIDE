@@ -150,8 +150,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     if(!lastfilev.isNull()) {
         if(lastfilev.canConvert(QVariant::String)) {
             QString fileName = lastfilev.toString();
-            openFileName(fileName);
-            setProject(); // last file is always first project
+            if(fileName.length() > 0 && QFile::exists(fileName)) {
+                openFileName(fileName);
+                setProject(); // last file is always first project
+            }
         }
     }
 
