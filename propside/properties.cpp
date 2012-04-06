@@ -91,8 +91,9 @@ void Properties::setupFolders()
     QString mygcc = mypath+"bin/propeller-elf-gcc.exe";
 #elif defined(Q_WS_MAC)
     QString apath = QApplication::applicationFilePath();
-    apath = apath.mid(0,apath.lastIndexOf("/")+1);
-    mypath = apath+"../../../parallax/";
+    apath = apath.mid(0,apath.lastIndexOf(".app"));
+    apath = apath.mid(0,apath.lastIndexOf("/"));
+    mypath = apath+"/parallax/";
     QString mygcc = mypath+"bin/propeller-elf-gcc";
 #else
     mypath = "/opt/parallax/";
@@ -100,7 +101,10 @@ void Properties::setupFolders()
 #endif
     QString myinc = mypath+"propeller-load/";
 
-    // if(QFile::exists(mygcc)) qDebug() << "got it";
+    if(QFile::exists(mygcc))
+        qDebug() << "Found Default Compiler.";
+    if(QFile::exists(myinc))
+        qDebug() << "Found Default Loader Path.";
 
     QVariant compv = settings.value(compilerKey,mygcc);
     QVariant incv = settings.value(includesKey,myinc);

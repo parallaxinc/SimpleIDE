@@ -2,11 +2,13 @@
 #
 # to use this release script, QtSDK Desktop qmake must be in your PATH
 #
-DMG=SimpleIDE.dmg
+NAME=SimpleIDE
+APP=${NAME}.app
+PKG=${NAME}.zip
 PROPGCC=/opt/parallax
 
-if [ -e ${DMG} ]; then
-   rm ${DMG}
+if [ -e ${PKG} ]; then
+   rm -rf ${PKG}
 fi
 
 mkdir -p release
@@ -26,23 +28,23 @@ if test $? != 0; then
 fi
 
 cd ..
-mkdir -p SimpleIDE
+mkdir -p ${NAME}
 if test $? != 0; then
-   echo "mkdir SimpleIDE failed."
+   echo "mkdir ${NAME} failed."
    exit 1
 fi
 
-cd SimpleIDE
-rm -rf SimpleIDE.app
-cp -r ../release/SimpleIDE.app .
+cd ${NAME}
+rm -rf ${NAME}.app
+cp -r ../release/${NAME}.app .
 if test $? != 0; then
-   echo "copy SimpleIDE.app failed."
+   echo "copy ${NAME}.app failed."
    exit 1
 fi
 
-macdeployqt SimpleIDE.app
+macdeployqt ${NAME}.app
 if test $? != 0; then
-   echo "macdeployqt SimpleIDE.app failed."
+   echo "macdeployqt ${NAME}.app failed."
    exit 1
 fi
 
