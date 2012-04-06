@@ -50,7 +50,7 @@ cd ${DIR}
 
 # extract version from propside.pro
 #
-SEDCMD=`sed -n 's/VERSION=.*$/&/p' ../build/propside.pro | cut -d"=" -f3`
+SEDCMD=`sed -n 's/VERSION=.*$/&/p' ${BUILD}/propside.pro | cut -d"=" -f3`
 VERSION=`echo ${SEDCMD}`
 VERSION=`echo ${VERSION} | sed 's/ /-/g'`
 VERSION="${NAME}-${VERSION}"
@@ -68,7 +68,7 @@ fi
 cp -r template/* ${VERSION}
 ls ${VERSION}
 
-cp -r ../${BUILD}/${NAME} ${VERSION}/bin
+cp -r ${BUILD}/${NAME} ${VERSION}/bin
 if test $? != 0; then
    echo "copy ${NAME} failed."
    exit 1
