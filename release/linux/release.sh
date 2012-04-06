@@ -8,7 +8,9 @@ PROPGCC=/opt/parallax
 BUILD=build
 
 CTAGS="../../ctags-5.8/ctags"
-LIBS="/usr/lib/libQtGui.so.4 /usr/lib/libQtCore.so.4 /usr/lib/libaudio.so.2"
+LIBS="/usr/lib/libQtGui.so.4 /usr/lib/libQtCore.so.4"
+LIBAUDIO="/usr/lib/libaudio.so.2"
+LIBAUDIO2="/usr/lib/x86_64-linux-gnu/libaudio.so.2"
 
 CLEAN=$1
 
@@ -77,6 +79,13 @@ cp -f ${LIBS} ${VERSION}/bin
 if test $? != 0; then
    echo "copy ${LIBS} failed."
    exit 1
+fi
+cp -f ${LIBAUDIO} ${VERSION}/bin
+if test $? != 0; then
+   cp -f ${LIBAUDIO2} ${VERSION}/bin
+   if test $? != 0; then
+      echo "Can't find libaudio...."
+   fi
 fi
 cp -f ${CTAGS} ${VERSION}/bin
 if test $? != 0; then
