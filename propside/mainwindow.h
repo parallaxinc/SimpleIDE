@@ -109,6 +109,7 @@ public slots:
     void initBoardTypes();
 
     void addProjectFile();
+    void addProjectLink();
     void deleteProjectFile();
     void showProjectFile();
 
