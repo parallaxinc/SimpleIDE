@@ -67,7 +67,7 @@ if test $? != 0; then
    exit 1
 fi
 
-cp -r template/* ${VERSION}
+cp -r ../template/* ${VERSION}
 ls ${VERSION}
 
 cp -r ${BUILD}/${NAME} ${VERSION}/bin
@@ -95,11 +95,11 @@ ls -alRF ${VERSION}/bin
 fi
 
 rm -rf parallax
-cp -r ${PROPGCC} ${VERSION}
-if test $? != 0; then
-   echo "copy ${PROPGCC} failed."
-   exit 1
-fi
+#cp -r ${PROPGCC} ${VERSION}
+#if test $? != 0; then
+#   echo "copy ${PROPGCC} failed."
+#   exit 1
+#fi
 
 cp -r ../../propside-demos/ ${VERSION}/demos
 if test $? != 0; then
