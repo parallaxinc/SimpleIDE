@@ -84,13 +84,19 @@ if test $? != 0; then
    echo "copy ${LIBS} failed."
    exit 1
 fi
-cp -f ${LIBAUDIO} ${VERSION}/bin
-if test $? != 0; then
-   cp -f ${LIBAUDIO2} ${VERSION}/bin
+
+AULDD=`ldd ${BUILD}/${NAME} | grep libaudio | awk '{print $3}'`
+LIBAUDIO=`echo $AULDD`
+
+if [ ${LIBAUDIO}X != X ]; then
+   cp -f ${LIBAUDIO} ${VERSION}/bin
    if test $? != 0; then
-      echo "Can't find libaudio...."
+      if test $? != 0; then
+         echo "Can't find libaudio...."
+      fi
    fi
 fi
+
 cp -f ${CTAGS} ${VERSION}/bin
 if test $? != 0; then
    echo "copy ${CTAGS} failed."
