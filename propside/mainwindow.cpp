@@ -10,9 +10,7 @@
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
 
-#define SDRUN  "-SdRun"
-#define SDLOAD "-SdLoad"
-#define SERIAL "-Serial"
+#define FILELINK " -> "
 
 #define BUILD_TABNAME "Build Status"
 #define GDB_TABNAME "GDB Output"
@@ -1697,6 +1695,8 @@ int  MainWindow::runBuild(QString option)
             continue;
         if(name.at(0) == '>')
             continue;
+        if(name.contains(FILELINK))
+            name = name.mid(name.indexOf(FILELINK)+QString(FILELINK).length());
         QString base = shortFileName(name.mid(0,name.lastIndexOf(".")));
         if(name.toLower().lastIndexOf(".spin") > 0) {
             if(runBstc(name))
@@ -2656,7 +2656,8 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     // projectMenu is popup for projectTree
     projectMenu = new QMenu(QString("Project Menu"));
     projectMenu->addAction(tr("Add File"), this,SLOT(addProjectFile()));
-    projectMenu->addAction(tr("Delete File"), this,SLOT(deleteProjectFile()));
+    projectMenu->addAction(tr("Add Link"), this,SLOT(addProjectLink()));
+    projectMenu->addAction(tr("Delete"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
     projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
 
@@ -2892,6 +2893,98 @@ void MainWindow::addProjectFile()
 }
 
 /*
+ * add a new project link
+ * save new filelist and options to project.side file
+ */
+void MainWindow::addProjectLink()
+{
+    fileDialog.setDirectory(sourcePath(projectFile));
+
+    // this is on the wish list and not finished yet
+    fileDialog.setFileMode(QFileDialog::ExistingFiles);
+    QStringList files = fileDialog.getOpenFileNames(this, tr("Add Link to File"), lastPath, tr(SOURCE_FILE_TYPES));
+
+    foreach(QString fileName, files) {
+        //fileName = fileDialog.getOpenFileName(this, tr("Add File"), lastPath, tr(SOURCE_FILE_TYPES));
+        /*
+         * Cancel makes filename blank. If fileName is blank, don't add.
+         */
+        if(fileName.length() == 0)
+            return;
+        /*
+         * Don't let users add *.* as a file name.
+         */
+        if(fileName.contains('*'))
+            return;
+
+        lastPath = sourcePath(fileName);
+
+        QString ext = fileName.mid(fileName.lastIndexOf("."));
+        if(ext.length()) {
+            ext = ext.toLower();
+            if(ext == ".cog") {
+                // don't copy .cog files
+                return;
+            }
+            else if(ext == ".dat") {
+                // don't copy .dat files
+                return;
+            }
+            else if(ext == ".o") {
+                // don't copy .o files
+                return;
+            }
+            else if(ext == ".out") {
+                // don't copy .out files
+                return;
+            }
+            else if(ext == ".side") {
+                // don't copy .side files
+                return;
+            }
+            else {
+                fileName = this->shortFileName(fileName)+FILELINK+fileName;
+            }
+        }
+
+        QString projstr = "";
+        QStringList list;
+        QString mainFile;
+
+        QFile file(projectFile);
+        if(file.exists()) {
+            if(file.open(QFile::ReadOnly | QFile::Text)) {
+                projstr = file.readAll();
+                file.close();
+            }
+            list = projstr.split("\n");
+            mainFile = list[0];
+            projstr = "";
+            for(int n = 0; n < list.length(); n++) {
+                QString arg = list[n];
+                if(!arg.length())
+                    continue;
+                if(arg.at(0) == '>')
+                    continue;
+                projstr += arg + "\n";
+            }
+            projstr += fileName + "\n";
+            list.clear();
+            list = projectOptions->getOptions();
+
+            foreach(QString arg, list) {
+                projstr += ">"+arg+"\n";
+            }
+            if(file.open(QFile::WriteOnly | QFile::Text)) {
+                file.write(projstr.toAscii());
+                file.close();
+            }
+        }
+        updateProjectTree(sourcePath(projectFile)+mainFile);
+    }
+}
+
+/*
  * delete project source file.
  * save new filelist and options to project.side file
  */
@@ -2949,15 +3042,16 @@ void MainWindow::showProjectFile()
     {
         fileName = vs.toString();
 
-        /* Temporarily disallow opening .spin files
-         * until we know how to handle them.
-        if(fileName.indexOf(".spin",Qt::CaseInsensitive) < 0)
-            openFileName(sourcePath(projectFile)+fileName);
-         */
-
         /* openFileName knows how to read spin files
+         * If name has FILELINK it's a link.
          */
-        openFileName(sourcePath(projectFile)+fileName);
+        if(fileName.contains(FILELINK)) {
+            fileName = fileName.mid(fileName.indexOf(FILELINK)+QString(FILELINK).length());
+            openFileName(fileName);
+        }
+        else {
+            openFileName(sourcePath(projectFile)+fileName);
+        }
     }
 }
 
