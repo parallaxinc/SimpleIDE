@@ -75,6 +75,10 @@ if test $? != 0; then
    echo "copy ${NAME} failed."
    exit 1
 fi
+
+MYLDD=`ldd ${BUILD}/${NAME} | grep libQt | awk '{print $3}'`
+LIBS=`echo $MYLDD`
+
 cp -f ${LIBS} ${VERSION}/bin
 if test $? != 0; then
    echo "copy ${LIBS} failed."
