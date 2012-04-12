@@ -109,7 +109,10 @@ public slots:
     void initBoardTypes();
 
     void addProjectFile();
+    void addProjectLibFile();
     void addProjectLink();
+    void addProjectIncPath();
+    void addProjectLibPath();
     void deleteProjectFile();
     void showProjectFile();
 
@@ -185,6 +188,8 @@ private:
     void setupToolBars();
     void setupProjectTools(QSplitter *vsplit);
     void addToolButton(QToolBar *bar, QToolButton *btn, QString imgfile);
+    bool isOutputFile(QString file);
+    void addProjectListFile(QString fileName);
     void updateProjectTree(QString fileName);
     void setEditorTab(int num, QString shortName, QString fileName, QString text);
     QString shortFileName(QString fileName);
