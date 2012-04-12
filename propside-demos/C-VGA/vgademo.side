@@ -1,0 +1,8 @@
+vgademo.c
+vga.h
+vga.cogc
+>compiler=C
+>memtype=lmm
+>optimize=-Os
+>-fno-exceptions
+>BOARD::C3
