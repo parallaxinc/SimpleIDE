@@ -161,8 +161,6 @@ void Properties::setupGeneral()
     QSettings settings(publisherKey, ASideGuiKey,this);
     QVariant var;
 
-    QLabel *lBlank = new QLabel("",tbox);
-
     QLabel *ltabs = new QLabel("Editor Tab Space Count",tbox);
     tlayout->addWidget(ltabs,row,0);
     tabSpaces.setMaximumWidth(40);
