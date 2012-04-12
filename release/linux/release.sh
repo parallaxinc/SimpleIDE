@@ -67,7 +67,7 @@ if test $? != 0; then
    exit 1
 fi
 
-cp -r template/* ${VERSION}
+cp -r ../template/* ${VERSION}
 ls ${VERSION}
 
 cp -r ${BUILD}/${NAME} ${VERSION}/bin
@@ -75,18 +75,28 @@ if test $? != 0; then
    echo "copy ${NAME} failed."
    exit 1
 fi
+
+MYLDD=`ldd ${BUILD}/${NAME} | grep libQt | awk '{print $3}'`
+LIBS=`echo $MYLDD`
+
 cp -f ${LIBS} ${VERSION}/bin
 if test $? != 0; then
    echo "copy ${LIBS} failed."
    exit 1
 fi
-cp -f ${LIBAUDIO} ${VERSION}/bin
-if test $? != 0; then
-   cp -f ${LIBAUDIO2} ${VERSION}/bin
+
+AULDD=`ldd ${BUILD}/${NAME} | grep libaudio | awk '{print $3}'`
+LIBAUDIO=`echo $AULDD`
+
+if [ ${LIBAUDIO}X != X ]; then
+   cp -f ${LIBAUDIO} ${VERSION}/bin
    if test $? != 0; then
-      echo "Can't find libaudio...."
+      if test $? != 0; then
+         echo "Can't find libaudio...."
+      fi
    fi
 fi
+
 cp -f ${CTAGS} ${VERSION}/bin
 if test $? != 0; then
    echo "copy ${CTAGS} failed."
@@ -95,11 +105,11 @@ ls -alRF ${VERSION}/bin
 fi
 
 rm -rf parallax
-cp -r ${PROPGCC} ${VERSION}
-if test $? != 0; then
-   echo "copy ${PROPGCC} failed."
-   exit 1
-fi
+#cp -r ${PROPGCC} ${VERSION}
+#if test $? != 0; then
+#   echo "copy ${PROPGCC} failed."
+#   exit 1
+#fi
 
 cp -r ../../propside-demos/ ${VERSION}/demos
 if test $? != 0; then
