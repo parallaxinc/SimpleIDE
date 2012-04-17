@@ -3518,6 +3518,16 @@ int MainWindow::makeDebugFiles(QString fileName)
     QStringList args = getCompilerParameters(copts);
     QString compstr;
 
+    if(fileName.contains(".cogc",Qt::CaseInsensitive)) {
+        for(int n = 0; n < args.length(); n++) {
+            QString item = args.at(n);
+            if(item.indexOf("-m") == 0) {
+                args[n] = QString("-mcog");
+                break;
+            }
+        }
+    }
+
 #if defined(Q_WS_WIN32)
     compstr = shortFileName(aSideCompiler);
 #else
