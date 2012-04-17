@@ -216,9 +216,6 @@ void Highlighter::highlightC()
             << "\\bvolatile\\b"
             << "\\bwhile\\b"
             << "={2,}" << "+{2,}" << "-{2,}" << "_{2,}" << "\\{2,}"
-            << "\\belif\\b"
-            << "\\bifdef\\b"
-            << "\\bendif\\b"
             ;
     foreach (const QString &pattern, keywordPatterns) {
         rule.pattern = QRegExp(pattern);
@@ -249,6 +246,10 @@ void Highlighter::highlightC()
             << "\\bwarning\\b"
             << "\\bint\\d+_t"
             << "\\buint\\d+_t"
+            << "\\belif\\b"
+            << "\\bifdef\\b"
+            << "\\bifndef\\b"
+            << "\\bendif\\b"
             ;
     foreach (const QString &pattern, preprocessorPatterns) {
         rule.pattern = QRegExp(pattern);
@@ -264,7 +265,7 @@ void Highlighter::highlightC()
     rule.pattern = QRegExp("[\"].*[\"]");
     rule.format = quotationFormat;
     highlightingRules.append(rule);
-    rule.pattern = QRegExp("[<][a-z,A-Z].*[>]");
+    rule.pattern = QRegExp("[<][a-z,A-Z].*[^-][>]");
     highlightingRules.append(rule);
 
     // single line comments
