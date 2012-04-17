@@ -2033,6 +2033,9 @@ int MainWindow::getCompilerParameters(QStringList copts, QStringList *args)
     args->append(projectOptions->getOptimization());
     args->append("-m"+model);
 
+    args->append("-I");
+    args->append("."); // just in case for a project configuration header
+
     if(projectOptions->getWarnAll().length())
         args->append(projectOptions->getWarnAll());
     if(projectOptions->get32bitDoubles().length())
