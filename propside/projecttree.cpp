@@ -3,6 +3,8 @@
 ProjectTree::ProjectTree(QWidget *parent) : QTreeView(parent)
 {
     this->mouseRightClick = false;
+    this->header()->setStretchLastSection(false);
+    this->header()->setResizeMode(QHeaderView::ResizeToContents);
 }
 
 void ProjectTree::mousePressEvent(QMouseEvent *event)

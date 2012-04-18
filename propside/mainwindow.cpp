@@ -1708,6 +1708,7 @@ int  MainWindow::runBuild(QString option)
                 list.append((name.mid(0,name.lastIndexOf(".spin"))+".dat"));
         }
         else if(name.toLower().lastIndexOf(".dat") > 0) {
+            name = shortFileName(name);
             if(runObjCopy(name))
                 return -1;
             if(proj.toLower().lastIndexOf("_firmware.o") < 0)
@@ -1723,7 +1724,7 @@ int  MainWindow::runBuild(QString option)
         else if(name.toLower().lastIndexOf(".cogc") > 0) {
             if(runCOGC(name))
                 return -1;
-            clist.append(base+".cog");
+            clist.append(shortFileName(base)+".cog");
         }
         /* dont add .a yet */
         else if(name.toLower().lastIndexOf(".a") > 0) {
@@ -1879,7 +1880,7 @@ int  MainWindow::runBstc(QString spinfile)
 
     QStringList args;
     args.append("-c");
-    args.append(shortFileName(spinfile));
+    args.append(spinfile); // using shortname limits us to files in the project directory.
 
     /* run the bstc program */
 #if defined(Q_WS_WIN32)
@@ -2523,13 +2524,12 @@ void MainWindow::procReadyRead()
             }
 #endif
             else {
+                QStringList colonlist = line.split(":");
+                // if we get line number info prepend end of line
+                if(colonlist.length() > 1)
+                    compileStatus->insertPlainText(eol);
                 compileStatus->insertPlainText(line);
-                if(line.contains("verifying", Qt::CaseInsensitive) == false)
-                    if(line.contains("programming", Qt::CaseInsensitive) == false)
-                        compileStatus->insertPlainText(eol);
             }
-            //compileStatus->moveCursor(QTextCursor::StartOfLine);
-            //compileStatus->moveCursor(QTextCursor::End);
         }
     }
 }
@@ -2558,8 +2558,7 @@ void MainWindow::showBuildStart(QString progName, QStringList args)
     for(int n = 0; n < args.length(); n++)
         argstr += " "+args[n];
     //qDebug() << progName+argstr;
-    compileStatus->insertPlainText(shortFileName(progName)+argstr+"\n");
-    compileStatus->moveCursor(QTextCursor::End);
+    compileStatus->appendPlainText(shortFileName(progName)+argstr);
 }
 
 int  MainWindow::buildResult(int exitStatus, int exitCode, QString progName, QString result)
@@ -2788,28 +2787,49 @@ void MainWindow::compileStatusClicked(void)
     cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
     compileStatus->setTextCursor(cur);
     QString line = cur.selectedText();
-    QStringList list = line.split(":");
-    if(list.count() < 2)
+    QRegExp regx(":[0-9]");
+    QStringList fileList = line.split(regx);
+    if(fileList.count() < 2)
         return;
 
-    QString file = list[0];
+    QString file = fileList[0];
+
     /* open file in tab if not there already */
     for(n = 0; n < editorTabs->count();n++) {
         if(editorTabs->tabText(n).contains(file)) {
             editorTabs->setCurrentIndex(n);
             break;
         }
+        if(editors->at(n)->toolTip().contains(file)) {
+            editorTabs->setCurrentIndex(n);
+            break;
+        }
     }
+
     if(n > editorTabs->count()-1) {
-        file = sourcePath(projectFile)+list[0];
-        openFileName(file);
+        if(QFile::exists(fileList[0])) {
+            file = fileList[0];
+            openFileName(file);
+        }
+        else
+        if(QFile::exists(sourcePath(projectFile))) {
+            file = sourcePath(projectFile)+fileList[0];
+            openFileName(file);
+        }
+        else {
+            return;
+        }
     }
+
+    line = line.mid(file.length());
+    QStringList list = line.split(":",QString::SkipEmptyParts);
 
     Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor != NULL)
     {
-        n = QString(list[1]).toInt();
+        n = QString(list[0]).toInt();
         QTextCursor c = editor->textCursor();
+        editor->setCenterOnScroll(true);
         c.movePosition(QTextCursor::Start);
         if(n > 0) {
             c.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,n-1);
@@ -3461,10 +3481,17 @@ void MainWindow::showAssemblyFile()
     QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
     if(vs.canConvert(QVariant::String))
         fileName = vs.toString();
+
     if(makeDebugFiles(fileName))
         return;
     QString outfile = fileName.mid(0,fileName.lastIndexOf("."));
-    openFileName(sourcePath(projectFile)+outfile+SHOW_ASM_EXTENTION);
+    if(outfile.contains(FILELINK)) {
+        outfile = outfile.mid(outfile.indexOf(FILELINK)+QString(FILELINK).length());
+        openFileName(outfile+SHOW_ASM_EXTENTION);
+    }
+    else {
+        openFileName(sourcePath(projectFile)+outfile+SHOW_ASM_EXTENTION);
+    }
 }
 
 /*
@@ -3475,9 +3502,14 @@ int MainWindow::makeDebugFiles(QString fileName)
     if(fileName.length() == 0)
         return -1;
 
-    if(fileName.contains(".h",Qt::CaseInsensitive) || fileName.contains(".spin",Qt::CaseInsensitive)) {
+    if(
+       fileName.contains(".h",Qt::CaseInsensitive) ||
+       fileName.contains(".spin",Qt::CaseInsensitive) ||
+       fileName.contains("-I",Qt::CaseInsensitive) ||
+       fileName.contains("-L",Qt::CaseInsensitive)
+       ) {
         QMessageBox mbox(QMessageBox::Information, "Can't Show That",
-            "Can't show debug info on this type of file.", QMessageBox::Ok);
+            "Can't show debug info on this entry.", QMessageBox::Ok);
         mbox.exec();
         return -1;
     }
@@ -3488,6 +3520,9 @@ int MainWindow::makeDebugFiles(QString fileName)
         mbox.exec();
         return -1;
     }
+
+    if(fileName.contains(FILELINK))
+        fileName = fileName.mid(fileName.indexOf(FILELINK)+QString(FILELINK).length());
 
     getApplicationSettings();
     if(checkCompilerInfo()) {
@@ -3515,6 +3550,21 @@ int MainWindow::makeDebugFiles(QString fileName)
     copts.append(map);
 #endif
     copts.append(fileName);
+
+    QFile file(projectFile);
+    QString proj = "";
+    if(file.open(QFile::ReadOnly | QFile::Text)) {
+        proj = file.readAll();
+        file.close();
+    }
+
+    proj = proj.trimmed(); // kill extra white space
+    QStringList list = proj.split("\n");
+    foreach(QString name, list) {
+        if(name.contains("-I"))
+            copts.append(name);
+    }
+
     QStringList args = getCompilerParameters(copts);
     QString compstr;
 
