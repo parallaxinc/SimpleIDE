@@ -34,6 +34,8 @@
 
 #define untitledstr "Untitled"
 
+#define FILELINK " -> "
+
 QT_BEGIN_NAMESPACE
 class QTextEdit;
 QT_END_NAMESPACE
