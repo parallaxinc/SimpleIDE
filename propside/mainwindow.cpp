@@ -8,7 +8,7 @@
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 270
 
-#define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
+#define SOURCE_FILE_TYPES "Source Files (*.c *.ccp *.h *.cogc *.spin);; All (*)"
 
 #define BUILD_TABNAME "Build Status"
 #define GDB_TABNAME "GDB Output"
@@ -384,7 +384,7 @@ void MainWindow::openFile(const QString &path)
 #if defined(Q_WS_X11)
         /* this method uses a more flexible dialog box for linux */
         QFileDialog filed(this,tr("Open File"),lastPath,tr(SOURCE_FILE_TYPES));
-        filed.exec();
+        if (!filed.exec()) return;
         QStringList files = filed.selectedFiles();
         fileName = files.at(0);
 #else
