@@ -17,6 +17,7 @@ Editor::Editor(GDB *gdebug, QWidget *parent) : QPlainTextEdit(parent)
 
     highlighter = NULL;
     setHighlights();
+    setCenterOnScroll(true);
 }
 
 Editor::~Editor()
@@ -44,9 +45,15 @@ void Editor::keyPressEvent (QKeyEvent *e)
 {
     if((QApplication::keyboardModifiers() & Qt::CTRL) && ctrlPressed == false) {
         ctrlPressed = true;
+        QTextCursor tcur = this->textCursor();
         QTextCursor cur = this->cursorForPosition(mousepos);
+        tcur.select(QTextCursor::WordUnderCursor);
         cur.select(QTextCursor::WordUnderCursor);
         QString text = cur.selectedText();
+        if(tcur.selectedText().compare(text)) {
+            QPlainTextEdit::keyPressEvent(e);
+            return;
+        }
         if(text.length() > 0) {
             //qDebug() << "keyPressEvent ctrlPressed " << text;
             if(static_cast<MainWindow*>(mainwindow)->isTagged(text)) {

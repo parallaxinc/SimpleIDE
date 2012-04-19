@@ -1,4 +1,5 @@
 #include "ctags.h"
+#include "mainwindow.h"
 
 CTags::CTags(QString path, QObject *parent) : QObject(parent)
 {
@@ -55,6 +56,10 @@ int CTags::runCtags(QString path)
             plist.removeAt(n);
             continue;
         }
+        if(s.at(0) == '-') {
+            plist.removeAt(n);
+            continue;
+        }
     }
 
     projectPath = QDir::fromNativeSeparators(path);
@@ -70,10 +75,17 @@ int CTags::runCtags(QString path)
     args.append("--format=1");
 
     /* append project files */
-    foreach(QString argstr, plist)
-        if(argstr.length() > 0)
-            args.append(projectPath+argstr);
-
+    foreach(QString argstr, plist) {
+        if(argstr.length() > 0) {
+            if(argstr.contains(FILELINK)) {
+                argstr = argstr.mid(argstr.indexOf(FILELINK)+QString(FILELINK).length());
+                args.append(argstr);
+            }
+            else {
+                args.append(projectPath+argstr);
+            }
+        }
+    }
     procDone = false;
     process->start(ctagsProgram,args);
 

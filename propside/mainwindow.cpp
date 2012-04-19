@@ -10,8 +10,6 @@
 
 #define SOURCE_FILE_TYPES "Source Files (*.c | *.cpp | *.h | *.cogc | *.spin | *.*)"
 
-#define FILELINK " -> "
-
 #define BUILD_TABNAME "Build Status"
 #define GDB_TABNAME "GDB Output"
 #define TOOL_TABNAME "Tool Output"
@@ -1091,9 +1089,7 @@ void MainWindow::findDeclaration(QTextCursor cur)
         qDebug() << "findDeclaration " << text;
 
         if(text.length() == 0) {
-            //cur.select(QTextCursor::WordUnderCursor);
-            cur.movePosition(QTextCursor::StartOfWord,QTextCursor::MoveAnchor);
-            cur.movePosition(QTextCursor::EndOfWord,QTextCursor::KeepAnchor);
+            cur.select(QTextCursor::WordUnderCursor);
             text = cur.selectedText();
         }
         qDebug() << "findDeclaration " << text;
@@ -1252,16 +1248,15 @@ int MainWindow::showDeclaration(QString tagline)
 
     this->openFileName(file);
     Editor *editor = editors->at(editorTabs->currentIndex());
-    editor->setCenterOnScroll(true);
     QTextCursor cur = editor->textCursor();
-    cur.movePosition(QTextCursor::Start);
+    cur.setPosition(0,QTextCursor::MoveAnchor);
     cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,linenum);
-    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-    cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+    cur.movePosition(QTextCursor::EndOfLine,QTextCursor::MoveAnchor);
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
     QString res = cur.selectedText();
-    qDebug() << res;
-    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+    qDebug() << linenum << res;
     editor->setTextCursor(cur);
+    QApplication::processEvents();
     return linenum;
 }
 
@@ -2829,7 +2824,6 @@ void MainWindow::compileStatusClicked(void)
     {
         n = QString(list[0]).toInt();
         QTextCursor c = editor->textCursor();
-        editor->setCenterOnScroll(true);
         c.movePosition(QTextCursor::Start);
         if(n > 0) {
             c.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,n-1);
