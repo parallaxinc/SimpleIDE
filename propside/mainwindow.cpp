@@ -2155,8 +2155,10 @@ QStringList MainWindow::getLoaderParameters(QString copts)
 
     portName = cbPort->itemText(cbPort->currentIndex());
     boardName = cbBoard->itemText(cbBoard->currentIndex());
-    if(boardName.contains(ASideConfig::UserDelimiter))
-        boardName = boardName.mid(0,boardName.indexOf(ASideConfig::UserDelimiter));
+    if(boardName.contains(ASideConfig::UserDelimiter+ASideConfig::SdRun))
+        boardName = boardName.mid(0,boardName.indexOf(ASideConfig::UserDelimiter+ASideConfig::SdRun));
+    if(boardName.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad))
+        boardName = boardName.mid(0,boardName.indexOf(ASideConfig::UserDelimiter+ASideConfig::SdLoad));
 
     QStringList args;
     if(this->propDialog->getLoadDelay() > 0) {
