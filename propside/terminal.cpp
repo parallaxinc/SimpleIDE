@@ -20,7 +20,7 @@ void Terminal::init()
 {
     QVBoxLayout *termLayout = new QVBoxLayout();
     termEditor->setReadOnly(false);
-    termEditor->setContextMenuPolicy(Qt::NoContextMenu);
+    //termEditor->setContextMenuPolicy(Qt::NoContextMenu);
 
     QAction *copyAction = new QAction(tr("Copy"),this);
     copyAction->setShortcuts(QKeySequence::Copy);
