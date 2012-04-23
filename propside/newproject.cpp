@@ -109,8 +109,10 @@ void NewProject::browsePath()
     if(mypath.length() == 0) {
         qDebug() << "mypath is empty.";
     }
-    if(mypath.at(mypath.length()-1) == '/')
-        mypath = mypath.left(mypath.length()-1);
+    else {
+        if(mypath.at(mypath.length()-1) == '/')
+            mypath = mypath.left(mypath.length()-1);
+    }
     fileDialog.selectFile(mypath);
     mypath += "/";
 
