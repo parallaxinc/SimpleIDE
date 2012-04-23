@@ -20,3 +20,18 @@ bool ProjectTree::rightClick(bool value)
     this->mouseRightClick = value;
     return retval;
 }
+
+void ProjectTree::keyPressEvent(QKeyEvent *event)
+{
+    keyPressed = event->key();
+    QTreeView::keyPressEvent(event);
+}
+
+void ProjectTree::keyReleaseEvent(QKeyEvent *event)
+{
+    if(keyPressed == Qt::Key_Delete) {
+        // add emit signal here later to let keyboard delete entries
+        // emit deleteItem();
+    }
+    QTreeView::keyReleaseEvent(event);
+}

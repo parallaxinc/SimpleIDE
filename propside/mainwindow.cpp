@@ -8,7 +8,7 @@
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 270
 
-#define SOURCE_FILE_TYPES "Source Files (*.c *.ccp *.h *.cogc *.spin);; All (*)"
+#define SOURCE_FILE_TYPES "Source Files (*.c *.ccp *.h *.cogc *.spin) All (*)"
 
 #define BUILD_TABNAME "Build Status"
 #define GDB_TABNAME "GDB Output"
@@ -2459,11 +2459,14 @@ void MainWindow::procReadyRead()
                         QString ms = more.at(m);
                         if(ms.contains("bytes",Qt::CaseInsensitive))
                             lines.insert(n,more.at(m));
+                        if(ms.contains("loading",Qt::CaseInsensitive))
+                            lines.insert(n,more.at(m));
                     }
                 }
             }
         }
     }
+
     for (int n = 0; n < lines.length(); n++) {
         QString line = lines[n];
         if(line.length() > 0) {
@@ -2679,6 +2682,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectTree->setMaximumWidth(PROJECT_WIDTH);
     projectTree->setToolTip(tr("Current Project"));
     connect(projectTree,SIGNAL(clicked(QModelIndex)),this,SLOT(projectTreeClicked(QModelIndex)));
+    //connect(projectTree,SIGNAL(deleteItem()),this,SLOT(deleteProjectFile()));
     leftSplit->addWidget(projectTree);
 
     // projectMenu is popup for projectTree
@@ -2839,7 +2843,7 @@ void MainWindow::projectTreeClicked(QModelIndex index)
 {
     if(projectModel == NULL)
         return;
-    projectIndex = index;
+    projectIndex = index; // same as projectTree->currentIndex();
     if(projectTree->rightClick(false))
         projectMenu->popup(QCursor::pos());
     else
@@ -3163,7 +3167,13 @@ void MainWindow::addProjectLibFile()
             if(ext.length()) {
                 ext = ext.toLower();
                 if(ext.compare(".a") == 0) {
-                    fileName = this->shortFileName(fileName)+FILELINK+fileName;
+                    if(isOutputFile(fileName) == false) {
+                        if(sourcePath(fileName).compare(sourcePath(this->projectFile)) == 0)
+                            fileName = this->shortFileName(fileName);
+                        else
+                            fileName = this->shortFileName(fileName)+FILELINK+fileName;
+                    }
+                    //fileName = this->shortFileName(fileName)+FILELINK+fileName;
                     addProjectListFile(fileName);
                 }
             }
