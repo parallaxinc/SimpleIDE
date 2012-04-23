@@ -98,6 +98,11 @@ void Properties::setupFolders()
 #else
     mypath = "/opt/parallax/";
     QString mygcc = mypath+"bin/propeller-elf-gcc";
+    if(QFile::exists(mygcc) == false) {
+        qDebug() << "Alternative Default Compiler?";
+        mypath = "./parallax/";
+        mygcc = mypath+"bin/propeller-elf-gcc";
+    }
 #endif
     QString myinc = mypath+"propeller-load/";
 

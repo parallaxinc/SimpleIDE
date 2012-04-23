@@ -34,7 +34,7 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
     else {
         ui->comboBoxMemoryMode->addItem(memTypeLMM);
         ui->comboBoxMemoryMode->addItem(memTypeCOG);
-        ui->comboBoxMemoryMode->addItem(memTypeXMM);
+        //ui->comboBoxMemoryMode->addItem(memTypeXMM); // leave this out, it's confusing
         ui->comboBoxMemoryMode->addItem(memTypeXMMC);
         ui->comboBoxMemoryMode->addItem(memTypeXMMSINGLE);
         ui->comboBoxMemoryMode->addItem(memTypeXMMSPLIT);
