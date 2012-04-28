@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>271</width>
-    <height>281</height>
+    <height>291</height>
    </rect>
   </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
-    <height>281</height>
+    <height>291</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
      <x>0</x>
      <y>0</y>
      <width>271</width>
-     <height>279</height>
+     <height>289</height>
     </rect>
    </property>
    <property name="autoFillBackground">
@@ -41,7 +41,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>160</y>
+      <y>150</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -76,7 +76,10 @@
      </rect>
     </property>
     <property name="toolTip">
-     <string>Other Compiler Options</string>
+     <string>Compile Options</string>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
    <widget class="QComboBox" name="comboBoxOptimization">
@@ -112,7 +115,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>190</y>
+      <y>170</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -128,7 +131,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>100</y>
+      <y>110</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -144,13 +147,13 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>250</y>
+      <y>260</y>
       <width>251</width>
       <height>21</height>
      </rect>
     </property>
     <property name="toolTip">
-     <string>Other Linker Options</string>
+     <string>Linker Options</string>
     </property>
    </widget>
    <widget class="QLabel" name="labelmem">
@@ -170,7 +173,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>160</y>
+      <y>130</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -225,7 +228,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>130</y>
+      <y>110</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -241,7 +244,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>100</y>
+      <y>150</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -257,7 +260,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>190</y>
+      <y>170</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -269,6 +272,50 @@
      <string>Math Lib</string>
     </property>
    </widget>
+   <widget class="QLabel" name="labelLinkOptions">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>240</y>
+      <width>101</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string> Linker  Options</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>200</y>
+      <width>101</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string> Compile Options</string>
+    </property>
+   </widget>
+   <zorder>labelLinkOptions</zorder>
+   <zorder>label</zorder>
+   <zorder>checkBoxExceptions</zorder>
+   <zorder>comboBoxMemoryMode</zorder>
+   <zorder>comboBoxOptimization</zorder>
+   <zorder>checkBoxNoFcache</zorder>
+   <zorder>checkBoxPthreadLib</zorder>
+   <zorder>checkBoxWarnAll</zorder>
+   <zorder>labelmem</zorder>
+   <zorder>checkBox32bitDouble</zorder>
+   <zorder>labelcompiler</zorder>
+   <zorder>comboBoxCompiler</zorder>
+   <zorder>labelOptimization</zorder>
+   <zorder>checkBoxSimplePrintf</zorder>
+   <zorder>checkBoxStripELF</zorder>
+   <zorder>checkBoxMathlib</zorder>
+   <zorder>lineEditCompOptions</zorder>
+   <zorder>lineEditLinkOptions</zorder>
   </widget>
  </widget>
  <resources/>

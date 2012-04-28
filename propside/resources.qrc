@@ -56,5 +56,7 @@
         <file>images/flashdrive.png</file>
         <file>images/download.png</file>
         <file>images/saveasfile2.png</file>
+        <file>images/SimpleIDE-Splash2.png</file>
+        <file>images/SimpleIDE322.ico</file>
     </qresource>
 </RCC>
