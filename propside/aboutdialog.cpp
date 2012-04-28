@@ -6,7 +6,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     QLabel *splash = new QLabel(this);
-    splash->setPixmap(QPixmap(":/images/SimpleIDE-Splash.png"));
+    splash->setPixmap(QPixmap(":/images/SimpleIDE-Splash2.png"));
     splash->setGeometry(0,0,400,300);
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));

@@ -2155,10 +2155,15 @@ QStringList MainWindow::getLoaderParameters(QString copts)
 
     portName = cbPort->itemText(cbPort->currentIndex());
     boardName = cbBoard->itemText(cbBoard->currentIndex());
-    if(boardName.contains(ASideConfig::UserDelimiter+ASideConfig::SdRun))
-        boardName = boardName.mid(0,boardName.indexOf(ASideConfig::UserDelimiter+ASideConfig::SdRun));
-    if(boardName.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad))
-        boardName = boardName.mid(0,boardName.indexOf(ASideConfig::UserDelimiter+ASideConfig::SdLoad));
+    QString sdrun = ASideConfig::UserDelimiter+ASideConfig::SdRun;
+    QString sdload = ASideConfig::UserDelimiter+ASideConfig::SdLoad;
+
+    sdrun = sdrun.toUpper();
+    sdload = sdload.toUpper();
+    if(boardName.contains(sdrun))
+        boardName = boardName.mid(0,boardName.indexOf(sdrun));
+    if(boardName.contains(sdload,Qt::CaseInsensitive))
+        boardName = boardName.mid(0,boardName.indexOf(sdload));
 
     QStringList args;
     if(this->propDialog->getLoadDelay() > 0) {
@@ -2794,6 +2799,7 @@ void MainWindow::compileStatusClicked(void)
         return;
 
     QString file = fileList[0];
+    file = file.mid(file.lastIndexOf(":")+1);
 
     /* open file in tab if not there already */
     for(n = 0; n < editorTabs->count();n++) {
@@ -2823,6 +2829,8 @@ void MainWindow::compileStatusClicked(void)
     }
 
     line = line.mid(file.length());
+    if(line.length() == 0)
+        return;
     QStringList list = line.split(":",QString::SkipEmptyParts);
 
     Editor *editor = editors->at(editorTabs->currentIndex());

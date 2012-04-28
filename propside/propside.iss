@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-6-7"
+#define MyAppVersion "0-6-8"
 #define MyAppPublisher "MicroCSource"
 #define MyAppURL "www.MicroCSource.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -42,6 +42,7 @@ UserInfoPage=false
 UsePreviousUserInfo=false
 ChangesEnvironment=true
 LicenseFile=.\IDE_LICENSE.txt
+WizardImageFile=C:\gccdev\propside\propside\images\SimpleIDE-Install-Splash2.bmp
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
