@@ -553,17 +553,15 @@ int  Properties::setComboIndexByValue(QComboBox *combo, QString value)
 
 void Properties::browseCompiler()
 {
-    //QString fileName = QFileDialog::getOpenFileName(this,tr("Select Compiler"), mypath, "Compiler (propeller-elf-gcc.*)");
+    QString compiler = leditCompiler->text();
+    if(compiler.length() < 1)
+        compiler = mypath;
+
 #if defined(Q_WS_WIN32)
-    QFileDialog fileDialog(this,  tr("Select Compiler"), mypath+"bin/propeller-elf-gcc.exe", "Compiler (propeller-elf-gcc.exe)");
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Select Propeller Compiler"), compiler, "Compiler (propeller-elf-gcc.exe)");
 #else
-    QFileDialog fileDialog(this,  tr("Select Compiler"), mypath+"bin/propeller-elf-gcc", "Compiler (propeller-elf-gcc)");
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Select Propeller Compiler"), compiler, "Compiler (propeller-elf-gcc)");
 #endif
-    int rc = fileDialog.exec();
-    if(rc == QDialog::Rejected)
-        return;
-    QStringList files = fileDialog.selectedFiles();
-    QString fileName = files.at(0);
 
     QString s = QDir::fromNativeSeparators(fileName);
     compilerstr = leditCompiler->text();
@@ -575,23 +573,15 @@ void Properties::browseCompiler()
 
 void Properties::browseIncludes()
 {
-    QFileDialog fileDialog(this,tr("New Project Folder"),mypath,tr("Project Folder (propeller-load)"));
-
-    QStringList filenames;
     QString pathName;
-
-    fileDialog.setOptions(QFileDialog::ShowDirsOnly);
-    fileDialog.setViewMode(QFileDialog::Detail);
-    fileDialog.setFileMode(QFileDialog::Directory);
-    fileDialog.selectFile(mypath+"propeller-load");
-
-    int rc = fileDialog.exec();
-    if(rc == QDialog::Rejected)
-        return;
-
-    filenames = fileDialog.selectedFiles();
-    if(filenames.length() > 0)
-        pathName = filenames.at(0);
+    QString path = leditIncludes->text();
+    if(path.length() < 1)
+        path = mypath;
+#if defined(Q_WS_WIN32)
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select Propeller Loader Folder"), path, QFileDialog::ShowDirsOnly);
+#else
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select Propeller Loader Folder"), path, QFileDialog::ShowDirsOnly);
+#endif
 
     QString s = QDir::fromNativeSeparators(pathName);
     if(s.length() == 0)
@@ -601,6 +591,7 @@ void Properties::browseIncludes()
             s += "/";
     }
     leditIncludes->setText(s);
+
     qDebug() << "browseIncludes" << s;
 }
 
@@ -621,23 +612,14 @@ void Properties::browseWorkspace()
     else {
         path = QDir::rootPath();
     }
-    QFileDialog fileDialog(this,tr("Project Workspace"),path,tr("Project Workspace (*)"));
-
-    QStringList filenames;
     QString pathName;
-
-    fileDialog.setOptions(QFileDialog::ShowDirsOnly);
-    fileDialog.setViewMode(QFileDialog::Detail);
-    fileDialog.setFileMode(QFileDialog::Directory);
-    fileDialog.selectFile(path);
-
-    int rc = fileDialog.exec();
-    if(rc == QDialog::Rejected)
-        return;
-
-    filenames = fileDialog.selectedFiles();
-    if(filenames.length() > 0)
-        pathName = filenames.at(0);
+    if(path.length() < 1)
+        path = mypath;
+#if defined(Q_WS_WIN32)
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select Project Workspace Folder"), path, QFileDialog::ShowDirsOnly);
+#else
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select Project Workspace Folder"), path, QFileDialog::ShowDirsOnly);
+#endif
 
     QString s = QDir::fromNativeSeparators(pathName);
     if(s.length() == 0)
