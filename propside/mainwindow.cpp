@@ -829,11 +829,13 @@ void MainWindow::downloadSdCard()
 
     getApplicationSettings();
 
-    QString copts;
-    copts.append("-f "+fileName);
-
-    QStringList args = getLoaderParameters(copts);
+    // don't add fileName here since it can have spaces
+    QStringList args = getLoaderParameters("");
     removeArg(args, "a.out");
+
+    //QString s = QDir::toNativeSeparators(fileName);
+    args.append("-f");
+    args.append(this->shortFileName(fileName));
 
     btnConnected->setChecked(false);
     portListener->close(); // disconnect uart before use
@@ -876,7 +878,7 @@ void MainWindow::downloadSdCard()
     connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
 
     process->setProcessChannelMode(QProcess::MergedChannels);
-    process->setWorkingDirectory(sourcePath(projectFile));
+    process->setWorkingDirectory(sourcePath(fileName));
 
     procMutex.lock();
     procDone = false;
@@ -2065,7 +2067,9 @@ int MainWindow::getCompilerParameters(QStringList copts, QStringList *args)
     /* files */
     for(int n = 0; n < copts.length(); n++) {
         QString parm = copts[n];
-        if(parm.indexOf(" ") > 0) {
+        if(parm.length() == 0)
+            continue;
+        if(parm.indexOf(" ") > 0 && parm[0] == '-') {
             // handle stuff like -I path
             QStringList sp = parm.split(" ");
             for(int m = 0; m < sp.length(); m++)
@@ -2789,10 +2793,15 @@ void MainWindow::compileStatusClicked(void)
 {
     int n = 0;
     QTextCursor cur = compileStatus->textCursor();
+    QString line = cur.selectedText();
+    /* if more than one line, we have a select all */
+    QStringList lines = line.split(QChar::ParagraphSeparator);
+    if(lines.length()>1)
+        return;
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
     cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
     compileStatus->setTextCursor(cur);
-    QString line = cur.selectedText();
+    line = cur.selectedText();
     QRegExp regx(":[0-9]");
     QStringList fileList = line.split(regx);
     if(fileList.count() < 2)

@@ -70,13 +70,18 @@ NewProject::~NewProject()
 
 void NewProject::nameChanged()
 {
-    path->setText(mypath+name->text());
+    QString myname = name->text();
+    path->setText(mypath+myname);
     QDir path(mypath);
     okButton->setDisabled(true);
     if(path.exists()) {
-        if(name->text().length() > 0) {
+        /* make sure our new file has no spaces */
+        if(myname.indexOf(" ") > -1 || myname.indexOf("\t") > -1) {
+            return;
+        }
+        if(myname.length() > 0) {
             /* make sure our new path is not a file */
-            QFile isFile(mypath+name->text());
+            QFile isFile(mypath+myname);
             if(isFile.exists() == false)
                 okButton->setEnabled(true);
         }
@@ -100,12 +105,8 @@ QString NewProject::getCurrentPath()
 void NewProject::browsePath()
 {
     QString pathName;
-    QString fullname = mypath; //+name->text();
-    QFileDialog fileDialog(this,tr("New Project Folder"),fullname,tr("Project Folder (*)"));
-    QStringList filenames;
-    fileDialog.setOptions(QFileDialog::ShowDirsOnly);
-    fileDialog.setViewMode(QFileDialog::Detail);
-    fileDialog.setFileMode(QFileDialog::Directory);
+    QString fullname = mypath;
+
     if(mypath.length() == 0) {
         qDebug() << "mypath is empty.";
     }
@@ -113,13 +114,14 @@ void NewProject::browsePath()
         if(mypath.at(mypath.length()-1) == '/')
             mypath = mypath.left(mypath.length()-1);
     }
-    fileDialog.selectFile(mypath);
     mypath += "/";
 
-    if(fileDialog.exec())
-        filenames = fileDialog.selectedFiles();
-    if(filenames.length() > 0)
-        pathName = filenames.at(0);
+    QString filename = QFileDialog::getExistingDirectory(this,tr("New Project Folder"),fullname,QFileDialog::ShowDirsOnly);
+
+    if(filename.length() == 0)
+        return;
+
+    pathName = filename;
 
     QString s = QDir::fromNativeSeparators(pathName);
     if(s.length() == 0)
