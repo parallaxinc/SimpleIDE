@@ -181,8 +181,10 @@ void MainWindow::keyHandler(QKeyEvent* event)
     default:
         if(key & Qt::Key_Escape)
             return;
-        QChar c = event->text().at(0);
-        key = (int)c.toAscii();
+        if(event->text().length() > 0) {
+            QChar c = event->text().at(0);
+            key = (int)c.toAscii();
+        }
         break;
     }
     QByteArray barry;

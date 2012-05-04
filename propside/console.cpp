@@ -22,6 +22,7 @@ void Console::keyPressEvent(QKeyEvent *event)
     if(event->matches((QKeySequence::Copy))) {
         term->copyFromFile();
     }
+    else
     if(event->matches((QKeySequence::Paste))) {
         QClipboard *clip = QApplication::clipboard();
         parentMain->sendPortMessage(clip->text());
