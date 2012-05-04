@@ -1,5 +1,4 @@
 #include "hardware.h"
-#include "ui_hardware.h"
 #include "properties.h"
 #include "asideconfig.h"
 

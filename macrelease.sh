@@ -55,11 +55,11 @@ if test $? != 0; then
    exit 1
 fi
 
-cp ../propside/_SimpleIDE_UserGuide_.txt .
-if test $? != 0; then
-   echo "copy User Guide failed."
-   exit 1
-fi
+#cp ../propside/_SimpleIDE_UserGuide_.txt .
+#if test $? != 0; then
+#   echo "copy User Guide failed."
+#   exit 1
+#fi
 
 cp -r ../propside-demos/ demos
 if test $? != 0; then
@@ -98,8 +98,11 @@ if test $? != 0; then
    exit 1
 fi
 
-echo "now run hdiutil to make a .dmg"
-echo ""
-echo "hdiutil create -format UDBZ -srcfolder SimpleIDE SimpleIDE"
-echo ""
+cd ..
+zip ${PKG} -r ${NAME}
+if test $? != 0; then
+   echo "Zip failed."
+   exit 1
+fi
+
 exit 0

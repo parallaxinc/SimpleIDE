@@ -2,7 +2,7 @@
 #define HARDWARE_H
 
 #include <QDialog>
-
+#include "ui_hardware.h"
 #include "asideconfig.h"
 
 namespace Ui {

@@ -71,10 +71,12 @@ FORMS += hardware.ui \
     TermPrefs.ui
 RESOURCES += resources.qrc
 unix { 
-    DEFINES += EVENT_DRIVEN
     SOURCES += posix_qextserialport.cpp
 }
-unix:!macx:SOURCES += qextserialenumerator_unix.cpp
+unix:!macx: {
+    DEFINES += EVENT_DRIVEN
+    SOURCES += qextserialenumerator_unix.cpp
+}
 macx { 
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += -framework \
