@@ -33,9 +33,10 @@ void Console::keyPressEvent(QKeyEvent *event)
 }
 
 #if defined(EVENT_DRIVEN)
-enum { BUFFERSIZE = 128 };
+// odd BUFFERSIZE > about 16 and lines get recieved but are not printed on the console.
+enum { BUFFERSIZE = 16 };
 #else
-enum { BUFFERSIZE = 64 };
+enum { BUFFERSIZE = 32 };
 #endif
 
 void Console::updateReady(QextSerialPort* port)
@@ -54,14 +55,23 @@ void Console::updateReady(QextSerialPort* port)
     QString text = "";
 
     QTextCursor cur = this->textCursor();
+
+    cur.beginEditBlock(); // single redo/undo operation
+
     if(cur.block().length() > 200)
         cur.insertBlock();
+
     // always start at the end just in case someone clicked the window
     moveCursor(QTextCursor::End);
+    //qDebug() << QByteArray(buffer,length);
+
     for(int n = 0; n < length; n++)
     {
         char ch = buffer[n];
-        //insertPlainText(QString(" %1").arg(ch, 2, 16, QChar('0')));
+        //qDebug(QString(" %1 %2").arg(ch, 2, 16, QChar('0')).arg(QChar(ch)).toAscii());
+        //insertPlainText(QString(" %1 ").arg(ch, 2, 16, QChar('0')));
+        //insertPlainText(QChar(ch));
+
         switch(ch)
         {
             case 0: {
@@ -77,53 +87,27 @@ void Console::updateReady(QextSerialPort* port)
             }
             case '\n': {
                 cur.insertText(QString(ch));
+                //cur.insertBlock();
                 break;
             }
             case '\r': {
-                char nc;
-                text = toPlainText();
-
-                /* handle corner cases for terminal because \r can come after \n
-                 */
-                if(n+1 < length) {
-                    nc = buffer[n+1];
-                }
-                else if(n+1 <= BUFFERSIZE) {
-                    char bufft[1];
-                    if(port->bytesAvailable() > 0) {
-                        if(port->read(bufft,1) > -1) {
-                            buffer[n+1] = bufft[0];
-                            nc = buffer[n+1];
-                            length++;
-                        }
-                    }
-                }
-                else {
+                char nc = buffer[n+1];
+                if(n >= length-1) {
                     length = port->bytesAvailable();
-                    if(length > BUFFERSIZE/4) length = BUFFERSIZE/4;
+                    if(length > BUFFERSIZE) length = BUFFERSIZE;
                     length = port->read(buffer, length);
                     n = 0;
                     nc = buffer[n];
-                    // for loop incrs back to 0 for next round
-                    // we need to process nc == '\n' and other chars there
+                    /* for loop incrs back to 0 for next round
+                     * we need to process nc == '\n' and other chars there
+                     */
                     n--;
                 }
-
-                if(nc == '\n')
-                    continue;
-
-                int tlen = text.length();
-                int tcol = cur.block().length()-1;
-
-                tlen -= tcol;
-
-                // should never be < 0
-                if(tlen > -1) {
-                    text = text.mid(0,tlen);
-                    setPlainText(text);
-                    moveCursor(QTextCursor::End);
+                if(nc != '\n') {
+                    text = toPlainText();
+                    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
+                    cur.removeSelectedText();
                 }
-
                 break;
             }
             default: {
@@ -132,4 +116,5 @@ void Console::updateReady(QextSerialPort* port)
             }
         }
     }
+    cur.endEditBlock(); // end redo/undo
 }
