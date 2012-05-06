@@ -55,8 +55,6 @@ void Console::updateReady(QextSerialPort* port)
 
     QTextCursor cur = this->textCursor();
 
-    //cur.beginEditBlock(); // single redo/undo operation
-
     if(cur.block().length() > 200)
         cur.insertBlock();
 
@@ -115,7 +113,7 @@ void Console::updateReady(QextSerialPort* port)
             }
         }
     }
-    //cur.endEditBlock(); // end redo/undo
+    moveCursor(QTextCursor::End);
 }
 
 #else
@@ -144,8 +142,6 @@ void Console::updateReady(QextSerialPort* port)
     QString text = "";
 
     QTextCursor cur = this->textCursor();
-
-    //cur.beginEditBlock(); // single redo/undo operation
 
     if(cur.block().length() > 200)
         cur.insertBlock();
@@ -205,7 +201,7 @@ void Console::updateReady(QextSerialPort* port)
             }
         }
     }
-    //cur.endEditBlock(); // end redo/undo
+    moveCursor(QTextCursor::End);
 }
 
 #endif
