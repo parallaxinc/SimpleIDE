@@ -8,7 +8,7 @@
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 270
 
-#define SOURCE_FILE_TYPES "Source Files (*.c *.ccp *.h *.cogc *.spin) All (*)"
+#define SOURCE_FILE_TYPES "Source Files (*.c *.ccp *.h *.cogc *.spin);; All (*)"
 
 #define BUILD_TABNAME "Build Status"
 #define GDB_TABNAME "GDB Output"
@@ -32,15 +32,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(propDialog,SIGNAL(accepted()),this,SLOT(propertiesAccepted()));
 
     /* setup user's editor font */
-    QVariant fontv = settings->value(editorFontKey, this->font());
+    QVariant fontv = settings->value(editorFontKey);
     if(fontv.canConvert(QVariant::String)) {
         QString family = fontv.toString();
         editorFont = QFont(family);
     }
-    fontv = settings->value(fontSizeKey, this->font().pointSize());
+    else {
+        editorFont = QFont("Courier New", 10, QFont::Normal, false);
+    }
+
+    fontv = settings->value(fontSizeKey);
     if(fontv.canConvert(QVariant::Int)) {
         int size = fontv.toInt();
         editorFont.setPointSize(size);
+    }
+    else {
+        editorFont.setPointSize(10);
     }
 
 
@@ -383,15 +390,9 @@ void MainWindow::openFile(const QString &path)
     QString fileName = path;
 
     if (fileName.isNull()) {
-#if defined(Q_WS_X11)
-        /* this method uses a more flexible dialog box for linux */
-        QFileDialog filed(this,tr("Open File"),lastPath,tr(SOURCE_FILE_TYPES));
-        if (!filed.exec()) return;
-        QStringList files = filed.selectedFiles();
-        fileName = files.at(0);
-#else
-        fileName = fileDialog.getOpenFileName(this, tr("Open File"), lastPath, tr(SOURCE_FILE_TYPES));
-#endif
+//        fileName = fileDialog.getOpenFileName(this, tr("Open File"), lastPath, tr(SOURCE_FILE_TYPES));
+//#endif
+        fileName = QFileDialog::getOpenFileName(this, tr("Open File"), lastPath, SOURCE_FILE_TYPES); //"All (*)");
         if(fileName.length() > 0)
             lastPath = sourcePath(fileName);
     }
@@ -2074,8 +2075,11 @@ int MainWindow::getCompilerParameters(QStringList copts, QStringList *args)
         if(parm.indexOf(" ") > 0 && parm[0] == '-') {
             // handle stuff like -I path
             QStringList sp = parm.split(" ");
-            for(int m = 0; m < sp.length(); m++)
-                args->append(sp.at(m));
+            args->append(sp.at(0));
+            QString join = "";
+            for(int m = 1; m < sp.length(); m++)
+                join += sp.at(m) + " ";
+            args->append(join);
         }
         else {
             args->append(parm);
@@ -2703,10 +2707,11 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectMenu->addAction(tr("Add File Copy"), this,SLOT(addProjectFile()));
     projectMenu->addAction(tr("Add File Link"), this,SLOT(addProjectLink()));
     projectMenu->addAction(tr("Add Include Path"), this,SLOT(addProjectIncPath()));
-    projectMenu->addAction(tr("Add Library Link"), this,SLOT(addProjectLibFile()));
+    projectMenu->addAction(tr("Add Library File"), this,SLOT(addProjectLibFile()));
     projectMenu->addAction(tr("Add Library Path"), this,SLOT(addProjectLibPath()));
     projectMenu->addAction(tr("Delete"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
+    //projectMenu->addAction(tr("Show Map"), this,SLOT(showMapFile()));
     projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
 
     projectOptions = new ProjectOptions(this);
@@ -3166,7 +3171,7 @@ void MainWindow::addProjectLibFile()
 {
     // this is on the wish list and not finished yet
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
-    QStringList files = fileDialog.getOpenFileNames(this, tr("Add Library File"), lastPath, tr("Library Files (*.a)"));
+    QStringList files = fileDialog.getOpenFileNames(this, tr("Add Library File"), lastPath, tr("Library *.a Files (*.a)"));
 
     foreach(QString fileName, files) {
         //fileName = fileDialog.getOpenFileName(this, tr("Add File"), lastPath, tr(SOURCE_FILE_TYPES));
@@ -3204,18 +3209,9 @@ void MainWindow::addProjectLibFile()
 
 void MainWindow::addProjectIncPath()
 {
-    QFileDialog dialog(this, tr("Add Include Path"), lastPath);
-    dialog.setFileMode(QFileDialog::Directory);
-    dialog.setOptions(QFileDialog::ShowDirsOnly);
-    int rc = dialog.exec();
-    if(rc == QDialog::Rejected)
+    QString fileName = QFileDialog::getExistingDirectory(this,tr("Select Include Folder"),lastPath,QFileDialog::ShowDirsOnly);
+    if(fileName.length() < 1)
         return;
-
-    QString fileName = "";
-
-    QStringList files = dialog.selectedFiles();
-    if(files.length() > 0)
-        fileName = files.at(0);
 
     /*
      * Cancel makes filename blank. If fileName is blank, don't add.
@@ -3249,19 +3245,9 @@ void MainWindow::addProjectIncPath()
 
 void MainWindow::addProjectLibPath()
 {
-    QFileDialog dialog(this, tr("Add Library Path"), lastPath);
-    dialog.setFileMode(QFileDialog::Directory);
-    dialog.setOptions(QFileDialog::ShowDirsOnly);
-    int rc = dialog.exec();
-    if(rc == QDialog::Rejected)
+    QString fileName = QFileDialog::getExistingDirectory(this,tr("Select Library Folder"),lastPath,QFileDialog::ShowDirsOnly);
+    if(fileName.length() < 1)
         return;
-
-    QString fileName = "";
-
-    QStringList files = dialog.selectedFiles();
-    if(files.length() > 0)
-        fileName = files.at(0);
-
     /*
      * Cancel makes filename blank. If fileName is blank, don't add.
      */
@@ -3429,7 +3415,7 @@ void MainWindow::updateProjectTree(QString fileName)
     setWindowTitle(QString(ASideGuiKey)+" "+QDir::convertSeparators(projectFile));
 
     if(projectModel != NULL) delete projectModel;
-    projectModel = new CBuildTree(projName, this);
+    projectModel = new CBuildTree(projName+" Project Manager", this);
 
     QFile file(projectFile);
     if(!file.exists()) {
@@ -3534,7 +3520,7 @@ int MainWindow::makeDebugFiles(QString fileName)
        fileName.contains("-L",Qt::CaseInsensitive)
        ) {
         QMessageBox mbox(QMessageBox::Information, "Can't Show That",
-            "Can't show debug info on this entry.", QMessageBox::Ok);
+            "Can't show assembly file info on this entry.", QMessageBox::Ok);
         mbox.exec();
         return -1;
     }
