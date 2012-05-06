@@ -740,7 +740,7 @@ void QextSerialPort::close()
         flush();
         // Using both TCSAFLUSH and TCSANOW here discards any pending input
         tcsetattr(fd, TCSAFLUSH | TCSANOW, &old_termios);   // Restore termios
-        //tcsetattr(fd, TCSAFLUSH, &old_termios);   // Restore termios
+        // tcsetattr(fd, TCSAFLUSH, &old_termios);   // Restore termios
         // Be a good QIODevice and call QIODevice::close() before POSIX close()
         //  so the aboutToClose() signal is emitted at the proper time
         QIODevice::close();	// Flag the device as closed

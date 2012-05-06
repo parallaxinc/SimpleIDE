@@ -17,7 +17,7 @@ DEFINES += QEXTSERIALPORT_LIB
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=6
-DEFINES += FIXVERSION=9
+DEFINES += FIXVERSION=10
 SOURCES += main.cpp \
     editor.cpp \
     ctags.cpp \
@@ -71,10 +71,10 @@ FORMS += hardware.ui \
     TermPrefs.ui
 RESOURCES += resources.qrc
 unix { 
+    DEFINES += EVENT_DRIVEN
     SOURCES += posix_qextserialport.cpp
 }
 unix:!macx: {
-    DEFINES += EVENT_DRIVEN
     SOURCES += qextserialenumerator_unix.cpp
 }
 macx { 

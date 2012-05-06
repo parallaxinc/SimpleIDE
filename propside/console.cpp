@@ -32,8 +32,97 @@ void Console::keyPressEvent(QKeyEvent *event)
     }
 }
 
+#ifdef Q_WS_MAC
+
+void Console::updateReady(QextSerialPort* port)
+{
+    QString buffer = port->readAll();
+    int length = buffer.length();
+
+/*
+    char buffer[BUFFERSIZE+1];
+    int length = port->bytesAvailable();
+    if(length > BUFFERSIZE) length = BUFFERSIZE;
+    length = port->read(buffer, length);
+*/
+    if(length < 1)
+        return;
+
+    if(isEnabled == false)
+        return;
+
+    QString text = "";
+
+    QTextCursor cur = this->textCursor();
+
+    //cur.beginEditBlock(); // single redo/undo operation
+
+    if(cur.block().length() > 200)
+        cur.insertBlock();
+
+    // always start at the end just in case someone clicked the window
+    moveCursor(QTextCursor::End);
+    //qDebug() << QByteArray(buffer,length);
+
+    for(int n = 0; n < length; n++)
+    {
+        char ch = buffer[n].toAscii();
+        //qDebug(QString(" %1 %2").arg(ch, 2, 16, QChar('0')).arg(QChar(ch)).toAscii());
+        //insertPlainText(QString(" %1 ").arg(ch, 2, 16, QChar('0')));
+        //insertPlainText(QChar(ch));
+
+        switch(ch)
+        {
+            case 0: {
+                setPlainText("");
+                moveCursor(QTextCursor::End);
+                break;
+            }
+            case '\b': {
+                text = toPlainText();
+                setPlainText(text.mid(0,text.length()-1));
+                moveCursor(QTextCursor::End);
+                break;
+            }
+            case '\n': {
+                cur.insertText(QString(ch));
+                //cur.insertBlock();
+                break;
+            }
+            case '\r': {
+                char nc = buffer[n+1].toAscii();
+                if(n >= length-1) {
+                    length = port->bytesAvailable();
+                    buffer = port->readAll();
+                    length = buffer.length();
+                    n = 0;
+                    nc = buffer[n].toAscii();
+                    /* for loop incrs back to 0 for next round
+                     * we need to process nc == '\n' and other chars there
+                     */
+                    n--;
+                }
+                if(nc != '\n') {
+                    text = toPlainText();
+                    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
+                    cur.removeSelectedText();
+                }
+                break;
+            }
+            default: {
+                cur.insertText(QString(ch));
+                break;
+            }
+        }
+    }
+    //cur.endEditBlock(); // end redo/undo
+}
+
+#else
+
+
 #if defined(EVENT_DRIVEN)
-// odd BUFFERSIZE > about 16 and lines get recieved but are not printed on the console.
+// odd that on linux BUFFERSIZE > about 16 and lines get recieved but are not printed on the console.
 enum { BUFFERSIZE = 16 };
 #else
 enum { BUFFERSIZE = 32 };
@@ -56,7 +145,7 @@ void Console::updateReady(QextSerialPort* port)
 
     QTextCursor cur = this->textCursor();
 
-    cur.beginEditBlock(); // single redo/undo operation
+    //cur.beginEditBlock(); // single redo/undo operation
 
     if(cur.block().length() > 200)
         cur.insertBlock();
@@ -116,5 +205,7 @@ void Console::updateReady(QextSerialPort* port)
             }
         }
     }
-    cur.endEditBlock(); // end redo/undo
+    //cur.endEditBlock(); // end redo/undo
 }
+
+#endif
