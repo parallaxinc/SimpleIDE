@@ -43,11 +43,11 @@ NewProject::NewProject(QWidget *parent) : QDialog(parent)
 
     QVBoxLayout *blay = new QVBoxLayout(this);
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(nameLabel,1,0,1,1);
+    layout->addWidget(path,0,1,1,1); // tab order for widgets is according to add order
     layout->addWidget(name,1,1,1,1);
-    layout->addWidget(pathLabel,0,0,1,1);
-    layout->addWidget(path,0,1,1,1);
     layout->addWidget(btnBrowsePath,0,2,1,1);
+    layout->addWidget(nameLabel,1,0,1,1);
+    layout->addWidget(pathLabel,0,0,1,1);
 
     blay->addWidget(create);
     blay->addWidget(inst);
