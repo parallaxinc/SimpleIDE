@@ -21,6 +21,8 @@
 #define tabSpacesKey        "SimpleIDE_TabSpacesCount"
 #define loadDelayKey        "SimpleIDE_LoadDelay_us"
 #define resetTypeKey        "SimpleIDE_ResetType"
+#define spinCompilerKey     "SimpleIDE_SpinCompiler"
+#define altTerminalKey      "SimpleIDE_AltTerminal"
 #define hlEnableKey         "SimpleIDE_HighlightEnable"
 #define hlNumStyleKey       "SimpleIDE_HighlightNumberStyle"
 #define hlNumWeightKey      "SimpleIDE_HighlightNumberWeight"
@@ -90,6 +92,7 @@ private:
 
     void setupFolders();
     void setupGeneral();
+    void setupOptional();
     void addHighlights(QComboBox *box, QVector<PColor*> p);
     void setupHighlight();
 
@@ -132,6 +135,9 @@ private:
     QLineEdit   tabSpaces;
     QLineEdit   loadDelay;
     QComboBox   resetType;
+
+    QLineEdit   leditSpinCompiler;
+    QLineEdit   leditAltTerminal;
 
     QToolButton hlNumButton;
 

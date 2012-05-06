@@ -12,6 +12,7 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 
     setupFolders();
     setupGeneral();
+    //setupOptional(); // add later
     setupHighlight();
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -158,13 +159,19 @@ void Properties::setupFolders()
 void Properties::setupGeneral()
 {
     int row = 0;
-    QGridLayout *tlayout = new QGridLayout();
+
     QFrame *tbox = new QFrame();
-    tbox->setLayout(tlayout);
+
     tabWidget.addTab(tbox," General ");
+
+    QVBoxLayout *glayout = new QVBoxLayout();
+    tbox->setLayout(glayout);
 
     QSettings settings(publisherKey, ASideGuiKey,this);
     QVariant var;
+
+    QGroupBox *gbGeneral = new QGroupBox(tr("General Settings"),tbox);
+    QGridLayout *tlayout = new QGridLayout();
 
     QLabel *ltabs = new QLabel("Editor Tab Space Count",tbox);
     tlayout->addWidget(ltabs,row,0);
@@ -206,12 +213,72 @@ void Properties::setupGeneral()
         resetType.setCurrentIndex(var.toInt());
     }
 
-    QLabel *lclear = new QLabel("Clear options for next startup.",tbox);
+    QLabel *lclear = new QLabel(tr("Clear options for next startup."),tbox);
     tlayout->addWidget(lclear,row,0);
     QPushButton *clearSettings = new QPushButton(tr("Clear and Exit"),this);
     clearSettings->setToolTip(tr("Exit Program"));
     connect(clearSettings,SIGNAL(clicked()),this,SLOT(cleanSettings()));
     tlayout->addWidget(clearSettings,row,1);
+
+    gbGeneral->setLayout(tlayout);
+    glayout->addWidget(gbGeneral);
+}
+
+void Properties::setupOptional()
+{
+    QFrame *tbox = new QFrame();
+
+    tabWidget.addTab(tbox," Optional ");
+
+    QVBoxLayout *glayout = new QVBoxLayout();
+    tbox->setLayout(glayout);
+
+    QSettings settings(publisherKey, ASideGuiKey,this);
+    QVariant var;
+
+    QGroupBox *gbCompiler = new QGroupBox(tr("Spin Compiler"),tbox);
+
+    QLabel *compLabel = new QLabel();
+    // spin compiler either BSTC or Roy's SPIN compiler
+    var = settings.value(spinCompilerKey);
+    if(var.canConvert(QVariant::String)) {
+        QString s = var.toString();
+        if(s.length() > 0)
+            leditSpinCompiler.setText(s);
+    }
+    else {
+        leditSpinCompiler.setText(mypath+"bstc");
+    }
+    QPushButton *btnCompilerBrowse = new QPushButton(tr("Browse"), this);
+    QHBoxLayout *clayout = new QHBoxLayout();
+    clayout->addWidget(compLabel);
+    clayout->addWidget(&leditSpinCompiler);
+    clayout->addWidget(btnCompilerBrowse);
+
+
+    QGroupBox *gbAltTerm = new QGroupBox(tr("Alternative Terminal Program"),tbox);
+
+    QLabel *altTermLabel = new QLabel();
+    // spin compiler either BSTC or Roy's SPIN compiler
+    var = settings.value(altTerminalKey);
+    if(var.canConvert(QVariant::String)) {
+        QString s = var.toString();
+        if(s.length() > 0)
+            leditAltTerminal.setText(s);
+    }
+
+    QPushButton *btnAltTermBrowse = new QPushButton(tr("Browse"), this);
+    QHBoxLayout *atlayout = new QHBoxLayout();
+    atlayout->addWidget(altTermLabel);
+    atlayout->addWidget(&leditAltTerminal);
+    atlayout->addWidget(btnAltTermBrowse);
+
+    gbCompiler->setLayout(clayout);
+    gbAltTerm->setLayout(atlayout);
+
+    glayout->addWidget(gbCompiler);
+    glayout->addWidget(gbAltTerm);
+
 }
 
 void Properties::addHighlights(QComboBox *box, QVector<PColor*> pcolor)
