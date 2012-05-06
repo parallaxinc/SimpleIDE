@@ -3445,7 +3445,7 @@ void MainWindow::updateProjectTree(QString fileName)
     setWindowTitle(QString(ASideGuiKey)+" "+QDir::convertSeparators(projectFile));
 
     if(projectModel != NULL) delete projectModel;
-    projectModel = new CBuildTree(projName+" Project Manager", this);
+    projectModel = new CBuildTree(projName, this);
 
     QFile file(projectFile);
     if(!file.exists()) {
@@ -3975,9 +3975,9 @@ void MainWindow::setupFileMenu()
     menuBar()->addMenu(programMenu);
 
     programMenu->addAction(QIcon(":/images/runconsole.png"), tr("Run Console"), this, SLOT(programDebug()), Qt::Key_F8);
-    programMenu->addAction(QIcon(":/images/build.png"), tr("Build"), this, SLOT(programBuild()), Qt::Key_F9);
-    programMenu->addAction(QIcon(":/images/run.png"), tr("Run"), this, SLOT(programRun()), Qt::Key_F10);
-    programMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn"), this, SLOT(programBurnEE()), Qt::Key_F11);
+    programMenu->addAction(QIcon(":/images/build.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::Key_F9);
+    programMenu->addAction(QIcon(":/images/run.png"), tr("Run Project"), this, SLOT(programRun()), Qt::Key_F10);
+    programMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn Project"), this, SLOT(programBurnEE()), Qt::Key_F11);
 
 #if defined(GDBENABLE)
     QMenu *debugMenu = new QMenu(tr("&Debug"), this);
@@ -4115,10 +4115,10 @@ void MainWindow::setupToolBars()
     connect(btnProgramDebugTerm,SIGNAL(clicked()),this,SLOT(programDebug()));
     connect(btnProgramRun,SIGNAL(clicked()),this,SLOT(programRun()));
 
-    btnProgramBuild->setToolTip(tr("Build"));
-    btnProgramBurnEEP->setToolTip(tr("Burn EEPROM"));
-    btnProgramRun->setToolTip(tr("Run"));
-    btnProgramDebugTerm->setToolTip(tr("Run Console"));
+    btnProgramBuild->setToolTip(tr("Build Project"));
+    btnProgramBurnEEP->setToolTip(tr("Burn Project to EEPROM"));
+    btnProgramRun->setToolTip(tr("Run Project"));
+    btnProgramDebugTerm->setToolTip(tr("Run Project with Console"));
 
     ctrlToolBar = addToolBar(tr("Hardware"));
     ctrlToolBar->setLayoutDirection(Qt::RightToLeft);

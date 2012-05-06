@@ -41,7 +41,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>150</y>
+      <y>260</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -243,8 +243,8 @@
    <widget class="QCheckBox" name="checkBoxStripELF">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>150</y>
+      <x>130</x>
+      <y>220</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -298,24 +298,41 @@
      <string> Compile Options</string>
     </property>
    </widget>
-   <zorder>labelLinkOptions</zorder>
-   <zorder>label</zorder>
+   <widget class="QCheckBox" name="checkBoxTinylib">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>150</y>
+      <width>131</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>Check to include the floating point math library.</string>
+    </property>
+    <property name="text">
+     <string>Tiny Lib</string>
+    </property>
+   </widget>
+   <zorder>checkBoxStripELF</zorder>
    <zorder>checkBoxExceptions</zorder>
    <zorder>comboBoxMemoryMode</zorder>
    <zorder>comboBoxOptimization</zorder>
    <zorder>checkBoxNoFcache</zorder>
    <zorder>checkBoxPthreadLib</zorder>
    <zorder>checkBoxWarnAll</zorder>
+   <zorder>lineEditLinkOptions</zorder>
    <zorder>labelmem</zorder>
    <zorder>checkBox32bitDouble</zorder>
    <zorder>labelcompiler</zorder>
    <zorder>comboBoxCompiler</zorder>
    <zorder>labelOptimization</zorder>
    <zorder>checkBoxSimplePrintf</zorder>
-   <zorder>checkBoxStripELF</zorder>
    <zorder>checkBoxMathlib</zorder>
+   <zorder>labelLinkOptions</zorder>
+   <zorder>label</zorder>
+   <zorder>checkBoxTinylib</zorder>
    <zorder>lineEditCompOptions</zorder>
-   <zorder>lineEditLinkOptions</zorder>
   </widget>
  </widget>
  <resources/>
