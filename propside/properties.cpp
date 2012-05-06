@@ -566,6 +566,7 @@ void Properties::browseCompiler()
     QString s = QDir::fromNativeSeparators(fileName);
     compilerstr = leditCompiler->text();
     if(s.length() > 0) {
+        mypath = compiler;
         leditCompiler->setText(s);
     }
     qDebug() << "browseCompiler" << s;
@@ -591,6 +592,7 @@ void Properties::browseIncludes()
             s += "/";
     }
     leditIncludes->setText(s);
+    mypath = path;
 
     qDebug() << "browseIncludes" << s;
 }
@@ -630,6 +632,7 @@ void Properties::browseWorkspace()
     }
 
     leditWorkspace->setText(s);
+    settings.setValue(workspaceKey, s);
 }
 
 void Properties::accept()
