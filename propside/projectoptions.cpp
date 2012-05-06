@@ -49,10 +49,18 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
     ui->checkBoxWarnAll->setChecked(false);
     ui->checkBoxNoFcache->setChecked(false);
     ui->checkBoxExceptions->setChecked(false);
+    ui->checkBoxTinylib->setChecked(false);
     ui->checkBoxMathlib->setChecked(false);
     ui->checkBoxPthreadLib->setChecked(false);
-    ui->checkBoxSimplePrintf->setChecked(true);
-    ui->checkBoxStripELF->setChecked(true);
+    ui->checkBoxSimplePrintf->setChecked(false);
+    ui->checkBoxStripELF->setChecked(false);
+
+    // keep strip and no exceptions but hide them
+    ui->checkBoxStripELF->setVisible(false);
+    ui->checkBoxExceptions->setVisible(false);
+
+    // turn this on when Ted commits tiny lib
+    ui->checkBoxTinylib->setVisible(false);
 }
 
 ProjectOptions::~ProjectOptions()
@@ -68,6 +76,7 @@ void ProjectOptions::clearOptions()
     ui->checkBoxWarnAll->setChecked(false);
     ui->checkBoxNoFcache->setChecked(false);
     ui->checkBoxExceptions->setChecked(false);
+    ui->checkBoxTinylib->setChecked(false);
     ui->checkBoxMathlib->setChecked(false);
     ui->checkBoxPthreadLib->setChecked(false);
     ui->checkBoxSimplePrintf->setChecked(false);
@@ -107,6 +116,8 @@ QStringList ProjectOptions::getOptions()
         args.append(cflags+"::"+getCompOptions());
 
     /* libraries */
+    if(getTinyLib().length())
+        args.append(getTinyLib());
     if(getMathLib().length())
         args.append(getMathLib());
     if(getPthreadLib().length())
@@ -159,6 +170,10 @@ QString  ProjectOptions::getNoFcache()
 QString  ProjectOptions::getExceptions()
 {
     return ui->checkBoxExceptions->isChecked() ? QString ("-fexceptions") : QString ("-fno-exceptions");
+}
+QString  ProjectOptions::getTinyLib()
+{
+    return ui->checkBoxTinylib->isChecked() ? QString ("-ltiny") : QString ("");
 }
 QString  ProjectOptions::getMathLib()
 {
@@ -254,6 +269,10 @@ void ProjectOptions::setOptions(QString s)
             setExceptions(true);
         }
         else
+        if(s.contains("ltiny")) {
+            setTinyLib(true);
+        }
+        else
         if(s.contains("lm")) {
             setMathLib(true);
         }
@@ -320,6 +339,10 @@ void ProjectOptions::setNoFcache(bool s)
 void ProjectOptions::setExceptions(bool s)
 {
     ui->checkBoxExceptions->setChecked(s);
+}
+void ProjectOptions::setTinyLib(bool s)
+{
+    ui->checkBoxTinylib->setChecked(s);
 }
 void ProjectOptions::setMathLib(bool s)
 {

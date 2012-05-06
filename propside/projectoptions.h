@@ -43,6 +43,7 @@ public:
     QString getWarnAll();
     QString getNoFcache();
     QString getExceptions();
+    QString getTinyLib();
     QString getMathLib();
     QString getPthreadLib();
     QString getSimplePrintf();
@@ -59,6 +60,7 @@ public:
     void setWarnAll(bool s);
     void setNoFcache(bool s);
     void setExceptions(bool s);
+    void setTinyLib(bool s);
     void setMathLib(bool s);
     void setPthreadLib(bool s);
     void setSimplePrintf(bool s);
