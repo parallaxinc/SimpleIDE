@@ -1,3 +1,33 @@
+/*
+ * Copyright (c) 2012 Parallax, Inc.
+ * Initial Code by John Steven Denson
+ *
+ * All Rights for this file are MIT Licensed.
+ *
+
+ TERMS OF USE: MIT License
+ +--------------------------------------------------------------------
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files
+ (the "Software"), to deal in the Software without restriction,
+ including without limitation the rights to use, copy, modify, merge,
+ publish, distribute, sublicense, and/or sell copies of the Software,
+ and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+ */
+
 #include "mainwindow.h"
 #include "qextserialenumerator.h"
 #include "Sleeper.h"
@@ -1483,14 +1513,14 @@ void MainWindow::helpShow()
     QString ctags(tr("It uses the <a href=\"http://ctags.sourceforge.net\">ctags</a> binary program built from sources under GPLv2 for source browsing. "));
     QString icons(tr("Most icons used are from <a href=\"http://www.small-icons.com/packs/24x24-free-application-icons.htm\">www.aha-soft.com 24x24 Free Application Icons</a> " \
                      "and used according to Creative Commons Attribution 3.0 License.<br/><br/>"));
-    QString sources(tr("All sources are available at the <a href=\"http://propside.googlecode.com\">repository</a>.<br/>" \
+    QString sources(tr("All IDE sources are available at <a href=\"http://propside.googlecode.com\">repository</a>.<br/>" \
                        "All license text is included in the package."));
 
     QMessageBox::about(this, ASideGuiKey+tr(" help"),
         tr("<p><b>")+ASideGuiKey+tr("</b> is an integrated C development environment "\
            "which manages Propeller GCC program builds, and " \
            "loads programs to Propeller for many board types.</p>") +
-        tr("Visit <a href=\"https://sites.google.com/site/propellergcc/simpleide\">")+
+        tr("Visit <a href=\"https://sites.google.com/site/propellergcc\">")+
         ASideGuiKey+tr("</a> on the web for help and more information.<br/><br/>")+
         license+propgcc+ctags+icons+sources);
     //QMessageBox::aboutQt(this,tr("About Qt"));
