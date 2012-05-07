@@ -4,6 +4,7 @@
 #define publisherKey        "MicroCSource"
 #define publisherComKey     "MicroCSource.com"
 #define ASideGuiKey         "SimpleIDE"
+#define helpStartupKey      "SimpleIDE_ShowHelpStart"
 #define compilerKey         "SimpleIDE_Compiler"
 #define includesKey         "SimpleIDE_Includes"
 #define separatorKey        "SimpleIDE_PathSeparator"

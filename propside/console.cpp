@@ -123,8 +123,8 @@ enum { BUFFERSIZE = 32 };
 void Console::updateReady(QextSerialPort* port)
 {
     // improve performance a little
-    static char buffer[BUFFERSIZE+1];
-    static int length = port->bytesAvailable();
+    char buffer[BUFFERSIZE+1];
+    int length = port->bytesAvailable();
 
     if(length > BUFFERSIZE) length = BUFFERSIZE;
     length = port->read(buffer, length);
