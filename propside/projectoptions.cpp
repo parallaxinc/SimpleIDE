@@ -1,5 +1,5 @@
-#include "projectoptions.h"
 #include "ui_project.h"
+#include "projectoptions.h"
 #include "properties.h"
 #include "asideconfig.h"
 
