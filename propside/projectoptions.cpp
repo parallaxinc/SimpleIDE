@@ -57,10 +57,13 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
 
     // keep strip and no exceptions but hide them
     ui->checkBoxStripELF->setVisible(false);
-    ui->checkBoxExceptions->setVisible(false);
+    //ui->checkBoxExceptions->setVisible(false);
 
     // turn this on when Ted commits tiny lib
     ui->checkBoxTinylib->setVisible(false);
+
+    // start with project options
+    ui->tabWidget->setCurrentIndex(0);
 }
 
 ProjectOptions::~ProjectOptions()

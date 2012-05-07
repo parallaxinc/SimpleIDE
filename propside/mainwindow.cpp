@@ -2751,8 +2751,8 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     leftSplit->addWidget(projectOptions);
 
     QList<int> lsizes = leftSplit->sizes();
-    lsizes[0] = leftSplit->height()*1/4;
-    lsizes[1] = leftSplit->height()*3/4;
+    lsizes[0] = leftSplit->height()*2/3;
+    lsizes[1] = leftSplit->height()*1/3;
     leftSplit->setSizes(lsizes);
 
     leftSplit->adjustSize();
@@ -2798,8 +2798,8 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     rightSplit->addWidget(statusTabs);
 
     QList<int> rsizes = rightSplit->sizes();
-    rsizes[0] = rightSplit->height()*3/4;
-    rsizes[1] = rightSplit->height()*1/4;
+    rsizes[0] = rightSplit->height()*2/3;
+    rsizes[1] = rightSplit->height()*1/3;
     rightSplit->setSizes(rsizes);
 
     rightSplit->adjustSize();
