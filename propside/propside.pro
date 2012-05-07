@@ -71,13 +71,19 @@ FORMS += hardware.ui \
     TermPrefs.ui
 RESOURCES += resources.qrc
 unix { 
-    DEFINES += EVENT_DRIVEN
     SOURCES += posix_qextserialport.cpp
 }
 unix:!macx: {
+    # turn off EVENT_DRIVEN for serial port.
+    # while all data is received from serial port in linux,
+    # not all data is being displayed in the terminal.
+    # this is very sad because performance is not great.
+    #
+    #DEFINES += EVENT_DRIVEN
     SOURCES += qextserialenumerator_unix.cpp
 }
 macx { 
+    DEFINES += EVENT_DRIVEN
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += -framework \
         IOKit \
