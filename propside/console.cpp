@@ -39,12 +39,6 @@ void Console::updateReady(QextSerialPort* port)
     QString buffer = port->readAll();
     int length = buffer.length();
 
-/*
-    char buffer[BUFFERSIZE+1];
-    int length = port->bytesAvailable();
-    if(length > BUFFERSIZE) length = BUFFERSIZE;
-    length = port->read(buffer, length);
-*/
     if(length < 1)
         return;
 
@@ -128,8 +122,10 @@ enum { BUFFERSIZE = 32 };
 
 void Console::updateReady(QextSerialPort* port)
 {
-    char buffer[BUFFERSIZE+1];
-    int length = port->bytesAvailable();
+    // improve performance a little
+    static char buffer[BUFFERSIZE+1];
+    static int length = port->bytesAvailable();
+
     if(length > BUFFERSIZE) length = BUFFERSIZE;
     length = port->read(buffer, length);
 
@@ -140,7 +136,6 @@ void Console::updateReady(QextSerialPort* port)
         return;
 
     QString text = "";
-
     QTextCursor cur = this->textCursor();
 
     if(cur.block().length() > 200)
