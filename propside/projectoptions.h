@@ -39,6 +39,9 @@ public:
     QString getMemModel();
     QString getOptimization();
 
+    QToolButton *getHardwareButton();
+    QComboBox   *getHardwareComboBox();
+
     QString get32bitDoubles();
     QString getWarnAll();
     QString getNoFcache();

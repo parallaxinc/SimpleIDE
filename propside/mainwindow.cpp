@@ -25,7 +25,7 @@
  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+ +--------------------------------------------------------------------
  */
 
 #include "mainwindow.h"
@@ -56,6 +56,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     /* global settings */
     settings = new QSettings(publisherKey, ASideGuiKey, this);
+
+    /* show help dialog */
+    QVariant helpStartup = settings->value(helpStartupKey,true);
+    if(helpStartup.canConvert(QVariant::Bool)) {
+        if(helpStartup == true)
+            helpShow();
+    }
 
     /* setup properties dialog */
     propDialog = new Properties(this);
@@ -1513,16 +1520,21 @@ void MainWindow::helpShow()
     QString ctags(tr("It uses the <a href=\"http://ctags.sourceforge.net\">ctags</a> binary program built from sources under GPLv2 for source browsing. "));
     QString icons(tr("Most icons used are from <a href=\"http://www.small-icons.com/packs/24x24-free-application-icons.htm\">www.aha-soft.com 24x24 Free Application Icons</a> " \
                      "and used according to Creative Commons Attribution 3.0 License.<br/><br/>"));
-    QString sources(tr("All IDE sources are available at <a href=\"http://propside.googlecode.com\">repository</a>.<br/>" \
-                       "All license text is included in the package."));
+    QString sources(tr("All IDE sources are available at <a href=\"http://propside.googlecode.com\">repository</a>. " \
+                       "Licenses are in this package."));
+    QString cancel(tr("<br><br>Press the 'Cancel' button to never show this again at startup.<br>"));
 
-    QMessageBox::about(this, ASideGuiKey+tr(" help"),
+    int rc = QMessageBox::information(this, ASideGuiKey+tr(" help"),
         tr("<p><b>")+ASideGuiKey+tr("</b> is an integrated C development environment "\
-           "which manages Propeller GCC program builds, and " \
-           "loads programs to Propeller for many board types.</p>") +
+           "which can build and loads Propeller GCC " \
+           "programs to Propeller for many board types.</p>") +
         tr("Visit <a href=\"https://sites.google.com/site/propellergcc\">")+
         ASideGuiKey+tr("</a> on the web for help and more information.<br/><br/>")+
-        license+propgcc+ctags+icons+sources);
+        license+propgcc+ctags+icons+sources+cancel,QMessageBox::Cancel, QMessageBox::Ok);
+    if(rc == QMessageBox::Cancel) {
+        settings->setValue(helpStartupKey,QVariant(false));
+        qDebug() << "Don't show again.";
+    }
     //QMessageBox::aboutQt(this,tr("About Qt"));
 }
 
@@ -2724,13 +2736,14 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     vsplit->addWidget(leftSplit);
 
     /* project tree */
+    QTabWidget *projectTab = new QTabWidget(this);
     projectTree = new ProjectTree(this);
-    projectTree->setMinimumWidth(PROJECT_WIDTH);
-    projectTree->setMaximumWidth(PROJECT_WIDTH);
+    projectTree->setMinimumWidth(PROJECT_WIDTH-1);
+    projectTree->setMaximumWidth(PROJECT_WIDTH-1);
     projectTree->setToolTip(tr("Current Project"));
     connect(projectTree,SIGNAL(clicked(QModelIndex)),this,SLOT(projectTreeClicked(QModelIndex)));
-    //connect(projectTree,SIGNAL(deleteItem()),this,SLOT(deleteProjectFile()));
-    leftSplit->addWidget(projectTree);
+    projectTab->addTab(projectTree,tr("Project Manager"));
+    leftSplit->addWidget(projectTab);
 
     // projectMenu is popup for projectTree
     projectMenu = new QMenu(QString("Project Menu"));
@@ -2748,11 +2761,18 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectOptions->setMinimumWidth(PROJECT_WIDTH);
     projectOptions->setMaximumWidth(PROJECT_WIDTH);
     projectOptions->setToolTip(tr("Project Options"));
+
+    cbBoard = projectOptions->getHardwareComboBox();
+    cbBoard->setToolTip(tr("Board Type Select"));
+    connect(cbBoard,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentBoard(int)));
+    QToolButton *hardwareButton = projectOptions->getHardwareButton();
+    connect(hardwareButton,SIGNAL(clicked()),this,SLOT(initBoardTypes()));
+
     leftSplit->addWidget(projectOptions);
 
     QList<int> lsizes = leftSplit->sizes();
-    lsizes[0] = leftSplit->height()*2/3;
-    lsizes[1] = leftSplit->height()*1/3;
+    lsizes[0] = leftSplit->height()*60/100;
+    lsizes[1] = leftSplit->height()*40/100;
     leftSplit->setSizes(lsizes);
 
     leftSplit->adjustSize();
@@ -2798,8 +2818,8 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     rightSplit->addWidget(statusTabs);
 
     QList<int> rsizes = rightSplit->sizes();
-    rsizes[0] = rightSplit->height()*2/3;
-    rsizes[1] = rightSplit->height()*1/3;
+    rsizes[0] = rightSplit->height()*63/100;
+    rsizes[1] = rightSplit->height()*37/100;
     rightSplit->setSizes(rsizes);
 
     rightSplit->adjustSize();
@@ -2812,7 +2832,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     progress->hide();
 
     programSize = new QLabel();
-    programSize->setMinimumWidth(PROJECT_WIDTH+2);
+    programSize->setMinimumWidth(PROJECT_WIDTH+6);
     status = new QLabel();
 
     statusBar->addPermanentWidget(progress);
@@ -4122,15 +4142,17 @@ void MainWindow::setupToolBars()
 
     ctrlToolBar = addToolBar(tr("Hardware"));
     ctrlToolBar->setLayoutDirection(Qt::RightToLeft);
+#ifdef BOARD_TOOLBAR
     cbBoard = new QComboBox(this);
-    cbPort = new QComboBox(this);
     cbBoard->setLayoutDirection(Qt::LeftToRight);
-    cbPort->setLayoutDirection(Qt::LeftToRight);
     cbBoard->setToolTip(tr("Board Type Select"));
-    cbPort->setToolTip(tr("Serial Port Select"));
     cbBoard->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    cbPort->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(cbBoard,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentBoard(int)));
+#endif
+    cbPort = new QComboBox(this);
+    cbPort->setLayoutDirection(Qt::LeftToRight);
+    cbPort->setToolTip(tr("Serial Port Select"));
+    cbPort->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
 
     btnConnected = new QToolButton(this);
@@ -4145,17 +4167,19 @@ void MainWindow::setupToolBars()
     QToolButton *btnPortScan = new QToolButton(this);
     btnPortScan->setToolTip(tr("Rescan Serial Ports"));
     connect(btnPortScan,SIGNAL(clicked()),this,SLOT(enumeratePorts()));
-
+#ifdef BOARD_TOOLBAR
     QToolButton *btnLoadBoards = new QToolButton(this);
     btnLoadBoards->setToolTip(tr("Reload Board List"));
     connect(btnLoadBoards,SIGNAL(clicked()),this,SLOT(initBoardTypes()));
-
+#endif
     addToolButton(ctrlToolBar, btnConnected, QString(":/images/console.png"));
     addToolButton(ctrlToolBar, reset, QString(":/images/reset.png"));
     addToolButton(ctrlToolBar, btnPortScan, QString(":/images/refresh.png"));
     ctrlToolBar->addWidget(cbPort);
+#ifdef BOARD_TOOLBAR
     addToolButton(ctrlToolBar, btnLoadBoards, QString(":/images/hardware.png"));
     ctrlToolBar->addWidget(cbBoard);
+#endif
     ctrlToolBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 }
 

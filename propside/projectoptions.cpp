@@ -88,6 +88,15 @@ void ProjectOptions::clearOptions()
     ui->lineEditLinkOptions->setText("");
 }
 
+QToolButton *ProjectOptions::getHardwareButton()
+{
+    return ui->hardwareToolButton;
+}
+
+QComboBox   *ProjectOptions::getHardwareComboBox()
+{
+    return ui->hardwareComboBox;
+}
 
 QStringList ProjectOptions::getOptions()
 {
