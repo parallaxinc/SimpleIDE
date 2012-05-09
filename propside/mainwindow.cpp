@@ -471,6 +471,7 @@ void MainWindow::openFileName(QString fileName)
         if (file.open(QFile::ReadOnly))
         {
             QTextStream in(&file);
+            in.setCodec("UTF-8");
             data = in.readAll();
             file.close();
             data.replace('\t',"    ");
@@ -774,8 +775,8 @@ void MainWindow::saveFile()
         editorTabs->setTabToolTip(n,fileName);
         if (!fileName.isEmpty()) {
             QFile file(fileName);
-            if (file.open(QFile::WriteOnly | QFile::Text)) {
-                file.write(data.toAscii());
+            if (file.open(QFile::WriteOnly)) {
+                file.write(data.toUtf8());
                 file.close();
             }
         }
@@ -826,7 +827,7 @@ void MainWindow::saveAsFile(const QString &path)
         if (!fileName.isEmpty()) {
             QFile file(fileName);
             if (file.open(QFile::WriteOnly | QFile::Text)) {
-                file.write(data.toAscii());
+                file.write(data.toUtf8());
                 file.close();
             }
             setCurrentFile(fileName);
