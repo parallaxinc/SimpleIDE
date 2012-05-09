@@ -8,7 +8,11 @@ class AboutDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit AboutDialog(QWidget *parent = 0);
+    explicit AboutDialog(QString landing, QWidget *parent = 0);
+    void    show();
+
+private:
+    QCheckBox *showSplashStartCheckBox;
 
 signals:
 
