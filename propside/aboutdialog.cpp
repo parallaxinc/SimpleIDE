@@ -1,7 +1,7 @@
 #include "aboutdialog.h"
 #include "properties.h"
 
-AboutDialog::AboutDialog(QWidget *parent) :
+AboutDialog::AboutDialog(QString landing, QWidget *parent) :
     QDialog(parent)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -17,16 +17,39 @@ AboutDialog::AboutDialog(QWidget *parent) :
             .arg(IDEVERSION).arg(MINVERSION).arg(FIXVERSION);
     layout->addWidget(new QLabel(version+"\n"+tr("Copyright (C) 2012, Parallax, Inc.")));
 
+    QLabel *landingLabel = new QLabel(landing);
+    landingLabel->setOpenExternalLinks(true);
+    layout->addWidget(landingLabel);
+
+    showSplashStartCheckBox = new QCheckBox (tr("Show this window at startup."));
+    showSplashStartCheckBox->setChecked(true);
+
+    layout->addWidget(showSplashStartCheckBox);
     layout->addWidget(buttonBox);
     setLayout(layout);
 }
 
 void AboutDialog::accept()
 {
+    QSettings settings(publisherKey, ASideGuiKey, this);
+    if(showSplashStartCheckBox->isChecked() == false)
+        settings.setValue(helpStartupKey, false);
+    else
+        settings.setValue(helpStartupKey, true);
     this->done(QDialog::Accepted);
 }
 
 void AboutDialog::reject()
 {
     this->done(QDialog::Rejected);
+}
+
+void AboutDialog::show()
+{
+    QSettings settings(publisherKey, ASideGuiKey, this);
+    QVariant helpStartup = settings.value(helpStartupKey,true);
+    if(helpStartup.canConvert(QVariant::Bool)) {
+        showSplashStartCheckBox->setChecked(helpStartup.toBool());
+    }
+    QDialog::show();
 }

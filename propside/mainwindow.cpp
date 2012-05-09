@@ -57,13 +57,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* global settings */
     settings = new QSettings(publisherKey, ASideGuiKey, this);
 
-    /* show help dialog */
-    QVariant helpStartup = settings->value(helpStartupKey,true);
-    if(helpStartup.canConvert(QVariant::Bool)) {
-        if(helpStartup == true)
-            helpShow();
-    }
-
     /* setup properties dialog */
     propDialog = new Properties(this);
     connect(propDialog,SIGNAL(accepted()),this,SLOT(propertiesAccepted()));
@@ -206,6 +199,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         Editor *ed = editors->at(tab);
         ed->setFocus();
         ed->raise();
+    }
+
+    /* show help dialog */
+    QVariant helpStartup = settings->value(helpStartupKey,true);
+    if(helpStartup.canConvert(QVariant::Bool)) {
+        if(helpStartup == true)
+            aboutShow();
     }
 }
 
@@ -1502,8 +1502,15 @@ void MainWindow::terminalClosed()
 void MainWindow::setupHelpMenu()
 {
     QMenu *helpMenu = new QMenu(tr("&Help"), this);
+
+    aboutLanding = "<html><body><br/>"+tr("Visit ") +
+        "<a href=\"https://sites.google.com/site/propellergcc\">"+
+        ASideGuiKey+"</a>"+
+        tr(" for User Guide and more information.")+
+        "</body></html>";
+
     menuBar()->addMenu(helpMenu);
-    aboutDialog = new AboutDialog(this);
+    aboutDialog = new AboutDialog(aboutLanding, this);
 
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
     helpMenu->addAction(QIcon(":/images/helphint.png"), tr("&Help"), this, SLOT(helpShow()));
@@ -1527,11 +1534,10 @@ void MainWindow::helpShow()
 
     int rc = QMessageBox::information(this, ASideGuiKey+tr(" help"),
         tr("<p><b>")+ASideGuiKey+tr("</b> is an integrated C development environment "\
-           "which can build and loads Propeller GCC " \
+           "which can build and load Propeller GCC " \
            "programs to Propeller for many board types.</p>") +
-        tr("Visit <a href=\"https://sites.google.com/site/propellergcc\">")+
-        ASideGuiKey+tr("</a> on the web for help and more information.<br/><br/>")+
-        license+propgcc+ctags+icons+sources+cancel,QMessageBox::Cancel, QMessageBox::Ok);
+        aboutLanding+license+propgcc+ctags+icons+sources+cancel,
+        QMessageBox::Cancel, QMessageBox::Ok);
     if(rc == QMessageBox::Cancel) {
         settings->setValue(helpStartupKey,QVariant(false));
         qDebug() << "Don't show again.";

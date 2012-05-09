@@ -198,6 +198,7 @@ private:
     QString sourcePath(QString file);
 
     AboutDialog     *aboutDialog;
+    QString         aboutLanding;
 
     QSettings       *settings;
     QString         aSideLoader;
