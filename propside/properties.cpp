@@ -633,8 +633,13 @@ void Properties::browseCompiler()
     QString s = QDir::fromNativeSeparators(fileName);
     compilerstr = leditCompiler->text();
     if(s.length() > 0) {
-        mypath = compiler;
+        mypath = s;
         leditCompiler->setText(s);
+        if(s.lastIndexOf("/bin/") > 0) {
+            s = s.mid(0,s.lastIndexOf("/bin/"))+"/propeller-load/";
+            mypath = s;
+            leditIncludes->setText(mypath);
+        }
     }
     qDebug() << "browseCompiler" << s;
 }
@@ -642,9 +647,8 @@ void Properties::browseCompiler()
 void Properties::browseIncludes()
 {
     QString pathName;
-    QString path = leditIncludes->text();
-    if(path.length() < 1)
-        path = mypath;
+    QString path = mypath;
+
 #if defined(Q_WS_WIN32)
     pathName = QFileDialog::getExistingDirectory(this,tr("Select Propeller Loader Folder"), path, QFileDialog::ShowDirsOnly);
 #else
