@@ -14,8 +14,7 @@ public:
 private:
     bool isEnabled;
 
-    void updateASCII(QextSerialPort* port, char *buffer, int length);
-    void updateUTF8(QextSerialPort* port, char *buffer, int length);
+    void updateASCII(QextSerialPort* port, QString buffer, int length);
 
 protected:
     void keyPressEvent(QKeyEvent* event);
