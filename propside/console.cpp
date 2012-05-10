@@ -49,10 +49,67 @@ void Console::updateReady(QextSerialPort* port)
 
     QTextCursor cur = this->textCursor();
 
-    /* may need an ASCII/UTF8 selector on terminal? we'll see. */
-    //updateASCII(port, buffer, length);
-    updateUTF8(port, buffer, length);
+    if(cur.block().length() > 200)
+        cur.insertBlock();
+
+    // always start at the end just in case someone clicked the window
+    moveCursor(QTextCursor::End);
+    //qDebug() << QByteArray(buffer,length);
+
+    for(int n = 0; n < length; n++)
+    {
+        char ch = buffer[n].toAscii();
+        //qDebug(QString(" %1 %2").arg(ch, 2, 16, QChar('0')).arg(QChar(ch)).toAscii());
+        //insertPlainText(QString(" %1 ").arg(ch, 2, 16, QChar('0')));
+        //insertPlainText(QChar(ch));
+
+        switch(ch)
+        {
+            case 0: {
+                setPlainText("");
+                moveCursor(QTextCursor::End);
+                break;
+            }
+            case '\b': {
+                text = toPlainText();
+                setPlainText(text.mid(0,text.length()-1));
+                moveCursor(QTextCursor::End);
+                break;
+            }
+            case '\n': {
+                cur.insertText(QString(ch));
+                //cur.insertBlock();
+                break;
+            }
+            case '\r': {
+                char nc = buffer[n+1].toAscii();
+                if(n >= length-1) {
+                    length = port->bytesAvailable();
+                    buffer = port->readAll();
+                    length = buffer.length();
+                    n = 0;
+                    nc = buffer[n].toAscii();
+                    /* for loop incrs back to 0 for next round
+                     * we need to process nc == '\n' and other chars there
+                     */
+                    n--;
+                }
+                if(nc != '\n') {
+                    text = toPlainText();
+                    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
+                    cur.removeSelectedText();
+                }
+                break;
+            }
+            default: {
+                cur.insertText(QString(ch));
+                break;
+            }
+        }
+    }
+    moveCursor(QTextCursor::End);
 }
+
 
 #else
 
@@ -83,7 +140,6 @@ void Console::updateReady(QextSerialPort* port)
     //updateASCII(port, buffer, length);
     updateUTF8(port, buffer, length);
 }
-#endif
 
 void Console::updateASCII(QextSerialPort* port, char *buffer, int length)
 {
@@ -150,6 +206,7 @@ void Console::updateASCII(QextSerialPort* port, char *buffer, int length)
     }
     moveCursor(QTextCursor::End);
 }
+#endif
 
 /*
  * obviously this needs to change.
