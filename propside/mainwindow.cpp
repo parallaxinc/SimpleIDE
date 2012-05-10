@@ -3036,17 +3036,8 @@ void MainWindow::addProjectFile()
         lastPath = sourcePath(fileName);
 #if 1
         if(isOutputFile(fileName) == false) {
-            QFile copy(sourcePath(projectFile)+this->shortFileName(fileName));
-            QString copystr = "";
             QFile reader(fileName);
-            if(reader.open(QFile::ReadOnly | QFile::Text)) {
-                copystr = reader.readAll();
-                reader.close();
-            }
-            if(copy.open(QFile::WriteOnly | QFile::Text)) {
-                copy.write(copystr.toAscii());
-                copy.close();
-            }
+            reader.copy(sourcePath(projectFile)+this->shortFileName(fileName));
         }
         addProjectListFile(this->shortFileName(fileName));
 #else
@@ -3069,17 +3060,8 @@ void MainWindow::addProjectFile()
                 // don't copy .side files
             }
             else {
-                QFile copy(sourcePath(projectFile)+this->shortFileName(fileName));
-                QString copystr = "";
                 QFile reader(fileName);
-                if(reader.open(QFile::ReadOnly | QFile::Text)) {
-                    copystr = reader.readAll();
-                    reader.close();
-                }
-                if(copy.open(QFile::WriteOnly | QFile::Text)) {
-                    copy.write(copystr.toAscii());
-                    copy.close();
-                }
+                reader.copy(sourcePath(projectFile)+this->shortFileName(fileName));
             }
         }
 
