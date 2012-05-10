@@ -32,10 +32,22 @@ void Console::keyPressEvent(QKeyEvent *event)
     }
 }
 
+#if defined(EVENT_DRIVEN)
+// odd that on linux BUFFERSIZE > about 16 and lines get recieved but are not printed on the console.
+enum { BUFFERSIZE = 16 };
+#else
+enum { BUFFERSIZE = 64 };
+#endif
+
 void Console::updateReady(QextSerialPort* port)
 {
-    QString buffer = port->readAll();
-    int length = buffer.length();
+    /* Using QString buffer = port.readAll() ... doesn't work.
+     * Clear screen 0's get lost. Use char buffer instead.
+     */
+    char buffer[BUFFERSIZE+1];
+    int length = port->bytesAvailable();
+    length = (length > BUFFERSIZE) ? BUFFERSIZE : length;
+    port->readData(buffer, length);
 
     if(length < 1)
         return;
@@ -43,11 +55,6 @@ void Console::updateReady(QextSerialPort* port)
     if(isEnabled == false)
         return;
 
-    updateASCII(port, buffer, length);
-}
-
-void Console::updateASCII(QextSerialPort* port, QString buffer, int length)
-{
     QString text = "";
     QTextCursor cur = this->textCursor();
 
@@ -58,47 +65,47 @@ void Console::updateASCII(QextSerialPort* port, QString buffer, int length)
     moveCursor(QTextCursor::End);
     //qDebug() << QByteArray(buffer,length);
 
-	static bool utfparse = false;
-	static int utfbytes = 0;
-	static int utf8 = 0;
+    static bool utfparse = false;
+    static int utfbytes = 0;
+    static int utf8 = 0;
 
     for(int n = 0; n < length; n++)
     {
-        char ch = buffer[n].toAscii();
+        char ch = buffer[n];
+
         //qDebug(QString(" %1 %2").arg(ch, 2, 16, QChar('0')).arg(QChar(ch)).toAscii());
         //insertPlainText(QString(" %1 ").arg(ch, 2, 16, QChar('0')));
         //insertPlainText(QChar(ch));
 
-		if (ch & 0x80) {	//UTF-8 parsing and handling
-			if (utfparse == true) {
+        if (ch & 0x80) {    //UTF-8 parsing and handling
+            if (utfparse == true) {
 
-				utf8 <<= 6;
-				utf8 |= (ch & 0x3F);
+                utf8 <<= 6;
+                utf8 |= (ch & 0x3F);
 
-				utfbytes--;
+                utfbytes--;
 
-				if (utfbytes == 0) {
-					utfparse = false;
-					cur.insertText(QChar(utf8));
-				}
-			} else {
-				utfparse = true;
-				utf8 = 0;
+                if (utfbytes == 0) {
+                    utfparse = false;
+                    cur.insertText(QChar(utf8));
+                }
+            } else {
+                utfparse = true;
+                utf8 = 0;
 
-				while (ch & 0x80) {
-					ch <<= 1;
-					utfbytes++;
-				}
+                while (ch & 0x80) {
+                    ch <<= 1;
+                    utfbytes++;
+                }
 
-				ch >>= utfbytes;
+                ch >>= utfbytes;
 
-				utf8 = (int)ch;
+                utf8 = (int)ch;
 
-				utfbytes--;
-			}
-
-			continue;
-		}
+                utfbytes--;
+            }
+            continue;
+        }
 
         switch(ch)
         {
@@ -115,17 +122,17 @@ void Console::updateASCII(QextSerialPort* port, QString buffer, int length)
             }
             case '\n': {
                 cur.insertText(QString(ch));
-                //cur.insertBlock();
+                moveCursor(QTextCursor::End);
                 break;
             }
             case '\r': {
-                char nc = buffer[n+1].toAscii();
+                char nc = buffer[n+1];
                 if(n >= length-1) {
                     length = port->bytesAvailable();
-                    buffer = port->readAll();
-                    length = buffer.length();
+                    length = (length > BUFFERSIZE) ? BUFFERSIZE : length;
+                    port->readData(buffer, length);
                     n = 0;
-                    nc = buffer[n].toAscii();
+                    nc = buffer[n];
                     /* for loop incrs back to 0 for next round
                      * we need to process nc == '\n' and other chars there
                      */
@@ -140,9 +147,9 @@ void Console::updateASCII(QextSerialPort* port, QString buffer, int length)
             }
             default: {
                 cur.insertText(QString(ch));
+                moveCursor(QTextCursor::End);
                 break;
             }
         }
     }
-    moveCursor(QTextCursor::End);
 }

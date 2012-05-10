@@ -34,13 +34,20 @@ void Terminal::init()
 
     QPushButton *buttonClear = new QPushButton(tr("Clear"),this);
     connect(buttonClear,SIGNAL(clicked()), this, SLOT(clearScreen()));
+    buttonClear->setAutoDefault(false);
+    buttonClear->setDefault(false);
 
     buttonEnable = new QPushButton(tr("Disable"),this);
     connect(buttonEnable,SIGNAL(clicked()), this, SLOT(toggleEnable()));
+    buttonEnable->setAutoDefault(false);
+    buttonEnable->setDefault(false);
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+    QPushButton* button = buttonBox->button(QDialogButtonBox::Ok);
+    button->setAutoDefault(true);
+    button->setDefault(true);
 
     QHBoxLayout *butLayout = new QHBoxLayout();
     termLayout->addLayout(butLayout);

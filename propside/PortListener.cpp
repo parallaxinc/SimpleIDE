@@ -130,6 +130,7 @@ void PortListener::run()
         if(len > 0) {
             // let the updater read from the port
             emit updateEvent(port);
+            msleep(5);
         }
     }
 }
