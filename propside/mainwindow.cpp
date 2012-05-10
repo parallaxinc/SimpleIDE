@@ -2126,8 +2126,10 @@ int MainWindow::getCompilerParameters(QStringList copts, QStringList *args)
             QStringList sp = parm.split(" ");
             args->append(sp.at(0));
             QString join = "";
-            for(int m = 1; m < sp.length(); m++)
+            int m;
+            for(m = 1; m < sp.length()-1; m++)
                 join += sp.at(m) + " ";
+            join += sp.at(m);
             args->append(join);
         }
         else {
@@ -3034,72 +3036,13 @@ void MainWindow::addProjectFile()
             return;
 
         lastPath = sourcePath(fileName);
-#if 1
+
+        /* hmm, should be check for source files */
         if(isOutputFile(fileName) == false) {
             QFile reader(fileName);
             reader.copy(sourcePath(projectFile)+this->shortFileName(fileName));
+            addProjectListFile(this->shortFileName(fileName));
         }
-        addProjectListFile(this->shortFileName(fileName));
-#else
-        QString ext = fileName.mid(fileName.lastIndexOf("."));
-        if(ext.length()) {
-            ext = ext.toLower();
-            if(ext == ".cog") {
-                // don't copy .cog files
-            }
-            else if(ext == ".dat") {
-                // don't copy .dat files
-            }
-            else if(ext == ".o") {
-                // don't copy .o files
-            }
-            else if(ext == ".out") {
-                // don't copy .out files
-            }
-            else if(ext == ".side") {
-                // don't copy .side files
-            }
-            else {
-                QFile reader(fileName);
-                reader.copy(sourcePath(projectFile)+this->shortFileName(fileName));
-            }
-        }
-
-        QString projstr = "";
-        QStringList list;
-        QString mainFile;
-
-        QFile file(projectFile);
-        if(file.exists()) {
-            if(file.open(QFile::ReadOnly | QFile::Text)) {
-                projstr = file.readAll();
-                file.close();
-            }
-            list = projstr.split("\n");
-            mainFile = list[0];
-            projstr = "";
-            for(int n = 0; n < list.length(); n++) {
-                QString arg = list[n];
-                if(!arg.length())
-                    continue;
-                if(arg.at(0) == '>')
-                    continue;
-                projstr += arg + "\n";
-            }
-            projstr += this->shortFileName(fileName) + "\n";
-            list.clear();
-            list = projectOptions->getOptions();
-
-            foreach(QString arg, list) {
-                projstr += ">"+arg+"\n";
-            }
-            if(file.open(QFile::WriteOnly | QFile::Text)) {
-                file.write(projstr.toAscii());
-                file.close();
-            }
-        }
-        updateProjectTree(sourcePath(projectFile)+mainFile);
-#endif
     }
 }
 
