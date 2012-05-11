@@ -77,14 +77,12 @@ RESOURCES += resources.qrc
 
 unix:SOURCES += qextserialport_unix.cpp
 unix:!macx { 
-    # turn off EVENT_DRIVEN for serial port.
-    # while all data is received from serial port in linux,
-    # not all data is being displayed in the terminal.
-    # this is very sad because performance is not great.
+    # new qextserial works better for linux/mac
     DEFINES += EVENT_DRIVEN
     SOURCES += qextserialenumerator_unix.cpp
 }
 macx { 
+    # new qextserial works better for linux/mac
     DEFINES += EVENT_DRIVEN
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += -framework \
@@ -94,11 +92,10 @@ macx {
 }
 win32 { 
     RC_FILE = myapp.rc
-    
+    # don't use EVENT_DRIVEN for windows.
     # DEFINES += LOADER_TERMINAL
     SOURCES += qextserialport_win.cpp
     SOURCES += qextserialenumerator_win.cpp
-    SOURCES += 
     DEFINES += WINVER=0x0501 # needed for mingw to pull in appropriate dbt business...probably a better way to do this
     LIBS += -lsetupapi
 }
