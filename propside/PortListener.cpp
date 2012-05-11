@@ -21,11 +21,14 @@ PortListener::PortListener(QObject *parent, Console *term) : QThread(parent)
 
 void PortListener::init(const QString & portName, BaudRateType baud)
 {
+#if 0
 #if defined(Q_WS_WIN32)
     port->setPortName(port->fullPortNameWin(portName));
 #else
     port->setPortName(portName);
 #endif
+#endif
+    port->setPortName(portName);
     port->setBaudRate(baud);
     port->setFlowControl(FLOW_OFF);
     port->setParity(PAR_NONE);
@@ -85,8 +88,9 @@ void PortListener::setTerminalWindow(QPlainTextEdit *editor)
 
 void PortListener::send(QByteArray &data)
 {
-    port->writeData(data.constData(),1);
+    port->write(data.constData(),1);
 }
+
 #if 0
 int PortListener::readData(char *buffer, int length)
 {

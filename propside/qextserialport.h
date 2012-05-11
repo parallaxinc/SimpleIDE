@@ -221,7 +221,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void dsrChanged(bool status);
 
-public:
+protected:
     qint64 readData(char * data, qint64 maxSize);
     qint64 writeData(const char * data, qint64 maxSize);
 

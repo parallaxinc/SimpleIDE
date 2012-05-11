@@ -32,10 +32,10 @@ void Console::keyPressEvent(QKeyEvent *event)
     }
 }
 
-#if defined(Q_WS_X11)
-enum { BUFFERSIZE = 1024 };
+#ifdef EVENT_DRIVEN
+enum { BUFFERSIZE = 2048 };
 #else
-enum { BUFFERSIZE = 32 };
+enum { BUFFERSIZE = 64 };
 #endif
 
 void Console::updateReady(QextSerialPort* port)
