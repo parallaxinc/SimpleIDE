@@ -120,17 +120,9 @@ void PortListener::updateReady(QextSerialPort* port)
  */
 void PortListener::run()
 {
-    int len = 0;
     while(port->isOpen()) {
         msleep(25); // less than 25ms here is dangerous for windows
         QApplication::processEvents();
-        if(QThread::currentThread() != this)
-            continue;
-        len = port->bytesAvailable();
-        if(len > 0) {
-            // let the updater read from the port
-            emit updateEvent(port);
-            msleep(5);
-        }
+        emit updateEvent(port);
     }
 }
