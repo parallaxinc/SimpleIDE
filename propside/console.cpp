@@ -32,22 +32,13 @@ void Console::keyPressEvent(QKeyEvent *event)
     }
 }
 
-#if defined(EVENT_DRIVEN)
-// odd that on linux BUFFERSIZE > about 16 and lines get recieved but are not printed on the console.
-enum { BUFFERSIZE = 16 };
-#else
-enum { BUFFERSIZE = 64 };
-#endif
+
+enum { BUFFERSIZE = 32 };
 
 void Console::updateReady(QextSerialPort* port)
 {
-    /* Using QString buffer = port.readAll() ... doesn't work.
-     * Clear screen 0's get lost. Use char buffer instead.
-     */
-    char buffer[BUFFERSIZE+1];
-    int length = port->bytesAvailable();
-    length = (length > BUFFERSIZE) ? BUFFERSIZE : length;
-    port->readData(buffer, length);
+    QByteArray ba = port->read(BUFFERSIZE);
+    int length = ba.length();
 
     if(length < 1)
         return;
@@ -71,7 +62,7 @@ void Console::updateReady(QextSerialPort* port)
 
     for(int n = 0; n < length; n++)
     {
-        char ch = buffer[n];
+        char ch = ba[n];
 
         //qDebug(QString(" %1 %2").arg(ch, 2, 16, QChar('0')).arg(QChar(ch)).toAscii());
         //insertPlainText(QString(" %1 ").arg(ch, 2, 16, QChar('0')));
@@ -126,13 +117,12 @@ void Console::updateReady(QextSerialPort* port)
                 break;
             }
             case '\r': {
-                char nc = buffer[n+1];
+                char nc = ba[n+1];
                 if(n >= length-1) {
-                    length = port->bytesAvailable();
-                    length = (length > BUFFERSIZE) ? BUFFERSIZE : length;
-                    port->readData(buffer, length);
+                    ba = port->read(BUFFERSIZE);
+                    length = ba.length();
                     n = 0;
-                    nc = buffer[n];
+                    nc = ba[n];
                     /* for loop incrs back to 0 for next round
                      * we need to process nc == '\n' and other chars there
                      */
