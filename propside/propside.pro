@@ -78,7 +78,7 @@ RESOURCES += resources.qrc
 unix:SOURCES += qextserialport_unix.cpp
 unix:!macx { 
     # new qextserial works better for linux/mac
-    DEFINES += EVENT_DRIVEN
+    # DEFINES += EVENT_DRIVEN
     SOURCES += qextserialenumerator_unix.cpp
 }
 macx { 
