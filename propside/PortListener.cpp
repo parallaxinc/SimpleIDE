@@ -87,12 +87,13 @@ void PortListener::send(QByteArray &data)
 {
     port->writeData(data.constData(),1);
 }
-
+#if 0
 int PortListener::readData(char *buffer, int length)
 {
     int ret = port->readData(buffer,length);
     return ret;
 }
+#endif
 
 void PortListener::onDsrChanged(bool status)
 {

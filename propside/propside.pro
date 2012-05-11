@@ -18,6 +18,7 @@ DEFINES += QEXTSERIALPORT_LIB
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=6
 DEFINES += FIXVERSION=11
+
 SOURCES += main.cpp \
     editor.cpp \
     ctags.cpp \
@@ -25,7 +26,6 @@ SOURCES += main.cpp \
     treemodel.cpp \
     treeitem.cpp \
     terminal.cpp \
-    qextserialport.cpp \
     properties.cpp \
     newproject.cpp \
     PortListener.cpp \
@@ -40,16 +40,16 @@ SOURCES += main.cpp \
     aboutdialog.cpp \
     gdb.cpp \
     loader.cpp \
-    projecttree.cpp
+    projecttree.cpp \
+    qextserialport.cpp \
+    qextserialenumerator.cpp
+
 HEADERS += mainwindow.h \
     editor.h \
     ctags.h \
     highlighter.h \
     treemodel.h \
     treeitem.h \
-    qextserialport.h \
-    qextserialenumerator.h \
-    qextserialport_global.h \
     PortListener.h \
     terminal.h \
     properties.h \
@@ -65,21 +65,23 @@ HEADERS += mainwindow.h \
     aboutdialog.h \
     gdb.h \
     loader.h \
-    projecttree.h
+    projecttree.h \
+    qextserialport.h \
+    qextserialenumerator.h
+
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui
+
 RESOURCES += resources.qrc
-unix { 
-    SOURCES += posix_qextserialport.cpp
-}
-unix:!macx: {
+
+unix:SOURCES += qextserialport_unix.cpp
+unix:!macx { 
     # turn off EVENT_DRIVEN for serial port.
     # while all data is received from serial port in linux,
     # not all data is being displayed in the terminal.
     # this is very sad because performance is not great.
-    #
-    #DEFINES += EVENT_DRIVEN
+    DEFINES += EVENT_DRIVEN
     SOURCES += qextserialenumerator_unix.cpp
 }
 macx { 
@@ -91,10 +93,12 @@ macx {
         CoreFoundation
 }
 win32 { 
-    # DEFINES += LOADER_TERMINAL
     RC_FILE = myapp.rc
-    SOURCES += win_qextserialport.cpp \
-        qextserialenumerator_win.cpp
+    
+    # DEFINES += LOADER_TERMINAL
+    SOURCES += qextserialport_win.cpp
+    SOURCES += qextserialenumerator_win.cpp
+    SOURCES += 
     DEFINES += WINVER=0x0501 # needed for mingw to pull in appropriate dbt business...probably a better way to do this
     LIBS += -lsetupapi
 }
