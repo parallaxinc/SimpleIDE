@@ -797,8 +797,8 @@ void MainWindow::saveFileByTabIndex(int tab)
         editorTabs->setTabText(tab,shortFileName(fileName));
         if (!fileName.isEmpty()) {
             QFile file(fileName);
-            if (file.open(QFile::WriteOnly | QFile::Text)) {
-                file.write(data.toAscii());
+            if (file.open(QFile::WriteOnly)) {
+                file.write(data.toUtf8());
                 file.close();
             }
         }
@@ -826,7 +826,7 @@ void MainWindow::saveAsFile(const QString &path)
 
         if (!fileName.isEmpty()) {
             QFile file(fileName);
-            if (file.open(QFile::WriteOnly | QFile::Text)) {
+            if (file.open(QFile::WriteOnly)) {
                 file.write(data.toUtf8());
                 file.close();
             }
@@ -3002,6 +3002,7 @@ void MainWindow::addProjectListFile(QString fileName)
         foreach(QString arg, list) {
             projstr += ">"+arg+"\n";
         }
+        // save project file in english
         if(file.open(QFile::WriteOnly | QFile::Text)) {
             file.write(projstr.toAscii());
             file.close();
@@ -3073,7 +3074,6 @@ void MainWindow::addProjectLink()
 
         lastPath = sourcePath(fileName);
 
-#if 1
         if(isOutputFile(fileName) == false) {
             if(sourcePath(fileName).compare(sourcePath(this->projectFile)) == 0)
                 fileName = this->shortFileName(fileName);
@@ -3081,70 +3081,6 @@ void MainWindow::addProjectLink()
                 fileName = this->shortFileName(fileName)+FILELINK+fileName;
             addProjectListFile(fileName);
         }
-#else
-        QString ext = fileName.mid(fileName.lastIndexOf("."));
-        if(ext.length()) {
-            ext = ext.toLower();
-            if(ext == ".cog") {
-                // don't copy .cog files
-                return;
-            }
-            else if(ext == ".dat") {
-                // don't copy .dat files
-                return;
-            }
-            else if(ext == ".o") {
-                // don't copy .o files
-                return;
-            }
-            else if(ext == ".out") {
-                // don't copy .out files
-                return;
-            }
-            else if(ext == ".side") {
-                // don't copy .side files
-                return;
-            }
-            else {
-                fileName = this->shortFileName(fileName)+FILELINK+fileName;
-            }
-        }
-
-        QString projstr = "";
-        QStringList list;
-        QString mainFile;
-
-        QFile file(projectFile);
-        if(file.exists()) {
-            if(file.open(QFile::ReadOnly | QFile::Text)) {
-                projstr = file.readAll();
-                file.close();
-            }
-            list = projstr.split("\n");
-            mainFile = list[0];
-            projstr = "";
-            for(int n = 0; n < list.length(); n++) {
-                QString arg = list[n];
-                if(!arg.length())
-                    continue;
-                if(arg.at(0) == '>')
-                    continue;
-                projstr += arg + "\n";
-            }
-            projstr += fileName + "\n";
-            list.clear();
-            list = projectOptions->getOptions();
-
-            foreach(QString arg, list) {
-                projstr += ">"+arg+"\n";
-            }
-            if(file.open(QFile::WriteOnly | QFile::Text)) {
-                file.write(projstr.toAscii());
-                file.close();
-            }
-        }
-        updateProjectTree(sourcePath(projectFile)+mainFile);
-#endif
     }
 }
 
@@ -3301,6 +3237,7 @@ void MainWindow::deleteProjectFile()
         foreach(QString arg, list) {
             projstr += ">"+arg+"\n";
         }
+        // save project file in english
         if(file.open(QFile::WriteOnly | QFile::Text)) {
             file.write(projstr.toAscii());
             file.close();
@@ -3375,7 +3312,7 @@ void MainWindow::saveProjectOptions()
             else
                 projstr += ">"+arg+"\n";
         }
-
+        // save project file in english
         if(file.open(QFile::WriteOnly | QFile::Text)) {
             file.write(projstr.toAscii());
             file.close();
@@ -3401,6 +3338,7 @@ void MainWindow::updateProjectTree(QString fileName)
 
     QFile file(projectFile);
     if(!file.exists()) {
+        // project file is in english
         if (file.open(QFile::WriteOnly | QFile::Text)) {
             file.write(this->shortFileName(fileName).toAscii());
             projectModel->addRootItem(this->shortFileName(fileName));
@@ -3409,6 +3347,7 @@ void MainWindow::updateProjectTree(QString fileName)
     }
     else {
         QString s = "";
+        // project file is in english
         if (file.open(QFile::ReadOnly | QFile::Text)) {
             s = file.readAll();
             file.close();
