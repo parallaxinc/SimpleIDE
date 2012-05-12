@@ -55,6 +55,7 @@ cd ${DIR}
 SEDCMD=`sed -n 's/VERSION=.*$/&/p' ${BUILD}/propside.pro | cut -d"=" -f3`
 VERSION=`echo ${SEDCMD}`
 VERSION=`echo ${VERSION} | sed 's/ /-/g'`
+VERSION=`echo ${VERSION} | sed 's/\r//g'`
 VERSION="${NAME}-${VERSION}"
 echo "Creating Version ${VERSION}"
 
