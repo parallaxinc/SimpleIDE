@@ -35,7 +35,11 @@ void Console::keyPressEvent(QKeyEvent *event)
 #ifdef EVENT_DRIVEN
 enum { BUFFERSIZE = 2048 };
 #else
+#ifdef Q_WS_WIN32
+enum { BUFFERSIZE = 16 };
+#else
 enum { BUFFERSIZE = 64 };
+#endif
 #endif
 
 void Console::updateReady(QextSerialPort* port)
