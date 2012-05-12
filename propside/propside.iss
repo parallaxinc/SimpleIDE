@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-6-10"
+#define MyAppVersion "0-6-11"
 #define MyAppPublisher "MicroCSource"
 #define MyAppURL "www.MicroCSource.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -71,6 +71,7 @@ Source: "{#MyGccPath}\*"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+Source: C:\gccdev\propside\propside\translations\SimpleIDE_zh_SG.qm; DestDir: {app}/translations; DestName: SimpleIDE_zh_SG.qm; Flags: IgnoreVersion; 
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -149,3 +150,4 @@ begin
     Result[0] := ExpandConstant('{#compiler}\bin');
 end;
 #include "modpath.iss"
+
