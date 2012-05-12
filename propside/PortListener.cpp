@@ -128,6 +128,10 @@ void PortListener::run()
     while(port->isOpen()) {
         msleep(25); // less than 25ms here is dangerous for windows
         QApplication::processEvents();
-        emit updateEvent(port);
+        if(port->bytesAvailable() > 0) {
+            emit updateEvent(port);
+            msleep(10);
+            QApplication::processEvents();
+        }
     }
 }
