@@ -77,6 +77,12 @@ if test $? != 0; then
    exit 1
 fi
 
+cp -r ${BUILD}/translations ${VERSION}
+if test $? != 0; then
+   echo "copy translations failed."
+   exit 1
+fi
+
 MYLDD=`ldd ${BUILD}/${NAME} | grep libQt | awk '{print $3}'`
 LIBS=`echo $MYLDD`
 
