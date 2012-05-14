@@ -16,7 +16,7 @@
 #define MyQtPath "C:\Qt\2010.05"
 #define MyGccPath "C:\msys\opt\parallax"
 #define MyGccMingwPath "C:\mingw"
-
+#define MyTranslations "..\propside\translations"
 #define MyAppBin "{app}\bin"
 
 [Setup]
@@ -69,9 +69,7 @@ Source: "..\propside-demos\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversio
 Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyGccPath}\*"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
-
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-Source: C:\gccdev\propside\propside\translations\SimpleIDE_zh_SG.qm; DestDir: {app}/translations; DestName: SimpleIDE_zh_SG.qm; Flags: IgnoreVersion; 
+Source: "{#MyTranslations}\*"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
