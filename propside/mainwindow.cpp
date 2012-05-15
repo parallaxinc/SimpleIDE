@@ -2132,6 +2132,9 @@ int MainWindow::getCompilerParameters(QStringList copts, QStringList *args)
             join += sp.at(m);
             args->append(join);
         }
+        else if (parm.indexOf(".cfg",Qt::CaseInsensitive) > -1){
+            // don't append .cfg parameter
+        }
         else {
             args->append(parm);
         }
@@ -2227,6 +2230,10 @@ QStringList MainWindow::getLoaderParameters(QString copts)
         boardName = boardName.mid(0,boardName.indexOf(sdload));
 
     QStringList args;
+    // always include user's propeller-load path.
+    args.append("-I");
+    args.append(aSideIncludes);
+
     if(this->propDialog->getLoadDelay() > 0) {
         args.append(QString("-S%1").arg(this->propDialog->getLoadDelay()));
     }
