@@ -1,8 +1,8 @@
 #ifndef PROPERTIES_H
 #define PROPERTIES_H
 
-#define publisherKey        "MicroCSource"
-#define publisherComKey     "MicroCSource.com"
+#define publisherKey        "ParallaxInc"
+#define publisherComKey     "Parallax.com"
 #define ASideGuiKey         "SimpleIDE"
 #define helpStartupKey      "SimpleIDE_ShowHelpStart"
 #define compilerKey         "SimpleIDE_Compiler"
