@@ -190,6 +190,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         }
     }
 
+    // get last width/height geometry
+    QVariant height = settings->value(ASideGuiHeight, 0);
+    QVariant width = settings->value(ASideGuiWidth, 0);
+    if(height.isNull() == false && width.isNull() == false) {
+        int h = 0;
+        int w = 0;
+        if(height.canConvert(QVariant::Int)) {
+            h = height.toInt();
+        }
+        if(width.canConvert(QVariant::Int)) {
+            w = width.toInt();
+        }
+        if(w > 0 && h > 0)
+            this->setGeometry(this->x(), this->y(),w,h);
+    }
+
     // old hardware dialog configuration feature
     //  hardwareDialog = new Hardware(this);
     //  connect(hardwareDialog,SIGNAL(accepted()),this,SLOT(initBoardTypes()));
@@ -401,6 +417,10 @@ void MainWindow::quitProgram()
 
     int fontsize = editorFont.pointSize();
     settings->setValue(fontSizeKey,fontsize);
+
+    // save user's width/height
+    settings->setValue(ASideGuiWidth,this->width());
+    settings->setValue(ASideGuiHeight,this->height());
 
     delete replaceDialog;
     delete propDialog;
