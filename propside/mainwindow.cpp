@@ -40,9 +40,7 @@
 
 #define SOURCE_FILE_TYPES "Source Files (*.c *.ccp *.h *.cogc *.spin);; All (*)"
 
-#define BUILD_TABNAME "Build Status"
 #define GDB_TABNAME "GDB Output"
-#define TOOL_TABNAME "Tool Output"
 
 #define SHOW_ASM_EXTENTION ".asm"
 #define SHOW_ASMC_EXTENTION ".asmc"
@@ -335,7 +333,7 @@ void MainWindow::getApplicationSettings()
 void MainWindow::exitSave()
 {
     bool saveAll = false;
-    QMessageBox mbox(QMessageBox::Question, "Save File?", "",
+    QMessageBox mbox(QMessageBox::Question, tr("Save File?"), "",
                      QMessageBox::Discard | QMessageBox::Save | QMessageBox::SaveAll, this);
 
     saveProjectOptions();
@@ -864,7 +862,7 @@ void MainWindow::savePexFile()
 void MainWindow::downloadSdCard()
 {
     if(projectModel == NULL || projectFile.isNull()) {
-        QMessageBox mbox(QMessageBox::Critical, "Error No Project",
+        QMessageBox mbox(QMessageBox::Critical, tr("Error No Project"),
             "Please select a tab and press F4 to set main project file.", QMessageBox::Ok);
         mbox.exec();
         return;
@@ -2299,7 +2297,9 @@ QStringList MainWindow::getLoaderParameters(QString copts)
 
 int  MainWindow::runLoader(QString copts)
 {
+#if defined(LOADER_TERMINAL) // supress warnings. remove LOADER_TERMINAL later
     bool terminal = false;
+#endif
     if(projectModel == NULL || projectFile.isNull()) {
         QMessageBox mbox(QMessageBox::Critical, "Error No Project",
             "Please select a tab and press F4 to set main project file.", QMessageBox::Ok);
@@ -2320,8 +2320,9 @@ int  MainWindow::runLoader(QString copts)
     if(copts.indexOf(" -t") > 0) {
 #if !defined(LOADER_TERMINAL)
         copts = copts.mid(0,copts.indexOf(" -t"));
-#endif
+#else
         terminal = true;
+#endif
         process->setProperty("Terminal", QVariant(true));
     }
 
@@ -2834,7 +2835,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     compileStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
     compileStatus->setReadOnly(true);
     connect(compileStatus,SIGNAL(selectionChanged()),this,SLOT(compileStatusClicked()));
-    statusTabs->addTab(compileStatus,tr(BUILD_TABNAME));
+    statusTabs->addTab(compileStatus,tr("Build Status"));
 
 #if defined(GDBENABLE)
     gdbStatus = new QPlainTextEdit(this);
@@ -2843,12 +2844,6 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     gdb = new GDB(gdbStatus, this);
 
     statusTabs->addTab(gdbStatus,tr(GDB_TABNAME));
-#endif
-
-#if defined(TOOLS)
-    toolStatus = new QPlainTextEdit(this);
-    toolStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
-    statusTabs->addTab(toolStatus,tr(TOOL_TABNAME));
 #endif
 
     rightSplit->addWidget(statusTabs);
@@ -3492,22 +3487,26 @@ int MainWindow::makeDebugFiles(QString fileName)
     }
 
     QString name = fileName.mid(0,fileName.lastIndexOf('.'));
-    QString projFile = name+".side";
-    bool ismain = false;
-    if(shortFileName(projectFile).compare(projFile) == 0)
-        ismain = true;
-
     QStringList copts;
     if(fileName.contains(".cogc",Qt::CaseInsensitive)) {
         copts.append("-xc");
     }
     copts.append("-S");
+
 #if ENABLEMAP_TOOL
-    copts.append("--save-temps");
-    QString map = "-Map="+name+".rawmap";
-    copts.append("-Xlinker");
-    copts.append(map);
+    QString projFile = name+".side";
+    bool ismain = false;
+    if(shortFileName(projectFile).compare(projFile) == 0)
+        ismain = true;
+
+    if(ismain) {
+        copts.append("--save-temps");
+        QString map = "-Map="+name+".map";
+        copts.append("-Xlinker");
+        copts.append(map);
+    }
 #endif
+
     copts.append(fileName);
 
     QFile file(projectFile);
@@ -3557,8 +3556,8 @@ int MainWindow::makeDebugFiles(QString fileName)
     compileStatus->setPlainText("");
     int rc = startProgram(compstr,sourcePath(projectFile),args);
     if(rc) {
-        QMessageBox mbox(QMessageBox::Critical, "Compile Error",
-            "Please check the compiler, loader path, and workspace.", QMessageBox::Ok);
+        QMessageBox mbox(QMessageBox::Critical, tr("Compile Error"),
+                         tr("Please check the compiler, loader path, and workspace."), QMessageBox::Ok);
         mbox.exec();
         compileStatus->appendPlainText("Compile Debug Error.");
         return -1;
@@ -3994,13 +3993,13 @@ void MainWindow::setupToolBars()
         btnBrowseBack = new QToolButton(this);
         addToolButton(browseToolBar, btnBrowseBack, QString(":/images/back.png"));
         connect(btnBrowseBack,SIGNAL(clicked()),this,SLOT(prevDeclaration()));
-        btnBrowseBack->setToolTip("Back");
+        btnBrowseBack->setToolTip(tr("Back"));
         btnBrowseBack->setEnabled(false);
 
         btnFindDef = new QToolButton(this);
         addToolButton(browseToolBar, btnFindDef, QString(":/images/forward.png"));
         connect(btnFindDef,SIGNAL(clicked()),this,SLOT(findDeclaration()));
-        btnFindDef->setToolTip("Browse (Ctrl+Left Click");
+        btnFindDef->setToolTip(tr("Browse (Ctrl+Left Click)"));
     }
 
 #if defined(SD_TOOLS)
