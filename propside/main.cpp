@@ -7,6 +7,7 @@ int main(int argc, char *argv[])
     a.setWindowIcon(QIcon(":/images/SimpleIDE6.png"));
 
     QString dir = QApplication::applicationDirPath();
+
     // dir returned from above should not have a trailing /
     dir = dir.mid(0,dir.lastIndexOf("/"));
     QString transpath = dir+"/translations/";
@@ -16,18 +17,13 @@ int main(int argc, char *argv[])
 
     qDebug() << transpath+progName+QLocale::system().name()+".qm";
 
+    /*
+     * according to QTranslator::load, this will pick up:
+     * foo_en_us.qm, foo_en.qm, foo_zh_SG.qm, foo_zh_TW.qm or foo_zh.qm
+     */
     if(qtTranslator.load(progName + QLocale::system().name(), transpath)) {
         a.installTranslator(&qtTranslator);
     }
-
-    /*
-    else if(qtTranslator.load(progName + locale.name(), transpath)) {
-        // TODO: remove later. only for testing with Kenichi's translations at the moment
-        QLocale locale(QLocale::Chinese, QLocale::Singapore);
-        qDebug() << transpath+progName+locale.name()+".qm";
-        a.installTranslator(&qtTranslator);
-    }
-    */
 
     MainWindow w;
     w.show();
