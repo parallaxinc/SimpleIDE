@@ -188,22 +188,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         }
     }
 
-    // get last width/height geometry
-    QVariant height = settings->value(ASideGuiHeight, 0);
-    QVariant width = settings->value(ASideGuiWidth, 0);
-    if(height.isNull() == false && width.isNull() == false) {
-        int h = 0;
-        int w = 0;
-        if(height.canConvert(QVariant::Int)) {
-            h = height.toInt();
-        }
-        if(width.canConvert(QVariant::Int)) {
-            w = width.toInt();
-        }
-        if(w > 0 && h > 0)
-            this->setGeometry(this->x(), this->y(),w,h);
-    }
-
     // old hardware dialog configuration feature
     //  hardwareDialog = new Hardware(this);
     //  connect(hardwareDialog,SIGNAL(accepted()),this,SLOT(initBoardTypes()));
@@ -220,6 +204,32 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     if(helpStartup.canConvert(QVariant::Bool)) {
         if(helpStartup == true)
             aboutShow();
+    }
+
+    // get last geometry
+    QVariant xstart = settings->value(ASideGuiXstart, 0);
+    QVariant ystart = settings->value(ASideGuiYstart, 0);
+    QVariant width = settings->value(ASideGuiWidth, 0);
+    QVariant height = settings->value(ASideGuiHeight, 0);
+    if(height.isNull() == false && width.isNull() == false) {
+        int x = 0;
+        int y = 0;
+        int w = 0;
+        int h = 0;
+        if(xstart.canConvert(QVariant::Int)) {
+            x = xstart.toInt();
+        }
+        if(ystart.canConvert(QVariant::Int)) {
+            y = ystart.toInt();
+        }
+        if(width.canConvert(QVariant::Int)) {
+            w = width.toInt();
+        }
+        if(height.canConvert(QVariant::Int)) {
+            h = height.toInt();
+        }
+        if(x > 0 && y > 0 && w > 0 && h > 0)
+            this->setGeometry(x, y, w,h);
     }
 }
 
@@ -417,6 +427,8 @@ void MainWindow::quitProgram()
     settings->setValue(fontSizeKey,fontsize);
 
     // save user's width/height
+    settings->setValue(ASideGuiXstart,this->x());
+    settings->setValue(ASideGuiYstart,this->y());
     settings->setValue(ASideGuiWidth,this->width());
     settings->setValue(ASideGuiHeight,this->height());
 
