@@ -55,6 +55,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* global settings */
     settings = new QSettings(publisherKey, ASideGuiKey, this);
 
+    /* get last geometry. using x,y,w,h is unreliable.
+     */
+    QVariant geov = settings->value(ASideGuiGeometry);
+    // byte array convert is always possible
+    QByteArray geo = geov.toByteArray();
+    // restoreGeometry makes sure the array is valid
+    this->restoreGeometry(geo);
+
     /* setup properties dialog */
     propDialog = new Properties(this);
     connect(propDialog,SIGNAL(accepted()),this,SLOT(propertiesAccepted()));
@@ -206,31 +214,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
             aboutShow();
     }
 
-    // get last geometry
-    QVariant xstart = settings->value(ASideGuiXstart, 0);
-    QVariant ystart = settings->value(ASideGuiYstart, 0);
-    QVariant width = settings->value(ASideGuiWidth, 0);
-    QVariant height = settings->value(ASideGuiHeight, 0);
-    if(height.isNull() == false && width.isNull() == false) {
-        int x = 0;
-        int y = 0;
-        int w = 0;
-        int h = 0;
-        if(xstart.canConvert(QVariant::Int)) {
-            x = xstart.toInt();
-        }
-        if(ystart.canConvert(QVariant::Int)) {
-            y = ystart.toInt();
-        }
-        if(width.canConvert(QVariant::Int)) {
-            w = width.toInt();
-        }
-        if(height.canConvert(QVariant::Int)) {
-            h = height.toInt();
-        }
-        if(x > 0 && y > 0 && w > 0 && h > 0)
-            this->setGeometry(x, y, w,h);
-    }
 }
 
 void MainWindow::keyHandler(QKeyEvent* event)
@@ -427,10 +410,8 @@ void MainWindow::quitProgram()
     settings->setValue(fontSizeKey,fontsize);
 
     // save user's width/height
-    settings->setValue(ASideGuiXstart,this->x());
-    settings->setValue(ASideGuiYstart,this->y());
-    settings->setValue(ASideGuiWidth,this->width());
-    settings->setValue(ASideGuiHeight,this->height());
+    QByteArray geo = this->saveGeometry();
+    settings->setValue(ASideGuiGeometry,geo);
 
     delete replaceDialog;
     delete propDialog;
