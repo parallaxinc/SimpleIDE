@@ -628,9 +628,22 @@ void MainWindow::saveProject()
  */
 void MainWindow::closeProject()
 {
+    /* ask to save options
+     */
+    int rc = QMessageBox::No;
+
+    if(projectFile.length() > 0)
+        rc = QMessageBox::question(this,tr("Save Project?"),tr("Save project manager settings before close?"), QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
+
+    /* abort?
+     */
+    if(rc == QMessageBox::Cancel)
+        return;
+
     /* save options
      */
-    saveProjectOptions();
+    if(rc == QMessageBox::Yes)
+        saveProjectOptions();
 
     /* go through project file list and close files
      */
@@ -670,6 +683,7 @@ void MainWindow::closeProject()
         delete projectModel;
         projectModel = NULL;
     }
+    projectFile.clear();
 }
 
 
