@@ -2745,6 +2745,21 @@ void MainWindow::closeTab(int tab)
     fileChangeDisable = false;
 }
 
+/* no menu yet, just right click to reload
+*/
+void MainWindow::editorTabMenu(QPoint pt)
+{
+    if(pt.isNull())
+        return;
+    int tab = editorTabs->currentIndex();
+    if(tab < 0)
+        return;
+    QString file = editorTabs->tabToolTip(tab);
+    QString name = editorTabs->tabText(tab);
+    if(file.length() > 0 && name.indexOf("*") < 0)
+        openFile(file);
+}
+
 void MainWindow::changeTab(bool checked)
 {
     /* checked is a QAction menu state.
@@ -2832,8 +2847,9 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     /* project editor tabs */
     editorTabs = new QTabWidget(this);
     editorTabs->setTabsClosable(true);
+    editorTabs->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(editorTabs,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
-    //connect(editorTabs,SIGNAL(currentChanged(int)),this,SLOT(changeTab(int)));
+    connect(editorTabs,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(editorTabMenu(QPoint)));
     rightSplit->addWidget(editorTabs);
 
     statusTabs = new QTabWidget(this);

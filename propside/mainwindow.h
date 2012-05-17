@@ -72,6 +72,7 @@ public slots:
     void helpShow();
     void projectTreeClicked(QModelIndex index);
     void closeTab(int index = 0);
+    void editorTabMenu(QPoint);
     void changeTab(bool trig);
     void setCurrentBoard(int index);
     void setCurrentPort(int index);
