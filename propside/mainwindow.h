@@ -209,6 +209,7 @@ private:
     QString         aSideIncludes;
     QString         aSideCfgFile;
     QString         aSideSeparator;
+    QString         aSideDocPath;
 
     QToolBar        *fileToolBar;
     QToolBar        *projToolBar;
