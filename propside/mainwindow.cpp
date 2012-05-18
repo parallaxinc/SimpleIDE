@@ -1134,6 +1134,11 @@ void MainWindow::replaceInFile()
     replaceDialog->activateWindow();
 }
 
+void MainWindow::findSymbolHelp(QString text)
+{
+
+}
+
 void MainWindow::findDeclaration(QPoint point)
 {
     Editor *editor = editors->at(editorTabs->currentIndex());
@@ -1399,6 +1404,7 @@ void MainWindow::programBurnEE()
     if(runBuild(""))
         return;
     runLoader("-e");
+    portResetButton();
 }
 
 void MainWindow::programRun()
