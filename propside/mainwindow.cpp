@@ -275,7 +275,9 @@ void MainWindow::getApplicationSettings()
         propDialog->showProperties();
     }
 
-    /* get the separator used at startup */
+    /* get the separator used at startup
+     * Qt always translates \ to / so this isn't really necessary
+     */
     QString appPath = QCoreApplication::applicationDirPath ();
     if(appPath.indexOf('\\') > -1)
         aSideSeparator = "\\";
@@ -306,6 +308,13 @@ void MainWindow::getApplicationSettings()
 
     if(cfgv.canConvert(QVariant::String))
         aSideCfgFile = cfgv.toString();
+
+    /* get doc path from include path */
+    QString tmp = aSideIncludes;
+    if(tmp.at(tmp.length()-1) == '/')
+        tmp = tmp.left(tmp.length()-1);
+    tmp = tmp.left(tmp.lastIndexOf("/")+1)+"doc";
+    aSideDocPath = tmp;
 
     if(!file.exists(aSideCfgFile))
     {
@@ -1134,6 +1143,12 @@ void MainWindow::replaceInFile()
     replaceDialog->activateWindow();
 }
 
+/*
+ * FindHelp
+ *
+ * Takes a word from the Editor's user cursor or mouse
+ * and looks for it in the documentation.
+ */
 void MainWindow::findSymbolHelp(QString text)
 {
 
@@ -1403,8 +1418,7 @@ void MainWindow::programBurnEE()
 {
     if(runBuild(""))
         return;
-    runLoader("-e");
-    portResetButton();
+    runLoader("-e -r");
 }
 
 void MainWindow::programRun()

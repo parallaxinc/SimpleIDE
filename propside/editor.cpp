@@ -71,12 +71,21 @@ void Editor::keyPressEvent (QKeyEvent *e)
     int key = e->key();
 
     if(key == Qt::Key_F1) {
-        QTextCursor cur = this->cursorForPosition(mousepos);
+        QTextCursor cur = this->textCursor();
         cur.select(QTextCursor::WordUnderCursor);
         QString text = cur.selectedText();
         if(text.length() > 0) {
             qDebug() << "keyPressEvent F1 " << text;
             static_cast<MainWindow*>(mainwindow)->findSymbolHelp(text);
+        }
+        else {
+            cur = this->cursorForPosition(mousepos);
+            cur.select(QTextCursor::WordUnderCursor);
+            text = cur.selectedText();
+            if(text.length() > 0) {
+                qDebug() << "keyPressEvent F1 " << text;
+                static_cast<MainWindow*>(mainwindow)->findSymbolHelp(text);
+            }
         }
         QPlainTextEdit::keyPressEvent(e);
         return;
