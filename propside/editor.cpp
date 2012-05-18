@@ -69,6 +69,19 @@ void Editor::keyPressEvent (QKeyEvent *e)
     /* if tab or shift tab, do block shift
      */
     int key = e->key();
+
+    if(key == Qt::Key_F1) {
+        QTextCursor cur = this->cursorForPosition(mousepos);
+        cur.select(QTextCursor::WordUnderCursor);
+        QString text = cur.selectedText();
+        if(text.length() > 0) {
+            qDebug() << "keyPressEvent F1 " << text;
+            static_cast<MainWindow*>(mainwindow)->findSymbolHelp(text);
+        }
+        QPlainTextEdit::keyPressEvent(e);
+        return;
+    }
+    else
     if(key == Qt::Key_Tab || key == Qt::Key_Backtab) {
 
         QTextCursor cur = this->textCursor();

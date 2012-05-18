@@ -136,6 +136,7 @@ public slots:
     int  showDeclaration(QString tagline);
     bool isTagged(QString text);
     void findDeclarationInfo();
+    void findSymbolHelp(QString text);
 
     void compileStatusClicked();
 
