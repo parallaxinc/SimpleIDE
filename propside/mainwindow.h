@@ -31,6 +31,7 @@
 #include "gdb.h"
 #include "loader.h"
 #include "projecttree.h"
+#include "help.h"
 
 #define untitledstr "Untitled"
 
@@ -201,6 +202,8 @@ private:
 
     AboutDialog     *aboutDialog;
     QString         aboutLanding;
+
+    Help            *helpDialog;
 
     QSettings       *settings;
     QString         aSideLoader;

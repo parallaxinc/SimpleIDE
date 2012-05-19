@@ -1151,7 +1151,7 @@ void MainWindow::replaceInFile()
  */
 void MainWindow::findSymbolHelp(QString text)
 {
-
+    helpDialog->show(aSideDocPath, text);
 }
 
 void MainWindow::findDeclaration(QPoint point)
@@ -1559,6 +1559,9 @@ void MainWindow::setupHelpMenu()
 
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
     helpMenu->addAction(QIcon(":/images/helphint.png"), tr("&Help"), this, SLOT(helpShow()));
+
+    /* new Help class */
+    helpDialog = new Help();
 }
 
 void MainWindow::aboutShow()
