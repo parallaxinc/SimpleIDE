@@ -20,7 +20,7 @@ Help::~Help()
 void Help::show(QString path, QString text)
 {
     QString address = "file:///"+path+"/index.html";
-    QString tagtext = "\">"+text+"<";
+    QString tagtext = "\">"+text+"</a>";
     QDir dir(path);
     QStringList filter(QString("*.html"));
     foreach(QString name, dir.entryList(filter)) {
@@ -28,9 +28,9 @@ void Help::show(QString path, QString text)
         QString fileText;
         if(file.open(QFile::ReadOnly)) {
             fileText = file.readAll();
-            if(fileText.indexOf(tagtext)) {
+            if (fileText.length() > 0 && fileText.indexOf(tagtext)) {
                 QStringList list = fileText.split(tagtext);
-                if(list.length() > 0) {
+                if(list.length() > 1) {
                     QString s = list[0];
                     s = s.mid(s.lastIndexOf("href=\"")+6);
                     s = s.left(s.indexOf(tagtext));

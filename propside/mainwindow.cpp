@@ -311,10 +311,12 @@ void MainWindow::getApplicationSettings()
 
     /* get doc path from include path */
     QString tmp = aSideIncludes;
-    if(tmp.at(tmp.length()-1) == '/')
-        tmp = tmp.left(tmp.length()-1);
-    tmp = tmp.left(tmp.lastIndexOf("/")+1)+"doc";
-    aSideDocPath = tmp;
+    if(tmp.length() > 0) {
+        if(tmp.at(tmp.length()-1) == '/')
+            tmp = tmp.left(tmp.length()-1);
+        tmp = tmp.left(tmp.lastIndexOf("/")+1)+"doc";
+        aSideDocPath = tmp;
+    }
 
     if(!file.exists(aSideCfgFile))
     {
