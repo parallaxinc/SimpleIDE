@@ -4,8 +4,7 @@
 # add spin compiler
 # make builder handle complicated projects
 # hook terminal to loader
-QT += core \
-    gui
+QT += core gui webkit
 TARGET = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
@@ -31,6 +30,7 @@ SOURCES += main.cpp \
     PortListener.cpp \
     highlighter.cpp \
     hardware.cpp \
+    help.cpp \
     console.cpp \
     asideconfig.cpp \
     asideboard.cpp \
@@ -56,6 +56,7 @@ HEADERS += mainwindow.h \
     newproject.h \
     console.h \
     hardware.h \
+    help.h \
     asideboard.h \
     asideconfig.h \
     cbuildtree.h \
