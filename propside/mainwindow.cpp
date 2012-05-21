@@ -314,7 +314,7 @@ void MainWindow::getApplicationSettings()
     if(tmp.length() > 0) {
         if(tmp.at(tmp.length()-1) == '/')
             tmp = tmp.left(tmp.length()-1);
-        tmp = tmp.left(tmp.lastIndexOf("/")+1)+"doc";
+        tmp = tmp.left(tmp.lastIndexOf("/")+1)+"share/lib/html";
         aSideDocPath = tmp;
     }
 
