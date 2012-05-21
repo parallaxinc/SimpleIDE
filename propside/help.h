@@ -16,6 +16,7 @@ public slots:
 
 private:
     QVBoxLayout         *lay;
+    QComboBox           *cbAddress;
     QDialogButtonBox    *butbox;
     QWebView            *webview;
 };

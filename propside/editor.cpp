@@ -66,30 +66,22 @@ void Editor::keyPressEvent (QKeyEvent *e)
 
     int tabSpaces = this->tabStopWidth()/10;
 
-    /* if tab or shift tab, do block shift
+    /* if F1 do help. if tab or shift tab, do block shift
      */
     int key = e->key();
 
+    /* if F1 get word under mouse and pass to findSymbolHelp. no word is ok too. */
     if(key == Qt::Key_F1) {
-        QTextCursor cur = this->textCursor();
+        QTextCursor cur = this->cursorForPosition(mousepos);
         cur.select(QTextCursor::WordUnderCursor);
         QString text = cur.selectedText();
-        if(text.length() > 0) {
-            qDebug() << "keyPressEvent F1 " << text;
-            static_cast<MainWindow*>(mainwindow)->findSymbolHelp(text);
-        }
-        else {
-            cur = this->cursorForPosition(mousepos);
-            cur.select(QTextCursor::WordUnderCursor);
-            text = cur.selectedText();
-            if(text.length() > 0) {
-                qDebug() << "keyPressEvent F1 " << text;
-                static_cast<MainWindow*>(mainwindow)->findSymbolHelp(text);
-            }
-        }
+        qDebug() << "keyPressEvent F1 " << text;
+        static_cast<MainWindow*>(mainwindow)->findSymbolHelp(text);
         QPlainTextEdit::keyPressEvent(e);
         return;
     }
+
+    /* if TAB key do block move */
     else
     if(key == Qt::Key_Tab || key == Qt::Key_Backtab) {
 
