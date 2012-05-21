@@ -4,7 +4,7 @@
 # add spin compiler
 # make builder handle complicated projects
 # hook terminal to loader
-QT += core gui webkit
+QT += core gui
 TARGET = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
@@ -16,7 +16,7 @@ DEFINES += QEXTSERIALPORT_LIB
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=6
-DEFINES += FIXVERSION=11
+DEFINES += FIXVERSION=12
 
 SOURCES += main.cpp \
     editor.cpp \
