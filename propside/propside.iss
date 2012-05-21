@@ -3,9 +3,9 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-6-11"
-#define MyAppPublisher "MicroCSource"
-#define MyAppURL "www.MicroCSource.com"
+#define MyAppVersion "0-6-12"
+#define MyAppPublisher "ParallaxInc"
+#define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
 
 #define compiler "C:\propgcc"
@@ -82,12 +82,12 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 ;Filename: {app}\{#MyAppExeName}; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: skipifsilent NoWait PostInstall; 
 
 [Registry]
-Root: HKCU; SubKey: Software\MicroCSource; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Compiler; ValueData: {code:GetCompilerDir}\bin\propeller-elf-gcc.exe; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Includes; ValueData: {code:GetCompilerDir}\propeller-load\; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\MicroCSource\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Workspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
+Root: HKCU; SubKey: Software\{#MyAppPublisher}; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Compiler; ValueData: {code:GetCompilerDir}\bin\propeller-elf-gcc.exe; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Includes; ValueData: {code:GetCompilerDir}\propeller-load\; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Workspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
 
 [Code]
 var
@@ -98,14 +98,14 @@ procedure InitializeWizard;
 begin
   { Create the pages }
   CompilerPage := CreateInputDirPage(wpSelectDir,
-    'Select Compiler Directory', 'Where is Propeller-GCC installed?',
+    'Select Compiler Folder', 'Where is Propeller-GCC installed?',
     'Select the folder where Propeller-GCC tools will be installed.    Please do not use a folder having spaces in the folder name.',
     False, '');
   CompilerPage.Add('');
   CompilerPage.Values[0] := GetPreviousData('CompilerDir', ExpandConstant('{#compiler}'));
 
   DataDirPage := CreateInputDirPage(wpSelectDir,
-    'Select Workspace Directory', 'Where should source files be installed?',
+    'Select Workspace Folder', 'Where should source files be installed?',
     'Select the folder where Setup will install source files, then click Next.',
     False, '');
   DataDirPage.Add('');
@@ -121,7 +121,7 @@ begin
   S := '';
   S := S + MemoGroupInfo + Newline + Newline;
   S := S + MemoDirInfo + Newline + Newline;
-  S := S + 'SimpleIDE source folder:' + Newline + Space + DataDirPage.Values[0] + NewLine + NewLine;
+  S := S + 'SimpleIDE Workspace folder:' + Newline + Space + DataDirPage.Values[0] + NewLine + NewLine;
   S := S + 'Propeller-GCC folder:' + Newline + Space + CompilerPage.Values[0] + NewLine + NewLine;
   Result := S;
 end;

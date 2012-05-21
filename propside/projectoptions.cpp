@@ -202,7 +202,7 @@ QString  ProjectOptions::getSimplePrintf()
 
 QString  ProjectOptions::getStripElf()
 {
-    return ui->checkBoxStripELF->isChecked() ? QString ("-s") : QString ("");
+    return QString (""); // never strip now that we have config variable patching
 }
 
 QString  ProjectOptions::getCompOptions()
@@ -296,10 +296,6 @@ void ProjectOptions::setOptions(QString s)
         if(s.contains("simple_printf")) {
             setSimplePrintf(true);
         }
-        else
-        if(s.contains("-s")) {
-            setStripElf(true);
-        }
     }
 }
 
@@ -370,7 +366,7 @@ void ProjectOptions::setSimplePrintf(bool s)
 }
 void ProjectOptions::setStripElf(bool s)
 {
-    ui->checkBoxStripELF->setChecked(s);
+    ui->checkBoxStripELF->setChecked(false); // never strip
 }
 void ProjectOptions::setCompOptions(QString s)
 {
