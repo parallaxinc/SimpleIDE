@@ -70,7 +70,10 @@ public slots:
     void saveProject();
     void closeProject();
     void aboutShow();
+    void creditShow();
     void helpShow();
+    void libraryShow();
+    void userguideShow();
     void projectTreeClicked(QModelIndex index);
     void closeTab(int index = 0);
     void editorTabMenu(QPoint);
