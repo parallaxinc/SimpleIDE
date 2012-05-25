@@ -39,9 +39,6 @@
         <file>images/copy.png</file>
         <file>images/cut.png</file>
         <file>images/paste.png</file>
-        <file>images/SimpleIDE.png</file>
-        <file>images/integr8.png</file>
-        <file>images/SimpleIDE32.png</file>
         <file>images/console.png</file>
         <file>images/runconsole.png</file>
         <file>images/SimpleIDE5.png</file>
@@ -58,5 +55,8 @@
         <file>images/saveasfile2.png</file>
         <file>images/SimpleIDE-Splash2.png</file>
         <file>images/SimpleIDE322.ico</file>
+        <file>images/Library.png</file>
+        <file>images/Smile.png</file>
+        <file>images/UserHelp.png</file>
     </qresource>
 </RCC>

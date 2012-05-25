@@ -1550,17 +1550,19 @@ void MainWindow::setupHelpMenu()
 {
     QMenu *helpMenu = new QMenu(tr("&Help"), this);
 
-    aboutLanding = "<html><body><br/>"+tr("Visit ") +
+    aboutLanding = "<html><body>"+tr("Visit ") +
         "<a href=\"https://sites.google.com/site/propellergcc\">"+
         ASideGuiKey+"</a>"+
-        tr(" for User Guide and more information.")+
+        tr(" for more information.")+
         "</body></html>";
 
     menuBar()->addMenu(helpMenu);
     aboutDialog = new AboutDialog(aboutLanding, this);
 
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
-    helpMenu->addAction(QIcon(":/images/helphint.png"), tr("&Help"), this, SLOT(helpShow()));
+    helpMenu->addAction(QIcon(":/images/helphint.png"), tr("&Credits"), this, SLOT(creditShow()));
+    helpMenu->addAction(QIcon(":/images/UserHelp.png"), tr("&Help"), this, SLOT(userguideShow()));
+    helpMenu->addAction(QIcon(":/images/Library.png"), tr("&Library"), this, SLOT(libraryShow()),QKeySequence::HelpContents);
 
     /* new Help class */
     helpDialog = new Help();
@@ -1571,28 +1573,48 @@ void MainWindow::aboutShow()
     aboutDialog->show();
 }
 
-void MainWindow::helpShow()
+void MainWindow::creditShow()
 {
     QString license(ASideGuiKey+tr(" is an MIT Licensed Open Source IDE. It was developed with Open Source QT and uses QT shared libraries under LGPLv2.1.<br/><br/>"));
-    QString propgcc(ASideGuiKey+tr(" uses <a href=\"http://propgcc.googlecode.com\">Propeller GCC tool chain</a> based on GCC 4.6.1 under GPLv3. "));
-    QString ctags(tr("It uses the <a href=\"http://ctags.sourceforge.net\">ctags</a> binary program built from sources under GPLv2 for source browsing. "));
+    QString propgcc(ASideGuiKey+tr(" uses <a href=\"http://propgcc.googlecode.com\">Propeller GCC tool chain</a> based on GCC 4.6.1 under GPLv3. ")+"<p>");
+    QString ctags(tr("It uses the <a href=\"http://ctags.sourceforge.net\">ctags</a> binary program built from sources under GPLv2 for source browsing. ")+"<p>");
     QString icons(tr("Most icons used are from <a href=\"http://www.small-icons.com/packs/24x24-free-application-icons.htm\">www.aha-soft.com 24x24 Free Application Icons</a> " \
                      "and used according to Creative Commons Attribution 3.0 License.<br/><br/>"));
     QString sources(tr("All IDE sources are available at <a href=\"http://propside.googlecode.com\">repository</a>. " \
                        "Licenses are in this package."));
-    QString cancel(tr("<br><br>Press the 'Cancel' button to never show this again at startup.<br>"));
 
-    int rc = QMessageBox::information(this, ASideGuiKey+tr(" help"),
+    QString translations("<p><b>"+tr("Translations:")+"</b><p>");
+    QString simplechinese(tr("Simplified Chinese by ")+tr("Kenichi Kato, designer of Matanya") + " <a href=\"http://estory.com.sg/\">eStory.com.sg</a>");
+
+    QMessageBox::information(this, ASideGuiKey+tr(" help"),
+        license+propgcc+ctags+icons+sources+translations+simplechinese,
+        QMessageBox::Cancel, QMessageBox::Ok);
+
+}
+
+void MainWindow::helpShow()
+{
+    QString address = "file:///"+aSideDocPath+"/index.html";
+    QString helplib("<a href=\""+address+"\">"+tr("Library help")+"</a> "+
+                 tr("is context sensitive.")+" "+tr("Press F1 with mouse over words.")+"<br/>");
+    QMessageBox::information(this, ASideGuiKey+tr(" help"),
         tr("<p><b>")+ASideGuiKey+tr("</b> is an integrated C development environment "\
            "which can build and load Propeller GCC " \
-           "programs to Propeller for many board types.</p>") +
-        aboutLanding+license+propgcc+ctags+icons+sources+cancel,
-        QMessageBox::Cancel, QMessageBox::Ok);
-    if(rc == QMessageBox::Cancel) {
-        settings->setValue(helpStartupKey,QVariant(false));
-        qDebug() << "Don't show again.";
-    }
-    //QMessageBox::aboutQt(this,tr("About Qt"));
+           "programs to Propeller for many board types.") + "<p>" +
+        helplib+aboutLanding, QMessageBox::Ok);
+}
+
+void MainWindow::libraryShow()
+{
+    findSymbolHelp("");
+}
+
+
+void MainWindow::userguideShow()
+{
+    QString path = QApplication::applicationDirPath()+"/../userguide";
+    QString address = "file:///"+path+"/index.html";
+    QDesktopServices::openUrl(QUrl(address));
 }
 
 void MainWindow::setCurrentBoard(int index)
