@@ -83,6 +83,12 @@ if test $? != 0; then
    exit 1
 fi
 
+cp -r ${BUILD}/userguide ${VERSION}
+if test $? != 0; then
+   echo "copy userguide failed."
+   exit 1
+fi
+
 MYLDD=`ldd ${BUILD}/${NAME} | grep libQt | awk '{print $3}'`
 LIBS=`echo $MYLDD`
 

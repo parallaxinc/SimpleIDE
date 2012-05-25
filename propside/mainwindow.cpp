@@ -1562,7 +1562,7 @@ void MainWindow::setupHelpMenu()
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
     helpMenu->addAction(QIcon(":/images/helphint.png"), tr("&Credits"), this, SLOT(creditShow()));
     helpMenu->addAction(QIcon(":/images/UserHelp.png"), tr("&Help"), this, SLOT(userguideShow()));
-    helpMenu->addAction(QIcon(":/images/Library.png"), tr("&Library"), this, SLOT(libraryShow()),QKeySequence::HelpContents);
+    helpMenu->addAction(QIcon(":/images/Library.png"), tr("&Library"), this, SLOT(libraryShow()));
 
     /* new Help class */
     helpDialog = new Help();
@@ -1586,9 +1586,9 @@ void MainWindow::creditShow()
     QString translations("<p><b>"+tr("Translations:")+"</b><p>");
     QString simplechinese(tr("Simplified Chinese by ")+tr("Kenichi Kato, designer of Matanya") + " <a href=\"http://estory.com.sg/\">eStory.com.sg</a>");
 
-    QMessageBox::information(this, ASideGuiKey+tr(" help"),
-        license+propgcc+ctags+icons+sources+translations+simplechinese,
-        QMessageBox::Cancel, QMessageBox::Ok);
+    QMessageBox::information(this, ASideGuiKey+tr(" Credits"),"<html><body>"+
+        license+propgcc+ctags+icons+sources+translations+simplechinese+"</body></html>",
+        QMessageBox::Ok);
 
 }
 
@@ -1597,7 +1597,7 @@ void MainWindow::helpShow()
     QString address = "file:///"+aSideDocPath+"/index.html";
     QString helplib("<a href=\""+address+"\">"+tr("Library help")+"</a> "+
                  tr("is context sensitive.")+" "+tr("Press F1 with mouse over words.")+"<br/>");
-    QMessageBox::information(this, ASideGuiKey+tr(" help"),
+    QMessageBox::information(this, ASideGuiKey+tr(" Help"),
         tr("<p><b>")+ASideGuiKey+tr("</b> is an integrated C development environment "\
            "which can build and load Propeller GCC " \
            "programs to Propeller for many board types.") + "<p>" +
