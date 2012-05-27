@@ -19,23 +19,27 @@ void Help::show(QString path, QString text)
     QString tagtext = "\">"+text+"</a>";
     QDir dir(path);
     QStringList filter(QString("*.html"));
-    foreach(QString name, dir.entryList(filter)) {
+    QStringList entryList = dir.entryList(filter);
+    foreach(QString name, entryList) {
         QFile file(path+"/"+name);
         QString fileText;
         if(file.open(QFile::ReadOnly)) {
             fileText = file.readAll();
-            if (fileText.length() > 0 && fileText.indexOf(tagtext)) {
+            file.close();
+            if (fileText.length() > 0 && fileText.indexOf(tagtext,Qt::CaseInsensitive)) {
                 QStringList list = fileText.split(tagtext);
                 if(list.length() > 1) {
                     QString s = list[0];
                     s = s.mid(s.lastIndexOf("href=\"")+6);
-                    s = s.left(s.indexOf(tagtext));
+                    s = s.trimmed();
                     address = "file:///"+path+"/"+s;
-                    file.close();
-                    break;
+                    QUrl url(address);
+                    if(url.isValid() != true)
+                        qDebug() << url.errorString();
+                    QDesktopServices::openUrl(url);
+                    return;
                 }
             }
-            file.close();
         }
     }
     QDesktopServices::openUrl(QUrl(address));

@@ -1550,10 +1550,11 @@ void MainWindow::setupHelpMenu()
 {
     QMenu *helpMenu = new QMenu(tr("&Help"), this);
 
-    aboutLanding = "<html><body>"+tr("Visit ") +
-        "<a href=\"https://sites.google.com/site/propellergcc\">"+
+    aboutLanding = "<html><body><br/>"+tr("Visit ") +
+        "<a href=\"http://www.parallax.com/propellergcc/\">"+
         ASideGuiKey+"</a>"+
-        tr(" for more information.")+
+        tr(" for more information.")+"&nbsp; &nbsp;"+
+        "Email bug reports to <a href=\"mailto:gccbeta@parallax.com\">gccbeta@parallax.com</a>"+
         "</body></html>";
 
     menuBar()->addMenu(helpMenu);
@@ -1612,9 +1613,14 @@ void MainWindow::libraryShow()
 
 void MainWindow::userguideShow()
 {
-    QString path = QApplication::applicationDirPath()+"/../userguide";
-    QString address = "file:///"+path+"/index.html";
-    QDesktopServices::openUrl(QUrl(address));
+    QString path = QApplication::applicationDirPath();
+    QString address = "file:///"+path+"/../userguide/index.html";
+    bool rc = QDesktopServices::openUrl(QUrl(address));
+    if(rc != true) {
+        // just for debug purposes
+        address = "file:///"+path+"/../../propside/userguide/index.html";
+        QDesktopServices::openUrl(QUrl(address));
+    }
 }
 
 void MainWindow::setCurrentBoard(int index)
