@@ -23,8 +23,8 @@ AboutDialog::AboutDialog(QString landing, QWidget *parent) :
 
     showSplashStartCheckBox = new QCheckBox (tr("Show this window at startup."));
     showSplashStartCheckBox->setChecked(true);
-
     layout->addWidget(showSplashStartCheckBox);
+
     layout->addWidget(buttonBox);
     setLayout(layout);
 }
