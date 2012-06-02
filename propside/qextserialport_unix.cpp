@@ -113,6 +113,17 @@ bool QextSerialPortPrivate::close_sys()
 
 bool QextSerialPortPrivate::flush_sys()
 {
+    /* This is mostly a Mac Hack.
+     * Drain doesn't seem to work well for serial ports on Mac.
+     * Ok to use for linux too.
+     */
+    char data[64];
+    int  num = 0;
+    while(bytesAvailable_sys() > 0) {
+        num += ::read(fd, data, 64);
+    }
+    if(num > 0)
+        qDebug() << "flushed" << num;
     ::tcdrain(fd);
     return true;
 }
