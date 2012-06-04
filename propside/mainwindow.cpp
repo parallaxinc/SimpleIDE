@@ -379,6 +379,7 @@ void MainWindow::quitProgram()
 {
     /* never leave port open */
     portListener->close();
+    term->accept(); // just in case serial terminal is open
 
     exitSave(); // find
     QString fileName = "";
@@ -1406,20 +1407,25 @@ void MainWindow::programDebug()
     if(runBuild(""))
         return;
 
-    btnConnected->setChecked(true);
-    term->getEditor()->setPlainText("");
+#if !defined(Q_WS_WIN32)
     portListener->open();
     term->getEditor()->setPortEnable(false);
-
+    if(runLoader("-r -t")) {
+        portListener->close();
+        return;
+    }
+#else
     if(runLoader("-r -t"))
         return;
-
+    portListener->open();
+#endif
+    btnConnected->setChecked(true);
+    term->getEditor()->setPlainText("");
     term->getEditor()->setPortEnable(true);
     term->activateWindow();
     term->show();
     term->getEditor()->setFocus();
 }
-
 
 void MainWindow::debugCompileLoad()
 {
@@ -2320,8 +2326,6 @@ QStringList MainWindow::getLoaderParameters(QString copts)
 
 int  MainWindow::runLoader(QString copts)
 {
-    bool terminal = false;
-
     if(projectModel == NULL || projectFile.isNull()) {
         QMessageBox mbox(QMessageBox::Critical, "Error No Project",
             "Please select a tab and press F4 to set main project file.", QMessageBox::Ok);
