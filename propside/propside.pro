@@ -9,8 +9,8 @@ TARGET = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 
-# EVENT_DRIVEN QEXTSERIALPORT causes zombie procs on windows works on Linux/Mac
-# DEFINES += EVENT_DRIVEN
+# EVENT_DRIVEN QEXTSERIALPORT is no longer used.
+
 # GDBENABLE is not ready, and will only be used for development testing
 # DEFINES += GDBENABLE
 # These define the version number in Menu->About
@@ -78,13 +78,11 @@ RESOURCES += resources.qrc
 
 unix:SOURCES += qextserialport_unix.cpp
 unix:!macx { 
-    # new qextserial works better for linux/mac
-    # DEFINES += EVENT_DRIVEN
+    # dont use EVENT_DRIVEN for linux to be consistent with MAC. also causes output skips.
     SOURCES += qextserialenumerator_unix.cpp
 }
 macx { 
-    # new qextserial works better for linux/mac
-    # DEFINES += EVENT_DRIVEN
+    # dont use EVENT_DRIVEN for mac. must open terminal before load because mac would reset boards otherwise.
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += -framework \
         IOKit \
@@ -93,8 +91,7 @@ macx {
 }
 win32 { 
     RC_FILE = myapp.rc
-    # don't use EVENT_DRIVEN for windows.
-    # DEFINES += LOADER_TERMINAL
+    # don't use EVENT_DRIVEN for windows. causes crashes.
     SOURCES += qextserialport_win.cpp
     SOURCES += qextserialenumerator_win.cpp
     DEFINES += WINVER=0x0501 # needed for mingw to pull in appropriate dbt business...probably a better way to do this
