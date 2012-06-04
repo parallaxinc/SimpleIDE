@@ -1,18 +1,12 @@
 #include "terminal.h"
 
+#if defined(Q_WS_WIN32)
+#define TERM_ENABLE_BUTTON
+#endif
+
 Terminal::Terminal(QWidget *parent) : QDialog(parent)
 {
-#if !defined(LOADER_TERMINAL)
     termEditor = new Console(parent);
-#endif
-    init();
-}
-
-Terminal::Terminal(QLabel *status, QPlainTextEdit *compileStatus, QProgressBar *progressBar, QWidget *parent) : QDialog(parent)
-{
-#if defined(LOADER_TERMINAL)
-    termEditor = new Loader(status,compileStatus,progressBar,this);
-#endif
     init();
 }
 
@@ -20,7 +14,6 @@ void Terminal::init()
 {
     QVBoxLayout *termLayout = new QVBoxLayout();
     termEditor->setReadOnly(false);
-    //termEditor->setContextMenuPolicy(Qt::NoContextMenu);
 
     QAction *copyAction = new QAction(tr("Copy"),this);
     copyAction->setShortcuts(QKeySequence::Copy);
@@ -36,12 +29,14 @@ void Terminal::init()
     connect(buttonClear,SIGNAL(clicked()), this, SLOT(clearScreen()));
     buttonClear->setAutoDefault(false);
     buttonClear->setDefault(false);
-/*
+
+#ifdef TERM_ENABLE_BUTTON
     buttonEnable = new QPushButton(tr("Disable"),this);
     connect(buttonEnable,SIGNAL(clicked()), this, SLOT(toggleEnable()));
     buttonEnable->setAutoDefault(false);
     buttonEnable->setDefault(false);
-*/
+#endif
+
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
@@ -52,7 +47,9 @@ void Terminal::init()
     QHBoxLayout *butLayout = new QHBoxLayout();
     termLayout->addLayout(butLayout);
     butLayout->addWidget(buttonClear);
-    //butLayout->addWidget(buttonEnable);
+#ifdef TERM_ENABLE_BUTTON
+    butLayout->addWidget(buttonEnable);
+#endif
     butLayout->addWidget(buttonBox);
     setLayout(termLayout);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
@@ -60,17 +57,10 @@ void Terminal::init()
     resize(640,400);
 }
 
-#if defined(LOADER_TERMINAL)
-Loader *Terminal::getEditor()
-{
-    return termEditor;
-}
-#else
 Console *Terminal::getEditor()
 {
     return termEditor;
 }
-#endif
 
 void Terminal::setPosition(int x, int y)
 {
@@ -81,23 +71,19 @@ void Terminal::setPosition(int x, int y)
 
 void Terminal::accept()
 {
-    //buttonEnable->setText("Disable");
-#if defined(LOADER_TERMINAL)
-    termEditor->kill();
-#else
-    termEditor->setPortEnable(false);
+#ifdef TERM_ENABLE_BUTTON
+    buttonEnable->setText("Disable");
 #endif
+    termEditor->setPortEnable(false);
     done(QDialog::Accepted);
 }
 
 void Terminal::reject()
 {
-    //buttonEnable->setText("Disable");
-#if defined(LOADER_TERMINAL)
-    termEditor->kill();
-#else
-    termEditor->setPortEnable(false);
+#ifdef TERM_ENABLE_BUTTON
+    buttonEnable->setText("Disable");
 #endif
+    termEditor->setPortEnable(false);
     done(QDialog::Rejected);
 }
 
@@ -108,7 +94,7 @@ void Terminal::clearScreen()
 
 void Terminal::toggleEnable()
 {
-    /*
+#ifdef TERM_ENABLE_BUTTON
     if(buttonEnable->text().contains("Enable",Qt::CaseInsensitive)) {
         buttonEnable->setText("Disable");
         termEditor->setPortEnable(true);
@@ -118,17 +104,21 @@ void Terminal::toggleEnable()
         termEditor->setPortEnable(false);
     }
     QApplication::processEvents();
-    */
+#endif
 }
 
 void Terminal::setPortEnabled(bool value)
 {
     if(value) {
-        //buttonEnable->setText("Disable");
+#ifdef TERM_ENABLE_BUTTON
+        buttonEnable->setText("Disable");
+#endif
         termEditor->setPortEnable(true);
     }
     else {
-        //buttonEnable->setText("Enable");
+#ifdef TERM_ENABLE_BUTTON
+        buttonEnable->setText("Enable");
+#endif
         termEditor->setPortEnable(false);
     }
     QApplication::processEvents();
