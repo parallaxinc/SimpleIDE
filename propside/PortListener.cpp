@@ -121,17 +121,21 @@ void PortListener::updateReady(QextSerialPort* port)
 
 /*
  * This is the port listener thread.
- * We have to use polling - see constructor.
+ * We have to use polling so that we can share the loader port.
  */
+#ifdef Q_WS_MAC
+#define POLL_DELAY 10
+#else
+// delay less than 25ms here is dangerous for windows
+#define POLL_DELAY 25
+#endif
+
 void PortListener::run()
 {
     while(port->isOpen()) {
-        msleep(25); // less than 25ms here is dangerous for windows
+        msleep(POLL_DELAY);
         QApplication::processEvents();
-        if(port->bytesAvailable() > 0) {
+        if(terminal->enabled())
             emit updateEvent(port);
-            msleep(10);
-            QApplication::processEvents();
-        }
     }
 }

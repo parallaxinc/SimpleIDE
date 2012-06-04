@@ -13,6 +13,11 @@ void Console::setPortEnable(bool value)
     isEnabled = value;
 }
 
+bool Console::enabled()
+{
+    return isEnabled;
+}
+
 void Console::keyPressEvent(QKeyEvent *event)
 {
     // qDebug() << "keyPressEvent";
@@ -44,13 +49,16 @@ enum { BUFFERSIZE = 64 };
 
 void Console::updateReady(QextSerialPort* port)
 {
+    if(isEnabled == false)
+        return;
+
+    if(port->bytesAvailable() < 1)
+        return;
+
     QByteArray ba = port->read(BUFFERSIZE);
     int length = ba.length();
 
     if(length < 1)
-        return;
-
-    if(isEnabled == false)
         return;
 
     QString text = "";

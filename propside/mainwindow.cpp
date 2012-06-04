@@ -141,14 +141,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     process = new QProcess(this);
 
     /* setup loader and port listener */
-#if defined(LOADER_TERMINAL)
-    /* setup the terminal dialog box */
-    term = new Terminal(status, compileStatus, progress, this);
-    termEditor = term->getEditor();
-
-    /* no console or editor for LOADER_TERMINAL */
-    portListener = new PortListener(this, NULL);
-#else
     /* setup the terminal dialog box */
     term = new Terminal(this);
     termEditor = term->getEditor();
@@ -156,7 +148,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     /* tell port listener to use terminal editor for i/o */
     portListener = new PortListener(this, termEditor);
     portListener->setTerminalWindow(termEditor);
-#endif
 
     term->setWindowTitle(QString(ASideGuiKey)+" Simple Terminal");
     connect(term,SIGNAL(accepted()),this,SLOT(terminalClosed()));
@@ -919,34 +910,7 @@ void MainWindow::downloadSdCard()
 
     showBuildStart(aSideLoader,args);
 
-#if defined(LOADER_TERMINAL)
-    if(terminal) {
-        return termEditor->load(aSideLoader, sourcePath(projectFile), args);
-    }
-    else {
-        process->setProperty("Name", QVariant(aSideLoader));
-        process->setProperty("IsLoader", QVariant(true));
 
-        connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
-        connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
-        connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
-
-        process->setProcessChannelMode(QProcess::MergedChannels);
-        process->setWorkingDirectory(sourcePath(projectFile));
-
-        procMutex.lock();
-        procDone = false;
-        procMutex.unlock();
-
-        process->start(aSideLoader,args);
-
-        status->setText(status->text()+tr(" Loading ... "));
-
-        while(procDone == false)
-            QApplication::processEvents();
-
-    }
-#else
     process->setProperty("Name", QVariant(aSideLoader));
     process->setProperty("IsLoader", QVariant(true));
 
@@ -968,7 +932,6 @@ void MainWindow::downloadSdCard()
     while(procDone == false)
         QApplication::processEvents();
 
-#endif
 }
 
 /*
@@ -1443,15 +1406,15 @@ void MainWindow::programDebug()
     if(runBuild(""))
         return;
 
+    btnConnected->setChecked(true);
+    term->getEditor()->setPlainText("");
+    portListener->open();
+    term->getEditor()->setPortEnable(false);
+
     if(runLoader("-r -t"))
         return;
 
-    btnConnected->setChecked(true);
-#if !defined(LOADER_TERMINAL)
     term->getEditor()->setPortEnable(true);
-    term->getEditor()->setPlainText("");
-    portListener->open();
-#endif
     term->activateWindow();
     term->show();
     term->getEditor()->setFocus();
@@ -2357,9 +2320,8 @@ QStringList MainWindow::getLoaderParameters(QString copts)
 
 int  MainWindow::runLoader(QString copts)
 {
-#if defined(LOADER_TERMINAL) // supress warnings. remove LOADER_TERMINAL later
     bool terminal = false;
-#endif
+
     if(projectModel == NULL || projectFile.isNull()) {
         QMessageBox mbox(QMessageBox::Critical, "Error No Project",
             "Please select a tab and press F4 to set main project file.", QMessageBox::Ok);
@@ -2367,23 +2329,13 @@ int  MainWindow::runLoader(QString copts)
         return -1;
     }
 
-    btnConnected->setChecked(false);
-    portListener->close(); // disconnect uart before use
-    term->hide();
-
     progress->show();
     progress->setValue(0);
 
     getApplicationSettings();
 
-    process->setProperty("Terminal", QVariant(false));
     if(copts.indexOf(" -t") > 0) {
-#if !defined(LOADER_TERMINAL)
         copts = copts.mid(0,copts.indexOf(" -t"));
-#else
-        terminal = true;
-#endif
-        process->setProperty("Terminal", QVariant(true));
     }
 
     QString loadtype = cbBoard->currentText();
@@ -2404,41 +2356,8 @@ int  MainWindow::runLoader(QString copts)
 
     QStringList args = getLoaderParameters(copts);
 
-    btnConnected->setChecked(false);
-    portListener->close(); // disconnect uart before use
-
     showBuildStart(aSideLoader,args);
 
-#if defined(LOADER_TERMINAL)
-    if(terminal) {
-        return termEditor->load(aSideLoader, sourcePath(projectFile), args);
-    }
-    else {
-        process->setProperty("Name", QVariant(aSideLoader));
-        process->setProperty("IsLoader", QVariant(true));
-
-        connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
-        connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
-        connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
-
-        process->setProcessChannelMode(QProcess::MergedChannels);
-        process->setWorkingDirectory(sourcePath(projectFile));
-
-        procMutex.lock();
-        procDone = false;
-        procMutex.unlock();
-
-        process->start(aSideLoader,args);
-
-        status->setText(status->text()+tr(" Loading ... "));
-
-        while(procDone == false)
-            QApplication::processEvents();
-
-        progress->hide();
-        return process->exitCode();
-    }
-#else
     process->setProperty("Name", QVariant(aSideLoader));
     process->setProperty("IsLoader", QVariant(true));
 
@@ -2462,7 +2381,6 @@ int  MainWindow::runLoader(QString copts)
 
     progress->hide();
     return process->exitCode();
-#endif
 }
 
 int  MainWindow::startProgram(QString program, QString workpath, QStringList args, DumpType dump)
@@ -2678,14 +2596,12 @@ void MainWindow::procReadyRead()
             }
 #endif
             else {
-                QStringList colonlist = line.split(":");
-                // if we get line number info prepend end of line
-                if(colonlist.length() > 1)
-                    compileStatus->insertPlainText(eol);
+                compileStatus->insertPlainText(eol);
                 compileStatus->insertPlainText(line);
             }
         }
     }
+
 }
 
 int  MainWindow::checkBuildStart(QProcess *proc, QString progName)
@@ -3695,22 +3611,6 @@ void MainWindow::enumeratePorts()
 
 void MainWindow::connectButton()
 {
-#if defined(LOADER_TERMINAL)
-    if(btnConnected->isChecked()) {
-        QStringList args;
-        args.append("-p");
-        args.append(cbPort->currentText());
-        args.append("-t");
-        termEditor->load(aSideLoader, sourcePath(projectFile), args);
-        termEditor->setFocus();
-        term->show();
-        term->activateWindow();
-    }
-    else {
-        termEditor->stop();
-        term->hide();
-    }
-#else
     if(btnConnected->isChecked()) {
         term->getEditor()->setPortEnable(true);
         term->show();
@@ -3723,24 +3623,16 @@ void MainWindow::connectButton()
         portListener->close();
         term->hide();
     }
-#endif
 }
 
 void MainWindow::portResetButton()
 {
-#if defined(LOADER_TERMINAL)
+    bool rts = false;
     QString port = cbPort->currentText();
     if(port.length() == 0) {
         QMessageBox::information(this, tr("Port Required"), tr("Please select a port"), QMessageBox::Ok);
         return;
     }
-    termEditor->reload(port);
-    if(btnConnected->isChecked() == false)
-        termEditor->stop();
-
-#else
-
-    bool rts = false;
 
     if(this->propDialog->getResetType() == Properties::CFG) {
         QString bname = this->cbBoard->currentText();
@@ -3785,7 +3677,6 @@ void MainWindow::portResetButton()
     }
     if(isopen == false)
         portListener->close();
-#endif
 }
 
 QString MainWindow::shortFileName(QString fileName)
