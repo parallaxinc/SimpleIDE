@@ -21,13 +21,6 @@ PortListener::PortListener(QObject *parent, Console *term) : QThread(parent)
 
 void PortListener::init(const QString & portName, BaudRateType baud)
 {
-#if 0
-#if defined(Q_WS_WIN32)
-    port->setPortName(port->fullPortNameWin(portName));
-#else
-    port->setPortName(portName);
-#endif
-#endif
     port->setPortName(portName);
     port->setBaudRate(baud);
     port->setFlowControl(FLOW_OFF);
@@ -91,14 +84,6 @@ void PortListener::send(QByteArray &data)
     port->write(data.constData(),1);
 }
 
-#if 0
-int PortListener::readData(char *buffer, int length)
-{
-    int ret = port->readData(buffer,length);
-    return ret;
-}
-#endif
-
 void PortListener::onDsrChanged(bool status)
 {
     if (status)
@@ -119,17 +104,18 @@ void PortListener::updateReady(QextSerialPort* port)
         terminal->updateReady(port);
 }
 
+#if defined(Q_WS_WIN32)
+// delay less than 25ms here is dangerous for windows
+#define POLL_DELAY 25
+#else
+// delay for MAC/Linux
+#define POLL_DELAY 10
+#endif
+
 /*
  * This is the port listener thread.
  * We have to use polling so that we can share the loader port.
  */
-#ifdef Q_WS_MAC
-#define POLL_DELAY 10
-#else
-// delay less than 25ms here is dangerous for windows
-#define POLL_DELAY 25
-#endif
-
 void PortListener::run()
 {
     while(port->isOpen()) {
