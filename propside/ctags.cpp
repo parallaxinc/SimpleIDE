@@ -103,7 +103,8 @@ void CTags::procError(QProcess::ProcessError code)
     mutex.lock();
     procDone = true;
     mutex.unlock();
-    // qDebug() << "procError " << code;
+    if(code != 0)
+        qDebug() << "ctags procError " << code;
 }
 
 void CTags::procReadyRead()
@@ -120,7 +121,8 @@ void CTags::procFinished(int code, QProcess::ExitStatus status)
     procDone = true;
     mutex.unlock();
 
-    // qDebug() << "runCtags procFinished " << code << " " << status << ":" << process->readAllStandardOutput();
+    if((code != 0) | (status != 0))
+        qDebug() << "runCtags procFinished " << code << " " << status << ":" << process->readAllStandardOutput();
 }
 
 bool CTags::enabled()
