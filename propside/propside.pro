@@ -84,7 +84,7 @@ unix:!macx {
 }
 macx { 
     # new qextserial works better for linux/mac
-    DEFINES += EVENT_DRIVEN
+    # DEFINES += EVENT_DRIVEN
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += -framework \
         IOKit \

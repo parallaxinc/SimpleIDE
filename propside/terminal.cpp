@@ -29,19 +29,19 @@ void Terminal::init()
     pasteAction->setShortcuts(QKeySequence::Paste);
     termEditor->addAction(pasteAction);
 
-    termEditor->setMaximumBlockCount(1024);
+    termEditor->setMaximumBlockCount(512);
     termLayout->addWidget(termEditor);
 
     QPushButton *buttonClear = new QPushButton(tr("Clear"),this);
     connect(buttonClear,SIGNAL(clicked()), this, SLOT(clearScreen()));
     buttonClear->setAutoDefault(false);
     buttonClear->setDefault(false);
-
+/*
     buttonEnable = new QPushButton(tr("Disable"),this);
     connect(buttonEnable,SIGNAL(clicked()), this, SLOT(toggleEnable()));
     buttonEnable->setAutoDefault(false);
     buttonEnable->setDefault(false);
-
+*/
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
@@ -52,7 +52,7 @@ void Terminal::init()
     QHBoxLayout *butLayout = new QHBoxLayout();
     termLayout->addLayout(butLayout);
     butLayout->addWidget(buttonClear);
-    butLayout->addWidget(buttonEnable);
+    //butLayout->addWidget(buttonEnable);
     butLayout->addWidget(buttonBox);
     setLayout(termLayout);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
@@ -81,7 +81,7 @@ void Terminal::setPosition(int x, int y)
 
 void Terminal::accept()
 {
-    buttonEnable->setText("Disable");
+    //buttonEnable->setText("Disable");
 #if defined(LOADER_TERMINAL)
     termEditor->kill();
 #else
@@ -92,7 +92,7 @@ void Terminal::accept()
 
 void Terminal::reject()
 {
-    buttonEnable->setText("Disable");
+    //buttonEnable->setText("Disable");
 #if defined(LOADER_TERMINAL)
     termEditor->kill();
 #else
@@ -108,6 +108,7 @@ void Terminal::clearScreen()
 
 void Terminal::toggleEnable()
 {
+    /*
     if(buttonEnable->text().contains("Enable",Qt::CaseInsensitive)) {
         buttonEnable->setText("Disable");
         termEditor->setPortEnable(true);
@@ -117,16 +118,17 @@ void Terminal::toggleEnable()
         termEditor->setPortEnable(false);
     }
     QApplication::processEvents();
+    */
 }
 
 void Terminal::setPortEnabled(bool value)
 {
     if(value) {
-        buttonEnable->setText("Disable");
+        //buttonEnable->setText("Disable");
         termEditor->setPortEnable(true);
     }
     else {
-        buttonEnable->setText("Enable");
+        //buttonEnable->setText("Enable");
         termEditor->setPortEnable(false);
     }
     QApplication::processEvents();

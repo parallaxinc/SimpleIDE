@@ -10,6 +10,7 @@ class Console : public QPlainTextEdit
 public:
     explicit Console(QWidget *parent = 0);
     void setPortEnable(bool value);
+    bool enabled();
 
 private:
     bool isEnabled;
