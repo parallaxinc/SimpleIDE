@@ -38,12 +38,13 @@
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 270
 
-#define SOURCE_FILE_TYPES "Source Files (*.c *.ccp *.h *.cogc *.spin);; All (*)"
+#define SOURCE_FILE_TYPES "Source Files (*.c *.ccp *.h *.cogc *.ecogc *.spin *.espin);; All (*)"
 
 #define GDB_TABNAME "GDB Output"
 
 #define SHOW_ASM_EXTENTION ".asm"
 #define SHOW_ASMC_EXTENTION ".asmc"
+#define SHOW_MAP_EXTENTION ".map"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -670,6 +671,10 @@ void MainWindow::closeProject()
                 closeTab(tab);
             s = s.mid(0,s.lastIndexOf('.'));
             if(editorTabs->tabToolTip(tab).compare(s+SHOW_ASM_EXTENTION) == 0)
+                closeTab(tab);
+            if(editorTabs->tabToolTip(tab).compare(s+SHOW_ASM_EXTENTION) == 0)
+                closeTab(tab);
+            if(editorTabs->tabToolTip(tab).compare(s+SHOW_MAP_EXTENTION) == 0)
                 closeTab(tab);
         }
     }
@@ -1734,7 +1739,7 @@ int  MainWindow::runBuild(QString option)
     progress->show();
     programSize->setText("");
 
-    compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\r\n\n");
+    compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\r\n");
     compileStatus->moveCursor(QTextCursor::End);
     status->setText(tr("Building ..."));
 
@@ -1743,10 +1748,16 @@ int  MainWindow::runBuild(QString option)
             maxprogress--;
             continue;
         }
+
         if(item.at(0) == '>')
             maxprogress--;
     }
     maxprogress++;
+
+    /* choose some global options
+    if(this->projectOptions->getEECOG().length() > 0)
+        eecog = true;
+    */
 
     /* remove a.out before build
      */
@@ -1797,33 +1808,69 @@ int  MainWindow::runBuild(QString option)
             name = name.mid(name.indexOf(FILELINK)+QString(FILELINK).length());
             base = name.mid(0,name.lastIndexOf("."));
         }
-        if(name.toLower().lastIndexOf(".spin") > 0) {
+
+        QString suffix = name.mid(name.lastIndexOf("."));
+        suffix = suffix.toLower();
+
+        if(suffix.compare(".spin") == 0) {
             if(runBstc(name))
                 return -1;
             if(proj.toLower().lastIndexOf(".dat") < 0) // intermediate
-                list.append((name.mid(0,name.lastIndexOf(".spin"))+".dat"));
+                list.append(name.mid(0,name.lastIndexOf(".spin"))+".dat");
         }
-        else if(name.toLower().lastIndexOf(".dat") > 0) {
+        else if(suffix.compare(".espin") == 0) {
+            QString basepath = sourcePath(projectFile);
+            this->compileStatus->appendPlainText("Copying "+name+" to tmp.spin for spin compiler.");
+            if(QFile::exists(basepath+"tmp.spin"))
+                QFile::remove(basepath+"tmp.spin");
+            if(QFile::copy(basepath+base+".spin",basepath+"tmp.spin") != true)
+                return -1;
+            if(runBstc("tmp.spin"))
+                return -1;
+            if(QFile::exists(basepath+base+".edat"))
+                QFile::remove(basepath+base+".edat");
+            if(QFile::copy(basepath+"tmp.dat",basepath+base+".edat") != true)
+                return -1;
+            if(proj.toLower().lastIndexOf(".edat") < 0) // intermediate
+                list.append(name.mid(0,name.lastIndexOf(".espin"))+".edat");
+        }
+        else if(suffix.compare(".dat") == 0) {
             name = shortFileName(name);
             if(runObjCopy(name))
                 return -1;
             if(proj.toLower().lastIndexOf("_firmware.o") < 0)
                 clist.append(name.mid(0,name.lastIndexOf(".dat"))+"_firmware.o");
         }
-        else if(name.toLower().lastIndexOf(".s") > 0) {
+
+        else if(suffix.compare(".edat") == 0) {
+            name = shortFileName(name);
+            if(runObjCopy(name))
+                return -1;
+            if(runCogObjCopy(base+"_firmware.ecog",base+"_firmware.o"))
+                return -1;
+            if(proj.toLower().lastIndexOf("_firmware.o") < 0)
+                clist.append(base+"_firmware.o");
+        }
+        else if(suffix.compare(".s") == 0) {
             if(runGAS(name))
                 return -1;
             if(proj.toLower().lastIndexOf(".o") < 0)
                 clist.append(name.mid(0,name.lastIndexOf(".s"))+".o");
         }
         /* .cogc also does COG specific objcopy */
-        else if(name.toLower().lastIndexOf(".cogc") > 0) {
-            if(runCOGC(name))
+        else if(suffix.compare(".cogc") == 0) {
+            if(runCOGC(name,".cog"))
                 return -1;
             clist.append(shortFileName(base)+".cog");
         }
+        /* .cogc also does COG specific objcopy */
+        else if(suffix.compare(".ecogc") == 0) {
+            if(runCOGC(name,".ecog"))
+                return -1;
+            clist.append(shortFileName(base)+".ecog");
+        }
         /* dont add .a yet */
-        else if(name.toLower().lastIndexOf(".a") > 0) {
+        else if(suffix.compare(".a") == 0) {
         }
         /* add all others */
         else {
@@ -1926,9 +1973,12 @@ int  MainWindow::runBuild(QString option)
     return rc;
 }
 
-int  MainWindow::runCOGC(QString name)
+int  MainWindow::runCOGC(QString name, QString outext)
 {
     int rc = 0; // return code
+
+    QString compstr = shortFileName(aSideCompiler);
+    QString objcopy = "propeller-elf-objcopy";
 
     QString base = shortFileName(name.mid(0,name.lastIndexOf(".")));
     // copy .cog to .c
@@ -1939,13 +1989,12 @@ int  MainWindow::runCOGC(QString name)
     args.append("-Os"); // default optimization for -mcog
     args.append("-mcog"); // compile for cog
     args.append("-o"); // create a .cog object
-    args.append(base+".cog");
+    args.append(base+outext);
     args.append("-xc"); // code to compile is C code
     //args.append("-c");
     args.append(name);
 
     /* run compiler */
-    QString compstr = shortFileName(aSideCompiler);
     rc = startProgram(compstr, sourcePath(projectFile),args);
     if(rc) return rc;
 
@@ -1953,13 +2002,10 @@ int  MainWindow::runCOGC(QString name)
     args.clear();
     args.append("--localize-text");
     args.append("--rename-section");
-    args.append(".text="+base+".cog");
-    args.append(base+".cog");
-
+    args.append(".text="+base+outext);
+    args.append(base+outext);
 
     /* run object copy to localize fix up .cog object */
-
-    QString objcopy = "propeller-elf-objcopy";
     rc = startProgram(objcopy, sourcePath(projectFile), args);
 
     return rc;
@@ -1992,7 +2038,7 @@ int  MainWindow::runBstc(QString spinfile)
 }
 
 
-int  MainWindow::runCogObjCopy(QString datfile)
+int  MainWindow::runCogObjCopy(QString datfile, QString tarfile)
 {
     int rc = 0;
 
@@ -2003,10 +2049,32 @@ int  MainWindow::runCogObjCopy(QString datfile)
 
     QStringList args;
 
-    args.append("--localize-text");
+    //args.append("--localize-text");
     args.append("--rename-section");
-    args.append(".text="+datfile);
-    args.append(datfile);
+    args.append(".data="+datfile);
+    args.append(tarfile);
+
+    /* run objcopy */
+    QString objcopy = "propeller-elf-objcopy";
+    rc = startProgram(objcopy, sourcePath(projectFile), args);
+
+    return rc;
+}
+
+int  MainWindow::runObjCopyRedefineSym(QString oldsym, QString newsym, QString file)
+{
+    int rc = 0;
+
+    getApplicationSettings();
+    if(checkCompilerInfo()) {
+        return -1;
+    }
+
+    QStringList args;
+
+    args.append("--redefine-sym");
+    args.append(oldsym+"="+newsym);
+    args.append(file);
 
     /* run objcopy */
     QString objcopy = "propeller-elf-objcopy";
@@ -2494,9 +2562,10 @@ void MainWindow::procReadyReadSizes()
                 }
             }
             else
-            if(ms.contains(".heap",Qt::CaseInsensitive)) {
-                this->codeSize += 4;
-                this->memorySize += 4;
+            if(ms.contains("heap",Qt::CaseInsensitive)) {
+                //this->codeSize += 4;
+                //this->memorySize += 4;
+                break;
             }
             else if (n < len-1){
                 if(QString(lines.at(n+1)).contains("load", Qt::CaseInsensitive)) {
@@ -2786,7 +2855,7 @@ void MainWindow::setupProjectTools(QSplitter *vsplit)
     projectMenu->addAction(tr("Add Library Path"), this,SLOT(addProjectLibPath()));
     projectMenu->addAction(tr("Delete"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
-    //projectMenu->addAction(tr("Show Map"), this,SLOT(showMapFile()));
+    projectMenu->addAction(tr("Show Map File"), this,SLOT(showMapFile()));
     projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
 
     projectOptions = new ProjectOptions(this);
@@ -3444,6 +3513,19 @@ void MainWindow::showAssemblyFile()
     }
 }
 
+void MainWindow::showMapFile()
+{
+    QString fileName;
+    QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
+    if(vs.canConvert(QVariant::String))
+        fileName = vs.toString();
+
+    QString outfile = fileName.mid(0,fileName.lastIndexOf("."));
+    runBuild("-Xlinker -Map="+outfile+SHOW_MAP_EXTENTION);
+
+    openFileName(sourcePath(projectFile)+outfile+SHOW_MAP_EXTENTION);
+}
+
 /*
  * make debug info for a .c file
  */
@@ -3488,20 +3570,6 @@ int MainWindow::makeDebugFiles(QString fileName)
         copts.append("-xc");
     }
     copts.append("-S");
-
-#if ENABLEMAP_TOOL
-    QString projFile = name+".side";
-    bool ismain = false;
-    if(shortFileName(projectFile).compare(projFile) == 0)
-        ismain = true;
-
-    if(ismain) {
-        copts.append("--save-temps");
-        QString map = "-Map="+name+".map";
-        copts.append("-Xlinker");
-        copts.append(map);
-    }
-#endif
 
     copts.append(fileName);
 
