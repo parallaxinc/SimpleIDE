@@ -163,6 +163,7 @@ public slots:
     void fontSmaller();
 
     void showAssemblyFile();
+    void showMapFile();
     int  makeDebugFiles(QString fileName);
 
 private:
@@ -170,9 +171,10 @@ private:
     void getApplicationSettings();
     int  checkCompilerInfo();
     int  runBuild(QString option);
-    int  runCOGC(QString filename);
+    int  runCOGC(QString filename, QString outext);
     int  runBstc(QString spinfile);
-    int  runCogObjCopy(QString datfile);
+    int  runCogObjCopy(QString datfile, QString tarfile);
+    int  runObjCopyRedefineSym(QString oldsym, QString newsym, QString file);
     int  runObjCopy(QString datfile);
     int  runGAS(QString datfile);
     int  runPexMake(QString fileName);
