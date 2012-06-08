@@ -16,7 +16,8 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
 
     QLabel *findLabel = new QLabel(tr("Find text:"));
     findEdit = new QLineEdit;
-    connect(findEdit,SIGNAL(textChanged(QString)),this,SLOT(findChanged(QString)));
+    // don't connect find text, it causes unnecessary changes in editors
+    //connect(findEdit,SIGNAL(textChanged(QString)),this,SLOT(findChanged(QString)));
     QLabel *replaceLabel = new QLabel(tr("Replace with:"));
     replaceEdit = new QLineEdit;
 
@@ -406,6 +407,7 @@ void ReplaceDialog::accept()
 
 void ReplaceDialog::setEditor(QPlainTextEdit *ed)
 {
-    findEdit->setFocus();
     editor = ed;
+    editor->clearFocus();
+    findEdit->setFocus();
 }

@@ -275,6 +275,7 @@ private:
     int             progMax;
     int             progCount;
     bool            procDone;
+    bool            procResultError;
     QMutex          procMutex;
 
     Hardware        *hardwareDialog;
