@@ -1400,6 +1400,10 @@ void MainWindow::programRun()
 
     if(runBuild(""))
         return;
+#ifdef Q_WS_WIN32
+    portListener->close();
+    btnConnected->setChecked(false);
+#endif
     runLoader("-r");
 }
 
@@ -1420,6 +1424,8 @@ void MainWindow::programDebug()
         return;
     }
 #else
+    portListener->close();
+    btnConnected->setChecked(false);
     if(runLoader("-r -t"))
         return;
     portListener->open();
