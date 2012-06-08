@@ -968,7 +968,9 @@ void MainWindow::fileChanged()
     }
     QString text;
     int ret = 0;
-    if(file.open(QFile::ReadOnly | QFile::Text))
+    QTextStream in(&file);
+    in.setCodec("UTF-8");
+    if(file.open(QFile::ReadOnly))
     {
         text = file.readAll();
         file.close();
@@ -1109,9 +1111,7 @@ void MainWindow::replaceInFile()
     replaceDialog->clearReplaceText();
 
     replaceDialog->setEditor(editor);
-    replaceDialog->show();
-    replaceDialog->raise();
-    replaceDialog->activateWindow();
+    replaceDialog->exec();
 }
 
 /*
@@ -1764,7 +1764,7 @@ int  MainWindow::runBuild(QString option)
     QFile aout(sourcePath(projectFile)+"a.out");
     if(aout.exists()) {
         if(aout.remove() == false) {
-            int rc = QMessageBox::question(this,
+            rc = QMessageBox::question(this,
                 tr("Can't Remove File"),
                 tr("Can't Remove output file before build.\n"\
                    "Please close any program using the file \"a.out\".\n"\
@@ -1796,7 +1796,7 @@ int  MainWindow::runBuild(QString option)
     /* Run through file list and compile according to extension.
      * Add main file after going through the list. i.e start at list[1]
      */
-    for(int n = 1; n < list.length(); n++) {
+    for(int n = 1; rc == 0 && n < list.length(); n++) {
         progress->setValue(100*n/maxprogress);
         QString name = list[n];
         if(name.length() == 0)
@@ -1814,7 +1814,7 @@ int  MainWindow::runBuild(QString option)
 
         if(suffix.compare(".spin") == 0) {
             if(runBstc(name))
-                return -1;
+                rc = -1;
             if(proj.toLower().lastIndexOf(".dat") < 0) // intermediate
                 list.append(name.mid(0,name.lastIndexOf(".spin"))+".dat");
         }
@@ -1823,21 +1823,27 @@ int  MainWindow::runBuild(QString option)
             this->compileStatus->appendPlainText("Copying "+name+" to tmp.spin for spin compiler.");
             if(QFile::exists(basepath+"tmp.spin"))
                 QFile::remove(basepath+"tmp.spin");
-            if(QFile::copy(basepath+base+".spin",basepath+"tmp.spin") != true)
-                return -1;
-            if(runBstc("tmp.spin"))
-                return -1;
+            if(QFile::copy(basepath+base+".spin",basepath+"tmp.spin") != true) {
+                rc = -1;
+                continue;
+            }
+            if(runBstc("tmp.spin")) {
+                rc = -1;
+                continue;
+            }
             if(QFile::exists(basepath+base+".edat"))
                 QFile::remove(basepath+base+".edat");
-            if(QFile::copy(basepath+"tmp.dat",basepath+base+".edat") != true)
-                return -1;
+            if(QFile::copy(basepath+"tmp.dat",basepath+base+".edat") != true) {
+                rc = -1;
+                continue;
+            }
             if(proj.toLower().lastIndexOf(".edat") < 0) // intermediate
                 list.append(name.mid(0,name.lastIndexOf(".espin"))+".edat");
         }
         else if(suffix.compare(".dat") == 0) {
             name = shortFileName(name);
             if(runObjCopy(name))
-                return -1;
+                rc = -1;
             if(proj.toLower().lastIndexOf("_firmware.o") < 0)
                 clist.append(name.mid(0,name.lastIndexOf(".dat"))+"_firmware.o");
         }
@@ -1845,28 +1851,28 @@ int  MainWindow::runBuild(QString option)
         else if(suffix.compare(".edat") == 0) {
             name = shortFileName(name);
             if(runObjCopy(name))
-                return -1;
+                rc = -1;
             if(runCogObjCopy(base+"_firmware.ecog",base+"_firmware.o"))
-                return -1;
+                rc = -1;
             if(proj.toLower().lastIndexOf("_firmware.o") < 0)
                 clist.append(base+"_firmware.o");
         }
         else if(suffix.compare(".s") == 0) {
             if(runGAS(name))
-                return -1;
+                rc = -1;
             if(proj.toLower().lastIndexOf(".o") < 0)
                 clist.append(name.mid(0,name.lastIndexOf(".s"))+".o");
         }
         /* .cogc also does COG specific objcopy */
         else if(suffix.compare(".cogc") == 0) {
             if(runCOGC(name,".cog"))
-                return -1;
+                rc = -1;
             clist.append(shortFileName(base)+".cog");
         }
         /* .cogc also does COG specific objcopy */
         else if(suffix.compare(".ecogc") == 0) {
             if(runCOGC(name,".ecog"))
-                return -1;
+                rc = -1;
             clist.append(shortFileName(base)+".ecog");
         }
         /* dont add .a yet */
@@ -1900,76 +1906,91 @@ int  MainWindow::runBuild(QString option)
         }
     }
 
-    rc = runCompiler(clist);
-    Sleeper::ms(250);
-    progress->hide();
-
-    QTextCursor cur = compileStatus->textCursor();
-
+    QString loadtype;
+    QTextCursor cur;
     bool runpex = false;
-    QString loadtype = cbBoard->currentText();
-    if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
-        runpex = true;
-    }
-    else
-    if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
-        runpex = true;
-    }
-    if(runpex) {
-        rc = runPexMake("a.out");
-        if(rc != 0)
-            compileStatus->appendPlainText("Could not make AUTORUN.PEX\n");
-    }
 
-    if(rc == 0) {
-        compileStatus->appendPlainText("Done. Build Succeeded!\n");
-        cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
-        compileStatus->setTextCursor(cur);
+    if(rc != 0) {
+        QVariant vname = process->property("Name");
+        QString name = "Build";
+        if(vname.canConvert(QVariant::String)) {
+            name = vname.toString();
+        }
+        buildResult(rc, rc, name, name);
     }
     else {
-        compileStatus->appendPlainText("Done. Build Failed!\n");
-        if(compileStatus->toPlainText().indexOf("error:",Qt::CaseInsensitive) > 0) {
-            compileStatus->appendPlainText("Click error messages above to debug.\n");
+        rc = runCompiler(clist);
+
+        cur = compileStatus->textCursor();
+
+        loadtype = cbBoard->currentText();
+        if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
+            runpex = true;
         }
-        if(compileStatus->toPlainText().indexOf("undefined reference",Qt::CaseInsensitive) > 0) {
-            QStringList ssplit = compileStatus->toPlainText().split("undefined reference to ", QString::SkipEmptyParts, Qt::CaseInsensitive);
-            if(ssplit.count() > 0) {
-                QString msg = ssplit.at(1);
-                QStringList msplit = msg.split("collect");
-                if(msplit.count() > 0) {
-                    QString mstr = msplit.at(0);
-                    if(mstr.indexOf("`__") == 0) {
-                        mstr = mstr.mid(2);
-                        mstr = mstr.trimmed();
-                        mstr = mstr.mid(0,mstr.length()-1);
+        else
+        if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
+            runpex = true;
+        }
+        if(runpex) {
+            rc = runPexMake("a.out");
+            if(rc != 0)
+                compileStatus->appendPlainText("Could not make AUTORUN.PEX\n");
+        }
+
+        if(rc == 0) {
+            compileStatus->appendPlainText("Done. Build Succeeded!\n");
+            cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+            compileStatus->setTextCursor(cur);
+        }
+        else {
+            compileStatus->appendPlainText("Done. Build Failed!\n");
+            if(compileStatus->toPlainText().indexOf("error:",Qt::CaseInsensitive) > 0) {
+                compileStatus->appendPlainText("Click error or warning messages above to debug.\n");
+            }
+            if(compileStatus->toPlainText().indexOf("undefined reference",Qt::CaseInsensitive) > 0) {
+                QStringList ssplit = compileStatus->toPlainText().split("undefined reference to ", QString::SkipEmptyParts, Qt::CaseInsensitive);
+                if(ssplit.count() > 1) {
+                    QString msg = ssplit.at(1);
+                    QStringList msplit = msg.split("collect");
+                    if(msplit.count() > 0) {
+                        QString mstr = msplit.at(0);
+                        if(mstr.indexOf("`__") == 0) {
+                            mstr = mstr.mid(2);
+                            mstr = mstr.trimmed();
+                            mstr = mstr.mid(0,mstr.length()-1);
+                        }
+                        compileStatus->appendPlainText("Check source for bad function call or global variable name "+mstr+"\n");
                     }
-                    compileStatus->appendPlainText("Check source for bad function call or global variable name "+mstr+"\n");
+                    else {
+                        compileStatus->appendPlainText("Check source for bad function call or global variable name "+ssplit.at(1)+"\n");
+                    }
+                    cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+                    compileStatus->setTextCursor(cur);
+                    return rc;
                 }
-                else {
-                    compileStatus->appendPlainText("Check source for bad function call or global variable name "+ssplit.at(1)+"\n");
-                }
+            }
+            if(compileStatus->toPlainText().indexOf("overflowed by", Qt::CaseInsensitive) > 0) {
+                compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
+                cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+                compileStatus->setTextCursor(cur);
+                return rc;
+            }
+            if(compileStatus->toPlainText().indexOf("Error: Relocation overflows", Qt::CaseInsensitive) > 0) {
+                compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
                 cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
                 compileStatus->setTextCursor(cur);
                 return rc;
             }
         }
-        if(compileStatus->toPlainText().indexOf("overflowed by", Qt::CaseInsensitive) > 0) {
-            compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
-            cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
-            compileStatus->setTextCursor(cur);
-            return rc;
-        }
-        if(compileStatus->toPlainText().indexOf("Error: Relocation overflows", Qt::CaseInsensitive) > 0) {
-            compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
-            cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
-            compileStatus->setTextCursor(cur);
-            return rc;
-        }
-        compileStatus->appendPlainText("Check source for bad function call or global variable name.\n");
     }
 
+    Sleeper::ms(250);
+    progress->hide();
+
+    cur = compileStatus->textCursor();
     cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
     compileStatus->setTextCursor(cur);
+
     return rc;
 }
 
@@ -2451,6 +2472,10 @@ int  MainWindow::runLoader(QString copts)
     while(procDone == false)
         QApplication::processEvents();
 
+    QTextCursor cur = compileStatus->textCursor();
+    cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+    compileStatus->setTextCursor(cur);
+
     progress->hide();
     return process->exitCode();
 }
@@ -2484,6 +2509,7 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
     process->setWorkingDirectory(workpath);
 
     procDone = false;
+    procResultError = false;
     process->start(program,args);
 
     /* process Qt application events until procDone
@@ -2494,6 +2520,9 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
     disconnect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyReadSizes()));
 
     progress->hide();
+
+    if(procResultError)
+        return 1;
     return process->exitCode();
 }
 
@@ -2543,6 +2572,7 @@ void MainWindow::procReadyReadSizes()
     QByteArray bytes = process->readAllStandardOutput();
     if(bytes.length() == 0)
         return;
+
     this->codeSize = 0;
     this->memorySize = 0;
     QStringList lines = QString(bytes).split("\n",QString::SkipEmptyParts);
@@ -2593,6 +2623,18 @@ void MainWindow::procReadyRead()
 #else
     QString eol("\n");
 #endif
+
+    // bstc doesn't return good exit status
+    QString progname;
+    QVariant pvar = process->property("Name");
+    if(pvar.canConvert(QVariant::String)) {
+        progname = pvar.toString();
+    }
+    if(progname.contains("bstc",Qt::CaseInsensitive)) {
+        if(QString(bytes).contains("Error",Qt::CaseInsensitive)) {
+            procResultError = true;
+        }
+    }
 
     QStringList lines = QString(bytes).split("\n",QString::SkipEmptyParts);
     if(bytes.contains("bytes")) {
@@ -3347,6 +3389,18 @@ void MainWindow::showProjectFile()
         if(fileName.contains(".a"))
             return;
 
+        /*
+         * if tab is already opened, just display it
+         */
+        int tabs = editorTabs->count();
+        for(int n = 0; n < tabs; n++) {
+            QString tab = editorTabs->tabText(n);
+            if(tab.contains(this->shortFileName(fileName))) {
+                editorTabs->setCurrentIndex(n);
+                return;
+            }
+        }
+
         /* openFileName knows how to read spin files
          * If name has FILELINK it's a link.
          */
@@ -3533,6 +3587,9 @@ int MainWindow::makeDebugFiles(QString fileName)
 {
     if(fileName.length() == 0)
         return -1;
+
+    /* save files before compiling debug info */
+    checkAndSaveFiles();
 
     if(
        fileName.contains(".h",Qt::CaseInsensitive) ||
