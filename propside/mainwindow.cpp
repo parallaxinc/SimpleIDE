@@ -152,6 +152,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     portListener = new PortListener(this, termEditor);
     portListener->setTerminalWindow(termEditor);
 
+    term->setPortListener(portListener);
+
     term->setWindowTitle(QString(ASideGuiKey)+" Simple Terminal");
     connect(term,SIGNAL(accepted()),this,SLOT(terminalClosed()));
     connect(term,SIGNAL(rejected()),this,SLOT(terminalClosed()));
