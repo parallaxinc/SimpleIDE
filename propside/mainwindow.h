@@ -67,7 +67,8 @@ public slots:
     void newProject();
     void newProjectAccepted();
     void openProject(const QString &path = QString());
-    void saveProject();
+    void saveAsProject(const QString &path = QString());
+    void cloneProject();
     void closeProject();
     void aboutShow();
     void creditShow();
@@ -167,6 +168,8 @@ public slots:
     int  makeDebugFiles(QString fileName);
 
 private:
+    QString pathDiff(QString s2, QString s1);
+    QString saveAsProjectLinkFix(QString srcPath, QString dstPath, QString link);
     void exitSave();
     void getApplicationSettings();
     int  checkCompilerInfo();
