@@ -10,7 +10,7 @@ TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 
 # EVENT_DRIVEN QEXTSERIALPORT is no longer used.
-
+#
 # GDBENABLE is not ready, and will only be used for development testing
 # DEFINES += GDBENABLE
 # These define the version number in Menu->About
@@ -77,7 +77,7 @@ FORMS += hardware.ui \
 RESOURCES += resources.qrc
 
 unix:SOURCES += qextserialport_unix.cpp
-unix:!macx { 
+unix:!macx {
     # dont use EVENT_DRIVEN for linux to be consistent with MAC. also causes output skips.
     SOURCES += qextserialenumerator_unix.cpp
 }
@@ -91,6 +91,7 @@ macx {
 }
 win32 { 
     RC_FILE = myapp.rc
+    
     # don't use EVENT_DRIVEN for windows. causes crashes.
     SOURCES += qextserialport_win.cpp
     SOURCES += qextserialenumerator_win.cpp
