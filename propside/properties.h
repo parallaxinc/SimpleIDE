@@ -37,6 +37,8 @@
 #define ASideGuiGeometry    "SimpleIDE_WindowGeometry"
 #define helpStartupKey      "SimpleIDE_ShowHelpStart"
 #define compilerKey         "SimpleIDE_Compiler"
+#define cloneSrcKey         "SimpleIDE_CloneSrc"
+#define cloneDestKey        "SimpleIDE_CloneDest"
 #define includesKey         "SimpleIDE_Includes"
 #define separatorKey        "SimpleIDE_PathSeparator"
 #define configFileKey       "SimpleIDE_ConfigFile"
