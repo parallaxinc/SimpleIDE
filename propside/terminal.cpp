@@ -1,8 +1,8 @@
 #include "terminal.h"
 
-#if defined(Q_WS_WIN32)
+//#if defined(Q_WS_WIN32)
 #define TERM_ENABLE_BUTTON
-#endif
+//#endif
 
 Terminal::Terminal(QWidget *parent) : QDialog(parent)
 {
