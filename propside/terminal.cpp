@@ -62,6 +62,11 @@ Console *Terminal::getEditor()
     return termEditor;
 }
 
+void Terminal::setPortListener(PortListener *listener)
+{
+    portListener = listener;
+}
+
 void Terminal::setPosition(int x, int y)
 {
     int width = this->width();
@@ -98,10 +103,12 @@ void Terminal::toggleEnable()
     if(buttonEnable->text().contains("Enable",Qt::CaseInsensitive)) {
         buttonEnable->setText("Disable");
         termEditor->setPortEnable(true);
+        portListener->open();
     }
     else {
         buttonEnable->setText("Enable");
         termEditor->setPortEnable(false);
+        portListener->close();
     }
     QApplication::processEvents();
 #endif
