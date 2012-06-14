@@ -366,7 +366,8 @@ void ProjectOptions::setSimplePrintf(bool s)
 }
 void ProjectOptions::setStripElf(bool s)
 {
-    ui->checkBoxStripELF->setChecked(false); // never strip
+    if(s == true) s = false;  // never strip - eliminate warnings
+    ui->checkBoxStripELF->setChecked(s);
 }
 void ProjectOptions::setCompOptions(QString s)
 {
