@@ -58,5 +58,8 @@
         <file>images/Library.png</file>
         <file>images/Smile.png</file>
         <file>images/UserHelp.png</file>
+        <file>images/cloneproj.png</file>
+        <file>images/saveasproj.png</file>
+        <file>images/cloneproj2.png</file>
     </qresource>
 </RCC>
