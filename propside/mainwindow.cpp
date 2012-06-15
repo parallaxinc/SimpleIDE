@@ -703,6 +703,15 @@ void MainWindow::saveAsProject(const QString &inputProjFile)
         projFile = projectFile;
     }
 
+    if(projFile.length() == 0) {
+        QMessageBox::critical(
+                this,tr("No Project"),
+                tr("Can't \"Save As Project\" from an empty project.")+"\n"+
+                tr("Please create a new project or open an existing one."),
+                QMessageBox::Ok);
+        return;
+    }
+
     QString dstName;
     QString srcPath  = projFolder;
     QDir spath(srcPath);
@@ -710,7 +719,7 @@ void MainWindow::saveAsProject(const QString &inputProjFile)
     if(spath.exists() == false) {
         QMessageBox::critical(
                 this,tr("Project Folder not Found."),
-                tr("Can't Save As Project from a non-existing folder."),
+                tr("Can't \"Save As Project\" from a non-existing folder."),
                 QMessageBox::Ok);
         return;
     }
