@@ -625,6 +625,8 @@ void MainWindow::openProject(const QString &path)
 // find the difference between s1 and s2. i.e. result = s2 - s1
 QString MainWindow::pathDiff(QString s2, QString s1)
 {
+    s1 = s1.replace("\\","/");
+    s2 = s2.replace("\\","/");
     QString result(s2);
     while(s2.contains(s1,Qt::CaseInsensitive) == false)
         s1 = s1.mid(0,s1.lastIndexOf("/"));
@@ -640,55 +642,36 @@ QString MainWindow::pathDiff(QString s2, QString s1)
  */
 QString MainWindow::saveAsProjectLinkFix(QString srcPath, QString dstPath, QString link)
 {
-    QString fix("");
+    QString fix = "";
+
+    link = link.replace("\\","/");
+    srcPath = srcPath.replace("\\","/");
+    dstPath = dstPath.replace("\\","/");
 
     /*
      * Two important cases:
      * 1. link is relative ../
      * 2. link is absolute /
      */
+    QString fs;
+    QDir path(dstPath);
+
     if(link.left(3) == "../") {
         if(QFile::exists(srcPath+link) != true) {
             return fix;
         }
         QFile file(srcPath+link);
-        QString fs = file.fileName();
-        if(QFile::exists(fs)) {
-            QString diff = pathDiff(srcPath, dstPath);
-            if(diff.length() > 0) {
-                if(diff.at(diff.length()-1) == '/') diff = diff.left(diff.length()-1);
-                diff = diff.mid(0,diff.lastIndexOf("/"));
-                if(diff.length() > 0)
-                    if(diff.at(0) == '/') diff = diff.mid(1);
-            }
-            link = link.mid(link.indexOf("/"));
-            if((diff.length() == 0) && (link.at(0) == '/'))
-                link = link.mid(1);
-            fix = "../"+diff+link;
-        }
+        fs = file.fileName();
+        fs = path.relativeFilePath(fs);
+        fix = fs;
     }
     else {
         if(QFile::exists(link) != true) {
             return fix;
         }
-        QString diff = pathDiff(dstPath, srcPath);
-        if(diff.length() == 0) {
-            link = pathDiff(link,dstPath);
-            if(link.at(0) == '/') link = link.mid(1);
-            fix = "../"+link;
-        }
-        else {
-            if(diff.at(diff.length()-1) == '/') diff = diff.left(diff.length()-1);
-            if(diff.lastIndexOf("/") > -1) {
-                diff = diff.mid(0,diff.lastIndexOf("/"));
-            }
-            else {
-                diff = "";
-            }
-            link = pathDiff(link,dstPath);
-            if(link.at(0) == '/') link = link.mid(1);
-            fix = "../"+diff+link;
-        }
+        fs = link;
+        fs = path.relativeFilePath(fs);
+        fix = fs;
     }
     return fix;
 }
@@ -746,6 +729,7 @@ void MainWindow::saveAsProject(const QString &inputProjFile)
     QString dstPath = QFileDialog::getExistingDirectory(this,tr("Destination Project Folder"), lastPath, QFileDialog::ShowDirsOnly);
     if(dstPath.length() < 1)
         return;
+    lastPath = dstPath;
 
     dstPath = dstPath+"/";    // make sure we have a trailing / for file copy
 
@@ -945,6 +929,7 @@ void MainWindow::cloneProject()
     if(srcFile.length() == 0)
         return;
 
+    lastPath = srcFile;
     saveAsProject(srcFile);
 }
 
