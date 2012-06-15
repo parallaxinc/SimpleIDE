@@ -203,6 +203,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         ed->raise();
     }
 
+    this->show(); // show gui before about for mac
+    QApplication::processEvents();
+
     /* show help dialog */
     QVariant helpStartup = settings->value(helpStartupKey,true);
     if(helpStartup.canConvert(QVariant::Bool)) {
