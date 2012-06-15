@@ -1853,9 +1853,9 @@ void MainWindow::setupHelpMenu()
     aboutLanding = "<html><body><br/>"+tr("Visit ") +
         "<a href=\"http://www.parallax.com/propellergcc/\">"+
         ASideGuiKey+"</a>"+
-        tr(" for more information.")+"&nbsp; &nbsp;"+
+        tr(" for more information.")+"<br/>"+
         "Email bug reports to <a href=\"mailto:gccbeta@parallax.com\">gccbeta@parallax.com</a>"+
-        "</body></html>";
+        "<br/></body></html>";
 
     menuBar()->addMenu(helpMenu);
     aboutDialog = new AboutDialog(aboutLanding, this);
