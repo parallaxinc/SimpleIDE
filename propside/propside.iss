@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-6-12"
+#define MyAppVersion "0-7-1"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -71,7 +71,7 @@ Source: "..\propside-demos\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversio
 Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyTranslations}\*"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
-Source: "{#MyUserGuide}\*"; DestDir: {app}/userguide/; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
+;Source: "{#MyUserGuide}\*"; DestDir: {app}/userguide/; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
