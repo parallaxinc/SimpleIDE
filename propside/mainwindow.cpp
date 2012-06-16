@@ -1863,7 +1863,7 @@ void MainWindow::setupHelpMenu()
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
     helpMenu->addAction(QIcon(":/images/helphint.png"), tr("&Credits"), this, SLOT(creditShow()));
     helpMenu->addAction(QIcon(":/images/UserHelp.png"), tr("&Help"), this, SLOT(userguideShow()));
-    helpMenu->addAction(QIcon(":/images/Library.png"), tr("&Library"), this, SLOT(libraryShow()));
+    //helpMenu->addAction(QIcon(":/images/Library.png"), tr("&Library"), this, SLOT(libraryShow()));
 
     /* new Help class */
     helpDialog = new Help();
@@ -1913,14 +1913,8 @@ void MainWindow::libraryShow()
 
 void MainWindow::userguideShow()
 {
-    QString path = QApplication::applicationDirPath();
-    QString address = "file:///"+path+"/../userguide/index.html";
-    bool rc = QDesktopServices::openUrl(QUrl(address));
-    if(rc != true) {
-        // just for debug purposes
-        address = "file:///"+path+"/../../propside/userguide/index.html";
-        QDesktopServices::openUrl(QUrl(address));
-    }
+    QString address = "http://www.parallax.com/propellergcc";
+    QDesktopServices::openUrl(QUrl(address));
 }
 
 void MainWindow::setCurrentBoard(int index)
