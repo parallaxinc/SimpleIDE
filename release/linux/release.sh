@@ -118,11 +118,18 @@ ls -alRF ${VERSION}/bin
 fi
 
 rm -rf parallax
-#cp -r ${PROPGCC} ${VERSION}
-#if test $? != 0; then
-#   echo "copy ${PROPGCC} failed."
-#   exit 1
-#fi
+cp -r ${PROPGCC} ${VERSION}
+if test $? != 0; then
+   echo "copy ${PROPGCC} failed."
+   exit 1
+fi
+
+cp -f ${CTAGS} ${VERSION}/parallax/bin
+if test $? != 0; then
+   echo "copy ${CTAGS} failed."
+   exit 1
+ls -alRF ${VERSION}/bin
+fi
 
 cp -r ../../propside-demos/ ${VERSION}/demos
 if test $? != 0; then
