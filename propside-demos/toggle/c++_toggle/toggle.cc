@@ -6,7 +6,7 @@ Copyright (c) 2011 Parallax, Inc.
 MIT Licensed.
 
 +--------------------------------------------------------------------
-¦  TERMS OF USE: MIT License
+|  TERMS OF USE: MIT License
 +--------------------------------------------------------------------
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files

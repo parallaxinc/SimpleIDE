@@ -30,9 +30,9 @@ volatile struct {
  */
 void startvga(volatile void *parptr)
 {
-    extern unsigned int _load_start_vgacog[];
+    extern unsigned int _load_start_vga_cog[];
     int r;
-    r = cognew(_load_start_vgacog, parptr);
+    r = cognew(_load_start_vga_cog, parptr);
     printf("started cog %d\n", r);
 }
 
