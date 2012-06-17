@@ -13,18 +13,20 @@ you need, I.E. $ ldd SimpleIDE
 
 The general Linux install procedure is this:
 
-This Linux SimpleIDE package contains only the SimpleIDE.
-It does not contain the Propeller-GCC tool-chain.
+This Linux SimpleIDE package may contain only the SimpleIDE.
+If package > 60MB, it contains Propeller-GCC, and step 1 below can be skipped.
+If /opt/parallax already exists, step 1 below can be skipped.
+
 Debian packages are known to work on Ubuntu.
 
 In the instruction below SimpleIDE-packagename.bz2 refers to the package
 such as SimpleIDE-0-6-2-i686-linux.bz2. SimpleIDE-version refers to the
 SimpleIDE version such as SimpleIDE-0-6-2.
 
-1. Download and install Propeller-GCC to /opt/parallax
+1. Optionally download and install Propeller-GCC to /opt/parallax
 2. Unpack SimpleIDE with $ tar -xjf SimpleIDE-packagename.bz2
 3. Change directory $ cd SimpleIDE-version.
-4. Setup with $ ./setup.sh
+4. Setup with $ sudo ./setup.sh (or use root $ ./setup.sh
 5. Run with $ ./simpleide
 6. In SimpleIDE Compiler Properties:
  a. Choose the compiler from /opt/parallax/bin
@@ -32,11 +34,11 @@ SimpleIDE version such as SimpleIDE-0-6-2.
  c. Choose a workspace for new projects.
 7. Open the hello demo from SimpleIDE-version/demos/hello/hello.side
 
-Please read the User Guide for running and using the IDE.
-
+Please read the SimpleIDE User Guide on the web for using the IDE.
+The PropellerGCC web site address is: http://www.parallax.com/propellergcc
 
 SimpleIDE is MIT licensed.
-Copyright (C) Parallax, Inc.
+Copyright (C) 2012 Parallax, Inc.
 
 +---------------------------------------------------------------------
 | TERMS OF USE: MIT License

@@ -16,7 +16,7 @@ DEFINES += QEXTSERIALPORT_LIB
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=7
-DEFINES += FIXVERSION=1
+DEFINES += FIXVERSION=2
 
 SOURCES += main.cpp \
     editor.cpp \
