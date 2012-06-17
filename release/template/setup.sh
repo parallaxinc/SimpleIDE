@@ -12,13 +12,18 @@ STARTPRG=./simpleide
 SIDEPROG=./bin/SimpleIDE
 CTAGPROG=./bin/ctags
 TEMPLATE=./bin/template.sh
-PRGCCBIN=/opt/parallax/bin
+PRODNAME=parallax
+PRGCCBIN=/opt/${PRODNAME}/bin
 
 #
 # if we don't have simpleide name here,
 # do maintenance and copy script.
 #
 if [ ! -e $STARTPRG ]; then
+    if [ -r ./${PRODNAME} ]; then
+        mkdir -p /opt
+        cp -rf ./${PRODNAME} /opt
+    fi
     if [ -e $PRGCCBIN ]; then
         echo "Found Users $PRGCCBIN"
         cp -f $CTAGPROG $PRGCCBIN
