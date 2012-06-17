@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Project</class>
+ <widget class="QWidget" name="Project">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>271</width>
+    <height>160</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>160</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>1</x>
+     <y>0</y>
+     <width>271</width>
+     <height>159</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="ProjectControl">
+    <attribute name="title">
+     <string>Project Options</string>
+    </attribute>
+    <widget class="QComboBox" name="comboBoxCompiler">
+     <property name="geometry">
+      <rect>
+       <x>124</x>
+       <y>39</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Choose project compiler. C can compile simple C++ programs.</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxOptimization">
+     <property name="geometry">
+      <rect>
+       <x>124</x>
+       <y>99</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Usually -Os is best for creating smaller code.</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelmem">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>70</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Memory Model</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxMemoryMode">
+     <property name="geometry">
+      <rect>
+       <x>124</x>
+       <y>69</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Select where the code will run. Use XMMC for read-only devices like EEPROM, Flash, or SD Card.</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelOptimization">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Optimization</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelcompiler">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Compiler Type</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelHardware">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>91</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Board Type</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="hardwareToolButton">
+     <property name="geometry">
+      <rect>
+       <x>96</x>
+       <y>9</y>
+       <width>24</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Reload Board Configurations</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources.qrc">
+       <normaloff>:/images/hardware.png</normaloff>:/images/hardware.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>24</width>
+       <height>24</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="hardwareComboBox">
+     <property name="geometry">
+      <rect>
+       <x>124</x>
+       <y>10</y>
+       <width>131</width>
+       <height>22</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="CompileOptions">
+    <attribute name="title">
+     <string>Compiler</string>
+    </attribute>
+    <widget class="QLineEdit" name="lineEditCompOptions">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>245</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Compile Options</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxWarnAll">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>10</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Enable all compiler warnings.</string>
+     </property>
+     <property name="text">
+      <string>All Warnings</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxNoFcache">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>30</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to not use the COG level Cache.</string>
+     </property>
+     <property name="text">
+      <string>No FCache</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxSimplePrintf">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to use smaller simple printf.</string>
+     </property>
+     <property name="text">
+      <string>Simple printf</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxExceptions">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>50</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to enable exception handling in C++.</string>
+     </property>
+     <property name="text">
+      <string>Exceptions</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox32bitDouble">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to use 32 bit doubles. Default is 64 bit doubles.</string>
+     </property>
+     <property name="text">
+      <string>32bit Double</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelOtherCompiler">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>71</y>
+       <width>241</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Other Compiler Options</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="LinkerOptions">
+    <attribute name="title">
+     <string>Linker</string>
+    </attribute>
+    <widget class="QCheckBox" name="checkBoxMathlib">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to include the floating point math library.</string>
+     </property>
+     <property name="text">
+      <string>Math Lib</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxPthreadLib">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>10</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to use the pthread library.</string>
+     </property>
+     <property name="text">
+      <string>Pthread Lib</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditLinkOptions">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>245</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Linker Options</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxTinylib">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to include the floating point math library.</string>
+     </property>
+     <property name="text">
+      <string>Tiny Lib</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelOtherLinker">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>70</y>
+       <width>241</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Other Linker Options</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxStripELF">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>50</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to remove debug information from the program. Gives better size estimate.</string>
+     </property>
+     <property name="text">
+      <string>Strip ELF</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

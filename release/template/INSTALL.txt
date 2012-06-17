@@ -1,0 +1,64 @@
+SimpleIDE Linux Installation
+
+The Simple IDE is designed for building Propeller-GCC programs.
+SimpleIDE is distributed for Mac, Linux, and Windows.
+
+Linux Packaging:
+
+Linux packages are primitive at the moment and will be changed to use the
+typical packager tools for the platform. The current package includes a
+setup script and supporting shared libraries. If you are items missing from
+the system required by SimpleIDE you can use the ldd tool to find out what
+you need, I.E. $ ldd SimpleIDE
+
+The general Linux install procedure is this:
+
+This Linux SimpleIDE package contains only the SimpleIDE.
+It does not contain the Propeller-GCC tool-chain.
+Debian packages are known to work on Ubuntu.
+
+In the instruction below SimpleIDE-packagename.bz2 refers to the package
+such as SimpleIDE-0-6-2-i686-linux.bz2. SimpleIDE-version refers to the
+SimpleIDE version such as SimpleIDE-0-6-2.
+
+1. Download and install Propeller-GCC to /opt/parallax
+2. Unpack SimpleIDE with $ tar -xjf SimpleIDE-packagename.bz2
+3. Change directory $ cd SimpleIDE-version.
+4. Setup with $ ./setup.sh
+5. Run with $ ./simpleide
+6. In SimpleIDE Compiler Properties:
+ a. Choose the compiler from /opt/parallax/bin
+ b. Choose the loader path as /opt/parallax/propeller-load
+ c. Choose a workspace for new projects.
+7. Open the hello demo from SimpleIDE-version/demos/hello/hello.side
+
+Please read the User Guide for running and using the IDE.
+
+
+SimpleIDE is MIT licensed.
+Copyright (C) Parallax, Inc.
+
++---------------------------------------------------------------------
+| TERMS OF USE: MIT License
++---------------------------------------------------------------------
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
++---------------------------------------------------------------------
+| End of License Agreement.
++---------------------------------------------------------------------
+
