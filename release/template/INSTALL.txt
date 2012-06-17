@@ -26,7 +26,7 @@ SimpleIDE version such as SimpleIDE-0-6-2.
 1. Optionally download and install Propeller-GCC to /opt/parallax
 2. Unpack SimpleIDE with $ tar -xjf SimpleIDE-packagename.bz2
 3. Change directory $ cd SimpleIDE-version.
-4. Setup with $ sudo ./setup.sh (or use root $ ./setup.sh
+4. Setup with $ sudo ./setup.sh $USER (or use root $ ./setup.sh username)
 5. Run with $ ./simpleide
 6. In SimpleIDE Compiler Properties:
  a. Choose the compiler from /opt/parallax/bin
