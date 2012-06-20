@@ -1,6 +1,12 @@
 #include "console.h"
-#include "mainwindow.h"
 #include "terminal.h"
+#ifdef SPINSIDE
+#include "mainspinwindow.h"
+#define MAINWINDOW MainSpinWindow
+#else
+#include "mainwindow"
+#define MAINWINDOW MainWindow
+#endif
 
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -21,7 +27,7 @@ bool Console::enabled()
 void Console::keyPressEvent(QKeyEvent *event)
 {
     // qDebug() << "keyPressEvent";
-    MainWindow *parentMain = (MainWindow *)this->parentWidget()->parentWidget();
+    MAINWINDOW *parentMain = (MAINWINDOW *)this->parentWidget()->parentWidget();
 
     Terminal *term = (Terminal*) this->parentWidget();
     if(event->matches((QKeySequence::Copy))) {
