@@ -4,24 +4,24 @@
 # add spin compiler
 # make builder handle complicated projects
 # hook terminal to loader
-QT += core gui
+QT += core \
+    gui
 TARGET = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
+DEFINES += SPINSIDE
 
 # EVENT_DRIVEN QEXTSERIALPORT is no longer used.
-#
 # GDBENABLE is not ready, and will only be used for development testing
 # DEFINES += GDBENABLE
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=7
 DEFINES += FIXVERSION=2
-
-SOURCES += main.cpp \
+SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \
-    mainwindow.cpp \
+    mainspinwindow.cpp \
     treemodel.cpp \
     treeitem.cpp \
     terminal.cpp \
@@ -42,9 +42,11 @@ SOURCES += main.cpp \
     loader.cpp \
     projecttree.cpp \
     qextserialport.cpp \
-    qextserialenumerator.cpp
-
-HEADERS += mainwindow.h \
+    qextserialenumerator.cpp \
+    buildc.cpp \
+    buildspin.cpp \
+    build.cpp
+HEADERS += mainspinwindow.h \
     editor.h \
     ctags.h \
     highlighter.h \
@@ -68,20 +70,18 @@ HEADERS += mainwindow.h \
     loader.h \
     projecttree.h \
     qextserialport.h \
-    qextserialenumerator.h
-
+    qextserialenumerator.h \
+    buildc.h \
+    buildspin.h \
+    build.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui
-
 RESOURCES += resources.qrc
-
 unix:SOURCES += qextserialport_unix.cpp
-unix:!macx {
-    # dont use EVENT_DRIVEN for linux to be consistent with MAC. also causes output skips.
-    SOURCES += qextserialenumerator_unix.cpp
-}
-macx { 
+unix:!macx:# dont use EVENT_DRIVEN for linux to be consistent with MAC. also causes output skips.
+SOURCES += qextserialenumerator_unix.cpp
+macx {
     # dont use EVENT_DRIVEN for mac. must open terminal before load because mac would reset boards otherwise.
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += -framework \
@@ -89,9 +89,9 @@ macx {
         -framework \
         CoreFoundation
 }
-win32 { 
+win32 {
     RC_FILE = myapp.rc
-    
+
     # don't use EVENT_DRIVEN for windows. causes crashes.
     SOURCES += qextserialport_win.cpp
     SOURCES += qextserialenumerator_win.cpp

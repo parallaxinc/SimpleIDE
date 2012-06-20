@@ -1,6 +1,13 @@
 #include "editor.h"
 #include "properties.h"
+
+#ifdef SPINSIDE
+#include "mainspinwindow.h"
+#define MAINWINDOW MainSpinWindow
+#else
 #include "mainwindow.h"
+#define MAINWINDOW MainWindow
+#endif
 
 Editor::Editor(GDB *gdebug, QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -27,7 +34,7 @@ Editor::~Editor()
 
 void Editor::setHighlights()
 {
-    Properties *p = static_cast<MainWindow*>(mainwindow)->propDialog;
+    Properties *p = static_cast<MAINWINDOW*>(mainwindow)->propDialog;
     if(highlighter != NULL)
         delete highlighter;
     highlighter = new Highlighter(this->document(), p);
@@ -56,9 +63,8 @@ void Editor::keyPressEvent (QKeyEvent *e)
         }
         if(text.length() > 0) {
             //qDebug() << "keyPressEvent ctrlPressed " << text;
-            if(static_cast<MainWindow*>(mainwindow)->isTagged(text)) {
+            if(static_cast<MAINWINDOW*>(mainwindow)->isTagged(text))
                 this->setTextCursor(cur);
-            }
         }
         QPlainTextEdit::keyPressEvent(e);
         return;
@@ -76,7 +82,7 @@ void Editor::keyPressEvent (QKeyEvent *e)
         cur.select(QTextCursor::WordUnderCursor);
         QString text = cur.selectedText();
         qDebug() << "keyPressEvent F1 " << text;
-        static_cast<MainWindow*>(mainwindow)->findSymbolHelp(text);
+        static_cast<MAINWINDOW*>(mainwindow)->findSymbolHelp(text);
         QPlainTextEdit::keyPressEvent(e);
         return;
     }
@@ -204,7 +210,7 @@ void Editor::mouseMoveEvent (QMouseEvent *e)
 void Editor::mousePressEvent (QMouseEvent *e)
 {
     if(ctrlPressed) {
-        static_cast<MainWindow*>(mainwindow)->findDeclaration(e->pos());
+        static_cast<MAINWINDOW*>(mainwindow)->findDeclaration(e->pos());
         //qDebug() << "mousePressEvent ctrlPressed";
         ctrlPressed = false;
     }
