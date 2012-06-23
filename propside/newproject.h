@@ -14,6 +14,7 @@ public:
 
     QString getName();
     QString getPath();
+    QString getCompilerType();
 
 signals:
 
@@ -32,6 +33,7 @@ private:
     QLineEdit   *path;
     QString     mypath;
 
+    QComboBox   *comptype;
     QPushButton *okButton;
     QPushButton *cancelButton;
 };

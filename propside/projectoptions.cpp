@@ -22,6 +22,17 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
 
     ui->comboBoxCompiler->addItem("C");
     ui->comboBoxCompiler->addItem("C++");
+    ui->comboBoxCompiler->addItem("SPIN");
+
+    tabs.append(ui->tabWidget->widget(this->TAB_OPT));
+    tabs.append(ui->tabWidget->widget(this->TAB_C_COMP));
+    tabs.append(ui->tabWidget->widget(this->TAB_C_LIB));
+    tabs.append(ui->tabWidget->widget(this->TAB_SPIN_COMP));
+
+    connect(ui->comboBoxCompiler,SIGNAL(currentIndexChanged(QString)), this, SLOT(compilerChanged(QString)));
+
+    compilerChanged("");
+    compilerChanged(ui->comboBoxCompiler->currentText());
 
     QFile file("memorymodels.txt");
     if(file.exists() && file.open(QFile::ReadOnly | QFile::Text)) {
@@ -68,6 +79,19 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
 
 ProjectOptions::~ProjectOptions()
 {
+}
+
+void ProjectOptions::compilerChanged(QString comp)
+{
+    for(int n = ui->tabWidget->count()-1; n > 0; n--)
+        ui->tabWidget->removeTab(n);
+    if(comp.indexOf("C",Qt::CaseInsensitive) > -1) {
+        ui->tabWidget->addTab(tabs.at(this->TAB_C_COMP),"Compiler");
+        ui->tabWidget->addTab(tabs.at(this->TAB_C_LIB),"Linker");
+    }
+    else if(comp.indexOf("SPIN",Qt::CaseInsensitive) > -1) {
+        ui->tabWidget->addTab(tabs.at(this->TAB_SPIN_COMP),"Compiler");
+    }
 }
 
 void ProjectOptions::clearOptions()

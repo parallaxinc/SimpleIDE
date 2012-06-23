@@ -29,7 +29,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="ProjectControl">
     <attribute name="title">
@@ -139,7 +139,7 @@
       <string>Reload Board Configurations</string>
      </property>
      <property name="icon">
-      <iconset resource="resources.qrc">
+      <iconset>
        <normaloff>:/images/hardware.png</normaloff>:/images/hardware.png</iconset>
      </property>
      <property name="iconSize">
@@ -369,10 +369,42 @@
      </property>
     </widget>
    </widget>
+   <widget class="QWidget" name="SpinOptions">
+    <attribute name="title">
+     <string>Compiler</string>
+    </attribute>
+    <widget class="QLabel" name="labelOtherSpinCompiler">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>70</y>
+       <width>241</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Other Compiler Options</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditSpinCompOptions">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>245</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Compile Options</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </widget>
   </widget>
  </widget>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

@@ -8,7 +8,7 @@ class BuildC : public Build
 {
     Q_OBJECT
 public:
-    BuildC(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb);
+    BuildC(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb, Properties *p);
 
     int  runBuild(QString option, QString projfile, QString compiler);
     int  makeDebugFiles(QString fileName, QString projfile, QString compiler);
@@ -24,6 +24,7 @@ public:
 
     QStringList getCompilerParameters(QStringList copts);
     int  getCompilerParameters(QStringList copts, QStringList *args);
+    void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
 };
 
 #endif // BUILDC_H

@@ -41,13 +41,21 @@ NewProject::NewProject(QWidget *parent) : QDialog(parent)
             "A project folder with project name will be created in the workspace.\n" \
             "The new folder will have a main .c file and a .side project file.\n"));
 
+    comptype = new QComboBox();
+    QStringList tlist;
+    tlist.append("C");
+    tlist.append("C++");
+    tlist.append("SPIN");
+    comptype->addItems(tlist);
+
     QVBoxLayout *blay = new QVBoxLayout(this);
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(path,0,1,1,1); // tab order for widgets is according to add order
-    layout->addWidget(name,1,1,1,1);
+    layout->addWidget(pathLabel,    0,0,1,1);
+    layout->addWidget(path,         0,1,1,1); // tab order for widgets is according to add order
     layout->addWidget(btnBrowsePath,0,2,1,1);
-    layout->addWidget(nameLabel,1,0,1,1);
-    layout->addWidget(pathLabel,0,0,1,1);
+    layout->addWidget(nameLabel,    1,0,1,1);
+    layout->addWidget(name,         1,1,1,1);
+    layout->addWidget(comptype,     1,2,1,1);
 
     blay->addWidget(create);
     blay->addWidget(inst);
@@ -194,4 +202,9 @@ QString NewProject::getName()
 QString NewProject::getPath()
 {
     return path->text();
+}
+
+QString NewProject::getCompilerType()
+{
+    return comptype->currentText();
 }

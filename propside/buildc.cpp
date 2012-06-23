@@ -5,8 +5,8 @@
 
 #include <QtGui>
 
-BuildC::BuildC(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb)
-    : Build(projopts, compstat, stat, progsize, progbar, cb)
+BuildC::BuildC(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb, Properties *p)
+    : Build(projopts, compstat, stat, progsize, progbar, cb, p)
 {
 }
 
@@ -770,4 +770,17 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
         args->append(projectOptions->getStripElf());
 
     return args->length();
+}
+
+void BuildC::appendLoaderParameters(QString copts, QString projfile, QStringList *args)
+{
+    /* if propeller-load parameters -l or -z in copts, don't append a.out */
+    if((copts.indexOf("-l") > 0 || copts.indexOf("-z") > 0) == false)
+        args->append("a.out");
+
+    QStringList olist = copts.split(" ",QString::SkipEmptyParts);
+    for (int n = 0; n < olist.length(); n++)
+        args->append(olist[n]);
+
+    qDebug() << args;
 }

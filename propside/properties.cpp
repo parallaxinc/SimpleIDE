@@ -10,7 +10,8 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
     /* clean for testing only */
     // cleanSettings();
 
-    setupFolders();
+    setupFolders(); // always call this before setupSpinFolders();
+    setupSpinFolders();
     setupGeneral();
     //setupOptional(); // add later
     setupHighlight();
@@ -49,9 +50,9 @@ void Properties::setupFolders()
     QVBoxLayout *layout = new QVBoxLayout(this);
     QFrame *box = new QFrame();
     box->setLayout(layout);
-    tabWidget.addTab(box," Folders ");
+    tabWidget.addTab(box," GCC Folders ");
 
-    QGroupBox *gbCompiler = new QGroupBox(tr("Compiler"), this);
+    QGroupBox *gbCompiler = new QGroupBox(tr("GCC Compiler"), this);
     QGroupBox *gbIncludes = new QGroupBox(tr("Loader Folder"), this);
     QGroupBox *gbWorkspace = new QGroupBox(tr("Workspace Folder"), this);
 
@@ -73,8 +74,8 @@ void Properties::setupFolders()
     wlayout->addWidget(leditWorkspace);
     wlayout->addWidget(btnWorkspaceBrowse);
 
-    connect(btnCompilerBrowse, SIGNAL(clicked()), this, SLOT(browseCompiler()));
-    connect(btnIncludesBrowse, SIGNAL(clicked()), this, SLOT(browseIncludes()));
+    connect(btnCompilerBrowse,  SIGNAL(clicked()), this, SLOT(browseCompiler()));
+    connect(btnIncludesBrowse,  SIGNAL(clicked()), this, SLOT(browseIncludes()));
     connect(btnWorkspaceBrowse, SIGNAL(clicked()), this, SLOT(browseWorkspace()));
 
     gbCompiler->setLayout(clayout);
@@ -116,44 +117,125 @@ void Properties::setupFolders()
     QVariant incv = settings.value(includesKey,myinc);
     QVariant wrkv = settings.value(workspaceKey);
 
-    if(compv.canConvert(QVariant::String)) {
-        QString s = compv.toString();
-        if(s.length() > 0) {
-            s = QDir::fromNativeSeparators(s);
-            leditCompiler->setText(s);
-        }
-        else {
-            leditCompiler->setText(mygcc);
-            settings.setValue(compilerKey,mygcc);
-        }
-    }
-    else {
-        leditCompiler->setText(mygcc);
-        settings.setValue(compilerKey,mygcc);
-    }
-
-    if(incv.canConvert(QVariant::String)) {
-        QString s = incv.toString();
-        if(s.length() > 0) {
-            s = QDir::fromNativeSeparators(s);
-            leditIncludes->setText(s);
-        }
-        else {
-            leditIncludes->setText(myinc);
-            settings.setValue(includesKey,myinc);
-        }
-    }
-    else {
-        leditIncludes->setText(myinc);
-        settings.setValue(includesKey,myinc);
-    }
+    fileStringProperty(&compv, leditCompiler, compilerKey, &mygcc);
+    fileStringProperty(&incv,  leditIncludes, includesKey, &myinc);
 
     if(wrkv.canConvert(QVariant::String)) {
         QString s = wrkv.toString();
         s = QDir::fromNativeSeparators(s);
         leditWorkspace->setText(s);
     }
+}
 
+void Properties::setupSpinFolders()
+{
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    QFrame *box = new QFrame();
+    box->setLayout(layout);
+    tabWidget.addTab(box," Spin Folders ");
+
+    QGroupBox *gbCompiler = new QGroupBox(tr("Spin Compiler"), this);
+    QGroupBox *gbLibrary  = new QGroupBox(tr("Library Folder"), this);
+    QGroupBox *gbWorkspace = new QGroupBox(tr("Workspace Folder"), this);
+
+    QPushButton *btnCompilerBrowse = new QPushButton(tr("Browse"), this);
+    leditSpinCompiler = new QLineEdit(this);
+    QHBoxLayout *clayout = new QHBoxLayout();
+    clayout->addWidget(leditSpinCompiler);
+    clayout->addWidget(btnCompilerBrowse);
+
+    QPushButton *btnIncludesBrowse = new QPushButton(tr("Browse"), this);
+    leditSpinLibrary = new QLineEdit(this);
+    QHBoxLayout *ilayout = new QHBoxLayout();
+    ilayout->addWidget(leditSpinLibrary);
+    ilayout->addWidget(btnIncludesBrowse);
+
+    QPushButton *btnWorkspaceBrowse = new QPushButton(tr("Browse"), this);
+    leditSpinWorkspace = new QLineEdit(this);
+    QHBoxLayout *wlayout = new QHBoxLayout();
+    wlayout->addWidget(leditSpinWorkspace);
+    wlayout->addWidget(btnWorkspaceBrowse);
+
+    connect(btnCompilerBrowse, SIGNAL(clicked()), this, SLOT(browseSpinCompiler()));
+    connect(btnIncludesBrowse, SIGNAL(clicked()), this, SLOT(browseSpinLibrary()));
+    connect(btnWorkspaceBrowse, SIGNAL(clicked()), this, SLOT(browseSpinWorkspace()));
+
+    gbCompiler->setLayout(clayout);
+    gbLibrary->setLayout(ilayout);
+    gbWorkspace->setLayout(wlayout);
+
+    layout->addWidget(gbCompiler);
+    layout->addWidget(gbLibrary);
+    layout->addWidget(gbWorkspace);
+
+    QSettings settings(publisherKey, ASideGuiKey,this);
+
+    QVariant gv = settings.value(compilerKey,"");
+    QString mygcc;
+
+    if(gv.canConvert(QVariant::String)) {
+        QString s = gv.toString();
+        s = QDir::fromNativeSeparators(s);
+        mygcc = s;
+    }
+
+    // setupFolders() sets mygcc
+    QString myspin = mygcc.mid(0,mygcc.lastIndexOf("/"))+"/";
+
+    if(QFile::exists(myspin+"spin")) {
+        myspin += "spin";
+    }
+    else if(QFile::exists(myspin+"spin.exe")) {
+        myspin += "spin.exe";
+    }
+    else if(QFile::exists(myspin+"bstc")) {
+        myspin += "bstc";
+    }
+    else if(QFile::exists(myspin+"bstc.exe")) {
+        myspin += "bstc.exe";
+    }
+    else {
+        qDebug() << "Default Spin Compiler not found.";
+    }
+
+    QVariant compv = settings.value(spinCompilerKey,myspin);
+    QVariant incv = settings.value(spinLibraryKey,"");
+    QVariant wrkv = settings.value(spinWorkspaceKey);
+
+    QString mylib("");
+
+    fileStringProperty(&compv, leditSpinCompiler, spinCompilerKey, &myspin);
+    fileStringProperty(&incv,  leditSpinLibrary,  spinLibraryKey,  &mylib);
+
+    if(wrkv.canConvert(QVariant::String)) {
+        QString s = wrkv.toString();
+        s = QDir::fromNativeSeparators(s);
+        leditSpinWorkspace->setText(s);
+    }
+
+    this->spinCompilerStr = leditSpinCompiler->text();
+    this->spinLibraryStr = leditSpinLibrary->text();
+    this->spinWorkspaceStr = leditSpinWorkspace->text();
+}
+
+void Properties::fileStringProperty(QVariant *var, QLineEdit *ledit, const char *key, QString *value)
+{
+    QSettings settings(publisherKey, ASideGuiKey,this);
+    if(var->canConvert(QVariant::String)) {
+        QString s = var->toString();
+        if(s.length() > 0) {
+            s = QDir::fromNativeSeparators(s);
+            ledit->setText(s);
+        }
+        else {
+            ledit->setText(*value);
+            settings.setValue(key,*value);
+        }
+    }
+    else {
+        ledit->setText(*value);
+        settings.setValue(key,*value);
+    }
 }
 
 void Properties::setupGeneral()
@@ -237,6 +319,7 @@ void Properties::setupOptional()
     QVariant var;
 
     QGroupBox *gbCompiler = new QGroupBox(tr("Spin Compiler"),tbox);
+    leditSpinCompiler = new QLineEdit(this);
 
     QLabel *compLabel = new QLabel();
     // spin compiler either BSTC or Roy's SPIN compiler
@@ -244,15 +327,15 @@ void Properties::setupOptional()
     if(var.canConvert(QVariant::String)) {
         QString s = var.toString();
         if(s.length() > 0)
-            leditSpinCompiler.setText(s);
+            leditSpinCompiler->setText(s);
     }
     else {
-        leditSpinCompiler.setText(mypath+"bstc");
+        leditSpinCompiler->setText(mypath+"bstc");
     }
     QPushButton *btnCompilerBrowse = new QPushButton(tr("Browse"), this);
     QHBoxLayout *clayout = new QHBoxLayout();
     clayout->addWidget(compLabel);
-    clayout->addWidget(&leditSpinCompiler);
+    clayout->addWidget(leditSpinCompiler);
     clayout->addWidget(btnCompilerBrowse);
 
 
@@ -656,6 +739,7 @@ void Properties::browseIncludes()
 #endif
 
     QString s = QDir::fromNativeSeparators(pathName);
+    includesstr = leditIncludes->text();
     if(s.length() == 0)
         return;
     if(s.indexOf('/') > -1) {
@@ -688,13 +772,11 @@ void Properties::browseWorkspace()
     QString pathName;
     if(path.length() < 1)
         path = mypath;
-#if defined(Q_WS_WIN32)
+
     pathName = QFileDialog::getExistingDirectory(this,tr("Select Project Workspace Folder"), path, QFileDialog::ShowDirsOnly);
-#else
-    pathName = QFileDialog::getExistingDirectory(this,tr("Select Project Workspace Folder"), path, QFileDialog::ShowDirsOnly);
-#endif
 
     QString s = QDir::fromNativeSeparators(pathName);
+    workspacestr = leditWorkspace->text();
     if(s.length() == 0)
         return;
     if(s.indexOf('/') > -1) {
@@ -706,14 +788,95 @@ void Properties::browseWorkspace()
     settings.setValue(workspaceKey, s);
 }
 
+void Properties::browseSpinCompiler()
+{
+    QString compiler = leditSpinCompiler->text();
+    if(compiler.length() < 1)
+        compiler = mypath;
+
+#if defined(Q_WS_WIN32)
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Select Spin Compiler"), compiler, "Compiler (spin.exe bstc.exe)");
+#else
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Select Spin Compiler"), compiler, "Compiler (spin spin.* bstc bstc.*)");
+#endif
+
+    QString s = QDir::fromNativeSeparators(fileName);
+    spinCompilerStr = leditSpinCompiler->text();
+    if(s.length() > 0) {
+        mypath = s;
+        leditSpinCompiler->setText(s);
+    }
+    qDebug() << "browseSpinCompiler" << s;
+}
+
+void Properties::browseSpinLibrary()
+{
+    QString pathName;
+    QString path = mypath;
+
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select Spin Library Folder"), path, QFileDialog::ShowDirsOnly);
+
+    QString s = QDir::fromNativeSeparators(pathName);
+    spinLibraryStr = leditSpinLibrary->text();
+    if(s.length() == 0)
+        return;
+    if(s.indexOf('/') > -1) {
+        if(s.mid(s.length()-1) != "/")
+            s += "/";
+    }
+    leditSpinLibrary->setText(s);
+    mypath = path;
+
+    qDebug() << "browseSpinLibrary" << s;
+}
+
+void Properties::browseSpinWorkspace()
+{
+    QSettings settings(publisherKey, ASideGuiKey,this);
+    QVariant vpath = settings.value(spinWorkspaceKey,QVariant("~/."));
+    QString path = "";
+    if(vpath.canConvert(QVariant::String)) {
+        path = vpath.toString();
+        int len = path.length()-1;
+        if(len < 0)
+            path = QDir::rootPath();
+        else
+        if(path.at(len) == '/')
+            path = path.mid(0,path.lastIndexOf("/"));
+    }
+    else {
+        path = QDir::rootPath();
+    }
+
+    QString pathName;
+    if(path.length() < 1)
+        path = mypath;
+
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select Project Workspace Folder"), path, QFileDialog::ShowDirsOnly);
+
+    QString s = QDir::fromNativeSeparators(pathName);
+    spinWorkspaceStr = leditSpinWorkspace->text();
+    if(s.length() == 0)
+        return;
+    if(s.indexOf('/') > -1) {
+        if(s.mid(s.length()-1) != "/")
+            s += "/";
+    }
+    leditSpinWorkspace->setText(s);
+    settings.setValue(spinWorkspaceKey, s);
+}
+
 void Properties::accept()
 {
     QSettings settings(publisherKey, ASideGuiKey,this);
-
+    //QString s = leditSpinLibrary->text();
     settings.setValue(compilerKey,leditCompiler->text());
     settings.setValue(includesKey,leditIncludes->text());
-    settings.setValue(configFileKey,leditIncludes->text());
     settings.setValue(workspaceKey,leditWorkspace->text());
+    settings.setValue(spinCompilerKey,leditSpinCompiler->text());
+    settings.setValue(spinLibraryKey,leditSpinLibrary->text());
+    settings.setValue(spinWorkspaceKey,leditSpinWorkspace->text());
+    settings.setValue(configFileKey,leditIncludes->text());
 
     settings.setValue(tabSpacesKey,tabSpaces.text());
     settings.setValue(loadDelayKey,loadDelay.text());
@@ -750,6 +913,9 @@ void Properties::reject()
     leditCompiler->setText(compilerstr);
     leditIncludes->setText(includesstr);
     leditWorkspace->setText(workspacestr);
+    leditSpinCompiler->setText(spinCompilerStr);
+    leditSpinLibrary->setText(spinLibraryStr);
+    leditSpinWorkspace->setText(spinWorkspaceStr);
 
     tabSpaces.setText(tabSpacesStr);
     loadDelay.setText(loadDelayStr);

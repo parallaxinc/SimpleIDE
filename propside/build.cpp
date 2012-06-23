@@ -1,6 +1,6 @@
 #include "build.h"
 
-Build::Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb)
+Build::Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb, Properties *p)
 {
     projectOptions = projopts;
     compileStatus = compstat;
@@ -8,6 +8,7 @@ Build::Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, Q
     programSize = progsize;
     progress = progbar;
     cbBoard = cb;
+    properties = p;
 
     process = new QProcess();
 
@@ -33,24 +34,6 @@ int Build::makeDebugFiles(QString fileName, QString projfile, QString compiler)
 {
     return -1;
 }
-
-#if 0
-void Build::setCompiler(QString compiler)
-{
-    aSideCompiler = compiler;
-    aSideCompilerPath = sourcePath(compiler);
-}
-
-QString Build::getCompiler()
-{
-    return aSideCompiler;
-}
-
-QString Build::getCompilerPath()
-{
-    return aSideCompilerPath;
-}
-#endif
 
 int  Build::startProgram(QString program, QString workpath, QStringList args, DumpType dump)
 {
@@ -83,6 +66,8 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
     procDone = false;
     procResultError = false;
     process->start(program,args);
+
+    this->codeSize = 0;
 
     /* process Qt application events until procDone
      */
@@ -275,13 +260,17 @@ void Build::procReadyRead()
                 compileStatus->moveCursor(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
                 compileStatus->insertPlainText(line);
             }
-#if 0
-            // can't do this otherwise error info gets lost.
             else
-            if(line.contains("error:",Qt::CaseInsensitive)) {
-                status->setText(status->text()+line+" ");
+            if(line.contains("Program size is",Qt::CaseInsensitive)) {
+                // bstc reports program size is N longs
+                compileStatus->insertPlainText(eol);
+                compileStatus->insertPlainText(line);
+                QString s = line.mid(line.lastIndexOf("is ")+3);
+                s = s.mid(0,s.lastIndexOf(" "));
+                bool ok = false;
+                int size =  s.toInt(&ok)*4;
+                this->codeSize = ok ? size : 0;
             }
-#endif
             else {
                 compileStatus->insertPlainText(eol);
                 compileStatus->insertPlainText(line);
@@ -419,5 +408,9 @@ void Build::removeArg(QStringList &list, QString arg)
             return;
         }
     }
+}
+
+void Build::appendLoaderParameters(QString copts, QString projfile, QStringList *args)
+{
 }
 
