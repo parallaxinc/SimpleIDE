@@ -268,7 +268,7 @@ void Build::procReadyRead()
                 QString s = line.mid(line.lastIndexOf("is ")+3);
                 s = s.mid(0,s.lastIndexOf(" "));
                 bool ok = false;
-                int size =  s.toInt(&ok)*4;
+                int size =  s.toInt(&ok);
                 this->codeSize = ok ? size : 0;
             }
             else {
