@@ -140,11 +140,10 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     process = new QProcess(this);
 
     projectFile = "none";
-#if 1
-    builder = new BuildC(projectOptions, compileStatus, status, programSize, progress, cbBoard);
-#else
-    builder = new BuildSpin(projectOptions, compileStatus, status, programSize, progress, cbBoard);
-#endif
+
+    buildC = new BuildC(projectOptions, compileStatus, status, programSize, progress, cbBoard, propDialog);
+    buildSpin = new BuildSpin(projectOptions, compileStatus, status, programSize, progress, cbBoard, propDialog);
+    builder = buildC;
 
     /* setup loader and port listener */
     /* setup the terminal dialog box */
@@ -564,7 +563,9 @@ void MainSpinWindow::newProjectAccepted()
     QString path = newProjDialog->getPath();
     QDir dir(path);
 
-    QString maintemplate("/**\n" \
+    QString comp = newProjDialog->getCompilerType();
+
+    QString C_maintemplate("/**\n" \
          " * @file "+name+".c\n" \
          " * This is the main "+name+" program start point.\n" \
          " */\n" \
@@ -577,19 +578,65 @@ void MainSpinWindow::newProjectAccepted()
          "    return 0;\n" \
          "}\n" \
          "\n");
+
+    QString Cpp_maintemplate("/**\n" \
+         " * @file "+name+".cpp\n" \
+         " * This is the main "+name+" program start point.\n" \
+         " */\n" \
+         "\n" \
+         "/**\n" \
+         " * Main program function.\n" \
+         " */\n" \
+         "int main(void)\n" \
+         "{\n" \
+         "    return 0;\n" \
+         "}\n" \
+         "\n");
+
+    QString SPIN_maintemplate("{{\n" \
+         " * @file "+name+".spin\n" \
+         " * This is the main "+name+" program start point.\n" \
+         "}} \n" \
+         "\n" \
+         "{{\n" \
+         " * Main program function.\n" \
+         "}}\n" \
+         "pub main\n" \
+         "\n" \
+         "    repeat\n" \
+         "\n" \
+         "\n");
+
+    QString mains;
+    QString mainName(path+"/"+name);
+
+    if(comp.compare("C", Qt::CaseInsensitive) == 0) {
+        mains = C_maintemplate;
+        mainName += ".c";
+    }
+    else if(comp.compare("C++", Qt::CaseInsensitive) == 0) {
+        mains = Cpp_maintemplate;
+        mainName += ".cpp";
+    }
+    else if(comp.compare("Spin", Qt::CaseInsensitive) == 0) {
+        mains = SPIN_maintemplate;
+        mainName += ".spin";
+    }
+
     if(dir.exists(path) == 0)
         dir.mkdir(path);
-    QString mainName(path+"/"+name+".c");
+
     QFile mainfile(mainName);
     if(mainfile.exists() == false) {
         if(mainfile.open(QFile::ReadWrite)) {
-            mainfile.write(maintemplate.toAscii());
+            mainfile.write(mains.toAscii());
             mainfile.close();
         }
     }
     projectFile = path+"/"+name+SIDE_EXTENSION;
     setCurrentProject(projectFile);
     updateProjectTree(mainName);
+    //projectOptions->setCompiler(comp);
     openFile(projectFile);
 }
 
@@ -1381,6 +1428,7 @@ void MainSpinWindow::procReadyRead()
             }
             else
             if(line.contains("sent",Qt::CaseInsensitive)) {
+                compileStatus->moveCursor(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
                 compileStatus->insertPlainText(line+eol);
             }
             else
@@ -2159,7 +2207,12 @@ QString MainSpinWindow::sourcePath(QString srcpath)
 
 int  MainSpinWindow::runBuild(QString option)
 {
+    QString compiler = projectOptions->getCompiler();
     checkAndSaveFiles();
+    if(compiler.compare("Spin", Qt::CaseInsensitive) == 0)
+        builder = buildSpin;
+    else if(compiler.compare("C", Qt::CaseInsensitive) == 0)
+        builder = buildC;
     return builder->runBuild(option, projectFile, aSideCompiler);
 }
 
@@ -2167,6 +2220,17 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
 {
     // use the projectFile instead of the current tab file
     // QString srcpath = sourcePath(projectFile);
+
+    int compileType = ProjectOptions::TAB_OPT; // 0
+    QString compiler = projectOptions->getCompiler();
+    if(compiler.compare("Spin", Qt::CaseInsensitive) == 0) {
+        builder = buildSpin;
+        compileType = ProjectOptions::TAB_SPIN_COMP;
+    }
+    else if(compiler.compare("C", Qt::CaseInsensitive) == 0) {
+        builder = buildC;
+        compileType = ProjectOptions::TAB_C_COMP;
+    }
 
     portName = cbPort->itemText(cbPort->currentIndex());
     boardName = cbBoard->itemText(cbBoard->currentIndex());
@@ -2181,9 +2245,6 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
         boardName = boardName.mid(0,boardName.indexOf(sdload));
 
     QStringList args;
-    // always include user's propeller-load path.
-    args.append("-I");
-    args.append(aSideIncludes);
 
     if(this->propDialog->getLoadDelay() > 0) {
         args.append(QString("-S%1").arg(this->propDialog->getLoadDelay()));
@@ -2207,22 +2268,17 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     if(this->propDialog->getResetType() == Properties::DTR) {
         args.append("-Dreset=dtr");
     }
-    args.append("-b");
-    args.append(boardName);
+    // always include user's propeller-load path.
+    if(compileType == ProjectOptions::TAB_C_COMP) {
+        args.append("-I");
+        args.append(aSideIncludes);
+        args.append("-b");
+        args.append(boardName);
+    }
     args.append("-p");
     args.append(portName);
-#if 0
-    args.append("-I");
-    args.append(aSideIncludes);
-#endif
 
-    /* if propeller-load parameters -l or -z in copts, don't append a.out */
-    if((copts.indexOf("-l") > 0 || copts.indexOf("-z") > 0) == false)
-        args.append("a.out");
-
-    QStringList olist = copts.split(" ",QString::SkipEmptyParts);
-    for (int n = 0; n < olist.length(); n++)
-        args.append(olist[n]);
+    builder->appendLoaderParameters(copts, projectFile, &args);
 
     //qDebug() << args;
     return args;
@@ -3098,6 +3154,11 @@ int MainSpinWindow::makeDebugFiles(QString fileName)
 
     /* save files before compiling debug info */
     checkAndSaveFiles();
+
+    if(projectOptions->compiler.indexOf("Spin", Qt::CaseInsensitive) > -1)
+        builder = buildSpin;
+    else if(projectOptions->compiler.indexOf("C", Qt::CaseInsensitive) > -1)
+        builder = buildC;
 
     rc = builder->makeDebugFiles(fileName, projectFile, aSideCompiler);
 

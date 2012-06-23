@@ -37,12 +37,15 @@
 #define ASideGuiGeometry    "SimpleIDE_WindowGeometry"
 #define helpStartupKey      "SimpleIDE_ShowHelpStart"
 #define compilerKey         "SimpleIDE_Compiler"
+#define includesKey         "SimpleIDE_Includes"
+#define workspaceKey        "SimpleIDE_Workspace"
+#define spinCompilerKey     "SimpleIDE_SpinCompiler"
+#define spinLibraryKey      "SimpleIDE_SpinLibrary"
+#define spinWorkspaceKey    "SimpleIDE_SpinWorkspace"
 #define cloneSrcKey         "SimpleIDE_CloneSrc"
 #define cloneDestKey        "SimpleIDE_CloneDest"
-#define includesKey         "SimpleIDE_Includes"
 #define separatorKey        "SimpleIDE_PathSeparator"
 #define configFileKey       "SimpleIDE_ConfigFile"
-#define workspaceKey        "SimpleIDE_Workspace"
 #define editorFontKey       "SimpleIDE_EditorFont"
 #define fontSizeKey         "SimpleIDE_FontSize"
 #define lastFileNameKey     "SimpleIDE_LastFileName"
@@ -118,17 +121,31 @@ public slots:
     void browseCompiler();
     void browseIncludes();
     void browseWorkspace();
+
     void accept();
     void reject();
     void showProperties();
+    void browseSpinCompiler();
+    void browseSpinLibrary();
+    void browseSpinWorkspace();
+
+    QString getCompilerStr() { return leditCompiler->text(); }
+    QString getIncludesStr() { return leditIncludes->text(); }
+    QString getWorkspaceStr() { return leditWorkspace->text(); }
+    QString getSpinCompilerStr() { return leditSpinCompiler->text(); }
+    QString getSpinLibraryStr()  { return leditSpinLibrary->text(); }
+    QString getSpinWorkspaceStr() { return leditSpinWorkspace->text(); }
 
 private:
 
     void setupFolders();
+    void setupSpinFolders();
     void setupGeneral();
     void setupOptional();
     void addHighlights(QComboBox *box, QVector<PColor*> p);
     void setupHighlight();
+
+    void fileStringProperty(QVariant *var, QLineEdit *ledit, const char *key, QString *value);
 
     QTabWidget  tabWidget;
     QString     mypath;
@@ -136,6 +153,10 @@ private:
     QString     compilerstr;
     QString     includesstr;
     QString     workspacestr;
+    QString     spinCompilerStr;
+    QString     spinLibraryStr;
+    QString     spinWorkspaceStr;
+    
     QString     tabSpacesStr;
     QString     loadDelayStr;
     Reset       resetTypeEnum;
@@ -166,11 +187,14 @@ private:
     QLineEdit   *leditIncludes;
     QLineEdit   *leditWorkspace;
 
+    QLineEdit   *leditSpinCompiler;
+    QLineEdit   *leditSpinLibrary;
+    QLineEdit   *leditSpinWorkspace;
+
     QLineEdit   tabSpaces;
     QLineEdit   loadDelay;
     QComboBox   resetType;
 
-    QLineEdit   leditSpinCompiler;
     QLineEdit   leditAltTerminal;
 
     QToolButton hlNumButton;

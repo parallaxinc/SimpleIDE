@@ -30,6 +30,8 @@ public:
     static const QString lflags;
     static const QString board;
 
+    enum { TAB_OPT=0, TAB_C_COMP, TAB_C_LIB, TAB_SPIN_COMP };
+
     explicit ProjectOptions(QWidget *parent = 0);
     ~ProjectOptions();
 
@@ -75,8 +77,12 @@ public:
     QStringList getOptions();
     void        setOptions(QString s);
 
+public slots:
+    void compilerChanged(QString comp);
+
 private:
     QString     boardType;
+    QVector<QWidget*> tabs;
 };
 
 #endif // PROJECTOPTIONS_H

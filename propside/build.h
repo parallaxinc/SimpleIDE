@@ -2,6 +2,7 @@
 #define BUILD_H
 
 #include <QtGui>
+#include "properties.h"
 #include "projectoptions.h"
 
 #define FILELINK " -> "
@@ -13,10 +14,11 @@ class Build : public QWidget
 {
     Q_OBJECT
 public:
-    Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb);
+    Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb, Properties *p);
 
     virtual int  runBuild(QString option, QString projfile, QString compiler);
     virtual int  makeDebugFiles(QString fileName, QString projfile, QString compiler);
+    virtual void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
 
 #if 0
     void setCompiler(QString compiler);
@@ -32,8 +34,8 @@ public slots:
     void procError(QProcess::ProcessError error);
     void procFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void procReadyReadCat();
-    void procReadyReadSizes();
     void procReadyRead();
+    void procReadyReadSizes();
 
 public:
     int  checkBuildStart(QProcess *proc, QString progName);
@@ -46,6 +48,7 @@ public:
     QString sourcePath(QString srcpath);
     QString shortFileName(QString fileName);
     void removeArg(QStringList &list, QString arg);
+
 
 protected:
     QString         aSideCompiler;
@@ -70,6 +73,9 @@ protected:
     QMutex          procMutex;
 
     ProjectOptions  *projectOptions;
+    Properties      *properties;
+
+    QString         outputFile;
 };
 
 #endif // BUILD_H
