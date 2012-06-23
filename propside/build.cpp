@@ -261,7 +261,7 @@ void Build::procReadyRead()
                 compileStatus->insertPlainText(line);
             }
             else
-            if(line.contains("Program size is",Qt::CaseInsensitive)) {
+            if(line.contains("Program size",Qt::CaseInsensitive)) {
                 // bstc reports program size is N longs
                 compileStatus->insertPlainText(eol);
                 compileStatus->insertPlainText(line);

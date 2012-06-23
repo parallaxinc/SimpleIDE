@@ -15,7 +15,7 @@ public:
     Editor(GDB *gdb, QWidget *parent);
     virtual ~Editor();
 
-    void setHighlights();
+    void setHighlights(QString filename = "");
     void setLineNumber(int num);
 
 protected:

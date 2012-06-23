@@ -72,8 +72,7 @@ public:
 
     void getProperties();
 
-    void highlightC();
-    void highlightSpin();
+    virtual void highlight();
 
 protected:
     void highlightBlock(const QString &text);
