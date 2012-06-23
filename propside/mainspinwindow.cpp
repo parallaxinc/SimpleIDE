@@ -609,19 +609,27 @@ void MainSpinWindow::newProjectAccepted()
 
     QString mains;
     QString mainName(path+"/"+name);
-
+    
     if(comp.compare("C", Qt::CaseInsensitive) == 0) {
         mains = C_maintemplate;
         mainName += ".c";
+        projectOptions->setCompiler("C");
     }
     else if(comp.compare("C++", Qt::CaseInsensitive) == 0) {
         mains = Cpp_maintemplate;
         mainName += ".cpp";
+        projectOptions->setCompiler("C++");
     }
     else if(comp.compare("Spin", Qt::CaseInsensitive) == 0) {
         mains = SPIN_maintemplate;
         mainName += ".spin";
+        projectOptions->setCompiler("SPIN");
     }
+    else {
+        return;
+    }
+
+    closeProject();
 
     if(dir.exists(path) == 0)
         dir.mkdir(path);
@@ -636,8 +644,9 @@ void MainSpinWindow::newProjectAccepted()
     projectFile = path+"/"+name+SIDE_EXTENSION;
     setCurrentProject(projectFile);
     updateProjectTree(mainName);
-    //projectOptions->setCompiler(comp);
     openFile(projectFile);
+    projectOptions->setCompiler(comp);
+    saveProjectOptions();
 }
 
 void MainSpinWindow::openProject(const QString &path)
@@ -1892,10 +1901,11 @@ void MainSpinWindow::propertiesAccepted()
 {
     getApplicationSettings();
     initBoardTypes();
-    for(int n = 0; n < editors->count(); n++) {
+    Editor *ed = editors->at(editorTabs->currentIndex());
+    for(int n = 0; n < editorTabs->count(); n++) {
         Editor *e = editors->at(n);
         e->setTabStopWidth(propDialog->getTabSpaces()*10);
-        e->setHighlights();
+        e->setHighlights(editorTabs->tabText(n));
     }
 }
 
@@ -3338,6 +3348,7 @@ void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, 
     Editor *editor = editors->at(num);
     fileChangeDisable = true;
     editor->setPlainText(text);
+    editor->setHighlights(shortName);
 
     fileChangeDisable = false;
     editorTabs->setTabText(num,shortName);

@@ -45,7 +45,8 @@ SOURCES += mainspin.cpp \
     qextserialenumerator.cpp \
     buildc.cpp \
     buildspin.cpp \
-    build.cpp
+    build.cpp \
+    spinhighlighter.cpp
 HEADERS += mainspinwindow.h \
     editor.h \
     ctags.h \
@@ -73,7 +74,8 @@ HEADERS += mainspinwindow.h \
     qextserialenumerator.h \
     buildc.h \
     buildspin.h \
-    build.h
+    build.h \
+    spinhighlighter.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui
@@ -81,7 +83,7 @@ RESOURCES += resources.qrc
 unix:SOURCES += qextserialport_unix.cpp
 unix:!macx:# dont use EVENT_DRIVEN for linux to be consistent with MAC. also causes output skips.
 SOURCES += qextserialenumerator_unix.cpp
-macx {
+macx { 
     # dont use EVENT_DRIVEN for mac. must open terminal before load because mac would reset boards otherwise.
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += -framework \
@@ -89,9 +91,9 @@ macx {
         -framework \
         CoreFoundation
 }
-win32 {
+win32 { 
     RC_FILE = myapp.rc
-
+    
     # don't use EVENT_DRIVEN for windows. causes crashes.
     SOURCES += qextserialport_win.cpp
     SOURCES += qextserialenumerator_win.cpp

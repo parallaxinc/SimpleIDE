@@ -9,6 +9,7 @@ NewProject::NewProject(QWidget *parent) : QDialog(parent)
     mypath = getCurrentPath();
     path = new QLineEdit(mypath,this);
     path->setToolTip(tr("Directory for new project."));
+    path->setDisabled(true);
 
     QPushButton *btnBrowsePath = new QPushButton(this);
     btnBrowsePath->setText(tr("Browse"));

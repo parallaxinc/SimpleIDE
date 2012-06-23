@@ -1,6 +1,8 @@
 #include "editor.h"
 #include "properties.h"
 
+#include "spinhighlighter.h"
+
 #ifdef SPINSIDE
 #include "mainspinwindow.h"
 #define MAINWINDOW MainSpinWindow
@@ -32,12 +34,19 @@ Editor::~Editor()
     delete highlighter;
 }
 
-void Editor::setHighlights()
+void Editor::setHighlights(QString filename)
 {
     Properties *p = static_cast<MAINWINDOW*>(mainwindow)->propDialog;
     if(highlighter != NULL)
         delete highlighter;
-    highlighter = new Highlighter(this->document(), p);
+    if(filename.isEmpty()) {
+        highlighter = new Highlighter(this->document(), p);
+    } else {
+        if(filename.indexOf(".spin",Qt::CaseInsensitive) > 0)
+            highlighter = new SpinHighlighter(this->document(), p);
+        else
+            highlighter = new Highlighter(this->document(), p);
+    }
 }
 
 void Editor::setLineNumber(int num)

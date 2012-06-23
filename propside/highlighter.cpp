@@ -54,7 +54,7 @@ Highlighter::Highlighter(QTextDocument *parent, Properties *prop)
     : QSyntaxHighlighter(parent)
 {
     properties = prop;
-    highlightC();
+    highlight();
 }
 
 bool Highlighter::getStyle(QString key, bool *italic)
@@ -153,7 +153,7 @@ void Highlighter::getProperties()
         hlBlockComColor = color;
 }
 
-void Highlighter::highlightC()
+void Highlighter::highlight()
 {
     getProperties();
 
@@ -285,87 +285,6 @@ void Highlighter::highlightC()
 
 }
 
-/*
- * this is mostly experimental. not sure if it can be used yet.
- */
-void Highlighter::highlightSpin()
-{
-    this->parent();
-
-    getProperties();
-
-    HighlightingRule rule;
-
-    // do "functions" first so we can override if names are keywords
-    functionFormat.setFontItalic(true);
-    functionFormat.setForeground(Qt::blue);
-    rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
-    rule.format = functionFormat;
-    highlightingRules.append(rule);
-
-    // handle Spin keywords
-    keywordFormat.setForeground(Qt::darkBlue);
-    keywordFormat.setFontWeight(QFont::Bold);
-    QStringList keywordPatterns;
-    /*
-     * add spin patterns later
-     */
-    keywordPatterns
-            << "\\babort\\b"
-            << "={2,}" << "+{2,}" << "-{2,}" << "_{2,}" << "\\{2,}"
-            << "\\belif\\b"
-            << "\\bifdef\\b"
-            << "\\bendif\\b"
-            ;
-    foreach (const QString &pattern, keywordPatterns) {
-        rule.pattern = QRegExp(pattern);
-        rule.format = keywordFormat;
-        highlightingRules.append(rule);
-    }
-
-    preprocessorFormat.setForeground(Qt::darkYellow);
-    preprocessorFormat.setFontWeight(QFont::Bold);
-    //preprocessorFormat.setFontItalic(true);
-    QStringList preprocessorPatterns;
-    preprocessorPatterns
-            << "\\bcon\\b"
-            << "\\bdat\\b"
-            << "\\bobj\\b"
-            << "\\bpub\\b"
-            << "\\bpri\\b"
-            << "\\bvar\\b"
-            << "\\bdefine\\b"
-            << "\\bdefined\\b"
-            << "\\berror\\b"
-            << "\\binclude\\b"
-            << "\\bundef\\b"
-            << "\\bwarning\\b"
-            ;
-    foreach (const QString &pattern, preprocessorPatterns) {
-        rule.pattern = QRegExp(pattern);
-        rule.format = preprocessorFormat;
-        highlightingRules.append(rule);
-    }
-
-    // quoted strings
-    quotationFormat.setForeground(Qt::red);
-    rule.pattern = QRegExp("[\"].*[\"]");
-    rule.format = quotationFormat;
-    highlightingRules.append(rule);
-
-    // single line comments
-    singleLineCommentFormat.setForeground(Qt::darkGreen);
-    rule.pattern = QRegExp("//[^\n]*");
-    rule.format = singleLineCommentFormat;
-    highlightingRules.append(rule);
-
-    // multilineline comments
-    multiLineCommentFormat.setForeground(Qt::darkGreen);
-    commentStartExpression = QRegExp("/\\*");
-    commentEndExpression = QRegExp("\\*/");
-
-}
-
 //! [7]
 void Highlighter::highlightBlock(const QString &text)
 {
@@ -374,6 +293,8 @@ void Highlighter::highlightBlock(const QString &text)
         int index = expression.indexIn(text);
         while (index >= 0) {
             int length = expression.matchedLength();
+            if(length == 0)
+                break;
             setFormat(index, length, rule.format);
             index = expression.indexIn(text, index + length);
         }
