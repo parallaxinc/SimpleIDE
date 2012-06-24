@@ -56,6 +56,7 @@ public:
     QString getCompOptions();
     QString getLinkOptions();
     QString getBoardType();
+    QString getSpinCompOptions();
 
     void setCompiler(QString s);
     void setMemModel(QString s);
@@ -73,6 +74,7 @@ public:
     void setCompOptions(QString s);
     void setLinkOptions(QString s);
     void setBoardType(QString s);
+    void setSpinCompOptions(QString s);
 
     QStringList getOptions();
     void        setOptions(QString s);
@@ -83,6 +85,11 @@ public slots:
 private:
     QString     boardType;
     QVector<QWidget*> tabs;
+
+signals:
+    void compilerChanged();
+
+
 };
 
 #endif // PROJECTOPTIONS_H

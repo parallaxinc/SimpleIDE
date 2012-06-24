@@ -85,13 +85,18 @@ void ProjectOptions::compilerChanged(QString comp)
 {
     for(int n = ui->tabWidget->count()-1; n > 0; n--)
         ui->tabWidget->removeTab(n);
-    if(comp.indexOf("C",Qt::CaseInsensitive) > -1) {
+    if(comp.contains("C",Qt::CaseInsensitive)) {
         ui->tabWidget->addTab(tabs.at(this->TAB_C_COMP),"Compiler");
         ui->tabWidget->addTab(tabs.at(this->TAB_C_LIB),"Linker");
+        ui->comboBoxMemoryMode->setEnabled(true);
+        ui->comboBoxOptimization->setEnabled(true);
     }
-    else if(comp.indexOf("SPIN",Qt::CaseInsensitive) > -1) {
+    else if(comp.contains("SPIN",Qt::CaseInsensitive)) {
         ui->tabWidget->addTab(tabs.at(this->TAB_SPIN_COMP),"Compiler");
+        ui->comboBoxMemoryMode->setEnabled(false);
+        ui->comboBoxOptimization->setEnabled(false);
     }
+    emit compilerChanged();
 }
 
 void ProjectOptions::clearOptions()
@@ -110,6 +115,7 @@ void ProjectOptions::clearOptions()
     ui->checkBoxStripELF->setChecked(false);
     ui->lineEditCompOptions->setText("");
     ui->lineEditLinkOptions->setText("");
+    ui->lineEditSpinCompOptions->setText("");
 }
 
 QToolButton *ProjectOptions::getHardwareButton()
@@ -229,6 +235,10 @@ QString  ProjectOptions::getStripElf()
     return QString (""); // never strip now that we have config variable patching
 }
 
+QString  ProjectOptions::getSpinCompOptions()
+{
+    return ui->lineEditSpinCompOptions->text().toAscii();
+}
 QString  ProjectOptions::getCompOptions()
 {
     return ui->lineEditCompOptions->text().toAscii();
@@ -239,7 +249,7 @@ QString  ProjectOptions::getLinkOptions()
 }
 QString  ProjectOptions::getBoardType()
 {
-    return ui->lineEditLinkOptions->text().toAscii();
+    return boardType;
 }
 
 void ProjectOptions::setOptions(QString s)
@@ -392,6 +402,10 @@ void ProjectOptions::setStripElf(bool s)
 {
     if(s == true) s = false;  // never strip - eliminate warnings
     ui->checkBoxStripELF->setChecked(s);
+}
+void ProjectOptions::setSpinCompOptions(QString s)
+{
+    ui->lineEditSpinCompOptions->setText(s);
 }
 void ProjectOptions::setCompOptions(QString s)
 {

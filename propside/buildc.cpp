@@ -258,10 +258,10 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
         }
         else {
             compileStatus->appendPlainText("Done. Build Failed!\n");
-            if(compileStatus->toPlainText().indexOf("error:",Qt::CaseInsensitive) > 0) {
+            if(compileStatus->toPlainText().indexOf("error:",0, Qt::CaseInsensitive) > 0) {
                 compileStatus->appendPlainText("Click error or warning messages above to debug.\n");
             }
-            if(compileStatus->toPlainText().indexOf("undefined reference",Qt::CaseInsensitive) > 0) {
+            if(compileStatus->toPlainText().indexOf("undefined reference",0, Qt::CaseInsensitive) > 0) {
                 QStringList ssplit = compileStatus->toPlainText().split("undefined reference to ", QString::SkipEmptyParts, Qt::CaseInsensitive);
                 if(ssplit.count() > 1) {
                     QString msg = ssplit.at(1);
@@ -283,13 +283,13 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
                     return rc;
                 }
             }
-            if(compileStatus->toPlainText().indexOf("overflowed by", Qt::CaseInsensitive) > 0) {
+            if(compileStatus->toPlainText().indexOf("overflowed by", 0, Qt::CaseInsensitive) > 0) {
                 compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
                 cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
                 compileStatus->setTextCursor(cur);
                 return rc;
             }
-            if(compileStatus->toPlainText().indexOf("Error: Relocation overflows", Qt::CaseInsensitive) > 0) {
+            if(compileStatus->toPlainText().indexOf("Error: Relocation overflows", 0, Qt::CaseInsensitive) > 0) {
                 compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
                 cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
                 compileStatus->setTextCursor(cur);
@@ -743,7 +743,7 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
             join += sp.at(m);
             args->append(join);
         }
-        else if (parm.indexOf(".cfg",Qt::CaseInsensitive) > -1){
+        else if (parm.indexOf(".cfg",0, Qt::CaseInsensitive) > -1){
             // don't append .cfg parameter
         }
         else {
