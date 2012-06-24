@@ -64,6 +64,14 @@ int  BuildSpin::runBstc(QString spinfile)
     QString spin = properties->getSpinCompilerStr();
     QString comp = spin.mid(spin.lastIndexOf("/")+1);
 
+    /* other compiler options */
+    if(projectOptions->getCompOptions().length()) {
+        QStringList complist = projectOptions->getSpinCompOptions().split(" ",QString::SkipEmptyParts);
+        foreach(QString compopt, complist) {
+            args.append(compopt);
+        }
+    }
+
     if(comp.compare("spin",Qt::CaseInsensitive) == 0) {
         // Roy's compiler always makes a .binary
         args.append("-I");

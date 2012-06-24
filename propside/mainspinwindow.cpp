@@ -43,6 +43,7 @@
 
 #define GDB_TABNAME "GDB Output"
 #define SIDE_EXTENSION ".side"
+#define SPIN_EXTENSION ".spin"
 
 MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -498,7 +499,7 @@ void MainSpinWindow::openFileName(QString fileName)
             in.setCodec("UTF-8");
             data = in.readAll();
             file.close();
-            data.replace('\t',"    ");
+            data = data.replace('\t',"    ");
             QString sname = this->shortFileName(fileName);
             if(editorTabs->count()>0) {
                 for(int n = editorTabs->count()-1; n > -1; n--) {
@@ -622,7 +623,7 @@ void MainSpinWindow::newProjectAccepted()
     }
     else if(comp.compare("Spin", Qt::CaseInsensitive) == 0) {
         mains = SPIN_maintemplate;
-        mainName += ".spin";
+        mainName += SPIN_EXTENSION;
         projectOptions->setCompiler("SPIN");
     }
     else {
@@ -1016,12 +1017,10 @@ void MainSpinWindow::closeProject()
     int rc = QMessageBox::No;
 
     if(projectFile.length() > 0)
-        rc = QMessageBox::question(this,tr("Save Project?"),tr("Save project manager settings before close?"), QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
-
-    /* abort?
-     */
-    if(rc == QMessageBox::Cancel)
-        return;
+        rc = QMessageBox::question(this,
+                tr("Save Project?"),
+                tr("Save project manager settings before close?"),
+                QMessageBox::Yes, QMessageBox::No);
 
     /* save options
      */
@@ -1883,6 +1882,12 @@ void MainSpinWindow::setProject()
         updateProjectTree(fileName);
         setCurrentProject(projectFile);
     }
+    QString extension = fileName.mid(fileName.lastIndexOf(".")+1);
+    if(extension.compare("spin",Qt::CaseInsensitive) == 0) {
+        projectOptions->setCompiler("SPIN");
+        projectOptions->setBoardType("HUB"); // HUB is only option for SPIN
+        saveProjectOptions();
+    }
 }
 
 void MainSpinWindow::hardware()
@@ -2215,14 +2220,36 @@ QString MainSpinWindow::sourcePath(QString srcpath)
     return srcpath;
 }
 
-int  MainSpinWindow::runBuild(QString option)
+bool MainSpinWindow::spinProject()
 {
     QString compiler = projectOptions->getCompiler();
-    checkAndSaveFiles();
     if(compiler.compare("Spin", Qt::CaseInsensitive) == 0)
+        return true;
+    return false;
+}
+
+bool MainSpinWindow::cProject()
+{
+    QString compiler = projectOptions->getCompiler();
+    if(compiler.compare("C", Qt::CaseInsensitive) == 0)
+        return true;
+    else if(compiler.compare("C++", Qt::CaseInsensitive) == 0)
+        return true;
+    return false;
+}
+
+void MainSpinWindow::selectBuilder()
+{
+    if(spinProject())
         builder = buildSpin;
-    else if(compiler.compare("C", Qt::CaseInsensitive) == 0)
+    else if(cProject())
         builder = buildC;
+}
+
+int  MainSpinWindow::runBuild(QString option)
+{
+    checkAndSaveFiles();
+    selectBuilder();
     return builder->runBuild(option, projectFile, aSideCompiler);
 }
 
@@ -2232,12 +2259,11 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     // QString srcpath = sourcePath(projectFile);
 
     int compileType = ProjectOptions::TAB_OPT; // 0
-    QString compiler = projectOptions->getCompiler();
-    if(compiler.compare("Spin", Qt::CaseInsensitive) == 0) {
+    if(spinProject()) {
         builder = buildSpin;
         compileType = ProjectOptions::TAB_SPIN_COMP;
     }
-    else if(compiler.compare("C", Qt::CaseInsensitive) == 0) {
+    else if(cProject()) {
         builder = buildC;
         compileType = ProjectOptions::TAB_C_COMP;
     }
@@ -2476,6 +2502,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     projectOptions->setMinimumWidth(PROJECT_WIDTH);
     projectOptions->setMaximumWidth(PROJECT_WIDTH);
     projectOptions->setToolTip(tr("Project Options"));
+    connect(projectOptions,SIGNAL(compilerChanged()),this,SLOT(compilerChanged()));
 
     cbBoard = projectOptions->getHardwareComboBox();
     cbBoard->setToolTip(tr("Board Type Select"));
@@ -2553,22 +2580,9 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     this->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
 }
 
-/*
- * Find error or warning in a file
- */
-void MainSpinWindow::compileStatusClicked(void)
+void MainSpinWindow::cStatusClicked(QString line)
 {
     int n = 0;
-    QTextCursor cur = compileStatus->textCursor();
-    QString line = cur.selectedText();
-    /* if more than one line, we have a select all */
-    QStringList lines = line.split(QChar::ParagraphSeparator);
-    if(lines.length()>1)
-        return;
-    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-    cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
-    compileStatus->setTextCursor(cur);
-    line = cur.selectedText();
     QRegExp regx(":[0-9]");
     QStringList fileList = line.split(regx);
     if(fileList.count() < 2)
@@ -2623,6 +2637,107 @@ void MainSpinWindow::compileStatusClicked(void)
         editor->setTextCursor(c);
         editor->setFocus();
     }
+}
+
+void MainSpinWindow::spinStatusClicked(QString line)
+{
+    int n = 0;
+
+    if(line.contains("error",Qt::CaseInsensitive) == false)
+        return;
+    if(line.indexOf("(") < 0)
+        return;
+
+    QString file = line.mid(0,line.indexOf("("));
+    if(file.contains("..."))
+        file = file.mid(file.indexOf("...")+3);
+    if(file.contains(SPIN_EXTENSION, Qt::CaseInsensitive) == false)
+        file += SPIN_EXTENSION;
+
+    /* open file in tab if not there already */
+    for(n = 0; n < editorTabs->count();n++) {
+        if(editorTabs->tabText(n).contains(file)) {
+            editorTabs->setCurrentIndex(n);
+            break;
+        }
+        if(editors->at(n)->toolTip().contains(file)) {
+            editorTabs->setCurrentIndex(n);
+            break;
+        }
+    }
+
+    if(n > editorTabs->count()-1) {
+        if(QFile::exists(file)) {
+            openFileName(file);
+        }
+        else
+        if(QFile::exists(sourcePath(projectFile))) {
+            file = sourcePath(projectFile)+file;
+            openFileName(file);
+        }
+        else {
+            return;
+        }
+    }
+
+    QStringList list = line.split(QRegExp("[(,:)]"));
+    // list should contain
+    // 0 filename
+    // 1 row
+    // 2 column
+    // rest of line
+    Editor *editor = editors->at(editorTabs->currentIndex());
+    if(editor != NULL)
+    {
+        n = QString(list[1]).toInt();
+        QTextCursor c = editor->textCursor();
+        c.movePosition(QTextCursor::Start);
+        if(n > 0) {
+            c.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,n-1);
+            c.movePosition(QTextCursor::StartOfLine);
+            c.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor,1);
+        }
+        editor->setTextCursor(c);
+        editor->setFocus();
+    }
+}
+
+/*
+ * Find error or warning in a file
+ */
+void MainSpinWindow::compileStatusClicked(void)
+{
+    QTextCursor cur = compileStatus->textCursor();
+    QString line = cur.selectedText();
+    /* if more than one line, we have a select all */
+    QStringList lines = line.split(QChar::ParagraphSeparator);
+    if(lines.length()>1)
+        return;
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+    cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+    compileStatus->setTextCursor(cur);
+    line = cur.selectedText();
+
+    if(cProject()) {
+        cStatusClicked(line);
+    }
+    else if(spinProject()) {
+        spinStatusClicked(line);
+    }
+
+}
+
+void MainSpinWindow::compilerChanged()
+{
+    if(cProject()) {
+        projectMenu->setEnabled(true);
+        cbBoard->setEnabled(true);
+    }
+    else if(spinProject()) {
+        projectMenu->setEnabled(false);
+        cbBoard->setEnabled(false);
+    }
+
 }
 
 void MainSpinWindow::projectTreeClicked(QModelIndex index)
@@ -3164,12 +3279,7 @@ int MainSpinWindow::makeDebugFiles(QString fileName)
 
     /* save files before compiling debug info */
     checkAndSaveFiles();
-
-    if(projectOptions->compiler.indexOf("Spin", Qt::CaseInsensitive) > -1)
-        builder = buildSpin;
-    else if(projectOptions->compiler.indexOf("C", Qt::CaseInsensitive) > -1)
-        builder = buildC;
-
+    selectBuilder();
     rc = builder->makeDebugFiles(fileName, projectFile, aSideCompiler);
 
     return rc;

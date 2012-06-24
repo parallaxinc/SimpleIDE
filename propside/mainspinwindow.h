@@ -145,6 +145,7 @@ public slots:
     void findSymbolHelp(QString text);
 
     void compileStatusClicked();
+    void compilerChanged();
 
     void procError(QProcess::ProcessError error);
     void procFinished(int exitCode, QProcess::ExitStatus exitStatus);
@@ -173,6 +174,9 @@ private:
     void exitSave();
     void getApplicationSettings();
     int  checkCompilerInfo();
+    bool spinProject();
+    bool cProject();
+    void selectBuilder();
     int  runBuild(QString option);
 #ifdef KEEP_CTOOLS
     int  runCOGC(QString filename, QString outext);
@@ -211,6 +215,9 @@ private:
     void setEditorTab(int num, QString shortName, QString fileName, QString text);
     QString shortFileName(QString fileName);
     QString sourcePath(QString file);
+
+    void cStatusClicked(QString line);
+    void spinStatusClicked(QString line);
 
     AboutDialog     *aboutDialog;
     QString         aboutLanding;

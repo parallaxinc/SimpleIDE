@@ -42,7 +42,7 @@ void Editor::setHighlights(QString filename)
     if(filename.isEmpty()) {
         highlighter = new Highlighter(this->document(), p);
     } else {
-        if(filename.indexOf(".spin",Qt::CaseInsensitive) > 0)
+        if(filename.contains(".spin",Qt::CaseInsensitive))
             highlighter = new SpinHighlighter(this->document(), p);
         else
             highlighter = new Highlighter(this->document(), p);

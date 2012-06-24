@@ -187,7 +187,9 @@ void Build::procReadyRead()
     if(pvar.canConvert(QVariant::String)) {
         progname = pvar.toString();
     }
+    bool isbstc = false;
     if(progname.contains("bstc",Qt::CaseInsensitive)) {
+        isbstc = true;
         if(QString(bytes).contains("Error",Qt::CaseInsensitive)) {
             procResultError = true;
         }
@@ -222,7 +224,7 @@ void Build::procReadyRead()
                 progress->setValue(0);
             }
             else
-            if(line.contains("loading",Qt::CaseInsensitive)) {
+            if(line.contains("loading",Qt::CaseInsensitive) && !isbstc) {
                 progMax = 0;
                 progress->setValue(0);
                 compileStatus->insertPlainText(line+eol);
@@ -272,7 +274,8 @@ void Build::procReadyRead()
                 this->codeSize = ok ? size : 0;
             }
             else {
-                compileStatus->insertPlainText(eol);
+                if(n < lines.length()-1)
+                    compileStatus->insertPlainText(eol);
                 compileStatus->insertPlainText(line);
             }
         }
