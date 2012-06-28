@@ -272,7 +272,7 @@ static void findSpinTags (void)
 {
     const char *name;
     SpinKind   state;
-    const char *line;
+    char *line;
     const char *tmp;
     int blockComment = 0;
     const char *extension = fileExtension (vStringValue (File.name));
