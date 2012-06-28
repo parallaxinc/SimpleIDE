@@ -34,11 +34,11 @@
 typedef enum {
     K_NONE,
     K_CONST,
-    K_FUNCTION,
+    K_PRI,
+    K_PUB,
     K_OBJECT,
-    K_TYPE,
     K_VAR,
-    //K_DAT,
+    K_DAT,
     K_ENUM
 } SpinKind;
 
@@ -51,11 +51,11 @@ typedef struct {
 static kindOption SpinKinds[] = {
     {FALSE,'n', "none", "none"}, // place-holder only
     {TRUE, 'c', "constant", "constants"},
-    {TRUE, 'f', "function", "functions"},
+    {TRUE, 'f', "pri", "private functions"},
+    {TRUE, 'p', "pub", "public functions"},
     {TRUE, 'o', "obj", "objects"},
-    {TRUE, 't', "type", "types"},
     {TRUE, 'v', "var", "variables"},
-    //{TRUE, 'd', "dat", "dat"},
+    {TRUE, 'd', "dat", "dat"},
     {TRUE, 'g', "enum", "enumerations"}
 };
 
@@ -66,10 +66,10 @@ static kindOption SpinKinds[] = {
 static KeyWord spin_keywords[] = {
     {"con", K_CONST, 0},
     {"obj", K_OBJECT, 0},
-    {"pub", K_FUNCTION, 0},
-    {"pri", K_FUNCTION, 0},
+    {"pub", K_PUB, 0},
+    {"pri", K_PRI, 0},
     {"var", K_VAR, 0},
-    //{"dat", K_DAT, 0},
+    {"dat", K_DAT, 0},
     {NULL, 0, 0}
 };
 
@@ -156,35 +156,83 @@ static int  spintype(char const *p)
     int n,j;
     char *types[] = { BYTE, LONG, WORD, 0 };
     char *type;
-
-    for(j = 0; types[j] != 0; j++) {
+    int noscore = 0;
+    if(isspace(*p))
+        return 0;
+    for(j = 0; types[j] != '\0'; j++) {
         type = types[j];
-        for(n = 0; isspace(p[n]) != 0; n++) {
-            if(tolower(p[n]) != type[n]) return 0;
+        for(n = 0; !isspace(p[n]); n++) {
+            if(tolower(p[n]) != type[n]) {
+                noscore++;
+                break;
+            }
         }
     }
+    if(noscore > 2)
+        return 0;
     return 1;
 }
 
 static void match_constant (char const *p)
 {
-    char const *end = p + strlen (p) - 1;
+    char const *end;
+    int len = 0;
+    if(strncasecmp(p,"con",3) == 0)
+        p += 3;
+    while (isspace (*p))
+        p++;
+    end = p + strlen (p) - 1;
     while((*end != '=') && (end >= p))
         end--;
+    while(!isspace(p[len]))
+        len++;
     if(end > p)
     {
         vString *name = vStringNew ();
-        vStringNCatS (name, p, end - p);
+        vStringNCatS (name, p, len);
         makeSimpleTag (name, SpinKinds, K_CONST);
+        vStringDelete (name);
+    }
+}
+
+static void match_dat (char const *p)
+{
+    char const *end;
+    int len = 0;
+    if(strncasecmp(p,"dat",3) == 0)
+        p += 3;
+    while (isspace (*p))
+        p++;
+    end = p + strlen (p) - 1;
+    while((spintype(end) == 0) && (end >= p))
+        end--;
+    if(!isspace(*(end-1)))
+        return;
+    while(!isspace(p[len]))
+        len++;
+    if(end > p)
+    {
+        vString *name = vStringNew ();
+        vStringNCatS (name, p, len);
+        makeSimpleTag (name, SpinKinds, K_DAT);
         vStringDelete (name);
     }
 }
 
 static void match_object (char const *p)
 {
-    char const *end = p + strlen (p) - 1;
+    char const *end;
+    if(strncasecmp(p,"obj",3) == 0)
+        p += 3;
+    while (isspace (*p))
+        p++;
+    end = p + strlen (p) - 1;
     while((*end != ':') && (end >= p))
         end--;
+    end--;
+    while(isspace(*end))
+        end--;
+    end++;
     if(end > p)
     {
         vString *name = vStringNew ();
@@ -196,14 +244,25 @@ static void match_object (char const *p)
 
 static void match_var (char const *p)
 {
-    char const *end = p + strlen (p) - 1;
+    char const *end;
+    int elen = 0;
+    if(strncasecmp(p,"var",3) == 0)
+        p += 3;
+    while (isspace (*p))
+        p++;
+    end = p + strlen (p) - 1;
     while((spintype(end) == 0) && (end >= p))
         end--;
-    end++;
-    if(end > p)
+    if(end >= p)
     {
+        while(!isspace(*end))
+            end++;
+        while(isspace(*end))
+            end++;
+        while(!isspace(end[elen]))
+            elen++;
         vString *name = vStringNew ();
-        vStringNCatS (name, p, end - p);
+        vStringNCatS (name, end, elen);
         makeSimpleTag (name, SpinKinds, K_VAR);
         vStringDelete (name);
     }
@@ -214,45 +273,69 @@ static void findSpinTags (void)
     const char *name;
     SpinKind   state;
     const char *line;
+    const char *tmp;
+    int blockComment = 0;
     const char *extension = fileExtension (vStringValue (File.name));
     KeyWord *keywords;
 
     keywords = spin_keywords;
     state = K_CONST; // spin starts with CONST
 
-    while ((line = (const char *) fileReadLine ()) != NULL)
+    while ((line = (char *) fileReadLine ()) != NULL)
     {
-        const char *p = line;
+        char *p = line;
         KeyWord const *kw;
 
         while (isspace (*p))
             p++;
 
+        if(blockComment && (strchr(p,'}') != 0)) {
+            blockComment = 0;
+            p += strchr(p,'}')-p+1;
+        }
+        if(blockComment)
+            continue;
+
+        if((strchr(p,'\'') != 0)) {
+            p[strchr(p,'\'')-p] = '\0';
+        }
+        if((strchr(p,'{') != 0)) {
+            blockComment = 1;
+            p[strchr(p,'{')-p] = '\0';
+        }
+
         /* Empty line? */
         if (!*p)
             continue;
 
+        tmp = p;
+        /* In Spin, keywords always are at the start of the line. */
+        for (kw = keywords; kw->token; kw++) {
+            int type = (SpinKind) match_keyword (p, kw);
+            if(type != K_NONE) {
+                state = type;
+                break;
+            }
+        }
+
         //printf ("state %d\n", state);
         switch(state) {
             case K_CONST:
-                match_constant(p);
+                match_constant(tmp);
+            break;
+            case K_DAT:
+                match_dat(tmp);
             break;
             case K_OBJECT:
-                match_object(p);
+                match_object(tmp);
             break;
             case K_VAR:
-                match_var(p);
+                match_var(tmp);
             break;
             default:
             break;
         }
 
-        /* In Spin, keywords always are at the start of the line. */
-        for (kw = keywords; kw->token; kw++) {
-            int type = (SpinKind) match_keyword (p, kw);
-            if(type != K_NONE)
-                state = type;
-        }
     }
 }
 
