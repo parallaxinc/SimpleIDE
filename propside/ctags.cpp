@@ -98,6 +98,17 @@ int CTags::runCtags(QString path)
     return rc;
 }
 
+/*
+ * Spin ctags are collected when necessary by propside.
+ * We only set the project path here.
+ */
+int CTags::runSpinCtags(QString path, QString libpath)
+{
+    projectPath = QDir::fromNativeSeparators(path);
+    projectPath = projectPath.mid(0,projectPath.lastIndexOf("/")+1);
+    return 0;
+}
+
 void CTags::procError(QProcess::ProcessError code)
 {
     mutex.lock();
@@ -109,7 +120,9 @@ void CTags::procError(QProcess::ProcessError code)
 
 void CTags::procReadyRead()
 {
-    // qDebug() << "procReadyRead :" << process->readAllStandardOutput();
+    QString output = process->readAllStandardOutput();
+    if(output.length() > 0)
+        qDebug() << "procReadyRead :" << output;
 }
 
 void CTags::procFinished(int code, QProcess::ExitStatus status)
@@ -137,17 +150,19 @@ QString CTags::findTag(QString symbol)
         return rets;
 
     QFile file(projectPath+"tags");
+
     if(file.exists() == false)
         return rets;
 
-    QString fileString;
-    if(file.open(QFile::ReadOnly)) {
-        fileString = file.readAll();
-        file.close();
-    }
-    if(fileString.contains(symbol)) {
+    if(file.open(QFile::ReadOnly) == false)
+        return rets;
+
+    QString fileString = file.readAll();
+    file.close();
+
+    if(fileString.contains(symbol,Qt::CaseInsensitive)) {
         QStringList list = fileString.split("\n");
-        QRegExp rx("^"+symbol+"[ \t].*");
+        QRegExp rx("^"+symbol+"[ \t].*",Qt::CaseInsensitive);
         for(int n = 0; n < list.length(); n++) {
             QString line = list.at(n);
             if(line.length() == 0)

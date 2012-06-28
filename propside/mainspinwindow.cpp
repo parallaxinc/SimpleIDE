@@ -1152,8 +1152,10 @@ void MainSpinWindow::setCurrentProject(const QString &fileName)
 #else
         MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
 #endif
-        if (mainWin)
+        if (mainWin) {
             mainWin->updateRecentProjectActions();
+            break;
+        }
     }
 }
 
@@ -1482,7 +1484,11 @@ void MainSpinWindow::fileChanged()
     /* tab controls have been moved to the editor class */
 
     QString curtext = ed->toPlainText();
+    if(curtext.length() == 0)
+        return;
     QString fileName = editorTabs->tabToolTip(index);
+    if(fileName.length() == 0)
+        return;
     QFile file(fileName);
     if(file.exists() == false) {
         if(curtext.length() > 0) {
@@ -1497,18 +1503,20 @@ void MainSpinWindow::fileChanged()
     int ret = 0;
     QTextStream in(&file);
     in.setCodec("UTF-8");
+    QChar ch = name.at(name.length()-1);
     if(file.open(QFile::ReadOnly))
     {
         text = file.readAll();
+        text = text.toAscii();
         file.close();
-        ret = text.compare(curtext);
+        ret = text.compare(curtext.toUtf8());
         if(ret == 0) {
-            if(name.at(name.length()-1) == '*')
+            if( ch == QChar('*'))
                 editorTabs->setTabText(index, this->shortFileName(fileName));
             return;
         }
     }
-    if(name.at(name.length()-1) != '*') {
+    if( ch != QChar('*')) {
         name += tr(" *");
         editorTabs->setTabText(index, name);
     }
@@ -1682,7 +1690,10 @@ void MainSpinWindow::findDeclaration(QTextCursor cur)
         editor->setTextCursor(cur);
 
         if(text.length() > 0 && text.at(0).isLetter()) {
-            ctags->runCtags(projectFile);
+            if(this->isCProject())
+                ctags->runCtags(projectFile);
+            else if(this->isSpinProject())
+                ctags->runSpinCtags(projectFile, propDialog->getSpinLibraryStr());
         }
         else {
             return;
@@ -1727,7 +1738,10 @@ bool MainSpinWindow::isTagged(QString text)
         return rc;
     }
     if(text.length() > 0 && text.at(0).isLetter()) {
-        ctags->runCtags(projectFile);
+        if(this->isCProject())
+            ctags->runCtags(projectFile);
+        else if(this->isSpinProject())
+            ctags->runSpinCtags(projectFile, propDialog->getSpinLibraryStr());
     }
     else {
         return rc;
@@ -1879,6 +1893,8 @@ void MainSpinWindow::setProject()
     fileName = editorTabs->tabToolTip(index);
     if(fileName.length() > 0)
     {
+        if(fileName.indexOf(SPIN_EXTENSION))
+            projectOptions->setCompiler("SPIN");
         updateProjectTree(fileName);
         setCurrentProject(projectFile);
     }
@@ -2203,11 +2219,13 @@ void MainSpinWindow::checkAndSaveFiles()
         QString tabName = editorTabs->tabText(tab);
         if(tabName.at(tabName.length()-1) == '*')
         {
-            QMessageBox::information(this,
-                tr("Not a Project File"),
-                tr("The file \"")+tabName+tr("\" is not part of the current project.\n") +
-                tr("Please save and add the file to the project to build it."),
-                QMessageBox::Ok);
+            if(!isSpinProject()) {
+                QMessageBox::information(this,
+                    tr("Not a Project File"),
+                    tr("The file \"")+tabName+tr("\" is not part of the current project.\n") +
+                    tr("Please save and add the file to the project to build it."),
+                    QMessageBox::Ok);
+            }
         }
     }
 
@@ -2220,7 +2238,7 @@ QString MainSpinWindow::sourcePath(QString srcpath)
     return srcpath;
 }
 
-bool MainSpinWindow::spinProject()
+bool MainSpinWindow::isSpinProject()
 {
     QString compiler = projectOptions->getCompiler();
     if(compiler.compare("Spin", Qt::CaseInsensitive) == 0)
@@ -2228,7 +2246,7 @@ bool MainSpinWindow::spinProject()
     return false;
 }
 
-bool MainSpinWindow::cProject()
+bool MainSpinWindow::isCProject()
 {
     QString compiler = projectOptions->getCompiler();
     if(compiler.compare("C", Qt::CaseInsensitive) == 0)
@@ -2240,9 +2258,9 @@ bool MainSpinWindow::cProject()
 
 void MainSpinWindow::selectBuilder()
 {
-    if(spinProject())
+    if(isSpinProject())
         builder = buildSpin;
-    else if(cProject())
+    else if(isCProject())
         builder = buildC;
 }
 
@@ -2259,11 +2277,11 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     // QString srcpath = sourcePath(projectFile);
 
     int compileType = ProjectOptions::TAB_OPT; // 0
-    if(spinProject()) {
+    if(isSpinProject()) {
         builder = buildSpin;
         compileType = ProjectOptions::TAB_SPIN_COMP;
     }
-    else if(cProject()) {
+    else if(isCProject()) {
         builder = buildC;
         compileType = ProjectOptions::TAB_C_COMP;
     }
@@ -2718,10 +2736,10 @@ void MainSpinWindow::compileStatusClicked(void)
     compileStatus->setTextCursor(cur);
     line = cur.selectedText();
 
-    if(cProject()) {
+    if(isCProject()) {
         cStatusClicked(line);
     }
-    else if(spinProject()) {
+    else if(isSpinProject()) {
         spinStatusClicked(line);
     }
 
@@ -2729,11 +2747,11 @@ void MainSpinWindow::compileStatusClicked(void)
 
 void MainSpinWindow::compilerChanged()
 {
-    if(cProject()) {
+    if(isCProject()) {
         projectMenu->setEnabled(true);
         cbBoard->setEnabled(true);
     }
-    else if(spinProject()) {
+    else if(isSpinProject()) {
         projectMenu->setEnabled(false);
         cbBoard->setEnabled(false);
     }
@@ -3070,6 +3088,7 @@ void MainSpinWindow::showProjectFile()
     if(vs.canConvert(QVariant::String))
     {
         fileName = vs.toString();
+        fileName = fileName.trimmed();
 
         /* .a libraries are allowed in project list, but not .o, etc...
          */
@@ -3096,7 +3115,18 @@ void MainSpinWindow::showProjectFile()
             openFileName(fileName);
         }
         else {
-            openFileName(sourcePath(projectFile)+fileName);
+            if(isCProject()) {
+                openFileName(sourcePath(projectFile)+fileName);
+            }
+            else if(isSpinProject()) {
+                QString lib = propDialog->getSpinLibraryStr();
+                QString fs = sourcePath(projectFile)+fileName;
+
+                if(QFile::exists(fs))
+                    openFileName(sourcePath(projectFile)+fileName);
+                else
+                    openFileName(lib+fileName);
+            }
         }
     }
 }
@@ -3106,23 +3136,43 @@ void MainSpinWindow::showProjectFile()
  */
 void MainSpinWindow::saveProjectOptions()
 {
-    QString projstr = "";
-    QStringList list;
-
     if(projectModel == NULL)
         return;
 
     if(projectFile.length() > 0)
         setWindowTitle(QString(ASideGuiKey)+" "+QDir::convertSeparators(projectFile));
 
+    if(isSpinProject())
+        saveSpinProjectOptions();
+    else if(isCProject())
+        saveManagedProjectOptions();
+}
+
+void MainSpinWindow::saveSpinProjectOptions()
+{
+
+}
+
+void MainSpinWindow::saveManagedProjectOptions()
+{
+    QString projstr = "";
+    QStringList list;
+
     QFile file(projectFile);
     if(file.exists()) {
+        /* read project file
+         */
         if(file.open(QFile::ReadOnly | QFile::Text)) {
             projstr = file.readAll();
             file.close();
         }
+        /* make a new project file text string.
+         * first add the source files, then add options.
+         * finally save file.
+         */
         list = projstr.split("\n");
         projstr = "";
+        /* add source files */
         for(int n = 0; n < list.length(); n++) {
             QString arg = list[n];
             if(!arg.length())
@@ -3132,15 +3182,19 @@ void MainSpinWindow::saveProjectOptions()
             else
                 projstr += arg + "\n";
         }
+
         list.clear();
         list = projectOptions->getOptions();
+
+        /* add options */
         foreach(QString arg, list) {
             if(arg.contains(ProjectOptions::board+"::"))
                 projstr += ">"+ProjectOptions::board+"::"+cbBoard->currentText()+"\n";
             else
                 projstr += ">"+arg+"\n";
         }
-        // save project file in english
+
+        /* save project file in english only ok */
         if(file.open(QFile::WriteOnly | QFile::Text)) {
             file.write(projstr.toAscii());
             file.close();
@@ -3164,9 +3218,124 @@ void MainSpinWindow::updateProjectTree(QString fileName)
     if(projectModel != NULL) delete projectModel;
     projectModel = new CBuildTree(projName, this);
 
+    /* in the case of a spin project, we need to parse a tree.
+     * in other project cases, we use the project manager.
+     */
+    if(fileName.contains(SPIN_EXTENSION,Qt::CaseInsensitive) || isSpinProject())
+        updateSpinProjectTree(fileName, projName);
+    else if(isCProject())
+        updateManagedProjectTree(fileName, projName);
+}
+
+void MainSpinWindow::updateSpinProjectTree(QString fileName, QString projName)
+{
+    QFile file(projectFile);
+
+    /* for spin-side we always parse the program and stuff the file list */
+
+    QStringList flist = spinParser.spinFileTree(fileName, propDialog->getSpinLibraryStr());
+    for(int n = 0; n < flist.count(); n ++) {
+        QString s = flist[n];
+        qDebug() << s;
+        projectModel->addRootItem(s);
+    }
+
+    if(!file.exists()) {
+        /* no pre-existing file, make one with source as top/main entry.
+         * project file is in english.
+         */
+        if (file.open(QFile::WriteOnly | QFile::Text)) {
+            //file.write(this->shortFileName(fileName).toAscii());
+            for(int n = 0; n < flist.count(); n ++) {
+                QString s = QString(flist[n]).trimmed();
+                file.write(shortFileName(s).toAscii());
+            }
+            projectModel->addRootItem(this->shortFileName(fileName));
+            file.close();
+        }
+    }
+    else {
+
+        /* pre-existing side file. read and modify it.
+         * project file is in english
+         */
+        QString s = "";
+        if (file.open(QFile::ReadOnly | QFile::Text)) {
+            s = file.readAll();
+            file.close();
+        }
+
+        QStringList list = s.split("\n");
+
+        /*
+         * add sorting feature - parameters get sorted too, but placement is not important.
+         */
+        QString main = list.at(0);
+        QString mains = main.mid(0,main.lastIndexOf("."));
+        QString projs = projName.mid(0,projName.lastIndexOf("."));
+
+        if(mains.compare(projs) == 0 && list.length() > 1) {
+            QString s;
+            list.removeAt(0);
+            list.sort();
+            s = list.at(0);
+            if(s.length() == 0)
+                list.removeAt(0);
+            for(int n = flist.count()-1; n > -1; n--) {
+                QString s = QString(flist[n]).trimmed();
+                list.insert(0,s);
+            }
+        }
+
+        /* replace options */
+        projectOptions->clearOptions();
+        foreach(QString arg, list) {
+            if(!arg.length())
+                continue;
+            if(arg.at(0) == '>') {
+                if(arg.contains(ProjectOptions::board+"::")) {
+                    QStringList barr = arg.split("::");
+                    if(barr.count() > 0) {
+                        QString board = barr.at(1);
+                        projectOptions->setBoardType(board);
+                        for(int n = cbBoard->count()-1; n >= 0; n--) {
+                            QString cbstr = cbBoard->itemText(n);
+                            if(board.compare(cbstr) == 0) {
+                                cbBoard->setCurrentIndex(n);
+                                break;
+                            }
+                        }
+                    }
+                }
+                else {
+                    projectOptions->setOptions(arg);
+                }
+            }
+        }
+
+        file.remove();
+        if(file.open(QFile::WriteOnly | QFile::Append | QFile::Text)) {
+            for(int n = 0; n < list.count(); n++) {
+                QString s = list[n];
+                file.write(s.toAscii()+"\n");
+            }
+            file.close();
+        }
+    }
+
+    projectTree->setWindowTitle(projName);
+    projectTree->setModel(projectModel);
+    projectTree->hide();
+    projectTree->show();
+}
+
+void MainSpinWindow::updateManagedProjectTree(QString fileName, QString projName)
+{
     QFile file(projectFile);
     if(!file.exists()) {
-        // project file is in english
+        /* no pre-existing file, make one with source as top/main entry.
+         * project file is in english.
+         */
         if (file.open(QFile::WriteOnly | QFile::Text)) {
             file.write(this->shortFileName(fileName).toAscii());
             projectModel->addRootItem(this->shortFileName(fileName));
@@ -3174,8 +3343,10 @@ void MainSpinWindow::updateProjectTree(QString fileName)
         }
     }
     else {
+        /* pre-existing side file. read and modify it.
+         * project file is in english
+         */
         QString s = "";
-        // project file is in english
         if (file.open(QFile::ReadOnly | QFile::Text)) {
             s = file.readAll();
             file.close();
@@ -3197,6 +3368,7 @@ void MainSpinWindow::updateProjectTree(QString fileName)
                 list.removeAt(0);
             list.insert(0,main);
         }
+        /* replace options */
         projectOptions->clearOptions();
         foreach(QString arg, list) {
             if(!arg.length())
