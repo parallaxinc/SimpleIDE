@@ -10,6 +10,7 @@ public:
     explicit CTags(QString path, QObject *parent = 0);
 
     int     runCtags(QString path);
+    int     runSpinCtags(QString path, QString libpath);
     bool    enabled();
     QString findTag(QString symbol);
     QString getFile(QString line);
@@ -20,7 +21,10 @@ public:
     void    tagClear();
     int     tagCount();
 
-signals:
+private:
+    int     spintags(QStringList files);
+    int     spintags(QString file);
+    int     makeSpinTagMap(QString file, QMap<QString,QString> &map);
 
 private slots:
     void    procError(QProcess::ProcessError);
@@ -32,6 +36,7 @@ private:
     QString     compilerPath;
     QString     ctagsProgram;
     QString     projectPath;
+    QString     libraryPath;
 
     QProcess    *process;
     bool        procDone;

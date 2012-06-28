@@ -35,6 +35,7 @@
 #include "build.h"
 #include "buildc.h"
 #include "buildspin.h"
+#include "spinparser.h"
 
 #define untitledstr "Untitled"
 
@@ -125,8 +126,6 @@ public slots:
     void deleteProjectFile();
     void showProjectFile();
 
-    void saveProjectOptions();
-
     void copyFromFile();
     void cutFromFile();
     void pasteToFile();
@@ -174,8 +173,8 @@ private:
     void exitSave();
     void getApplicationSettings();
     int  checkCompilerInfo();
-    bool spinProject();
-    bool cProject();
+    bool isSpinProject();
+    bool isCProject();
     void selectBuilder();
     int  runBuild(QString option);
 #ifdef KEEP_CTOOLS
@@ -211,7 +210,15 @@ private:
     void addToolButton(QToolBar *bar, QToolButton *btn, QString imgfile);
     bool isOutputFile(QString file);
     void addProjectListFile(QString fileName);
+
+    void saveProjectOptions();
+    void saveSpinProjectOptions();
+    void saveManagedProjectOptions();
+
     void updateProjectTree(QString fileName);
+    void updateManagedProjectTree(QString fileName, QString projName);
+    void updateSpinProjectTree(QString fileName, QString projName);
+
     void setEditorTab(int num, QString shortName, QString fileName, QString text);
     QString shortFileName(QString fileName);
     QString sourcePath(QString file);
@@ -331,6 +338,7 @@ private:
     Build           *builder;
     BuildC          *buildC;
     BuildSpin       *buildSpin;
+    SpinParser      spinParser;
 };
 
 //! [0]
