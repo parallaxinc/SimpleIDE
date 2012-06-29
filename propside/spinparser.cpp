@@ -80,8 +80,7 @@ QStringList SpinParser::spinFileTree(QString file, QString libpath)
         QStringList keyel = levels[lcount].split(KEY_ELEMENT_SEP);
         if(QString(keyel[0]).compare(keyel[1]) == 0) {
             objectInfo(value, subnode, subfile);
-            for(int n = 0; n < lcount; n++)
-                subfile = " " + subfile;
+            //for(int n = 0; n < lcount; n++) subfile = " " + subfile;
             spinFiles.append(subfile);
         }
     }
@@ -227,7 +226,6 @@ int SpinParser::match_keyword (const char *p, KeyWord const *kw, QString &tag)
         rc = tokentype(kw->token);
         tag = name+"\t"+currentFile+"\t"+tmp+"\t"+SpinKinds[rc].letter;
     }
-
     return rc;
 }
 
@@ -387,14 +385,46 @@ int SpinParser::objectInfo(QString tag, QString &name, QString &file)
     return list.length();
 }
 
+
+QString SpinParser::checkFile(QString fileName)
+{
+    QString retfile = fileName;
+
+    if(QFile::exists(fileName) == true) {
+        return retfile;
+    }
+    else if(QFile::exists(libraryPath+fileName)) {
+        return libraryPath+fileName;
+    }
+    else {
+        QDir dir;
+        QStringList list;
+        QString fs = fileName;
+        QString shortfile = fs.mid(fs.lastIndexOf("/")+1);
+        QString path = fs.mid(0,fs.lastIndexOf("/")+1);
+        dir.setPath(path);
+        list = dir.entryList();
+        foreach(QString s, list) {
+            if(s.contains(shortfile,Qt::CaseInsensitive)) {
+                return path+s;
+            }
+        }
+        dir.setPath(libraryPath);
+        list = dir.entryList();
+        foreach(QString s, list) {
+            if(s.contains(shortfile,Qt::CaseInsensitive)) {
+                return libraryPath+"/"+s;
+            }
+        }
+    }
+    return retfile;
+}
+
 void SpinParser::findSpinTags (QString fileName, QString objnode)
 {
-    if(QFile::exists(fileName) == false) {
-        if(QFile::exists(libraryPath+fileName))
-            fileName = libraryPath+fileName;
-        else
-            return;
-    }
+    fileName = checkFile(fileName);
+    if(QFile::exists(fileName) == false)
+        return;
 
     const char *name;
     SpinKind   state;
