@@ -458,6 +458,7 @@ void MainSpinWindow::openFile(const QString &path)
         if(fileName.length() > 0)
             lastPath = sourcePath(fileName);
     }
+#if 1
     if(fileName.indexOf(SIDE_EXTENSION) > 0) {
         // save old project options before loading new one
         saveProjectOptions();
@@ -472,7 +473,9 @@ void MainSpinWindow::openFile(const QString &path)
         }
         updateProjectTree(fileName);
     }
-    else {
+    else
+#endif
+    {
         if(fileName.length())
             setCurrentFile(fileName);
     }
@@ -1078,7 +1081,7 @@ void MainSpinWindow::openRecentProject()
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
         closeProject();
-        openFile(action->data().toString());
+        openProject(action->data().toString());
     }
 }
 
@@ -1501,15 +1504,15 @@ void MainSpinWindow::fileChanged()
     }
     QString text;
     int ret = 0;
-    QTextStream in(&file);
-    in.setCodec("UTF-8");
+    //QTextStream in(&file);
+    //in.setCodec("UTF-8");
     QChar ch = name.at(name.length()-1);
     if(file.open(QFile::ReadOnly))
     {
         text = file.readAll();
         text = text.toAscii();
         file.close();
-        ret = text.compare(curtext.toUtf8());
+        ret = text.compare(curtext);
         if(ret == 0) {
             if( ch == QChar('*'))
                 editorTabs->setTabText(index, this->shortFileName(fileName));
@@ -1555,19 +1558,23 @@ void MainSpinWindow::copyFromFile()
     Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor)
         editor->copy();
+    editor->clearCtrlPressed();
 }
 void MainSpinWindow::cutFromFile()
 {
     Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor)
         editor->cut();
+    editor->clearCtrlPressed();
 }
 void MainSpinWindow::pasteToFile()
 {
     Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor)
         editor->paste();
+    editor->clearCtrlPressed();
 }
+
 void MainSpinWindow::editCommand()
 {
 
@@ -1638,6 +1645,7 @@ void MainSpinWindow::replaceInFile()
         return;
 
     Editor *editor = editors->at(editorTabs->currentIndex());
+    editor->clearCtrlPressed();
 
     replaceDialog->clearFindText();
     QString text = editors->at(editorTabs->currentIndex())->textCursor().selectedText();
@@ -1902,7 +1910,7 @@ void MainSpinWindow::setProject()
     if(extension.compare("spin",Qt::CaseInsensitive) == 0) {
         projectOptions->setCompiler("SPIN");
         projectOptions->setBoardType("HUB"); // HUB is only option for SPIN
-        saveProjectOptions();
+        //saveProjectOptions();
     }
 }
 
@@ -2171,8 +2179,6 @@ void MainSpinWindow::checkAndSaveFiles()
     if(projectModel == NULL)
         return;
 
-    saveProjectOptions();
-
     /* check for project file changes
      */
     QString title = projectModel->getTreeName();
@@ -2212,7 +2218,7 @@ void MainSpinWindow::checkAndSaveFiles()
     }
 
     /* check for tabs out of project scope that are
-     * not saved and war user.
+     * not saved and warn user.
      */
     for(int tab = editorTabs->count()-1; tab > -1; tab--)
     {
@@ -2228,6 +2234,8 @@ void MainSpinWindow::checkAndSaveFiles()
             }
         }
     }
+
+    saveProjectOptions();
 
 }
 
@@ -2763,7 +2771,7 @@ void MainSpinWindow::projectTreeClicked(QModelIndex index)
     if(projectModel == NULL)
         return;
     projectIndex = index; // same as projectTree->currentIndex();
-    if(projectTree->rightClick(false))
+    if(projectTree->rightClick(false) && projectMenu->isEnabled())
         projectMenu->popup(QCursor::pos());
     else
         showProjectFile();
@@ -2831,7 +2839,11 @@ void MainSpinWindow::addProjectListFile(QString fileName)
         }
         projstr += fileName + "\n";
         list.clear();
-        list = projectOptions->getOptions();
+
+        if(isSpinProject())
+            list = projectOptions->getSpinOptions();
+        else if(isCProject())
+            list = projectOptions->getOptions();
 
         foreach(QString arg, list) {
             projstr += ">"+arg+"\n";
@@ -3067,7 +3079,12 @@ void MainSpinWindow::deleteProjectFile()
                 projstr += arg + "\n";
         }
         list.clear();
-        list = projectOptions->getOptions();
+
+        if(isSpinProject())
+            list = projectOptions->getSpinOptions();
+        else if(isCProject())
+            list = projectOptions->getOptions();
+
         foreach(QString arg, list) {
             projstr += ">"+arg+"\n";
         }
@@ -3119,13 +3136,38 @@ void MainSpinWindow::showProjectFile()
                 openFileName(sourcePath(projectFile)+fileName);
             }
             else if(isSpinProject()) {
+
+                /* Spin files can be case-insensitive. Deal with it.
+                 */
                 QString lib = propDialog->getSpinLibraryStr();
                 QString fs = sourcePath(projectFile)+fileName;
 
                 if(QFile::exists(fs))
                     openFileName(sourcePath(projectFile)+fileName);
-                else
+                else if(QFile::exists(lib+fileName))
                     openFileName(lib+fileName);
+                else {
+                    QDir dir;
+                    QStringList list;
+                    QString shortfile = this->shortFileName(fs);
+                    dir.setPath(sourcePath(projectFile));
+                    list = dir.entryList();
+                    foreach(QString s, list) {
+                        if(s.contains(shortfile,Qt::CaseInsensitive)) {
+                            openFileName(sourcePath(projectFile)+s);
+                            return;
+                        }
+                    }
+                    dir.setPath(lib);
+                    list = dir.entryList();
+                    foreach(QString s, list) {
+                        if(s.contains(shortfile,Qt::CaseInsensitive)) {
+                            openFileName(lib+s);
+                            return;
+                        }
+                    }
+                }
+
             }
         }
     }
@@ -3150,7 +3192,58 @@ void MainSpinWindow::saveProjectOptions()
 
 void MainSpinWindow::saveSpinProjectOptions()
 {
+    QString projstr = "";
+    QStringList list;
 
+    QFile file(projectFile);
+    if(file.exists()) {
+
+        /* read project file
+         */
+        if(file.open(QFile::ReadOnly | QFile::Text)) {
+            projstr = file.readAll();
+            file.close();
+        }
+
+        /* get the spin project */
+        QString fileName = sourcePath(projectFile)+projstr.mid(0,projstr.indexOf("\n"));
+        projstr = "";
+
+        QString projName = shortFileName(projectFile);
+        if(projectModel != NULL) delete projectModel;
+        projectModel = new CBuildTree(projName, this);
+
+        /* for spin-side we always parse the program and stuff the file list */
+        list = spinParser.spinFileTree(fileName, propDialog->getSpinLibraryStr());
+        for(int n = 0; n < list.count(); n ++) {
+            QString arg = list[n];
+            qDebug() << arg;
+            projstr += arg + "\n";
+            projectModel->addRootItem(arg);
+        }
+
+        list.clear();
+        list = projectOptions->getSpinOptions();
+
+        /* add options */
+        foreach(QString arg, list) {
+            if(arg.contains(ProjectOptions::board+"::"))
+                projstr += ">"+ProjectOptions::board+"::"+cbBoard->currentText()+"\n";
+            else
+                projstr += ">"+arg+"\n";
+        }
+
+        /* save project file in english only ok */
+        if(file.open(QFile::WriteOnly | QFile::Text)) {
+            file.write(projstr.toAscii());
+            file.close();
+        }
+
+        projectTree->setWindowTitle(projName);
+        projectTree->setModel(projectModel);
+        projectTree->hide();
+        projectTree->show();
+    }
 }
 
 void MainSpinWindow::saveManagedProjectOptions()
@@ -3218,10 +3311,28 @@ void MainSpinWindow::updateProjectTree(QString fileName)
     if(projectModel != NULL) delete projectModel;
     projectModel = new CBuildTree(projName, this);
 
+    if(fileName.contains(SPIN_EXTENSION,Qt::CaseInsensitive)) {
+        projectOptions->setCompiler("SPIN");
+    }
+    else {
+        QFile proj(projectFile);
+        QString type;
+        if(proj.open(QFile::ReadOnly | QFile::Text)) {
+            type = proj.readAll();
+            proj.close();
+            if(type.contains(">compiler=SPIN",Qt::CaseInsensitive))
+                projectOptions->setCompiler("SPIN");
+            else if(type.contains(">compiler=C++",Qt::CaseInsensitive))
+                projectOptions->setCompiler("C++");
+            else
+                projectOptions->setCompiler("C");
+        }
+    }
+
     /* in the case of a spin project, we need to parse a tree.
      * in other project cases, we use the project manager.
      */
-    if(fileName.contains(SPIN_EXTENSION,Qt::CaseInsensitive) || isSpinProject())
+    if(isSpinProject())
         updateSpinProjectTree(fileName, projName);
     else if(isCProject())
         updateManagedProjectTree(fileName, projName);
@@ -3275,12 +3386,11 @@ void MainSpinWindow::updateSpinProjectTree(QString fileName, QString projName)
         QString projs = projName.mid(0,projName.lastIndexOf("."));
 
         if(mains.compare(projs) == 0 && list.length() > 1) {
-            QString s;
-            list.removeAt(0);
-            list.sort();
-            s = list.at(0);
-            if(s.length() == 0)
-                list.removeAt(0);
+            for(int n = list.count()-1; n > -1; n--) {
+                QString s = list[n];
+                if(s.indexOf(">") != 0)
+                    list.removeAt(n);
+            }
             for(int n = flist.count()-1; n > -1; n--) {
                 QString s = QString(flist[n]).trimmed();
                 list.insert(0,s);
@@ -3308,7 +3418,7 @@ void MainSpinWindow::updateSpinProjectTree(QString fileName, QString projName)
                     }
                 }
                 else {
-                    projectOptions->setOptions(arg);
+                    projectOptions->setSpinOptions(arg);
                 }
             }
         }
