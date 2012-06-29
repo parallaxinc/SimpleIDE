@@ -209,6 +209,11 @@ void Editor::keyReleaseEvent (QKeyEvent *e)
     QPlainTextEdit::keyReleaseEvent(e);
 }
 
+void Editor::clearCtrlPressed()
+{
+    ctrlPressed = false;
+}
+
 void Editor::mouseMoveEvent (QMouseEvent *e)
 {
     mousepos = e->pos();

@@ -18,6 +18,8 @@ public:
     void setHighlights(QString filename = "");
     void setLineNumber(int num);
 
+    void clearCtrlPressed();
+
 protected:
     void keyPressEvent(QKeyEvent* e);
     void keyReleaseEvent(QKeyEvent* e);
