@@ -56,7 +56,6 @@ public:
     QString getCompOptions();
     QString getLinkOptions();
     QString getBoardType();
-    QString getSpinCompOptions();
 
     void setCompiler(QString s);
     void setMemModel(QString s);
@@ -74,10 +73,17 @@ public:
     void setCompOptions(QString s);
     void setLinkOptions(QString s);
     void setBoardType(QString s);
-    void setSpinCompOptions(QString s);
 
     QStringList getOptions();
     void        setOptions(QString s);
+
+    /* spin stuff */
+
+    QString getSpinCompOptions();
+    void setSpinCompOptions(QString s);
+
+    QStringList getSpinOptions();
+    void        setSpinOptions(QString s);
 
 public slots:
     void compilerChanged(QString comp);

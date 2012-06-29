@@ -183,6 +183,7 @@ QStringList ProjectOptions::getOptions()
     return args;
 }
 
+
 QString  ProjectOptions::getCompiler()
 {
     return ui->comboBoxCompiler->currentText();
@@ -235,10 +236,6 @@ QString  ProjectOptions::getStripElf()
     return QString (""); // never strip now that we have config variable patching
 }
 
-QString  ProjectOptions::getSpinCompOptions()
-{
-    return ui->lineEditSpinCompOptions->text().toAscii();
-}
 QString  ProjectOptions::getCompOptions()
 {
     return ui->lineEditCompOptions->text().toAscii();
@@ -251,6 +248,7 @@ QString  ProjectOptions::getBoardType()
 {
     return boardType;
 }
+
 
 void ProjectOptions::setOptions(QString s)
 {
@@ -403,10 +401,6 @@ void ProjectOptions::setStripElf(bool s)
     if(s == true) s = false;  // never strip - eliminate warnings
     ui->checkBoxStripELF->setChecked(s);
 }
-void ProjectOptions::setSpinCompOptions(QString s)
-{
-    ui->lineEditSpinCompOptions->setText(s);
-}
 void ProjectOptions::setCompOptions(QString s)
 {
     ui->lineEditCompOptions->setText(s);
@@ -418,4 +412,61 @@ void ProjectOptions::setLinkOptions(QString s)
 void ProjectOptions::setBoardType(QString s)
 {
     boardType = s.trimmed();
+}
+
+
+
+QStringList ProjectOptions::getSpinOptions()
+{
+    QStringList args;
+
+    args.append(compiler+"="+getCompiler());
+
+    /* other compiler options */
+    if(getSpinCompOptions().length())
+        args.append(cflags+"::"+getSpinCompOptions());
+
+    return args;
+}
+
+QString  ProjectOptions::getSpinCompOptions()
+{
+    return ui->lineEditSpinCompOptions->text().toAscii();
+}
+
+void ProjectOptions::setSpinOptions(QString s)
+{
+    if(s.at(0) != '>')
+        return;
+
+    s = s.mid(s.lastIndexOf('>')+1);
+    if(s.at(0) != '-') {
+
+        QStringList flags = s.split("::");
+        QStringList arr = s.split('=');
+        QString name;
+        QString value;
+
+        // handle flags in the form of "flag::any string"
+        if(flags.length() > 1) {
+            name = flags[0];
+            value = flags[1];
+            if(name.compare(cflags,Qt::CaseInsensitive) == 0) {
+                this->setSpinCompOptions(value);
+            }
+        }
+        else // handle parameters as "name=value"
+        if(arr.length() > 1) {
+            name = arr[0];
+            value = arr[1];
+            if(name.compare(compiler) == 0) {
+                this->setCompiler(value);
+            }
+        }
+    }
+}
+
+void ProjectOptions::setSpinCompOptions(QString s)
+{
+    ui->lineEditSpinCompOptions->setText(s);
 }
