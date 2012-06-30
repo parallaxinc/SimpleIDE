@@ -4,21 +4,32 @@
 #include <QtGui>
 #include "gdb.h"
 #include "highlighter.h"
+#include "spinparser.h"
 
 class LineNumberArea;
-
 
 class Editor : public QPlainTextEdit
 {
     Q_OBJECT
 public:
-    Editor(GDB *gdb, QWidget *parent);
+    Editor(GDB *gdb, SpinParser *parser, QWidget *parent);
     virtual ~Editor();
 
     void setHighlights(QString filename = "");
     void setLineNumber(int num);
 
     void clearCtrlPressed();
+
+private:
+    int  autoEnterColumn();
+    QString spinPrune(QString s);
+    void spinAutoShow(int width);
+    int  spinAutoComplete();
+    int  spinAutoCompleteCON();
+    int  contextHelp();
+    int  tabBlockShift();
+    QString selectAutoComplete();
+    QString deletePrefix(QString s);
 
 protected:
     void keyPressEvent(QKeyEvent* e);
@@ -32,8 +43,16 @@ private:
     QPoint  mousepos;
     bool    ctrlPressed;
     GDB     *gdb;
-
+    SpinParser  *spinParser;
+    bool    isSpin;
     Highlighter *highlighter;
+
+    QComboBox cbAuto;
+
+private slots:
+    void cbAutoSelected(int index);
+    void cbAutoSelected0insert(int index);
+
 
 /* lineNumberArea support below this line: see Nokia Copyright below */
 public:
@@ -50,6 +69,7 @@ private slots:
 
 private:
     QWidget *lineNumberArea;
+    QString fileName;
 };
 
 

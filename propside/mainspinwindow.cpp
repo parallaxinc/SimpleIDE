@@ -499,7 +499,7 @@ void MainSpinWindow::openFileName(QString fileName)
         if (file.open(QFile::ReadOnly))
         {
             QTextStream in(&file);
-            in.setCodec("UTF-8");
+            in.setAutoDetectUnicode(true);
             data = in.readAll();
             file.close();
             data = data.replace('\t',"    ");
@@ -1504,15 +1504,23 @@ void MainSpinWindow::fileChanged()
     }
     QString text;
     int ret = 0;
-    //QTextStream in(&file);
-    //in.setCodec("UTF-8");
+
+    QTextStream in(&file);
+    in.setAutoDetectUnicode(true);
+
     QChar ch = name.at(name.length()-1);
     if(file.open(QFile::ReadOnly))
     {
-        text = file.readAll();
-        text = text.toAscii();
+        text = in.readAll();
+        qDebug() << in.codec();
         file.close();
-        ret = text.compare(curtext);
+
+        QString ctext = curtext;
+        QPlainTextEdit myed(this);
+        myed.setPlainText(text);
+        text = myed.toPlainText();
+
+        ret = ctext.compare(ctext);
         if(ret == 0) {
             if( ch == QChar('*'))
                 editorTabs->setTabText(index, this->shortFileName(fileName));
@@ -1930,7 +1938,7 @@ void MainSpinWindow::propertiesAccepted()
 {
     getApplicationSettings();
     initBoardTypes();
-    Editor *ed = editors->at(editorTabs->currentIndex());
+    //Editor *ed = editors->at(editorTabs->currentIndex());
     for(int n = 0; n < editorTabs->count(); n++) {
         Editor *e = editors->at(n);
         e->setTabStopWidth(propDialog->getTabSpaces()*10);
@@ -3725,7 +3733,7 @@ void MainSpinWindow::initBoardTypes()
 
 void MainSpinWindow::setupEditor()
 {
-    Editor *editor = new Editor(gdb, this);
+    Editor *editor = new Editor(gdb, &spinParser, this);
     editor->setTabStopWidth(propDialog->getTabSpaces()*10);
 
     /* font is user's preference */

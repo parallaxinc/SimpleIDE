@@ -45,13 +45,13 @@ public:
     QStringList spinMethods(QString file, QString objname);
 
     /* parse a file for autocomplete variables */
-    QStringList spinVars(QString file);
+    QStringList spinVars(QString file, QString objname);
 
     /* parse a file for autocomplete dat labels*/
-    QStringList spinDat(QString file);
+    QStringList spinDat(QString file, QString objname);
 
     /* parse a file for autocomplete objects */
-    QStringList spinObjects(QString file);
+    QStringList spinObjects(QString file, QString objname);
 
     typedef struct {
         QString name;
