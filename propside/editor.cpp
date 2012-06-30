@@ -11,12 +11,14 @@
 #define MAINWINDOW MainWindow
 #endif
 
-Editor::Editor(GDB *gdebug, QWidget *parent) : QPlainTextEdit(parent)
+Editor::Editor(GDB *gdebug, SpinParser *parser, QWidget *parent) : QPlainTextEdit(parent)
 {
     mainwindow = parent;
     ctrlPressed = false;
     setMouseTracking(true);
     gdb = gdebug;
+    spinParser = parser;
+    isSpin = false;
 
     lineNumberArea = new LineNumberArea(this);
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
@@ -36,16 +38,21 @@ Editor::~Editor()
 
 void Editor::setHighlights(QString filename)
 {
+    fileName = filename;
     Properties *p = static_cast<MAINWINDOW*>(mainwindow)->propDialog;
     if(highlighter != NULL)
         delete highlighter;
     if(filename.isEmpty()) {
         highlighter = new Highlighter(this->document(), p);
     } else {
-        if(filename.contains(".spin",Qt::CaseInsensitive))
+        if(filename.contains(".spin",Qt::CaseInsensitive)) {
             highlighter = new SpinHighlighter(this->document(), p);
-        else
+            isSpin = true;
+        }
+        else {
             highlighter = new Highlighter(this->document(), p);
+            isSpin = false;
+        }
     }
 }
 
@@ -59,6 +66,7 @@ void Editor::setLineNumber(int num)
 
 void Editor::keyPressEvent (QKeyEvent *e)
 {
+    /* source browser */
     if((QApplication::keyboardModifiers() & Qt::CTRL) && ctrlPressed == false) {
         ctrlPressed = true;
         QTextCursor tcur = this->textCursor();
@@ -79,119 +87,39 @@ void Editor::keyPressEvent (QKeyEvent *e)
         return;
     }
 
-    int tabSpaces = this->tabStopWidth()/10;
-
-    /* if F1 do help. if tab or shift tab, do block shift
+    /* if F1 do help.
+     * if tab or shift tab, do block shift
+     * if "." do auto complete
      */
     int key = e->key();
 
-    /* if F1 get word under mouse and pass to findSymbolHelp. no word is ok too. */
-    if(key == Qt::Key_F1) {
-        QTextCursor cur = this->cursorForPosition(mousepos);
-        cur.select(QTextCursor::WordUnderCursor);
-        QString text = cur.selectedText();
-        qDebug() << "keyPressEvent F1 " << text;
-        static_cast<MAINWINDOW*>(mainwindow)->findSymbolHelp(text);
-        QPlainTextEdit::keyPressEvent(e);
-        return;
+
+    if((key == Qt::Key_Enter) || (key == Qt::Key_Return)) {
+        if(autoEnterColumn() == 0)
+            QPlainTextEdit::keyPressEvent(e);
     }
-
+    /* if F1 get word under mouse and pass to findSymbolHelp. no word is ok too. */
+    else if(key == Qt::Key_F1) {
+        contextHelp();
+        QPlainTextEdit::keyPressEvent(e);
+    }
+    /* #-auto complete */
+    else if(key == Qt::Key_NumberSign) {
+        if(isSpin) {
+            if(spinAutoCompleteCON() == 0)
+                QPlainTextEdit::keyPressEvent(e);
+        }
+    }
+    /* dot-auto complete */
+    else if(key == Qt::Key_Period) {
+        if(isSpin) {
+            if(spinAutoComplete() == 0)
+                QPlainTextEdit::keyPressEvent(e);
+        }
+    }
     /* if TAB key do block move */
-    else
-    if(key == Qt::Key_Tab || key == Qt::Key_Backtab) {
-
-        QTextCursor cur = this->textCursor();
-
-        int curbeg = cur.selectionStart();
-        //int curend = cur.selectionEnd();
-        //int curpos = cur.position();
-
-        /* do we have shift ? */
-        bool shift = false;
-        if((QApplication::keyboardModifiers() & Qt::SHIFT))
-            shift = true;
-
-        /* if a block is selected */
-        if(cur.selectedText().length() > 0) {
-
-            QTextBlock blocktext = cur.block();
-            QStringList mylist;
-
-            /* make tabs based on user preference - set by mainwindow */
-            QString tab = "";
-            for(int n = tabSpaces; n > 0; n--) tab+=" ";
-
-            /* highlight block from beginning of the first line to the last line */
-            QString text = cur.selectedText();
-            int column = cur.columnNumber();
-            if(column > 0) {
-                cur.setPosition(curbeg-column,QTextCursor::MoveAnchor);
-                cur.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor, text.length()+column);
-                text = cur.selectedText();
-            }
-            if(text.length() == 0)
-                return;
-
-            /* get a list of the selected block. keep empty lines */
-            mylist = text.split(QChar::ParagraphSeparator);
-
-            /* start a single undo/redo operation */
-            cur.beginEditBlock();
-
-            /* get rid of old block */
-            cur.removeSelectedText();
-
-            /* indent list */
-            text = "";
-            for(int n = 0; n < mylist.length(); n++) {
-                QString s = mylist.at(n);
-                if(s.length() == 0 && n+1 == mylist.length())
-                    break;
-                if(shift == false) {
-                    for(int n = tabSpaces; n > 0; n--) s = " " + s;
-                }
-                else {
-                    if(s.indexOf(tab) == 0 || (n == 0 && column >= tabSpaces))
-                        s = s.mid(tabSpaces);
-                }
-                text += s;
-                if(n+1 < mylist.length())
-                    text += "\n";
-            }
-
-            /* insert new block */
-            cur.insertText(text);
-            this->setTextCursor(cur);
-
-            /* end single undo/redo operation */
-            cur.endEditBlock();
-        }
-        /* no block selected */
-        else {
-            int cpos = cur.position();
-            if(cpos > -1) {
-                int n = cur.columnNumber() % tabSpaces;
-                if (shift == false) {
-                    for(; n < tabSpaces; n++)
-                        insertPlainText(" ");
-                }
-                else if(cur.columnNumber() != 0) {
-                    QString st;
-                    for(; n < tabSpaces; n++) {
-                        cur.movePosition(QTextCursor::Left,QTextCursor::KeepAnchor);
-                        st = cur.selectedText();
-                        if(st.length() == 1 && st.at(0) == ' ') {
-                            cur.removeSelectedText();
-                            if(cur.columnNumber() % tabSpaces == 0)
-                                break;
-                        }
-                        if(st.at(0) != ' ')
-                            cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor);
-                    }
-                }
-            }
-            this->setTextCursor(cur);
-        }
+    else if(key == Qt::Key_Tab || key == Qt::Key_Backtab) {
+        tabBlockShift();
     }
     else {
         QPlainTextEdit::keyPressEvent(e);
@@ -231,6 +159,285 @@ void Editor::mousePressEvent (QMouseEvent *e)
     QPlainTextEdit::mousePressEvent(e);
 }
 
+int Editor::autoEnterColumn()
+{
+    QTextCursor cur = this->textCursor();
+    int row = cur.blockNumber();
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
+    QString text = cur.selectedText();
+    qDebug() << text.length();
+    if(text.length() == 0)
+        return 0;
+    cur.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,text.length());
+    setTextCursor(cur);
+    cur.clearSelection();
+    cur.insertText("\n");
+
+    qDebug() << text;
+    for(int n = 0; isspace(text[n].toAscii()); n++)
+        cur.insertText(" ");
+
+    return 1;
+}
+
+QString Editor::spinPrune(QString s)
+{
+    if(s.lastIndexOf(")") > 0)
+        s = s.mid(0,s.lastIndexOf(")")+1);
+    if(s.lastIndexOf(":") > 0)
+        s = s.mid(0,s.lastIndexOf(":"));
+    if(s.lastIndexOf("=") > 0)
+        s = s.mid(0,s.lastIndexOf("="));
+    return s;
+}
+
+void Editor::spinAutoShow(int width)
+{
+    MAINWINDOW *win = static_cast<MAINWINDOW*>(mainwindow);
+    int psize = this->font().pointSize();
+    width *= psize;
+    cbAuto.setFrame(false);
+    cbAuto.setEditable(false);
+    cbAuto.setAutoCompletion(true);
+    cbAuto.setGeometry(win->x()+200, win->y()+50, width, 20);
+    cbAuto.showPopup();
+}
+
+QString Editor::selectAutoComplete()
+{
+    QTextCursor cur = this->textCursor();
+    do {
+        cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor,1);
+    } while(!isspace(cur.selectedText().at(0).toAscii()));
+    return cur.selectedText().trimmed();
+}
+
+int Editor::spinAutoComplete()
+{
+    QString text = selectAutoComplete();
+    if(text.length() > 0) {
+        connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected0insert(int)));
+        qDebug() << "keyPressEvent dot pressed" << text;
+        QStringList list = spinParser->spinMethods(fileName,text);
+        cbAuto.clear();
+        // we depend on index item 0 to be the auto-start key
+        cbAuto.addItem(".");
+        if(list.count() > 0) {
+            int width = 0;
+            list.sort();
+            foreach(QString s, list) {
+                if(s.length() > width)
+                    width = s.length();
+                if(s.contains("pub",Qt::CaseInsensitive))
+                    s = s.mid(s.indexOf("pub",0,Qt::CaseInsensitive)+4);
+                cbAuto.addItem(spinPrune(s));
+            }
+            spinAutoShow(width);
+        }
+        return 1;
+    }
+    else {
+        connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected(int)));
+        qDebug() << "keyPressEvent dot pressed" << text;
+        QStringList list = spinParser->spinSymbols(fileName,"");
+        cbAuto.clear();
+        cbAuto.addItem(".");
+        if(list.count() > 0) {
+            int width = 0;
+            list.sort();
+            foreach(QString s, list) {
+                if(s.length() > width)
+                    width = s.length();
+                cbAuto.addItem(spinPrune(s));
+            }
+            spinAutoShow(width);
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int  Editor::spinAutoCompleteCON()
+{
+    QString text = selectAutoComplete();
+    connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected0insert(int)));
+
+    if(text.length() > 0) {
+        qDebug() << "keyPressEvent num pressed" << text;
+        QStringList list = spinParser->spinConstants(fileName,text);
+        cbAuto.clear();
+        // we depend on index item 0 to be the auto-start key
+        cbAuto.addItem(QString("#"));
+        if(list.count() > 0) {
+            int width = 0;
+            list.sort();
+            foreach(QString s, list) {
+                if(s.length() > width)
+                    width = s.length();
+                if(s.contains("con",Qt::CaseInsensitive))
+                    s = s.mid(s.indexOf("con",0,Qt::CaseInsensitive)+4);
+                cbAuto.addItem(spinPrune(s));
+            }
+            spinAutoShow(width);
+        }
+        return 1;
+    }
+    return 0;
+}
+
+QString Editor::deletePrefix(QString s)
+{
+    if(s.indexOf("pub",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("pub",0,Qt::CaseInsensitive)+4);
+    else if(s.indexOf("pri",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("pri",0,Qt::CaseInsensitive)+4);
+    else if(s.indexOf("con",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("con",0,Qt::CaseInsensitive)+4);
+    else if(s.indexOf("byte",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("byte",0,Qt::CaseInsensitive)+5);
+    else if(s.indexOf("word",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("word",0,Qt::CaseInsensitive)+5);
+    else if(s.indexOf("long",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("long",0,Qt::CaseInsensitive)+5);
+
+    return s;
+}
+
+void Editor::cbAutoSelected0insert(int index)
+{
+    disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected0insert(int)));
+
+    QString s = cbAuto.itemText(index);
+    QTextCursor cur = this->textCursor();
+    deletePrefix(s);
+    if(index != 0)
+        // we depend on index item 0 to be the auto-start key
+        cur.insertText(cbAuto.itemText(0)+s.trimmed());
+    else
+        cur.insertText(cbAuto.itemText(0));
+    cbAuto.hide();
+}
+
+void Editor::cbAutoSelected(int index)
+{
+    disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected(int)));
+
+    QString s = cbAuto.itemText(index);
+    QTextCursor cur = this->textCursor();
+    deletePrefix(s);
+    cur.insertText(s.trimmed());
+
+    cbAuto.hide();
+}
+
+int Editor::contextHelp()
+{
+    QTextCursor cur = this->cursorForPosition(mousepos);
+    cur.select(QTextCursor::WordUnderCursor);
+    QString text = cur.selectedText();
+    qDebug() << "keyPressEvent F1 " << text;
+    static_cast<MAINWINDOW*>(mainwindow)->findSymbolHelp(text);
+    return 1;
+}
+
+int Editor::tabBlockShift()
+{
+    int tabSpaces = this->tabStopWidth()/10;
+
+    QTextCursor cur = this->textCursor();
+
+    int curbeg = cur.selectionStart();
+    //int curend = cur.selectionEnd();
+    //int curpos = cur.position();
+
+    /* do we have shift ? */
+    bool shift = false;
+    if((QApplication::keyboardModifiers() & Qt::SHIFT))
+        shift = true;
+
+    /* if a block is selected */
+    if(cur.selectedText().length() > 0) {
+
+        QTextBlock blocktext = cur.block();
+        QStringList mylist;
+
+        /* make tabs based on user preference - set by mainwindow */
+        QString tab = "";
+        for(int n = tabSpaces; n > 0; n--) tab+=" ";
+
+        /* highlight block from beginning of the first line to the last line */
+        QString text = cur.selectedText();
+        int column = cur.columnNumber();
+        if(column > 0) {
+            cur.setPosition(curbeg-column,QTextCursor::MoveAnchor);
+            cur.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor, text.length()+column);
+            text = cur.selectedText();
+        }
+        if(text.length() == 0)
+            return 0;
+
+        /* get a list of the selected block. keep empty lines */
+        mylist = text.split(QChar::ParagraphSeparator);
+
+        /* start a single undo/redo operation */
+        cur.beginEditBlock();
+
+        /* get rid of old block */
+        cur.removeSelectedText();
+
+        /* indent list */
+        text = "";
+        for(int n = 0; n < mylist.length(); n++) {
+            QString s = mylist.at(n);
+            if(s.length() == 0 && n+1 == mylist.length())
+                break;
+            if(shift == false) {
+                for(int n = tabSpaces; n > 0; n--) s = " " + s;
+            }
+            else {
+                if(s.indexOf(tab) == 0 || (n == 0 && column >= tabSpaces))
+                    s = s.mid(tabSpaces);
+            }
+            text += s;
+            if(n+1 < mylist.length())
+                text += "\n";
+        }
+
+        /* insert new block */
+        cur.insertText(text);
+        this->setTextCursor(cur);
+
+        /* end single undo/redo operation */
+        cur.endEditBlock();
+    }
+    /* no block selected */
+    else {
+        int cpos = cur.position();
+        if(cpos > -1) {
+            int n = cur.columnNumber() % tabSpaces;
+            if (shift == false) {
+                for(; n < tabSpaces; n++)
+                    insertPlainText(" ");
+            }
+            else if(cur.columnNumber() != 0) {
+                QString st;
+                for(; n < tabSpaces; n++) {
+                    cur.movePosition(QTextCursor::Left,QTextCursor::KeepAnchor);
+                    st = cur.selectedText();
+                    if(st.length() == 1 && st.at(0) == ' ') {
+                        cur.removeSelectedText();
+                        if(cur.columnNumber() % tabSpaces == 0)
+                            break;
+                    }
+                    if(st.at(0) != ' ')
+                        cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor);
+                }
+            }
+        }
+        this->setTextCursor(cur);
+    }
+    return 1;
+}
 
 
 /* Code below here is taken from the Nokia CodeEditor example */
