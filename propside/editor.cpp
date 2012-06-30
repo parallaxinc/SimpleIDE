@@ -206,8 +206,12 @@ void Editor::spinAutoShow(int width)
 QString Editor::selectAutoComplete()
 {
     QTextCursor cur = this->textCursor();
+    int col = cur.columnNumber();
     do {
-        cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor,1);
+        if(col >= cur.columnNumber())
+            cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor,1);
+        else
+            return QString("");
     } while(!isspace(cur.selectedText().at(0).toAscii()));
     return cur.selectedText().trimmed();
 }
@@ -215,9 +219,13 @@ QString Editor::selectAutoComplete()
 int Editor::spinAutoComplete()
 {
     QString text = selectAutoComplete();
+
+    /*
+     * we have an object name. get object info
+     */
     if(text.length() > 0) {
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected0insert(int)));
-        qDebug() << "keyPressEvent dot pressed" << text;
+        qDebug() << "keyPressEvent object dot pressed" << text;
         QStringList list = spinParser->spinMethods(fileName,text);
         cbAuto.clear();
         // we depend on index item 0 to be the auto-start key
@@ -236,9 +244,12 @@ int Editor::spinAutoComplete()
         }
         return 1;
     }
+    /*
+     * no object name. get local info
+     */
     else {
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected(int)));
-        qDebug() << "keyPressEvent dot pressed" << text;
+        qDebug() << "keyPressEvent local dot pressed";
         QStringList list = spinParser->spinSymbols(fileName,"");
         cbAuto.clear();
         cbAuto.addItem(".");
@@ -248,6 +259,10 @@ int Editor::spinAutoComplete()
             foreach(QString s, list) {
                 if(s.length() > width)
                     width = s.length();
+                if(s.contains("pub",Qt::CaseInsensitive))
+                    s = s.mid(s.indexOf("pub",0,Qt::CaseInsensitive)+4);
+                if(s.contains("pri",Qt::CaseInsensitive))
+                    s = s.mid(s.indexOf("pri",0,Qt::CaseInsensitive)+4);
                 cbAuto.addItem(spinPrune(s));
             }
             spinAutoShow(width);

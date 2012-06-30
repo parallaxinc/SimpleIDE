@@ -83,8 +83,8 @@ FORMS += hardware.ui \
     TermPrefs.ui
 RESOURCES += resources.qrc
 unix:SOURCES += qextserialport_unix.cpp
-unix:!macx:# dont use EVENT_DRIVEN for linux to be consistent with MAC. also causes output skips.
-SOURCES += qextserialenumerator_unix.cpp
+# dont use EVENT_DRIVEN for linux to be consistent with MAC. also causes output skips.
+unix:!macx: SOURCES += qextserialenumerator_unix.cpp
 macx { 
     # dont use EVENT_DRIVEN for mac. must open terminal before load because mac would reset boards otherwise.
     SOURCES += qextserialenumerator_osx.cpp

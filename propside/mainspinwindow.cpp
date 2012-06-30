@@ -1520,7 +1520,7 @@ void MainSpinWindow::fileChanged()
         myed.setPlainText(text);
         text = myed.toPlainText();
 
-        ret = ctext.compare(ctext);
+        ret = ctext.compare(text);
         if(ret == 0) {
             if( ch == QChar('*'))
                 editorTabs->setTabText(index, this->shortFileName(fileName));

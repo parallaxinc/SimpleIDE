@@ -491,8 +491,8 @@ QString SpinParser::checkFile(QString fileName)
     else {
         QDir dir;
         QStringList list;
-        QString fs = fileName;
-        QString shortfile = fs.mid(fs.lastIndexOf("/")+1);
+        QString fs = this->currentFile;
+        QString shortfile = fileName.mid(fileName.lastIndexOf("/")+1);
         QString path = fs.mid(0,fs.lastIndexOf("/")+1);
         dir.setPath(path);
         list = dir.entryList();
