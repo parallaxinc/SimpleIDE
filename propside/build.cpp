@@ -384,7 +384,7 @@ int  Build::checkCompilerInfo()
 QString Build::sourcePath(QString srcpath)
 {
     srcpath = QDir::fromNativeSeparators(srcpath);
-    srcpath = srcpath.mid(0,srcpath.lastIndexOf(separator)+1);
+    srcpath = srcpath.mid(0,srcpath.lastIndexOf("/")+1);
     return srcpath;
 }
 

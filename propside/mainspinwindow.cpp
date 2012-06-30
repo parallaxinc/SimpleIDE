@@ -1911,6 +1911,8 @@ void MainSpinWindow::setProject()
     {
         if(fileName.indexOf(SPIN_EXTENSION))
             projectOptions->setCompiler("SPIN");
+        else
+            projectOptions->setCompiler("C");
         updateProjectTree(fileName);
         setCurrentProject(projectFile);
     }
@@ -3258,7 +3260,6 @@ void MainSpinWindow::saveManagedProjectOptions()
 {
     QString projstr = "";
     QStringList list;
-
     QFile file(projectFile);
     if(file.exists()) {
         /* read project file
@@ -3302,7 +3303,6 @@ void MainSpinWindow::saveManagedProjectOptions()
         }
     }
 }
-
 /*
  * update project tree and options by reading from project.side file
  */
@@ -3364,13 +3364,16 @@ void MainSpinWindow::updateSpinProjectTree(QString fileName, QString projName)
          * project file is in english.
          */
         if (file.open(QFile::WriteOnly | QFile::Text)) {
-            //file.write(this->shortFileName(fileName).toAscii());
             for(int n = 0; n < flist.count(); n ++) {
                 QString s = QString(flist[n]).trimmed();
-                file.write(shortFileName(s).toAscii());
+                file.write((shortFileName(s)+"\n").toAscii());
             }
-            projectModel->addRootItem(this->shortFileName(fileName));
+            QStringList list = projectOptions->getSpinOptions();
+            for(int n = 0; n < list.count(); n ++) {
+                file.write(QString(list[n]).toAscii()+"\n");
+            }
             file.close();
+            projectModel->addRootItem(this->shortFileName(fileName));
         }
     }
     else {
