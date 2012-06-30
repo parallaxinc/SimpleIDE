@@ -206,13 +206,11 @@ void Editor::spinAutoShow(int width)
 QString Editor::selectAutoComplete()
 {
     QTextCursor cur = this->textCursor();
-    int col = cur.columnNumber();
+    int col;
     do {
-        if(col >= cur.columnNumber())
-            cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor,1);
-        else
-            return QString("");
-    } while(!isspace(cur.selectedText().at(0).toAscii()));
+        col = cur.columnNumber();
+        cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor,1);
+    } while(col && !isspace(cur.selectedText().at(0).toAscii()));
     return cur.selectedText().trimmed();
 }
 
