@@ -207,10 +207,16 @@ QString Editor::selectAutoComplete()
 {
     QTextCursor cur = this->textCursor();
     int col;
-    do {
-        col = cur.columnNumber();
+    char ch;
+    QString text = cur.selectedText();
+    cur.removeSelectedText();
+    while((col = cur.columnNumber()) > 0) {
         cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor,1);
-    } while(col && !isspace(cur.selectedText().at(0).toAscii()));
+        text = cur.selectedText();
+        ch = text.at(0).toAscii();
+        if(isspace(ch))
+            break;
+    }
     return cur.selectedText().trimmed();
 }
 
@@ -248,7 +254,7 @@ int Editor::spinAutoComplete()
     else {
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected(int)));
         qDebug() << "keyPressEvent local dot pressed";
-        QStringList list = spinParser->spinSymbols(fileName,"");
+        QStringList list = spinParser->spinMethods(fileName,"");
         cbAuto.clear();
         cbAuto.addItem(".");
         if(list.count() > 0) {
@@ -273,10 +279,10 @@ int Editor::spinAutoComplete()
 int  Editor::spinAutoCompleteCON()
 {
     QString text = selectAutoComplete();
-    connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected0insert(int)));
 
     if(text.length() > 0) {
-        qDebug() << "keyPressEvent num pressed" << text;
+        connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected0insert(int)));
+        qDebug() << "keyPressEvent # pressed" << text;
         QStringList list = spinParser->spinConstants(fileName,text);
         cbAuto.clear();
         // we depend on index item 0 to be the auto-start key
@@ -295,6 +301,28 @@ int  Editor::spinAutoCompleteCON()
         }
         return 1;
     }
+    /*
+     * no object name. get local info
+     */
+    else {
+        connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected(int)));
+        qDebug() << "keyPressEvent local # pressed";
+        QStringList list = spinParser->spinConstants(fileName,"");
+        cbAuto.clear();
+        cbAuto.addItem(QString("#"));
+        if(list.count() > 0) {
+            int width = 0;
+            list.sort();
+            foreach(QString s, list) {
+                if(s.length() > width)
+                    width = s.length();
+                s = deletePrefix(s);
+                cbAuto.addItem(spinPrune(s));
+            }
+            spinAutoShow(width);
+        }
+        return 1;
+    }
     return 0;
 }
 
@@ -306,6 +334,8 @@ QString Editor::deletePrefix(QString s)
         s = s.mid(s.indexOf("pri",0,Qt::CaseInsensitive)+4);
     else if(s.indexOf("con",0,Qt::CaseInsensitive) == 0)
         s = s.mid(s.indexOf("con",0,Qt::CaseInsensitive)+4);
+    else if(s.indexOf("var",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("var",0,Qt::CaseInsensitive)+4);
     else if(s.indexOf("byte",0,Qt::CaseInsensitive) == 0)
         s = s.mid(s.indexOf("byte",0,Qt::CaseInsensitive)+5);
     else if(s.indexOf("word",0,Qt::CaseInsensitive) == 0)
