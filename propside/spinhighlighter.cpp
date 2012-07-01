@@ -37,7 +37,7 @@ void SpinHighlighter::highlight()
     functionFormat.setFontItalic(hlFuncStyle);
     functionFormat.setForeground(hlFuncColor);
     functionFormat.setFontWeight(hlFuncWeight);
-    rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
+    rule.pattern = QRegExp("\\b[A-Za-z0-9_.]+(?=\\()");
     rule.format = functionFormat;
     highlightingRules.append(rule);
 
