@@ -61,5 +61,9 @@
         <file>images/cloneproj.png</file>
         <file>images/saveasproj.png</file>
         <file>images/cloneproj2.png</file>
+        <file>images/const.png</file>
+        <file>images/obj.png</file>
+        <file>images/pri.png</file>
+        <file>images/pub.png</file>
     </qresource>
 </RCC>
