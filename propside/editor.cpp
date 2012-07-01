@@ -165,7 +165,7 @@ int Editor::autoEnterColumn()
     int row = cur.blockNumber();
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
     QString text = cur.selectedText();
-    qDebug() << text.length();
+    //qDebug() << text.length();
     if(text.length() == 0)
         return 0;
     cur.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,text.length());
@@ -173,7 +173,7 @@ int Editor::autoEnterColumn()
     cur.clearSelection();
     cur.insertText("\n");
 
-    qDebug() << text;
+    //qDebug() << text;
     for(int n = 0; isspace(text[n].toAscii()); n++)
         cur.insertText(" ");
 
@@ -186,9 +186,46 @@ QString Editor::spinPrune(QString s)
         s = s.mid(0,s.lastIndexOf(")")+1);
     if(s.lastIndexOf(":") > 0)
         s = s.mid(0,s.lastIndexOf(":"));
+    if(s.lastIndexOf("|") > 0)
+        s = s.mid(0,s.lastIndexOf("|"));
     if(s.lastIndexOf("=") > 0)
         s = s.mid(0,s.lastIndexOf("="));
     return s;
+}
+
+QString Editor::deletePrefix(QString s)
+{
+    if(s.indexOf("pub",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("pub",0,Qt::CaseInsensitive)+4);
+    else if(s.indexOf("pri",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("pri",0,Qt::CaseInsensitive)+4);
+    else if(s.indexOf("con",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("con",0,Qt::CaseInsensitive)+4);
+    else if(s.indexOf("var",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("var",0,Qt::CaseInsensitive)+4);
+    else if(s.indexOf("byte",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("byte",0,Qt::CaseInsensitive)+5);
+    else if(s.indexOf("word",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("word",0,Qt::CaseInsensitive)+5);
+    else if(s.indexOf("long",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("long",0,Qt::CaseInsensitive)+5);
+
+    return s;
+}
+
+void Editor::addAutoItem(QString s)
+{
+    QIcon icon;
+    if(s.indexOf("con",0,Qt::CaseInsensitive) == 0)
+        icon.addFile(":/images/obj.png");
+    else if(s.indexOf("obj",0,Qt::CaseInsensitive) == 0)
+        icon.addFile(":/images/obj.png");
+    else if(s.indexOf("pri",0,Qt::CaseInsensitive) == 0)
+        icon.addFile(":/images/pri.png");
+    else if(s.indexOf("pub",0,Qt::CaseInsensitive) == 0)
+        icon.addFile(":/images/pub.png");
+
+    cbAuto.addItem(icon,deletePrefix(s));
 }
 
 void Editor::spinAutoShow(int width)
@@ -240,9 +277,7 @@ int Editor::spinAutoComplete()
             foreach(QString s, list) {
                 if(s.length() > width)
                     width = s.length();
-                if(s.contains("pub",Qt::CaseInsensitive))
-                    s = s.mid(s.indexOf("pub",0,Qt::CaseInsensitive)+4);
-                cbAuto.addItem(spinPrune(s));
+                addAutoItem(spinPrune(s));
             }
             spinAutoShow(width);
         }
@@ -263,11 +298,7 @@ int Editor::spinAutoComplete()
             foreach(QString s, list) {
                 if(s.length() > width)
                     width = s.length();
-                if(s.contains("pub",Qt::CaseInsensitive))
-                    s = s.mid(s.indexOf("pub",0,Qt::CaseInsensitive)+4);
-                if(s.contains("pri",Qt::CaseInsensitive))
-                    s = s.mid(s.indexOf("pri",0,Qt::CaseInsensitive)+4);
-                cbAuto.addItem(spinPrune(s));
+                addAutoItem(spinPrune(s));
             }
             spinAutoShow(width);
         }
@@ -293,9 +324,7 @@ int  Editor::spinAutoCompleteCON()
             foreach(QString s, list) {
                 if(s.length() > width)
                     width = s.length();
-                if(s.contains("con",Qt::CaseInsensitive))
-                    s = s.mid(s.indexOf("con",0,Qt::CaseInsensitive)+4);
-                cbAuto.addItem(spinPrune(s));
+                addAutoItem(spinPrune(s));
             }
             spinAutoShow(width);
         }
@@ -316,8 +345,8 @@ int  Editor::spinAutoCompleteCON()
             foreach(QString s, list) {
                 if(s.length() > width)
                     width = s.length();
-                s = deletePrefix(s);
-                cbAuto.addItem(spinPrune(s));
+                QIcon icon;
+                addAutoItem(spinPrune(s));
             }
             spinAutoShow(width);
         }
@@ -326,33 +355,13 @@ int  Editor::spinAutoCompleteCON()
     return 0;
 }
 
-QString Editor::deletePrefix(QString s)
-{
-    if(s.indexOf("pub",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("pub",0,Qt::CaseInsensitive)+4);
-    else if(s.indexOf("pri",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("pri",0,Qt::CaseInsensitive)+4);
-    else if(s.indexOf("con",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("con",0,Qt::CaseInsensitive)+4);
-    else if(s.indexOf("var",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("var",0,Qt::CaseInsensitive)+4);
-    else if(s.indexOf("byte",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("byte",0,Qt::CaseInsensitive)+5);
-    else if(s.indexOf("word",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("word",0,Qt::CaseInsensitive)+5);
-    else if(s.indexOf("long",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("long",0,Qt::CaseInsensitive)+5);
-
-    return s;
-}
-
 void Editor::cbAutoSelected0insert(int index)
 {
     disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected0insert(int)));
 
     QString s = cbAuto.itemText(index);
     QTextCursor cur = this->textCursor();
-    deletePrefix(s);
+    s = deletePrefix(s);
     if(index != 0)
         // we depend on index item 0 to be the auto-start key
         cur.insertText(cbAuto.itemText(0)+s.trimmed());
@@ -367,7 +376,7 @@ void Editor::cbAutoSelected(int index)
 
     QString s = cbAuto.itemText(index);
     QTextCursor cur = this->textCursor();
-    deletePrefix(s);
+    s = deletePrefix(s);
     cur.insertText(s.trimmed());
 
     cbAuto.hide();
