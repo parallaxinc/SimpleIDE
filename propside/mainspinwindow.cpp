@@ -1909,7 +1909,7 @@ void MainSpinWindow::setProject()
     fileName = editorTabs->tabToolTip(index);
     if(fileName.length() > 0)
     {
-        if(fileName.lastIndexOf(SPIN_EXTENSION))
+        if(fileName.lastIndexOf(SPIN_EXTENSION) > 0)
             projectOptions->setCompiler("SPIN");
         else
             projectOptions->setCompiler("C");
