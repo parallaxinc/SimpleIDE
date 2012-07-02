@@ -23,7 +23,7 @@ public:
 private:
     int  autoEnterColumn();
     QString spinPrune(QString s);
-    void addAutoItem(QString s);
+    void addAutoItem(QString type, QString s);
     void spinAutoShow(int width);
     int  spinAutoComplete();
     int  spinAutoCompleteCON();

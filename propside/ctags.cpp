@@ -194,8 +194,10 @@ int CTags::getLine(QString line)
         return rc;
 
     QString filestr;
+    QTextStream in(&file);
+    in.setAutoDetectUnicode(true);
     if(file.open(QFile::ReadOnly)) {
-        filestr = file.readAll();
+        filestr = in.readAll();
         file.close();
     }
     QString rspec = item.at(2);

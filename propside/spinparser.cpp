@@ -6,12 +6,11 @@ SpinParser::SpinParser()
 {
     setKind(&SpinKinds[SpinParser::K_NONE],     FALSE,'n', "none", "none"); // place-holder only
     setKind(&SpinKinds[SpinParser::K_CONST],    TRUE, 'c', "constant", "constants");
-    setKind(&SpinKinds[SpinParser::K_PUB],      TRUE, 'p', "public", "methods");
-    setKind(&SpinKinds[SpinParser::K_PRI],      TRUE, 'f', "private", "functions");
+    setKind(&SpinKinds[SpinParser::K_PUB],      TRUE, 'f', "public", "methods");
+    setKind(&SpinKinds[SpinParser::K_PRI],      TRUE, 'p', "private", "functions");
     setKind(&SpinKinds[SpinParser::K_OBJECT],   TRUE, 'o', "obj", "objects");
-    setKind(&SpinKinds[SpinParser::K_TYPE],     TRUE, 't', "type", "types");
     setKind(&SpinKinds[SpinParser::K_VAR],      TRUE, 'v', "var", "variables");
-    setKind(&SpinKinds[SpinParser::K_DAT],      TRUE, 'd', "dat", "dat");
+    setKind(&SpinKinds[SpinParser::K_DAT],      TRUE, 'x', "dat", "dat");
 
     KeyWord keyCon = {"con", K_CONST, 0};
     KeyWord keyObj = {"obj", K_OBJECT, 0};
@@ -113,6 +112,14 @@ void SpinParser::makeTags(QString file)
 
 }
 
+QString SpinParser::tagItem(QStringList tabs, int field)
+{
+    QString s;
+    if(tabs.length() > 2)
+        s = tabs.at(3)+"\t"+tabs.at(field);
+    return s;
+}
+
 /*
  * all symbols are accessible by key.
  * a key is a name list such as "/root/obj/subobj/subsubobj"
@@ -131,13 +138,13 @@ QStringList SpinParser::spinSymbols(QString file, QString objname)
             if(key.contains(objname+":",Qt::CaseInsensitive)) {
                 QStringList tabs = value.split("\t");
                 if(tabs.count() > 2)
-                    list.append(tabs.at(2));
+                    list.append(tagItem(tabs,2));
             }
         }
         else if(value.contains(file,Qt::CaseInsensitive)) {
             QStringList tabs = value.split("\t");
             if(tabs.count() > 2)
-                list.append(tabs.at(2));
+                list.append(tagItem(tabs,2));
         }
     }
     return list;
@@ -160,9 +167,9 @@ QStringList SpinParser::spinConstants(QString file, QString objname)
                 QStringList tabs = value.split("\t");
                 if(tabs.count() > 2) {
                     if(QString(tabs.at(3)).contains("c",Qt::CaseInsensitive))
-                        list.append(tabs.at(2));
+                        list.append(tagItem(tabs,2));
                     else if(QString(tabs.at(3)).contains("e",Qt::CaseInsensitive)) {
-                        list.append(tabs.at(0));
+                        list.append(tagItem(tabs,0));
                     }
                 }
             }
@@ -171,9 +178,9 @@ QStringList SpinParser::spinConstants(QString file, QString objname)
             QStringList tabs = value.split("\t");
             if(tabs.count() > 2) {
                 if(QString(tabs.at(3)).contains("c",Qt::CaseInsensitive))
-                    list.append(tabs.at(2));
+                    list.append(tagItem(tabs,2));
                 else if(QString(tabs.at(3)).contains("e",Qt::CaseInsensitive)) {
-                    list.append(tabs.at(0));
+                    list.append(tagItem(tabs,0));
                 }
             }
         }
@@ -195,9 +202,9 @@ QStringList SpinParser::spinMethods(QString file, QString objname)
                 QStringList tabs = value.split("\t");
                 if(tabs.count() > 2) {
                     if(QString(tabs.at(3)).contains("p",Qt::CaseInsensitive))
-                        list.append(tabs.at(2));
+                        list.append(tagItem(tabs,2));
                     if(QString(tabs.at(3)).contains("f",Qt::CaseInsensitive))
-                        list.append(tabs.at(2));
+                        list.append(tagItem(tabs,2));
                 }
             }
         }
@@ -205,11 +212,11 @@ QStringList SpinParser::spinMethods(QString file, QString objname)
             QStringList tabs = value.split("\t");
             if(tabs.count() > 2) {
                 if(QString(tabs.at(3)).contains("p",Qt::CaseInsensitive))
-                    list.append(tabs.at(2));
+                    list.append(tagItem(tabs,2));
                 if(QString(tabs.at(3)).contains("f",Qt::CaseInsensitive))
-                    list.append(tabs.at(2));
+                    list.append(tagItem(tabs,2));
                 if(QString(tabs.at(3)).contains("o",Qt::CaseInsensitive))
-                    list.append(tabs.at(2));
+                    list.append(tagItem(tabs,2));
             }
         }
     }
@@ -229,7 +236,7 @@ QStringList SpinParser::spinDat(QString file, QString objname)
             QStringList tabs = value.split("\t");
             if(tabs.count() > 2) {
                 if(QString(tabs.at(3)).contains("d",Qt::CaseInsensitive))
-                    list.append(tabs.at(2));
+                    list.append(tagItem(tabs,2));
             }
         }
     }
@@ -249,7 +256,7 @@ QStringList SpinParser::spinVars(QString file, QString objname)
             QStringList tabs = value.split("\t");
             if(tabs.count() > 2) {
                 if(QString(tabs.at(3)).contains("v",Qt::CaseInsensitive))
-                    list.append(tabs.at(2));
+                    list.append(tagItem(tabs,2));
             }
         }
     }
@@ -269,7 +276,7 @@ QStringList SpinParser::spinObjects(QString file, QString objname)
             QStringList tabs = value.split("\t");
             if(tabs.count() > 2) {
                 if(QString(tabs.at(3)).contains("o",Qt::CaseInsensitive))
-                    list.append(tabs.at(2));
+                    list.append(tagItem(tabs,2));
             }
         }
     }
@@ -385,31 +392,26 @@ void SpinParser::match_constant (QString p)
 
 void SpinParser::match_dat (QString p)
 {
-    int j;
     QString tag = "";
-    char *types[] = { (char*)"byte", (char*)"word", (char*)"long", 0 };
-    char *type;
-    for(j = 0; types[j] != 0; j++) {
-        type = types[j];
-        QString s = p.trimmed();
-        if(s.indexOf("dat",0,Qt::CaseInsensitive) == 0)
-            s = s.mid(4);
+    QString s = p.trimmed();
+    if(s.indexOf("dat",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(4);
+    s = s.trimmed();
+    QRegExp regex("\\b(byte|long|word)\\b");
+    regex.setCaseSensitivity(Qt::CaseInsensitive);
+    if(s.contains(regex)) {
+        s = s.mid(0,s.indexOf(regex));
         s = s.trimmed();
-        if(s.contains(type,Qt::CaseInsensitive)) {
-            s = s.mid(0,s.indexOf(type,0,Qt::CaseInsensitive));
-            s = s.trimmed();
-            QStringList list = s.split(",",QString::SkipEmptyParts);
-            if(list.length() > 0) {
-                foreach(s,list) {
-                    if(s.contains("["))
-                        s = s.mid(0,s.indexOf("["));
-                    s = s.trimmed();
-                    tag = s+"\t"+currentFile+"\t"+p+"\t"+SpinKinds[K_VAR].letter;
-                    db.insert(objectNode+KEY_ELEMENT_SEP+s,tag);
-                    qDebug() << objectNode << " DAT " << tag;
-                }
+        QStringList list = s.split(",",QString::SkipEmptyParts);
+        if(list.length() > 0) {
+            foreach(s,list) {
+                if(s.contains("["))
+                    s = s.mid(0,s.indexOf("["));
+                s = s.trimmed();
+                tag = s+"\t"+currentFile+"\t"+p+"\t"+SpinKinds[K_DAT].letter;
+                db.insert(objectNode+KEY_ELEMENT_SEP+s,tag);
+                qDebug() << objectNode << " DAT " << tag;
             }
-            break;
         }
     }
 }
@@ -476,18 +478,20 @@ void SpinParser::match_pub (QString p)
 
 void SpinParser::match_var (QString p)
 {
-    int j;
     QString tag = "";
-    char *types[] = { (char*)"byte", (char*)"word", (char*)"long", 0 };
-    char *type;
-    for(j = 0; types[j] != 0; j++) {
-        type = types[j];
+    QString s = p.trimmed();
+    if(s.indexOf("var",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(4);
+    s = s.trimmed();
+    QRegExp regex("\\b(byte|long|word)\\b");
+    regex.setCaseSensitivity(Qt::CaseInsensitive);
+    if(s.contains(regex)) {
         QString s = p.trimmed();
         if(s.indexOf("var",0,Qt::CaseInsensitive) == 0)
             s = s.mid(4);
         s = s.trimmed();
-        if(s.indexOf(type,0,Qt::CaseInsensitive) == 0) {
-            s = s.mid(s.indexOf(type,0,Qt::CaseInsensitive)+4);
+        if(s.indexOf(regex) == 0) {
+            s = s.mid(s.indexOf(regex)+4);
             QStringList list = s.split(",",QString::SkipEmptyParts);
             if(list.length() > 0) {
                 foreach(s,list) {
@@ -499,7 +503,6 @@ void SpinParser::match_var (QString p)
                     qDebug() << objectNode << " VAR " << tag;
                 }
             }
-            break;
         }
     }
 }
@@ -598,7 +601,7 @@ void SpinParser::findSpinTags (QString fileName, QString objnode)
 
         line = QString(list[n]).trimmed();
 
-        if(line.contains("{") || line.contains("{")) {
+        if(line.contains("{") || line.contains("}")) {
             QString s = line;
             line = "";
             for(int j = 0; j < s.length(); j++) {

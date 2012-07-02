@@ -78,11 +78,13 @@ void Editor::keyPressEvent (QKeyEvent *e)
             QPlainTextEdit::keyPressEvent(e);
             return;
         }
+#if 0   // highlighting like this causes editor trouble. don't do it.
         if(text.length() > 0) {
             //qDebug() << "keyPressEvent ctrlPressed " << text;
             if(static_cast<MAINWINDOW*>(mainwindow)->isTagged(text))
                 this->setTextCursor(cur);
         }
+#endif
         QPlainTextEdit::keyPressEvent(e);
         return;
     }
@@ -109,12 +111,18 @@ void Editor::keyPressEvent (QKeyEvent *e)
             if(spinAutoCompleteCON() == 0)
                 QPlainTextEdit::keyPressEvent(e);
         }
+        else {
+            QPlainTextEdit::keyPressEvent(e);
+        }
     }
     /* dot-auto complete */
     else if(key == Qt::Key_Period) {
         if(isSpin) {
             if(spinAutoComplete() == 0)
                 QPlainTextEdit::keyPressEvent(e);
+        }
+        else {
+            QPlainTextEdit::keyPressEvent(e);
         }
     }
     /* if TAB key do block move */
@@ -162,7 +170,7 @@ void Editor::mousePressEvent (QMouseEvent *e)
 int Editor::autoEnterColumn()
 {
     QTextCursor cur = this->textCursor();
-    int row = cur.blockNumber();
+
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
     QString text = cur.selectedText();
     //qDebug() << text.length();
@@ -182,19 +190,30 @@ int Editor::autoEnterColumn()
 
 QString Editor::spinPrune(QString s)
 {
+    QRegExp re("\\b(byte|long|word)\\b");
+    re.setCaseSensitivity(Qt::CaseInsensitive);
+    s = s.mid(s.indexOf("\t")+1);
     if(s.lastIndexOf(")") > 0)
         s = s.mid(0,s.lastIndexOf(")")+1);
     if(s.lastIndexOf(":") > 0)
         s = s.mid(0,s.lastIndexOf(":"));
     if(s.lastIndexOf("|") > 0)
         s = s.mid(0,s.lastIndexOf("|"));
+    if(s.lastIndexOf("[") > 0)
+        s = s.mid(0,s.lastIndexOf("["));
     if(s.lastIndexOf("=") > 0)
         s = s.mid(0,s.lastIndexOf("="));
-    return s;
+    if(s.indexOf(re) > 0)
+        s = s.mid(0,s.indexOf(re));
+
+    return s.trimmed();
 }
 
 QString Editor::deletePrefix(QString s)
 {
+    QRegExp re("\\b(byte|long|word)\\b");
+    re.setCaseSensitivity(Qt::CaseInsensitive);
+
     if(s.indexOf("pub",0,Qt::CaseInsensitive) == 0)
         s = s.mid(s.indexOf("pub",0,Qt::CaseInsensitive)+4);
     else if(s.indexOf("pri",0,Qt::CaseInsensitive) == 0)
@@ -203,29 +222,35 @@ QString Editor::deletePrefix(QString s)
         s = s.mid(s.indexOf("con",0,Qt::CaseInsensitive)+4);
     else if(s.indexOf("var",0,Qt::CaseInsensitive) == 0)
         s = s.mid(s.indexOf("var",0,Qt::CaseInsensitive)+4);
-    else if(s.indexOf("byte",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("byte",0,Qt::CaseInsensitive)+5);
-    else if(s.indexOf("word",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("word",0,Qt::CaseInsensitive)+5);
-    else if(s.indexOf("long",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("long",0,Qt::CaseInsensitive)+5);
+    else if(s.indexOf(re) == 0)
+        s = s.mid(s.indexOf(re)+5);
 
     return s;
 }
 
-void Editor::addAutoItem(QString s)
+void Editor::addAutoItem(QString type, QString s)
 {
     QIcon icon;
-    if(s.indexOf("con",0,Qt::CaseInsensitive) == 0)
-        icon.addFile(":/images/obj.png");
-    else if(s.indexOf("obj",0,Qt::CaseInsensitive) == 0)
-        icon.addFile(":/images/obj.png");
-    else if(s.indexOf("pri",0,Qt::CaseInsensitive) == 0)
-        icon.addFile(":/images/pri.png");
-    else if(s.indexOf("pub",0,Qt::CaseInsensitive) == 0)
-        icon.addFile(":/images/pub.png");
 
-    cbAuto.addItem(icon,deletePrefix(s));
+    if(type.mid(0,1).compare("c") == 0)
+        icon.addFile(":/images/const.png");
+    else if(type.mid(0,1).compare("e") == 0)
+        icon.addFile(":/images/const.png");
+    else if(type.mid(0,1).compare("o") == 0)
+        icon.addFile(":/images/obj.png");
+    else if(type.mid(0,1).compare("p") == 0)
+        icon.addFile(":/images/pri.png");
+    else if(type.mid(0,1).compare("f") == 0)
+        icon.addFile(":/images/pub.png");
+    else if(type.mid(0,1).compare("v") == 0)
+        icon.addFile(":/images/var.png");
+    else if(type.mid(0,1).compare("x") == 0)
+        icon.addFile(":/images/dat.png");
+
+    if(deletePrefix(s).length() == 0)
+        cbAuto.addItem(icon,s);
+    else
+        cbAuto.addItem(icon,spinPrune(deletePrefix(s)));
 }
 
 void Editor::spinAutoShow(int width)
@@ -236,7 +261,7 @@ void Editor::spinAutoShow(int width)
     cbAuto.setFrame(false);
     cbAuto.setEditable(false);
     cbAuto.setAutoCompletion(true);
-    cbAuto.setGeometry(win->x()+200, win->y()+50, width, 20);
+    cbAuto.setGeometry(win->x()+350, win->y()+100, width, 20);
     cbAuto.showPopup();
 }
 
@@ -267,17 +292,26 @@ int Editor::spinAutoComplete()
     if(text.length() > 0) {
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected0insert(int)));
         qDebug() << "keyPressEvent object dot pressed" << text;
-        QStringList list = spinParser->spinMethods(fileName,text);
+        QStringList list = spinParser->spinSymbols(fileName,text);
         cbAuto.clear();
         // we depend on index item 0 to be the auto-start key
         cbAuto.addItem(".");
         if(list.count() > 0) {
             int width = 0;
             list.sort();
-            foreach(QString s, list) {
+            for(int j = 0; j < list.count(); j++) {
+                QString s = list[j];
+                QString type = s;
+                if(type.at(0) == 'c')
+                    continue;
+                if(type.at(0) == 'e')
+                    continue;
+                if(type.at(0) == 'o')
+                    continue;
+                s = spinPrune(s);
                 if(s.length() > width)
                     width = s.length();
-                addAutoItem(spinPrune(s));
+                addAutoItem(type, s);
             }
             spinAutoShow(width);
         }
@@ -289,16 +323,23 @@ int Editor::spinAutoComplete()
     else {
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected(int)));
         qDebug() << "keyPressEvent local dot pressed";
-        QStringList list = spinParser->spinMethods(fileName,"");
+        QStringList list = spinParser->spinSymbols(fileName,"");
         cbAuto.clear();
         cbAuto.addItem(".");
         if(list.count() > 0) {
             int width = 0;
             list.sort();
-            foreach(QString s, list) {
+            for(int j = 0; j < list.count(); j++) {
+                QString s = list[j];
+                QString type = s;
+                if(type.at(0) == 'c')
+                    continue;
+                if(type.at(0) == 'e')
+                    continue;
+                s = spinPrune(s);
                 if(s.length() > width)
                     width = s.length();
-                addAutoItem(spinPrune(s));
+                addAutoItem(type, s);
             }
             spinAutoShow(width);
         }
@@ -321,10 +362,13 @@ int  Editor::spinAutoCompleteCON()
         if(list.count() > 0) {
             int width = 0;
             list.sort();
-            foreach(QString s, list) {
+            for(int j = 0; j < list.count(); j++) {
+                QString s = list[j];
+                QString type = s;
+                s = spinPrune(s);
                 if(s.length() > width)
                     width = s.length();
-                addAutoItem(spinPrune(s));
+                addAutoItem(type, s);
             }
             spinAutoShow(width);
         }
@@ -342,11 +386,13 @@ int  Editor::spinAutoCompleteCON()
         if(list.count() > 0) {
             int width = 0;
             list.sort();
-            foreach(QString s, list) {
+            for(int j = 0; j < list.count(); j++) {
+                QString s = list[j];
+                QString type = s;
+                s = spinPrune(s);
                 if(s.length() > width)
                     width = s.length();
-                QIcon icon;
-                addAutoItem(spinPrune(s));
+                addAutoItem(type, s);
             }
             spinAutoShow(width);
         }
@@ -410,7 +456,6 @@ int Editor::tabBlockShift()
     /* if a block is selected */
     if(cur.selectedText().length() > 0) {
 
-        QTextBlock blocktext = cur.block();
         QStringList mylist;
 
         /* make tabs based on user preference - set by mainwindow */
