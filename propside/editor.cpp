@@ -34,6 +34,7 @@ Editor::Editor(GDB *gdebug, SpinParser *parser, QWidget *parent) : QPlainTextEdi
 Editor::~Editor()
 {
     delete highlighter;
+    delete lineNumberArea;
 }
 
 void Editor::setHighlights(QString filename)

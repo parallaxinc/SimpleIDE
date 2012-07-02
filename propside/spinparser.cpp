@@ -1,3 +1,4 @@
+#include <QtGui>
 #include "spinparser.h"
 
 #define KEY_ELEMENT_SEP ":"
@@ -371,7 +372,7 @@ void SpinParser::match_constant (QString p)
             if(ok == true) continue;
             tag = s+"\t"+currentFile+"\t"+p+"\t"+"e";
             db.insert(objectNode+KEY_ELEMENT_SEP+s,tag);
-            qDebug() << objectNode << " ## " << tag;
+            // qDebug() << objectNode << " ## " << tag;
         }
     }
     else if((len = p.indexOf("=")) > 0) {
@@ -385,7 +386,7 @@ void SpinParser::match_constant (QString p)
             s = s.trimmed();
             tag = s+"\t"+currentFile+"\t"+p+"\t"+SpinKinds[K_CONST].letter;
             db.insert(objectNode+KEY_ELEMENT_SEP+s,tag);
-            qDebug() << objectNode << " ## " << tag;
+            // qDebug() << objectNode << " ## " << tag;
         }
     }
 }
@@ -410,7 +411,7 @@ void SpinParser::match_dat (QString p)
                 s = s.trimmed();
                 tag = s+"\t"+currentFile+"\t"+p+"\t"+SpinKinds[K_DAT].letter;
                 db.insert(objectNode+KEY_ELEMENT_SEP+s,tag);
-                qDebug() << objectNode << " DAT " << tag;
+                // qDebug() << objectNode << " DAT " << tag;
             }
         }
     }
@@ -435,7 +436,7 @@ void SpinParser::match_object (QString p)
         tag = s+"\t"+currentFile+"\t"+p+"\t"+SpinKinds[K_OBJECT].letter;
         objectInfo(tag, subnode, subfile);
         db.insert(objectNode+"/"+subnode+KEY_ELEMENT_SEP+s,tag);
-        qDebug() << objectNode+"/"+subnode << " :: " << tag;
+        // qDebug() << objectNode+"/"+subnode << " :: " << tag;
         findSpinTags(subfile,objectNode+"/"+subnode);
     }
 }
@@ -456,7 +457,7 @@ void SpinParser::match_pri (QString p)
         s = s.trimmed();
         tag = s+"\t"+currentFile+"\t"+p+"\t"+SpinKinds[K_PRI].letter;
         db.insert(objectNode+KEY_ELEMENT_SEP+s,tag);
-        qDebug() << objectNode << " pri " << tag;
+        // qDebug() << objectNode << " pri " << tag;
     }
 }
 
@@ -476,7 +477,7 @@ void SpinParser::match_pub (QString p)
         s = s.trimmed();
         tag = s+"\t"+currentFile+"\t"+p+"\t"+SpinKinds[K_PUB].letter;
         db.insert(objectNode+KEY_ELEMENT_SEP+s,tag);
-        qDebug() << objectNode << " pub " << tag;
+        // qDebug() << objectNode << " pub " << tag;
     }
 }
 
@@ -504,7 +505,7 @@ void SpinParser::match_var (QString p)
                     s = s.trimmed();
                     tag = s+"\t"+currentFile+"\t"+p+"\t"+SpinKinds[K_VAR].letter;
                     db.insert(objectNode+KEY_ELEMENT_SEP+s,tag);
-                    qDebug() << objectNode << " VAR " << tag;
+                    // qDebug() << objectNode << " VAR " << tag;
                 }
             }
         }
@@ -569,21 +570,21 @@ void SpinParser::findSpinTags (QString fileName, QString objnode)
     if(QFile::exists(fileName) == false)
         return;
 
-    SpinKind   state;
     QString line;
     QString tag;
     QString filestr;
 
-    state = K_CONST; // spin starts with CONST
+    SpinKind state = K_CONST; // spin starts with CONST
+    bool blockComment = false;
 
     QFile file(fileName);
     QTextStream in(&file);
-    //in.setCodec("UTF-8");
     in.setAutoDetectUnicode(true);
     if(file.open(QFile::ReadOnly) != true)
         return;
     QStringList list;
     QStringList lst2;
+
     filestr = in.readAll();
     file.close();
 
@@ -594,11 +595,11 @@ void SpinParser::findSpinTags (QString fileName, QString objnode)
     if(lst2.count() > list.count())
         list = filestr.split("\r",QString::SkipEmptyParts,Qt::CaseInsensitive);
 
-
-    bool blockComment = false;
-
     for(int n = 0; n < list.length(); n++)
     {
+        // give app a chance to do work? parsing can take a while.
+        //QApplication::processEvents();
+
         // do here in case OBJ detect causes context change
         objectNode  = objnode;
         currentFile = fileName;
@@ -621,16 +622,6 @@ void SpinParser::findSpinTags (QString fileName, QString objnode)
                     line += s[j];
             }
         }
-#if 0
-        if(blockComment && line.contains("}")) {
-            blockComment = false;
-            line = line.mid(line.lastIndexOf("}")+1);
-        }
-        if(line.contains("{")) {
-            blockComment = true;
-            line = line.mid(0,line.indexOf("{"));
-        }
-#endif
         if(blockComment)
             continue;
 

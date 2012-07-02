@@ -1019,11 +1019,13 @@ void MainSpinWindow::closeProject()
      */
     int rc = QMessageBox::No;
 
-    if(projectFile.length() > 0)
-        rc = QMessageBox::question(this,
-                tr("Save Project?"),
-                tr("Save project manager settings before close?"),
-                QMessageBox::Yes, QMessageBox::No);
+    if(projectFile.length() == 0)
+        return;
+
+    rc = QMessageBox::question(this,
+            tr("Save Project?"),
+            tr("Save project manager settings before close?"),
+            QMessageBox::Yes, QMessageBox::No);
 
     /* save options
      */
@@ -1047,6 +1049,8 @@ void MainSpinWindow::closeProject()
     for(int n = 0; n < list.length(); n++) {
         for(int tab = editorTabs->count()-1; tab > -1; tab--) {
             QString s = sourcePath(projectFile)+list.at(n);
+            if(s.at(0) == '>')
+                continue;
             // close exact tab
             if(editorTabs->tabToolTip(tab).compare(s) == 0)
                 closeTab(tab);
@@ -1512,7 +1516,6 @@ void MainSpinWindow::fileChanged()
     if(file.open(QFile::ReadOnly))
     {
         text = in.readAll();
-        //qDebug() << in.codec();
         file.close();
 
         QString ctext = curtext;
@@ -1909,7 +1912,7 @@ void MainSpinWindow::setProject()
     fileName = editorTabs->tabToolTip(index);
     if(fileName.length() > 0)
     {
-        if(fileName.lastIndexOf(SPIN_EXTENSION) > 0)
+        if(fileName.indexOf(SPIN_EXTENSION))
             projectOptions->setCompiler("SPIN");
         else
             projectOptions->setCompiler("C");
@@ -3370,10 +3373,10 @@ void MainSpinWindow::updateSpinProjectTree(QString fileName, QString projName)
             }
             QStringList list = projectOptions->getSpinOptions();
             for(int n = 0; n < list.count(); n ++) {
-                file.write(QString(list[n]).toAscii()+"\n");
+                file.write(">"+QString(list[n]).toAscii()+"\n");
             }
             file.close();
-            projectModel->addRootItem(this->shortFileName(fileName));
+            //projectModel->addRootItem(this->shortFileName(fileName));
         }
     }
     else {
