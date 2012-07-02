@@ -214,12 +214,14 @@ QString Editor::deletePrefix(QString s)
     QRegExp re("\\b(byte|long|word)\\b");
     re.setCaseSensitivity(Qt::CaseInsensitive);
 
-    if(s.indexOf("pub",0,Qt::CaseInsensitive) == 0)
+    if(s.indexOf("con",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("con",0,Qt::CaseInsensitive)+4);
+    else if(s.indexOf("pub",0,Qt::CaseInsensitive) == 0)
         s = s.mid(s.indexOf("pub",0,Qt::CaseInsensitive)+4);
     else if(s.indexOf("pri",0,Qt::CaseInsensitive) == 0)
         s = s.mid(s.indexOf("pri",0,Qt::CaseInsensitive)+4);
-    else if(s.indexOf("con",0,Qt::CaseInsensitive) == 0)
-        s = s.mid(s.indexOf("con",0,Qt::CaseInsensitive)+4);
+    else if(s.indexOf("obj",0,Qt::CaseInsensitive) == 0)
+        s = s.mid(s.indexOf("obj",0,Qt::CaseInsensitive)+4);
     else if(s.indexOf("var",0,Qt::CaseInsensitive) == 0)
         s = s.mid(s.indexOf("var",0,Qt::CaseInsensitive)+4);
     else if(s.indexOf(re) == 0)

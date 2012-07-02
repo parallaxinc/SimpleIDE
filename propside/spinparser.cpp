@@ -422,11 +422,15 @@ void SpinParser::match_object (QString p)
     QString subfile = "";
     QString subnode = "";
     int len = p.indexOf(":");
+    if(p.indexOf(":=") > 0)
+        len = 0;
     if(len > 0) {
         // add to database
         QString s = p.mid(0,len);
         if(s.contains("OBJ",Qt::CaseInsensitive))
             s = s.mid(s.indexOf("OBJ",0,Qt::CaseInsensitive)+3);
+        if(s.contains("[",Qt::CaseInsensitive))
+            s = s.mid(0,s.indexOf("[",0,Qt::CaseInsensitive));
         s = s.trimmed();
         tag = s+"\t"+currentFile+"\t"+p+"\t"+SpinKinds[K_OBJECT].letter;
         objectInfo(tag, subnode, subfile);
