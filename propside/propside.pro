@@ -38,7 +38,6 @@ SOURCES += mainspin.cpp \
     projectoptions.cpp \
     replacedialog.cpp \
     aboutdialog.cpp \
-    gdb.cpp \
     loader.cpp \
     projecttree.cpp \
     qextserialport.cpp \
@@ -47,7 +46,8 @@ SOURCES += mainspin.cpp \
     buildspin.cpp \
     build.cpp \
     spinhighlighter.cpp \
-    spinparser.cpp
+    spinparser.cpp \
+    gdb.cpp
 HEADERS += mainspinwindow.h \
     editor.h \
     ctags.h \
@@ -68,7 +68,6 @@ HEADERS += mainspinwindow.h \
     Sleeper.h \
     replacedialog.h \
     aboutdialog.h \
-    gdb.h \
     loader.h \
     projecttree.h \
     qextserialport.h \
@@ -77,7 +76,8 @@ HEADERS += mainspinwindow.h \
     buildspin.h \
     build.h \
     spinhighlighter.h \
-    spinparser.h
+    spinparser.h \
+    gdb.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui

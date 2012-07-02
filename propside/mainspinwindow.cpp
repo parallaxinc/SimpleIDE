@@ -1512,7 +1512,7 @@ void MainSpinWindow::fileChanged()
     if(file.open(QFile::ReadOnly))
     {
         text = in.readAll();
-        qDebug() << in.codec();
+        //qDebug() << in.codec();
         file.close();
 
         QString ctext = curtext;

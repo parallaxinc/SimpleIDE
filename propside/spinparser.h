@@ -35,6 +35,9 @@ public:
      */
     QStringList spinFileTree(QString file, QString libpath);
 
+    /* build a tag item */
+    QString tagItem(QStringList tabs, int field);
+
     /* parse a file for autocomplete */
     QStringList spinSymbols(QString file, QString objname);
 
