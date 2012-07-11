@@ -38,6 +38,7 @@ public slots:
     void procReadyReadSizes();
 
 public:
+    void abortProcess();
     int  checkBuildStart(QProcess *proc, QString progName);
     void showBuildStart(QString progName, QStringList args);
     int  buildResult(int exitStatus, int exitCode, QString progName, QString result);

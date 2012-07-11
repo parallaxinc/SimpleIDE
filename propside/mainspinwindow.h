@@ -90,6 +90,8 @@ public slots:
     void hardware();
     void properties();
     void propertiesAccepted();
+
+    void programStopBuild();
     void programBuild();
     void programBurnEE();
     void programRun();

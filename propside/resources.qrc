@@ -67,5 +67,6 @@
         <file>images/pri.png</file>
         <file>images/obj.png</file>
         <file>images/const.png</file>
+        <file>images/Abort.png</file>
     </qresource>
 </RCC>
