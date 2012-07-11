@@ -392,6 +392,8 @@ void MainSpinWindow::quitProgram()
     portListener->close();
     term->accept(); // just in case serial terminal is open
 
+    programStopBuild();
+
     exitSave(); // find
     QString fileName = "";
 
@@ -1955,6 +1957,21 @@ void MainSpinWindow::propertiesAccepted()
     }
 }
 
+void MainSpinWindow::programStopBuild()
+{
+    if(builder != NULL)
+        builder->abortProcess();
+
+    if(this->procDone != true) {
+        this->procMutex.lock();
+        this->procDone = true;
+        this->procMutex.unlock();
+        qDebug() << "procDone set";
+        QApplication::processEvents();
+        process->kill();
+    }
+}
+
 void MainSpinWindow::programBuild()
 {
     runBuild("");
@@ -2421,6 +2438,8 @@ int  MainSpinWindow::runLoader(QString copts)
 
     while(procDone == false)
         QApplication::processEvents();
+
+    status->setText(status->text()+tr("Done."));
 
     QTextCursor cur = compileStatus->textCursor();
     cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
@@ -3883,7 +3902,6 @@ void MainSpinWindow::setupFileMenu()
     QAction *last = alist.last();
     toolsMenu->insertAction(last,bigger);
 
-
     toolsMenu->addSeparator();
     toolsMenu->addAction(tr("Next Tab"),this,SLOT(changeTab(bool)),QKeySequence::NextChild);
 
@@ -4026,19 +4044,23 @@ void MainSpinWindow::setupToolBars()
     programToolBar = addToolBar(tr("Program"));
     btnProgramDebugTerm = new QToolButton(this);
     btnProgramRun = new QToolButton(this);
+    QToolButton *btnProgramStopBuild = new QToolButton(this);
     QToolButton *btnProgramBuild = new QToolButton(this);
     QToolButton *btnProgramBurnEEP = new QToolButton(this);
 
+    addToolButton(programToolBar, btnProgramStopBuild, QString(":/images/Abort.png"));
     addToolButton(programToolBar, btnProgramBuild, QString(":/images/build.png"));
     addToolButton(programToolBar, btnProgramBurnEEP, QString(":/images/burnee.png"));
     addToolButton(programToolBar, btnProgramRun, QString(":/images/run.png"));
     addToolButton(programToolBar, btnProgramDebugTerm, QString(":/images/runconsole.png"));
 
+    connect(btnProgramStopBuild,SIGNAL(clicked()),this,SLOT(programStopBuild()));
     connect(btnProgramBuild,SIGNAL(clicked()),this,SLOT(programBuild()));
     connect(btnProgramBurnEEP,SIGNAL(clicked()),this,SLOT(programBurnEE()));
     connect(btnProgramDebugTerm,SIGNAL(clicked()),this,SLOT(programDebug()));
     connect(btnProgramRun,SIGNAL(clicked()),this,SLOT(programRun()));
 
+    btnProgramStopBuild->setToolTip(tr("Stop Build or Loader"));
     btnProgramBuild->setToolTip(tr("Build Project"));
     btnProgramBurnEEP->setToolTip(tr("Burn Project to EEPROM"));
     btnProgramRun->setToolTip(tr("Run Project"));

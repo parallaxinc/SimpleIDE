@@ -199,6 +199,12 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
 
     }
 
+    /* let's make a library before compiling the whole program.
+     */
+    QString libname = QString(list[0]);
+    libname = libname.mid(0,libname.lastIndexOf(".")) + ".a";
+    this->runAR(clist, libname);
+
     /* add main file */
     clist.append(list[0]);
 
@@ -502,6 +508,37 @@ int  BuildC::runPexMake(QString fileName)
             npex.remove();
         }
     }
+    return rc;
+}
+
+int  BuildC::runAR(QStringList copts, QString libname)
+{
+    int rc;
+    QString compstr;
+    QStringList args;
+    args.append("rs");
+    args.append(libname);
+
+    foreach(QString s, copts) {
+        // add only certain types of objects
+        if(s.lastIndexOf(".cog") == s.lastIndexOf("."))
+            args.append(s);
+        else if(s.lastIndexOf(".ecog") == s.lastIndexOf("."))
+            args.append(s);
+        else if(s.lastIndexOf(".c")  == s.lastIndexOf("."))
+            args.append(s);
+    }
+
+#if defined(Q_WS_WIN32)
+    compstr = shortFileName(aSideCompiler);
+#else
+    compstr = aSideCompiler;
+#endif
+    compstr = compstr.replace("gcc","ar");
+
+
+    /* this runs the archiver */
+    rc = startProgram(compstr,sourcePath(projectFile),args);
     return rc;
 }
 

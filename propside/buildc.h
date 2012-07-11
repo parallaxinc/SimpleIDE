@@ -20,6 +20,7 @@ public:
     int  runObjCopy(QString datfile);
     int  runGAS(QString datfile);
     int  runPexMake(QString fileName);
+    int  runAR(QStringList copts, QString libname);
     int  runCompiler(QStringList copts);
 
     QStringList getCompilerParameters(QStringList copts);

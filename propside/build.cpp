@@ -35,6 +35,17 @@ int Build::makeDebugFiles(QString fileName, QString projfile, QString compiler)
     return -1;
 }
 
+void Build::abortProcess()
+{
+    if(procDone != true) {
+        procMutex.lock();
+        procDone = true;
+        procMutex.unlock();
+        QApplication::processEvents();
+        process->kill();
+    }
+}
+
 int  Build::startProgram(QString program, QString workpath, QStringList args, DumpType dump)
 {
     /*
@@ -274,7 +285,7 @@ void Build::procReadyRead()
                 this->codeSize = ok ? size : 0;
             }
             else {
-                if(n < lines.length()-1)
+                if(n < lines.length())
                     compileStatus->insertPlainText(eol);
                 compileStatus->insertPlainText(line);
             }
