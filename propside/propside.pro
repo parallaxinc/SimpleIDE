@@ -25,6 +25,7 @@ SOURCES += mainspin.cpp \
     treemodel.cpp \
     treeitem.cpp \
     terminal.cpp \
+    termprefs.cpp \
     properties.cpp \
     newproject.cpp \
     PortListener.cpp \
@@ -48,7 +49,6 @@ SOURCES += mainspin.cpp \
     spinhighlighter.cpp \
     spinparser.cpp \
     gdb.cpp \
-    termprefs.cpp \
     highlightc.cpp
 HEADERS += mainspinwindow.h \
     editor.h \
@@ -58,6 +58,7 @@ HEADERS += mainspinwindow.h \
     treeitem.h \
     PortListener.h \
     terminal.h \
+    termprefs.h \
     properties.h \
     newproject.h \
     console.h \
@@ -80,7 +81,6 @@ HEADERS += mainspinwindow.h \
     spinhighlighter.h \
     spinparser.h \
     gdb.h \
-    termprefs.h \
     highlightc.h
 FORMS += hardware.ui \
     project.ui \
