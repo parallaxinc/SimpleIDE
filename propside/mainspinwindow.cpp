@@ -499,7 +499,7 @@ void MainSpinWindow::openFileName(QString fileName)
         if (file.open(QFile::ReadOnly))
         {
             QTextStream in(&file);
-            in.setAutoDetectUnicode(true);
+            in.setCodec("UTF-8");
             data = in.readAll();
             file.close();
             data = data.replace('\t',"    ");
@@ -1203,8 +1203,11 @@ void MainSpinWindow::saveFile()
         editorTabs->setTabToolTip(n,fileName);
         if (!fileName.isEmpty()) {
             QFile file(fileName);
+            QTextStream os(&file);
+            os.setCodec("UTF-8");
             if (file.open(QFile::WriteOnly)) {
-                file.write(data.toUtf8());
+                os << data;
+                //file.write(data.toUtf8());
                 file.close();
             }
         }
@@ -1510,7 +1513,7 @@ void MainSpinWindow::fileChanged()
     int ret = 0;
 
     QTextStream in(&file);
-    in.setAutoDetectUnicode(true);
+    in.setCodec("UTF-8");
 
     QChar ch = name.at(name.length()-1);
     if(file.open(QFile::ReadOnly))

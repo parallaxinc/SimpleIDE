@@ -30,6 +30,13 @@ void Terminal::init()
     buttonClear->setAutoDefault(false);
     buttonClear->setDefault(false);
 
+    options = new TermPrefs(termEditor);
+
+    QPushButton *buttonOpt = new QPushButton(tr("Options"),this);
+    connect(buttonOpt,SIGNAL(clicked()), this, SLOT(showOptions()));
+    buttonOpt->setAutoDefault(false);
+    buttonOpt->setDefault(false);
+
 #ifdef TERM_ENABLE_BUTTON
     buttonEnable = new QPushButton(tr("Disable"),this);
     connect(buttonEnable,SIGNAL(clicked()), this, SLOT(toggleEnable()));
@@ -47,6 +54,7 @@ void Terminal::init()
     QHBoxLayout *butLayout = new QHBoxLayout();
     termLayout->addLayout(butLayout);
     butLayout->addWidget(buttonClear);
+    butLayout->addWidget(buttonOpt);
 #ifdef TERM_ENABLE_BUTTON
     butLayout->addWidget(buttonEnable);
 #endif
@@ -94,7 +102,7 @@ void Terminal::reject()
 
 void Terminal::clearScreen()
 {
-    termEditor->setPlainText("");
+    termEditor->clear();
 }
 
 void Terminal::toggleEnable()
@@ -142,4 +150,9 @@ void Terminal::cutFromFile()
 void Terminal::pasteToFile()
 {
     termEditor->paste();
+}
+
+void Terminal::showOptions()
+{
+    options->showDialog();
 }

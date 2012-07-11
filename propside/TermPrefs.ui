@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>461</width>
-    <height>314</height>
+    <height>343</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>270</y>
+     <y>300</y>
      <width>391</width>
      <height>31</height>
     </rect>
@@ -81,7 +81,7 @@
     <string>(3) Move Cursor Left</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="cbMoceRight">
+  <widget class="QCheckBox" name="cbMoveRight">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -159,7 +159,7 @@
     <string>(9) Tab</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="cbLineFeed">
+  <widget class="QCheckBox" name="cbCReturn">
    <property name="geometry">
     <rect>
      <x>240</x>
@@ -169,7 +169,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>(10) Line Feed</string>
+    <string>(10) Carriage Return CR</string>
    </property>
   </widget>
   <widget class="QCheckBox" name="cbClearToEOL">
@@ -208,7 +208,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>(13) New Line</string>
+    <string>(13) New Line NL</string>
    </property>
   </widget>
   <widget class="QCheckBox" name="cbPositionCursorX">
@@ -237,40 +237,43 @@
     <string>(15) Position Cursor (y)</string>
    </property>
   </widget>
+  <widget class="QCheckBox" name="cbSwapNLCR">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>260</y>
+     <width>201</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Swap CR/NL</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbAppendCR">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>260</y>
+     <width>191</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Add CR to NL</string>
+   </property>
+  </widget>
+  <action name="actionTermPrefsOk">
+   <property name="text">
+    <string>termPrefsOk</string>
+   </property>
+  </action>
+  <action name="actionTermPrefsCancel">
+   <property name="text">
+    <string>termPrefsCancel</string>
+   </property>
+  </action>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>TermPrefs</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>TermPrefs</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

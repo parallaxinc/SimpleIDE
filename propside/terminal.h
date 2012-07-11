@@ -5,6 +5,7 @@
 #include "console.h"
 #include "PortListener.h"
 #include "loader.h"
+#include "termprefs.h"
 
 class Terminal : public QDialog
 {
@@ -26,15 +27,17 @@ public slots:
     void copyFromFile();
     void cutFromFile();
     void pasteToFile();
+    void showOptions();
 
 public:
     Console *getEditor();
 private:
-    Console *termEditor;
+    Console     *termEditor;
+    TermPrefs   *options;
 
 private:
-    QPushButton  *buttonEnable;
-    PortListener *portListener;
+    QPushButton     *buttonEnable;
+    PortListener    *portListener;
 };
 
 #endif // TERMINAL_H

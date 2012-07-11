@@ -435,6 +435,9 @@ void SpinParser::match_object (QString p)
         s = s.trimmed();
         tag = s+"\t"+currentFile+"\t"+p+"\t"+SpinKinds[K_OBJECT].letter;
         objectInfo(tag, subnode, subfile);
+        QString file = checkFile(subfile);
+        if(QFile::exists(file) == false)
+            return;
         db.insert(objectNode+"/"+subnode+KEY_ELEMENT_SEP+s,tag);
         // qDebug() << objectNode+"/"+subnode << " :: " << tag;
         findSpinTags(subfile,objectNode+"/"+subnode);
