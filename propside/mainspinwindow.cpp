@@ -1926,7 +1926,8 @@ void MainSpinWindow::setProject()
     if(extension.compare("spin",Qt::CaseInsensitive) == 0) {
         projectOptions->setCompiler("SPIN");
         projectOptions->setBoardType("HUB"); // HUB is only option for SPIN
-        //saveProjectOptions();
+        this->closeFile(); // do this so spin highlighter works.
+        this->openFileName(fileName);
     }
 }
 
