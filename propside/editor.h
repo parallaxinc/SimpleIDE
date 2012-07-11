@@ -29,6 +29,7 @@ private:
     int  spinAutoCompleteCON();
     int  contextHelp();
     int  tabBlockShift();
+    bool isNotAutoComplete();
     QString selectAutoComplete();
     QString deletePrefix(QString s);
 

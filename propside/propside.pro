@@ -47,7 +47,9 @@ SOURCES += mainspin.cpp \
     build.cpp \
     spinhighlighter.cpp \
     spinparser.cpp \
-    gdb.cpp
+    gdb.cpp \
+    termprefs.cpp \
+    highlightc.cpp
 HEADERS += mainspinwindow.h \
     editor.h \
     ctags.h \
@@ -77,7 +79,9 @@ HEADERS += mainspinwindow.h \
     build.h \
     spinhighlighter.h \
     spinparser.h \
-    gdb.h
+    gdb.h \
+    termprefs.h \
+    highlightc.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui

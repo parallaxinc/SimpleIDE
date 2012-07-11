@@ -95,13 +95,15 @@ void PortListener::onDsrChanged(bool status)
 void PortListener::updateReady()
 {
     if(terminal != NULL)
-        terminal->updateReady(port);
+        if(terminal->enabled())
+            terminal->updateReady(port);
 }
 
 void PortListener::updateReady(QextSerialPort* port)
 {
     if(terminal != NULL)
-        terminal->updateReady(port);
+        if(terminal->enabled())
+            terminal->updateReady(port);
 }
 
 #if defined(Q_WS_WIN32)

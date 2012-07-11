@@ -1,6 +1,7 @@
 #include "editor.h"
 #include "properties.h"
 
+#include "highlightc.h"
 #include "spinhighlighter.h"
 
 #ifdef SPINSIDE
@@ -41,17 +42,17 @@ void Editor::setHighlights(QString filename)
 {
     fileName = filename;
     Properties *p = static_cast<MAINWINDOW*>(mainwindow)->propDialog;
-    if(highlighter != NULL)
+    if(highlighter != NULL) {
         delete highlighter;
-    if(filename.isEmpty()) {
-        highlighter = new Highlighter(this->document(), p);
-    } else {
+        highlighter = NULL;
+    }
+    if(filename.isEmpty() == false) {
         if(filename.contains(".spin",Qt::CaseInsensitive)) {
             highlighter = new SpinHighlighter(this->document(), p);
             isSpin = true;
         }
         else {
-            highlighter = new Highlighter(this->document(), p);
+            highlighter = new HighlightC(this->document(), p);
             isSpin = false;
         }
     }
@@ -268,6 +269,40 @@ void Editor::spinAutoShow(int width)
     cbAuto.showPopup();
 }
 
+bool Editor::isNotAutoComplete()
+{
+    QTextCursor cur = this->textCursor();
+    cur.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
+    if(cur.selectedText().contains("'")) {
+        return true;
+    }
+
+    while(cur.atStart() == false) {
+        if(cur.selectedText().contains("{")) {
+            if(cur.selectedText().contains("}") != true)
+                return true;
+            else
+                return false;
+        }
+        cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+    }
+
+    QTextCursor qcur = this->textCursor();
+    int column = qcur.columnNumber();
+    qcur.select(QTextCursor::LineUnderCursor);
+    QString text = qcur.selectedText();
+    if(text.contains("\"")) {
+        int instring = 0;
+        for(int n = 0; n < text.length(); n++) {
+            if(text.at(n) == '\"')
+                instring ^= 1;
+            if(instring && (n == column))
+                return true;
+        }
+    }
+    return false;
+}
+
 QString Editor::selectAutoComplete()
 {
     QTextCursor cur = this->textCursor();
@@ -287,12 +322,17 @@ QString Editor::selectAutoComplete()
 
 int Editor::spinAutoComplete()
 {
+    if(isNotAutoComplete())
+        return 0;
+
     QString text = selectAutoComplete();
 
     /*
      * we have an object name. get object info
      */
     if(text.length() > 0) {
+        disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected(int)));
+        disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected0insert(int)));
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected0insert(int)));
         qDebug() << "keyPressEvent object dot pressed" << text;
         QStringList list = spinParser->spinSymbols(fileName,text);
@@ -305,12 +345,20 @@ int Editor::spinAutoComplete()
             for(int j = 0; j < list.count(); j++) {
                 QString s = list[j];
                 QString type = s;
-                if(type.at(0) == 'c')
+
+                if(type.at(0) == 'c') // don't show con for object. - # shows con
                     continue;
-                if(type.at(0) == 'e')
+                if(type.at(0) == 'e') // don't show enum for object. - # shows enums
                     continue;
-                if(type.at(0) == 'o')
+                if(type.at(0) == 'o') // don't show obj for object.
                     continue;
+                if(type.at(0) == 'p') // don't show pri for object.
+                    continue;
+                if(type.at(0) == 'v') // don't show var for object.
+                    continue;
+                if(type.at(0) == 'x') // don't show dat for object.
+                    continue;
+
                 s = spinPrune(s);
                 if(s.length() > width)
                     width = s.length();
@@ -324,6 +372,8 @@ int Editor::spinAutoComplete()
      * no object name. get local info
      */
     else {
+        disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected(int)));
+        disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected0insert(int)));
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected(int)));
         qDebug() << "keyPressEvent local dot pressed";
         QStringList list = spinParser->spinSymbols(fileName,"");
@@ -332,6 +382,16 @@ int Editor::spinAutoComplete()
         if(list.count() > 0) {
             int width = 0;
             list.sort();
+            // always put objects on top
+            for(int j = 0; j < list.count(); j++) {
+                QString s = list[j];
+                QString type = s;
+                if(type.at(0) == 'o') {
+                    list.removeAt(j);
+                    list.insert(0,s);
+                }
+            }
+            // add all elements
             for(int j = 0; j < list.count(); j++) {
                 QString s = list[j];
                 QString type = s;
@@ -356,6 +416,8 @@ int  Editor::spinAutoCompleteCON()
     QString text = selectAutoComplete();
 
     if(text.length() > 0) {
+        disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected(int)));
+        disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected0insert(int)));
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected0insert(int)));
         qDebug() << "keyPressEvent # pressed" << text;
         QStringList list = spinParser->spinConstants(fileName,text);
@@ -381,6 +443,8 @@ int  Editor::spinAutoCompleteCON()
      * no object name. get local info
      */
     else {
+        disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected(int)));
+        disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected0insert(int)));
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected(int)));
         qDebug() << "keyPressEvent local # pressed";
         QStringList list = spinParser->spinConstants(fileName,"");
@@ -406,8 +470,6 @@ int  Editor::spinAutoCompleteCON()
 
 void Editor::cbAutoSelected0insert(int index)
 {
-    disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected0insert(int)));
-
     QString s = cbAuto.itemText(index);
     QTextCursor cur = this->textCursor();
     s = deletePrefix(s);
@@ -421,8 +483,6 @@ void Editor::cbAutoSelected0insert(int index)
 
 void Editor::cbAutoSelected(int index)
 {
-    disconnect(&cbAuto,SIGNAL(activated(int)),this,SLOT(cbAutoSelected(int)));
-
     QString s = cbAuto.itemText(index);
     QTextCursor cur = this->textCursor();
     s = deletePrefix(s);

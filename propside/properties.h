@@ -34,6 +34,7 @@
 #define publisherKey        "ParallaxInc"
 #define publisherComKey     "Parallax.com"
 #define ASideGuiKey         "SimpleIDE"
+
 #define ASideGuiGeometry    "SimpleIDE_WindowGeometry"
 #define helpStartupKey      "SimpleIDE_ShowHelpStart"
 #define compilerKey         "SimpleIDE_Compiler"
