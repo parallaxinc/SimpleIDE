@@ -3866,9 +3866,23 @@ void MainSpinWindow::setupFileMenu()
 
     toolsMenu->addSeparator();
     toolsMenu->addAction(QIcon(":/images/Brush.png"), tr("Font"), this, SLOT(fontDialog()));
-    toolsMenu->addAction(QIcon(":/images/resize-plus.png"), tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence::ZoomIn);
-    toolsMenu->addAction(QIcon(":/images/resize-plus.png"), tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence(Qt::CTRL+Qt::Key_Equal));
+    //toolsMenu->addAction(QIcon(":/images/resize-plus.png"), tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence::ZoomIn);
+    //toolsMenu->addAction(QIcon(":/images/resize-plus.png"), tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence(Qt::CTRL+Qt::Key_Equal));
     toolsMenu->addAction(QIcon(":/images/resize-minus.png"), tr("Smaller Font"), this, SLOT(fontSmaller()), QKeySequence::ZoomOut);
+
+    /* special provision for bigger fonts to use default ZoomIn or Ctrl+= */
+    QAction *bigger = new QAction(QIcon(":/images/resize-plus.png"), tr("Bigger Font"), this);
+    QList<QKeySequence> biggerKeys;
+    biggerKeys.append(QKeySequence::ZoomIn);
+    biggerKeys.append(QKeySequence(Qt::CTRL+Qt::Key_Equal));
+    bigger->setShortcuts(biggerKeys);
+    connect(bigger,SIGNAL(triggered()),this,SLOT(fontBigger()));
+
+    /* insert action before smaller font action */
+    QList<QAction*> alist = toolsMenu->actions();
+    QAction *last = alist.last();
+    toolsMenu->insertAction(last,bigger);
+
 
     toolsMenu->addSeparator();
     toolsMenu->addAction(tr("Next Tab"),this,SLOT(changeTab(bool)),QKeySequence::NextChild);
