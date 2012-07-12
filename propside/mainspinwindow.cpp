@@ -1412,6 +1412,10 @@ void MainSpinWindow::procReadyRead()
                 if(line.indexOf("\r") > -1) {
                     QStringList more = line.split("\r",QString::SkipEmptyParts);
                     lines.removeAt(n);
+                    if(line.contains("Propeller Version",Qt::CaseInsensitive)) {
+                        compileStatus->insertPlainText(eol+line);
+                        progress->setValue(0);
+                    }
                     for(int m = more.length()-1; m > -1; m--) {
                         QString ms = more.at(m);
                         if(ms.contains("bytes",Qt::CaseInsensitive))
