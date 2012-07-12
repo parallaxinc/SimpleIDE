@@ -2439,8 +2439,6 @@ int  MainSpinWindow::runLoader(QString copts)
     while(procDone == false)
         QApplication::processEvents();
 
-    status->setText(status->text()+tr("Done."));
-
     QTextCursor cur = compileStatus->textCursor();
     cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
     compileStatus->setTextCursor(cur);

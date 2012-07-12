@@ -16,8 +16,8 @@ DEFINES += SPINSIDE
 # DEFINES += GDBENABLE
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
-DEFINES += MINVERSION=7
-DEFINES += FIXVERSION=2
+DEFINES += MINVERSION=8
+DEFINES += FIXVERSION=0
 SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \
