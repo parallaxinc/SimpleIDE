@@ -96,9 +96,13 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
 
 void Build::procError(QProcess::ProcessError error)
 {
+    if(procDone == true)
+        return;
+
     QVariant name = process->property("Name");
     compileStatus->appendPlainText(name.toString() + tr(" error ... (%1)").arg(error));
     compileStatus->appendPlainText(process->readAllStandardOutput());
+
     procMutex.lock();
     procDone = true;
     procMutex.unlock();
@@ -329,8 +333,8 @@ int  Build::buildResult(int exitStatus, int exitCode, QString progName, QString 
 
     if(exitStatus == QProcess::CrashExit)
     {
-        status->setText(status->text()+" "+tr("Compiler Crashed"));
-        mbox.setText(tr("Compiler Crashed"));
+        status->setText(status->text()+" "+progName+" "+tr("Compiler Crashed"));
+        mbox.setText(progName+" "+tr("Compiler Crashed"));
         mbox.exec();
     }
     else if(result.toLower().indexOf("error") > -1)
