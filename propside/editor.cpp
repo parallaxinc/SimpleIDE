@@ -334,12 +334,14 @@ QString Editor::selectAutoComplete()
     return cur.selectedText().trimmed();
 }
 
+
 int Editor::spinAutoComplete()
 {
     if(isNotAutoComplete())
         return 0;
 
     QString text = selectAutoComplete();
+    // if(text.compare("#") == 0) // would like to autocomplete on previous object
 
     /*
      * we have an object name. get object info
@@ -350,6 +352,8 @@ int Editor::spinAutoComplete()
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected0insert(int)));
         qDebug() << "keyPressEvent object dot pressed" << text;
         QStringList list = spinParser->spinSymbols(fileName,text);
+        if(list.count() == 0)
+            return 0;
         cbAuto.clear();
         // we depend on index item 0 to be the auto-start key
         cbAuto.addItem(".");
@@ -360,10 +364,12 @@ int Editor::spinAutoComplete()
                 QString s = list[j];
                 QString type = s;
 
+#ifdef AUTOCON
                 if(type.at(0) == 'c') // don't show con for object. - # shows con
                     continue;
                 if(type.at(0) == 'e') // don't show enum for object. - # shows enums
                     continue;
+#endif
                 if(type.at(0) == 'o') // don't show obj for object.
                     continue;
                 if(type.at(0) == 'p') // don't show pri for object.
@@ -391,6 +397,8 @@ int Editor::spinAutoComplete()
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected(int)));
         qDebug() << "keyPressEvent local dot pressed";
         QStringList list = spinParser->spinSymbols(fileName,"");
+        if(list.count() == 0)
+            return 0;
         cbAuto.clear();
         cbAuto.addItem(".");
         if(list.count() > 0) {
@@ -409,10 +417,12 @@ int Editor::spinAutoComplete()
             for(int j = 0; j < list.count(); j++) {
                 QString s = list[j];
                 QString type = s;
+#ifdef AUTOCON
                 if(type.at(0) == 'c')
                     continue;
                 if(type.at(0) == 'e')
                     continue;
+#endif
                 s = spinPrune(s);
                 if(s.length() > width)
                     width = s.length();
@@ -427,6 +437,7 @@ int Editor::spinAutoComplete()
 
 int  Editor::spinAutoCompleteCON()
 {
+#ifdef AUTOCON
     QString text = selectAutoComplete();
 
     if(text.length() > 0) {
@@ -435,6 +446,8 @@ int  Editor::spinAutoCompleteCON()
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected0insert(int)));
         qDebug() << "keyPressEvent # pressed" << text;
         QStringList list = spinParser->spinConstants(fileName,text);
+        if(list.count() == 0)
+            return 0;
         cbAuto.clear();
         // we depend on index item 0 to be the auto-start key
         cbAuto.addItem(QString("#"));
@@ -462,6 +475,8 @@ int  Editor::spinAutoCompleteCON()
         connect(&cbAuto, SIGNAL(activated(int)), this, SLOT(cbAutoSelected(int)));
         qDebug() << "keyPressEvent local # pressed";
         QStringList list = spinParser->spinConstants(fileName,"");
+        if(list.count() == 0)
+            return 0;
         cbAuto.clear();
         cbAuto.addItem(QString("#"));
         if(list.count() > 0) {
@@ -479,6 +494,7 @@ int  Editor::spinAutoCompleteCON()
         }
         return 1;
     }
+#endif
     return 0;
 }
 

@@ -1,5 +1,12 @@
-#include <QtGui/QApplication>
+#include <QtGui>
 #include "mainspinwindow.h"
+
+QPlainTextEdit *status;
+
+void myMessageOutput(QtMsgType type, const char *msg)
+{
+    status->appendPlainText(msg);
+}
 
 int main(int argc, char *argv[])
 {
@@ -25,7 +32,13 @@ int main(int argc, char *argv[])
         a.installTranslator(&qtTranslator);
     }
 
+
     MainSpinWindow w;
+#if defined(IDEDEBUG)
+    status = w.getDebugEditor();
+    qInstallMsgHandler(myMessageOutput);
+#endif
     w.show();
+
     return a.exec();
 }
