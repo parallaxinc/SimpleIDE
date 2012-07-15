@@ -571,6 +571,10 @@ void MainSpinWindow::newProjectAccepted()
 
     QString comp = newProjDialog->getCompilerType();
 
+    qDebug() << "Project Name:" << name;
+    qDebug() << "Project Compiler:" << comp;
+    qDebug() << "Project Path:" << path;
+
     QString C_maintemplate("/**\n" \
          " * @file "+name+".c\n" \
          " * This is the main "+name+" program start point.\n" \
@@ -635,6 +639,8 @@ void MainSpinWindow::newProjectAccepted()
         return;
     }
 
+    qDebug() << "Project Start File: " << mainName;
+
     closeProject();
 
     if(dir.exists(path) == 0)
@@ -642,16 +648,24 @@ void MainSpinWindow::newProjectAccepted()
 
     QFile mainfile(mainName);
     if(mainfile.exists() == false) {
+        QTextStream os(&mainfile);
+        os.setCodec("UTF-8");
         if(mainfile.open(QFile::ReadWrite)) {
-            mainfile.write(mains.toAscii());
+            os << mains;
             mainfile.close();
         }
     }
+
     projectFile = path+"/"+name+SIDE_EXTENSION;
+    qDebug() << "Project File: " << projectFile;
     setCurrentProject(projectFile);
+    qDebug() << "Update Project: " << projectFile;
     updateProjectTree(mainName);
+    qDebug() << "Open Project File: " << projectFile;
     openFile(projectFile);
+    qDebug() << "Set Compiler: " << comp;
     projectOptions->setCompiler(comp);
+    qDebug() << "Save Project File: " << projectFile;
     saveProjectOptions();
 }
 
@@ -1931,7 +1945,7 @@ void MainSpinWindow::setProject()
     QString extension = fileName.mid(fileName.lastIndexOf(".")+1);
     if(extension.compare("spin",Qt::CaseInsensitive) == 0) {
         projectOptions->setCompiler("SPIN");
-        projectOptions->setBoardType("HUB"); // HUB is only option for SPIN
+        //projectOptions->setBoardType("HUB"); // HUB is only option for SPIN
         this->closeFile(); // do this so spin highlighter works.
         this->openFileName(fileName);
     }
@@ -2372,9 +2386,9 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     if(compileType == ProjectOptions::TAB_C_COMP) {
         args.append("-I");
         args.append(aSideIncludes);
-        args.append("-b");
-        args.append(boardName);
     }
+    args.append("-b");
+    args.append(boardName);
     args.append("-p");
     args.append(portName);
 
@@ -2607,6 +2621,13 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     connect(compileStatus,SIGNAL(selectionChanged()),this,SLOT(compileStatusClicked()));
     statusTabs->addTab(compileStatus,tr("Build Status"));
 
+    debugStatus = new QPlainTextEdit(this);
+    debugStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
+    debugStatus->setReadOnly(true);
+#if defined(IDEDEBUG)
+    statusTabs->addTab(debugStatus,tr("IDE Debug"));
+#endif
+
 #if defined(GDBENABLE)
     gdbStatus = new QPlainTextEdit(this);
     gdbStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
@@ -2799,7 +2820,7 @@ void MainSpinWindow::compilerChanged()
     }
     else if(isSpinProject()) {
         projectMenu->setEnabled(false);
-        cbBoard->setEnabled(false);
+        //cbBoard->setEnabled(false);
     }
 
 }
@@ -4111,3 +4132,7 @@ void MainSpinWindow::setupToolBars()
     ctrlToolBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 }
 
+QPlainTextEdit* MainSpinWindow::getDebugEditor()
+{
+    return this->debugStatus;
+}

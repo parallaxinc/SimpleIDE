@@ -169,6 +169,8 @@ public slots:
     void showMapFile();
     int  makeDebugFiles(QString fileName);
 
+    QPlainTextEdit* getDebugEditor();
+
 private:
     QString pathDiff(QString s2, QString s1);
     QString saveAsProjectLinkFix(QString srcPath, QString dstPath, QString link);
@@ -259,6 +261,7 @@ private:
     QMenu           *edpopup;
 
     QPlainTextEdit  *compileStatus;
+    QPlainTextEdit  *debugStatus;
 
     QString         projectFile;
     CBuildTree      *projectModel;

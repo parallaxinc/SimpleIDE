@@ -10,6 +10,7 @@ TARGET = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 DEFINES += SPINSIDE
+DEFINES += IDEDEBUG
 
 # EVENT_DRIVEN QEXTSERIALPORT is no longer used.
 # GDBENABLE is not ready, and will only be used for development testing
