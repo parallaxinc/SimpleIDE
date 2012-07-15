@@ -84,7 +84,6 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
     okButton->setDefault(true);
 
     setLayout(layout);
-    setWindowFlags(Qt::Tool);
     setMinimumWidth(500);
 
     setWindowTitle(tr("Find and Replace Text"));
@@ -402,6 +401,7 @@ bool ReplaceDialog::showEndMessage(QString type)
 
 void ReplaceDialog::accept()
 {
+    findNextClicked();
     hide();
 }
 
