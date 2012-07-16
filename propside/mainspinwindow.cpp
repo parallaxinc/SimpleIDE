@@ -2477,6 +2477,9 @@ void MainSpinWindow::compilerFinished(int exitCode, QProcess::ExitStatus status)
 
 void MainSpinWindow::closeTab(int tab)
 {
+    if(editors->count() < 1)
+        return;
+
     QMessageBox mbox(QMessageBox::Question, "Save File?", "",
                      QMessageBox::Discard | QMessageBox::Save, this);
 
