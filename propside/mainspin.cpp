@@ -47,7 +47,10 @@ int main(int argc, char *argv[])
 
 
     if(argc > 1) {
-        w.closeTab(0);
+        QString s = QString(argv[1]);
+        s = s.mid(s.lastIndexOf("."));
+        if(s.contains(".side",Qt::CaseInsensitive))
+            w.closeTab(0);
         w.openFile(QString(argv[1]));
     }
     w.show();

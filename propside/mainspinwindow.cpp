@@ -2284,6 +2284,12 @@ void MainSpinWindow::checkAndSaveFiles()
                     tr("Please save and add the file to the project to build it."),
                     QMessageBox::Ok);
             }
+            else {
+                QMessageBox::information(this,
+                    tr("Not a Project File"),
+                    tr("The file \"")+tabName+tr("\" is not part of the current project.\n"),
+                    QMessageBox::Ok);
+            }
         }
     }
 
