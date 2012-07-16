@@ -11,8 +11,21 @@ void myMessageOutput(QtMsgType type, const char *msg)
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+    MainSpinWindow w;
+#if defined(IDEDEBUG)
+    status = w.getDebugEditor();
+    qInstallMsgHandler(myMessageOutput);
+#endif
+
     a.setWindowIcon(QIcon(":/images/SimpleIDE6.png"));
 
+    a.setApplicationName(ASideGuiKey);
+    qDebug() << a.applicationName() << "arg count " << argc;
+
+    foreach(QString arg, a.arguments()) {
+        qDebug() << "arg " << arg;
+    }
     QString dir = QApplication::applicationDirPath();
 
     // dir returned from above should not have a trailing /
@@ -33,11 +46,10 @@ int main(int argc, char *argv[])
     }
 
 
-    MainSpinWindow w;
-#if defined(IDEDEBUG)
-    status = w.getDebugEditor();
-    qInstallMsgHandler(myMessageOutput);
-#endif
+    if(argc > 1) {
+        w.closeTab(0);
+        w.openFile(QString(argv[1]));
+    }
     w.show();
 
     return a.exec();
