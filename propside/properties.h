@@ -31,6 +31,8 @@
 #ifndef PROPERTIES_H
 #define PROPERTIES_H
 
+#include "propertycolor.h"
+
 #define publisherKey        "ParallaxInc"
 #define publisherComKey     "Parallax.com"
 #define ASideGuiKey         "SimpleIDE"
@@ -86,25 +88,11 @@
 
 #include <QtGui>
 
-class PColor;
-
 class Properties : public QDialog
 {
     Q_OBJECT
 public:
     explicit Properties(QWidget *parent = 0);
-
-    enum Colors {
-        Black, DarkGray, Gray, LightGray,
-        Blue, DarkBlue,
-        Cyan, DarkCyan,
-        Green, DarkGreen,
-        Magenta, DarkMagenta,
-        Red, DarkRed,
-        Yellow, DarkYellow,
-        LastColor };
-
-
 
     int getTabSpaces();
     int getLoadDelay();
@@ -227,25 +215,7 @@ private:
     QVector<PColor*> propertyColors;
 };
 
-class PColor : public QColor
-{
-private:
-    QString mName;
-    Qt::GlobalColor mValue;
 
-public:
-    PColor (QString name, Qt::GlobalColor value) {
-        mName = name;
-        mValue = value;
-    }
-    QString getName() {
-        return mName;
-    }
-    Qt::GlobalColor getValue() {
-        return mValue;
-    }
-
-};
 
 
 #endif // PROPERTIES_H
