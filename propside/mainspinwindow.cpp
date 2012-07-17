@@ -1065,6 +1065,8 @@ void MainSpinWindow::closeProject()
     for(int n = 0; n < list.length(); n++) {
         for(int tab = editorTabs->count()-1; tab > -1; tab--) {
             QString s = sourcePath(projectFile)+list.at(n);
+            if(s.length() == 0)
+                continue;
             if(s.at(0) == '>')
                 continue;
             // close exact tab
@@ -3675,6 +3677,7 @@ void MainSpinWindow::enumeratePorts()
             cbPort->addItem(name);
 #endif
     }
+    cbPort->setCurrentIndex(0);
 }
 
 void MainSpinWindow::connectButton()

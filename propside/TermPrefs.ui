@@ -75,7 +75,7 @@
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>160</y>
+       <y>140</y>
        <width>171</width>
        <height>31</height>
       </rect>
@@ -84,11 +84,11 @@
       <string>Wrap Text</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="comboBox">
+    <widget class="QComboBox" name="comboBoxWrapMode">
      <property name="geometry">
       <rect>
        <x>240</x>
-       <y>160</y>
+       <y>140</y>
        <width>161</width>
        <height>27</height>
       </rect>
@@ -104,7 +104,7 @@
       </property>
      </item>
     </widget>
-    <widget class="QComboBox" name="comboBox_2">
+    <widget class="QComboBox" name="comboBoxForeground">
      <property name="geometry">
       <rect>
        <x>240</x>
@@ -114,7 +114,7 @@
       </rect>
      </property>
     </widget>
-    <widget class="QComboBox" name="comboBox_3">
+    <widget class="QComboBox" name="comboBoxBackground">
      <property name="geometry">
       <rect>
        <x>240</x>
@@ -127,23 +127,23 @@
     <widget class="QPushButton" name="btnChooseFont">
      <property name="geometry">
       <rect>
-       <x>270</x>
+       <x>240</x>
        <y>90</y>
-       <width>131</width>
+       <width>111</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Choose Font </string>
+      <string>Set Font </string>
      </property>
     </widget>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="labelWrapLen">
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>190</y>
+       <y>170</y>
        <width>171</width>
-       <height>21</height>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
@@ -153,9 +153,9 @@
     <widget class="QSpinBox" name="spinBoxPageWrap">
      <property name="geometry">
       <rect>
-       <x>320</x>
-       <y>190</y>
-       <width>81</width>
+       <x>240</x>
+       <y>170</y>
+       <width>111</width>
        <height>25</height>
       </rect>
      </property>
@@ -168,12 +168,15 @@
      <property name="maximum">
       <number>80</number>
      </property>
+     <property name="value">
+      <number>32</number>
+     </property>
     </widget>
     <widget class="QLabel" name="labelMaxBuffer">
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>250</y>
+       <y>210</y>
        <width>161</width>
        <height>31</height>
       </rect>
@@ -182,11 +185,11 @@
       <string>Max Buffer Lines</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="comboBox_4">
+    <widget class="QComboBox" name="comboBoxBufferLines">
      <property name="geometry">
       <rect>
        <x>240</x>
-       <y>250</y>
+       <y>210</y>
        <width>161</width>
        <height>27</height>
       </rect>
@@ -221,7 +224,7 @@
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>280</y>
+       <y>240</y>
        <width>161</width>
        <height>31</height>
       </rect>
@@ -233,9 +236,9 @@
     <widget class="QSpinBox" name="spinBoxTabSize">
      <property name="geometry">
       <rect>
-       <x>320</x>
-       <y>280</y>
-       <width>81</width>
+       <x>240</x>
+       <y>240</y>
+       <width>111</width>
        <height>25</height>
       </rect>
      </property>
@@ -252,6 +255,48 @@
       <number>8</number>
      </property>
     </widget>
+    <widget class="QLabel" name="labelFont">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>96</y>
+       <width>201</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Font Family (size)</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxHexMode">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>280</y>
+       <width>191</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show Hexadecimal Input</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxHexDump">
+     <property name="geometry">
+      <rect>
+       <x>240</x>
+       <y>280</y>
+       <width>191</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>ASCII-Hex Dump</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="tabFunction">
     <attribute name="title">
@@ -260,7 +305,7 @@
     <widget class="QCheckBox" name="cbCReturn">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>230</x>
        <y>80</y>
        <width>211</width>
        <height>20</height>
@@ -269,11 +314,14 @@
      <property name="text">
       <string>(10) Carriage Return CR</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbMoveRight">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>140</y>
        <width>211</width>
        <height>20</height>
@@ -282,11 +330,14 @@
      <property name="text">
       <string>(4) Move Cursor Right</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbClearToEOL">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>230</x>
        <y>110</y>
        <width>211</width>
        <height>20</height>
@@ -295,11 +346,14 @@
      <property name="text">
       <string>(11) Clear to End of Line</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbHomeCursor">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>50</y>
        <width>211</width>
        <height>20</height>
@@ -308,11 +362,14 @@
      <property name="text">
       <string>(1) Home Cursor</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbClearScreen">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>20</y>
        <width>211</width>
        <height>20</height>
@@ -325,7 +382,7 @@
     <widget class="QCheckBox" name="cbMoveDown">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>200</y>
        <width>211</width>
        <height>20</height>
@@ -334,11 +391,14 @@
      <property name="text">
       <string>(6) Move Cursor Down</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbNewLine">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>230</x>
        <y>170</y>
        <width>211</width>
        <height>20</height>
@@ -347,11 +407,14 @@
      <property name="text">
       <string>(13) New Line NL</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbClearLinesBelow">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>230</x>
        <y>140</y>
        <width>211</width>
        <height>20</height>
@@ -360,11 +423,14 @@
      <property name="text">
       <string>(12) Clear Lines Below</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbPositionCursorX">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>230</x>
        <y>200</y>
        <width>211</width>
        <height>20</height>
@@ -373,11 +439,14 @@
      <property name="text">
       <string>(14) Position Cursor (x)</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbBackSpace">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>230</x>
        <y>20</y>
        <width>211</width>
        <height>20</height>
@@ -386,11 +455,14 @@
      <property name="text">
       <string>(8) Backspace</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbTab">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>230</x>
        <y>50</y>
        <width>211</width>
        <height>20</height>
@@ -399,11 +471,14 @@
      <property name="text">
       <string>(9) Tab</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbSwapNLCR">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>290</y>
        <width>211</width>
        <height>22</height>
@@ -416,7 +491,7 @@
     <widget class="QCheckBox" name="cbBeepSpeaker">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>230</y>
        <width>211</width>
        <height>20</height>
@@ -425,24 +500,30 @@
      <property name="text">
       <string>(7) Beep Speaker</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbPositionCursorXY">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>80</y>
        <width>211</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>(2) Position Cursor (x,y)</string>
+      <string>(2) Position Cursor X,Y</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QCheckBox" name="cbPositionCursorY">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>230</x>
        <y>230</y>
        <width>211</width>
        <height>20</height>
@@ -451,11 +532,14 @@
      <property name="text">
       <string>(15) Position Cursor (y)</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbMoveUp">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>170</y>
        <width>211</width>
        <height>20</height>
@@ -464,11 +548,14 @@
      <property name="text">
       <string>(5) Move Cursor Up</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="cbMoveLeft">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>110</y>
        <width>211</width>
        <height>20</height>
@@ -477,11 +564,14 @@
      <property name="text">
       <string>(3) Move Cursor Left</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
-    <widget class="QCheckBox" name="cbAppendCR">
+    <widget class="QCheckBox" name="cbAddCRtoNL">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>230</x>
        <y>260</y>
        <width>211</width>
        <height>22</height>
@@ -490,11 +580,14 @@
      <property name="text">
       <string>Add CR to NL</string>
      </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
     </widget>
-    <widget class="QCheckBox" name="cbAppendNL">
+    <widget class="QCheckBox" name="cbAddNLtoCR">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>230</x>
        <y>290</y>
        <width>211</width>
        <height>22</height>
@@ -504,10 +597,10 @@
       <string>Add NL to CR</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="cbClearScreen_2">
+    <widget class="QCheckBox" name="cbClearScreen16">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>260</y>
        <width>211</width>
        <height>20</height>
@@ -516,8 +609,24 @@
      <property name="text">
       <string>(16) Clear Screen</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
    </widget>
+  </widget>
+  <widget class="QPushButton" name="btnClearOptions">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>380</y>
+     <width>111</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Reset Options</string>
+   </property>
   </widget>
   <action name="actionTermPrefsOk">
    <property name="text">

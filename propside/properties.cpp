@@ -30,7 +30,7 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 
 void Properties::cleanSettings()
 {
-    QSettings settings(publisherKey, ASideGuiKey,this);
+    QSettings settings(publisherKey, ASideGuiKey);
     QStringList list = settings.allKeys();
 
     foreach(QString key, list) {
@@ -86,7 +86,7 @@ void Properties::setupFolders()
     layout->addWidget(gbIncludes);
     layout->addWidget(gbWorkspace);
 
-    QSettings settings(publisherKey, ASideGuiKey,this);
+    QSettings settings(publisherKey, ASideGuiKey);
 
 #if defined(Q_WS_WIN32)
     mypath = "C:/propgcc/";
@@ -125,6 +125,10 @@ void Properties::setupFolders()
         s = QDir::fromNativeSeparators(s);
         leditWorkspace->setText(s);
     }
+    settings.setValue(compilerKey,mygcc);
+    settings.setValue(includesKey,myinc);
+    settings.setValue(workspaceKey,leditWorkspace->text());
+
 }
 
 void Properties::setupSpinFolders()
@@ -194,15 +198,25 @@ void Properties::setupSpinFolders()
     else if(QFile::exists(myspin+"bstc.exe")) {
         myspin += "bstc.exe";
     }
+    else if(QFile::exists(myspin+"bstc.linux")) {
+        myspin += "bstc.linux";
+    }
+    else if(QFile::exists(myspin+"bstc.osx")) {
+        myspin += "bstc.osx";
+    }
     else {
         qDebug() << "Default Spin Compiler not found.";
     }
 
-    QVariant compv = settings.value(spinCompilerKey,myspin);
-    QVariant incv = settings.value(spinLibraryKey,"");
-    QVariant wrkv = settings.value(spinWorkspaceKey);
+    QString mylib(myspin);
+    if(mylib.lastIndexOf("/") == mylib.length()-1)
+        mylib = mylib.left(mylib.length()-1);
+    if(myspin.contains("/bin",Qt::CaseInsensitive))
+        mylib = mylib.left(mylib.lastIndexOf("/bin")+1)+"spin/";
 
-    QString mylib("");
+    QVariant compv = settings.value(spinCompilerKey,myspin);
+    QVariant incv = settings.value(spinLibraryKey,mylib);
+    QVariant wrkv = settings.value(spinWorkspaceKey);
 
     fileStringProperty(&compv, leditSpinCompiler, spinCompilerKey, &myspin);
     fileStringProperty(&incv,  leditSpinLibrary,  spinLibraryKey,  &mylib);
@@ -216,6 +230,7 @@ void Properties::setupSpinFolders()
     this->spinCompilerStr = leditSpinCompiler->text();
     this->spinLibraryStr = leditSpinLibrary->text();
     this->spinWorkspaceStr = leditSpinWorkspace->text();
+
 }
 
 void Properties::fileStringProperty(QVariant *var, QLineEdit *ledit, const char *key, QString *value)
@@ -315,7 +330,7 @@ void Properties::setupOptional()
     QVBoxLayout *glayout = new QVBoxLayout();
     tbox->setLayout(glayout);
 
-    QSettings settings(publisherKey, ASideGuiKey,this);
+    QSettings settings(publisherKey, ASideGuiKey);
     QVariant var;
 
     QGroupBox *gbCompiler = new QGroupBox(tr("Spin Compiler"),tbox);
@@ -381,29 +396,30 @@ void Properties::setupHighlight()
     hlbox->setLayout(hlayout);
     tabWidget.addTab(hlbox,tr("Highlight"));
 
-    propertyColors.insert(Properties::Black, new PColor(tr("Black"), Qt::black));
-    propertyColors.insert(Properties::DarkGray, new PColor(tr("Dark Gray"), Qt::darkGray));
-    propertyColors.insert(Properties::Gray, new PColor(tr("Gray"),Qt::gray));
-    propertyColors.insert(Properties::LightGray, new PColor(tr("Light Gray"),Qt::lightGray));
-    propertyColors.insert(Properties::Blue, new PColor(tr("Blue"),Qt::blue));
-    propertyColors.insert(Properties::DarkBlue, new PColor(tr("Dark Blue"),Qt::darkBlue));
-    propertyColors.insert(Properties::Cyan, new PColor(tr("Cyan"),Qt::cyan));
-    propertyColors.insert(Properties::DarkCyan, new PColor(tr("Dark Cyan"),Qt::darkCyan));
-    propertyColors.insert(Properties::Green, new PColor(tr("Green"),Qt::green));
-    propertyColors.insert(Properties::DarkGreen, new PColor(tr("Dark Green"),Qt::darkGreen));
-    propertyColors.insert(Properties::Magenta, new PColor(tr("Magenta"),Qt::magenta));
-    propertyColors.insert(Properties::DarkMagenta, new PColor(tr("Dark Magenta"),Qt::darkMagenta));
-    propertyColors.insert(Properties::Red, new PColor(tr("Red"),Qt::red));
-    propertyColors.insert(Properties::DarkRed, new PColor(tr("Dark Red"),Qt::darkRed));
-    propertyColors.insert(Properties::Yellow, new PColor(tr("Yellow"),Qt::yellow));
-    propertyColors.insert(Properties::DarkYellow, new PColor(tr("Dark Yellow"),Qt::darkYellow));
+    propertyColors.insert(PColor::Black, new PColor(tr("Black"), Qt::black));
+    propertyColors.insert(PColor::DarkGray, new PColor(tr("Dark Gray"), Qt::darkGray));
+    propertyColors.insert(PColor::Gray, new PColor(tr("Gray"),Qt::gray));
+    propertyColors.insert(PColor::LightGray, new PColor(tr("Light Gray"),Qt::lightGray));
+    propertyColors.insert(PColor::Blue, new PColor(tr("Blue"),Qt::blue));
+    propertyColors.insert(PColor::DarkBlue, new PColor(tr("Dark Blue"),Qt::darkBlue));
+    propertyColors.insert(PColor::Cyan, new PColor(tr("Cyan"),Qt::cyan));
+    propertyColors.insert(PColor::DarkCyan, new PColor(tr("Dark Cyan"),Qt::darkCyan));
+    propertyColors.insert(PColor::Green, new PColor(tr("Green"),Qt::green));
+    propertyColors.insert(PColor::DarkGreen, new PColor(tr("Dark Green"),Qt::darkGreen));
+    propertyColors.insert(PColor::Magenta, new PColor(tr("Magenta"),Qt::magenta));
+    propertyColors.insert(PColor::DarkMagenta, new PColor(tr("Dark Magenta"),Qt::darkMagenta));
+    propertyColors.insert(PColor::Red, new PColor(tr("Red"),Qt::red));
+    propertyColors.insert(PColor::DarkRed, new PColor(tr("Dark Red"),Qt::darkRed));
+    propertyColors.insert(PColor::Yellow, new PColor(tr("Yellow"),Qt::yellow));
+    propertyColors.insert(PColor::DarkYellow, new PColor(tr("Dark Yellow"),Qt::darkYellow));
+    propertyColors.insert(PColor::White, new PColor(tr("White"), Qt::white));
 
     QStringList colorlist;
     for(int n = 0; n < propertyColors.count(); n++) {
         colorlist.append(static_cast<PColor*>(propertyColors[n])->getName());
     }
 
-    QSettings settings(publisherKey, ASideGuiKey,this);
+    QSettings settings(publisherKey, ASideGuiKey);
     QVariant var;
 
     int hlrow = 0;
@@ -444,7 +460,7 @@ void Properties::setupHighlight()
     hlayout->addWidget(&hlNumStyle,hlrow,2);
     addHighlights(&hlNumColor, propertyColors);
     hlayout->addWidget(&hlNumColor,hlrow,3);
-    hlNumColor.setCurrentIndex(Properties::Magenta);
+    hlNumColor.setCurrentIndex(PColor::Magenta);
     hlrow++;
 
     var = settings.value(hlNumWeightKey,true);
@@ -461,7 +477,7 @@ void Properties::setupHighlight()
         settings.setValue(hlNumStyleKey,var.toBool());
     }
 
-    var = settings.value(hlNumColorKey,Properties::Magenta);
+    var = settings.value(hlNumColorKey,PColor::Magenta);
     if(var.canConvert(QVariant::Int)) {
         QString s = var.toString();
         int n = var.toInt();
@@ -479,7 +495,7 @@ void Properties::setupHighlight()
     hlayout->addWidget(&hlFuncStyle,hlrow,2);
     addHighlights(&hlFuncColor, propertyColors);
     hlayout->addWidget(&hlFuncColor,hlrow,3);
-    hlFuncColor.setCurrentIndex(Properties::Blue);
+    hlFuncColor.setCurrentIndex(PColor::Blue);
     hlrow++;
 
     var = settings.value(hlFuncWeightKey,false);
@@ -496,7 +512,7 @@ void Properties::setupHighlight()
         settings.setValue(hlFuncStyleKey,var.toBool());
     }
 
-    var = settings.value(hlFuncColorKey,Properties::Blue);
+    var = settings.value(hlFuncColorKey,PColor::Blue);
     if(var.canConvert(QVariant::Int)) {
         QString s = var.toString();
         int n = var.toInt();
@@ -515,7 +531,7 @@ void Properties::setupHighlight()
     hlayout->addWidget(&hlKeyWordStyle,hlrow,2);
     addHighlights(&hlKeyWordColor, propertyColors);
     hlayout->addWidget(&hlKeyWordColor,hlrow,3);
-    hlKeyWordColor.setCurrentIndex(Properties::DarkBlue);
+    hlKeyWordColor.setCurrentIndex(PColor::DarkBlue);
     hlrow++;
 
     var = settings.value(hlKeyWordWeightKey,true);
@@ -532,7 +548,7 @@ void Properties::setupHighlight()
         settings.setValue(hlKeyWordStyleKey,var.toBool());
     }
 
-    var = settings.value(hlKeyWordColorKey,Properties::DarkBlue);
+    var = settings.value(hlKeyWordColorKey,PColor::DarkBlue);
     if(var.canConvert(QVariant::Int)) {
         QString s = var.toString();
         int n = var.toInt();
@@ -550,7 +566,7 @@ void Properties::setupHighlight()
     hlayout->addWidget(&hlPreProcStyle,hlrow,2);
     addHighlights(&hlPreProcColor, propertyColors);
     hlayout->addWidget(&hlPreProcColor,hlrow,3);
-    hlPreProcColor.setCurrentIndex(Properties::DarkYellow);
+    hlPreProcColor.setCurrentIndex(PColor::DarkYellow);
     hlrow++;
 
     var = settings.value(hlPreProcWeightKey,false);
@@ -567,7 +583,7 @@ void Properties::setupHighlight()
         settings.setValue(hlPreProcStyleKey,var.toBool());
     }
 
-    var = settings.value(hlPreProcColorKey,Properties::DarkYellow);
+    var = settings.value(hlPreProcColorKey,PColor::DarkYellow);
     if(var.canConvert(QVariant::Int)) {
         QString s = var.toString();
         int n = var.toInt();
@@ -585,7 +601,7 @@ void Properties::setupHighlight()
     hlayout->addWidget(&hlQuoteStyle,hlrow,2);
     addHighlights(&hlQuoteColor, propertyColors);
     hlayout->addWidget(&hlQuoteColor,hlrow,3);
-    hlQuoteColor.setCurrentIndex(Properties::Red);
+    hlQuoteColor.setCurrentIndex(PColor::Red);
     hlrow++;
 
     var = settings.value(hlQuoteWeightKey,false);
@@ -602,7 +618,7 @@ void Properties::setupHighlight()
         settings.setValue(hlQuoteStyleKey,var.toBool());
     }
 
-    var = settings.value(hlQuoteColorKey,Properties::Red);
+    var = settings.value(hlQuoteColorKey,PColor::Red);
     if(var.canConvert(QVariant::Int)) {
         QString s = var.toString();
         int n = var.toInt();
@@ -620,7 +636,7 @@ void Properties::setupHighlight()
     hlayout->addWidget(&hlLineComStyle,hlrow,2);
     addHighlights(&hlLineComColor, propertyColors);
     hlayout->addWidget(&hlLineComColor,hlrow,3);
-    hlLineComColor.setCurrentIndex(Properties::Green);
+    hlLineComColor.setCurrentIndex(PColor::Green);
     hlrow++;
 
     var = settings.value(hlLineComWeightKey,false);
@@ -637,7 +653,7 @@ void Properties::setupHighlight()
         settings.setValue(hlLineComStyleKey,var.toBool());
     }
 
-    var = settings.value(hlLineComColorKey,Properties::DarkGreen);
+    var = settings.value(hlLineComColorKey,PColor::DarkGreen);
     if(var.canConvert(QVariant::Int)) {
         QString s = var.toString();
         int n = var.toInt();
@@ -655,7 +671,7 @@ void Properties::setupHighlight()
     hlayout->addWidget(&hlBlockComStyle,hlrow,2);
     addHighlights(&hlBlockComColor, propertyColors);
     hlayout->addWidget(&hlBlockComColor,hlrow,3);
-    hlBlockComColor.setCurrentIndex(Properties::Green);
+    hlBlockComColor.setCurrentIndex(PColor::Green);
     hlrow++;
 
     var = settings.value(hlBlockComWeightKey,false);
@@ -672,7 +688,7 @@ void Properties::setupHighlight()
         settings.setValue(hlBlockComStyleKey,var.toBool());
     }
 
-    var = settings.value(hlBlockComColorKey,Properties::DarkGreen);
+    var = settings.value(hlBlockComColorKey,PColor::DarkGreen);
     if(var.canConvert(QVariant::Int)) {
         QString s = var.toString();
         int n = var.toInt();
@@ -754,7 +770,7 @@ void Properties::browseIncludes()
 
 void Properties::browseWorkspace()
 {
-    QSettings settings(publisherKey, ASideGuiKey,this);
+    QSettings settings(publisherKey, ASideGuiKey);
     QVariant vpath = settings.value(workspaceKey,QVariant("~/."));
     QString path = "";
     if(vpath.canConvert(QVariant::String)) {
@@ -832,7 +848,7 @@ void Properties::browseSpinLibrary()
 
 void Properties::browseSpinWorkspace()
 {
-    QSettings settings(publisherKey, ASideGuiKey,this);
+    QSettings settings(publisherKey, ASideGuiKey);
     QVariant vpath = settings.value(spinWorkspaceKey,QVariant("~/."));
     QString path = "";
     if(vpath.canConvert(QVariant::String)) {
@@ -868,7 +884,7 @@ void Properties::browseSpinWorkspace()
 
 void Properties::accept()
 {
-    QSettings settings(publisherKey, ASideGuiKey,this);
+    QSettings settings(publisherKey, ASideGuiKey);
     //QString s = leditSpinLibrary->text();
     settings.setValue(compilerKey,leditCompiler->text());
     settings.setValue(includesKey,leditIncludes->text());

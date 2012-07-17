@@ -13,6 +13,14 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
     setFont(QFont("courier"));
     isEnabled = true;
+    maxcol = 32;
+    wrapMode = 0;
+    tabsize = 8;
+    hexmode = false;
+    hexbytes = 0;
+    maxhex = 16;
+    for(int n = 0; n < maxhex; n++)
+        hexbyte[n] = 0;
 }
 
 void Console::setPortEnable(bool value)
@@ -20,7 +28,9 @@ void Console::setPortEnable(bool value)
     utfparse = false;
     utfbytes = 0;
     utf8 = 0;
-
+    hexbytes = 0;
+    for(int n = 0; n < maxhex; n++)
+        hexbyte[n] = 0;
     isEnabled = value;
 }
 
@@ -34,7 +44,9 @@ void Console::clear()
     utfparse = false;
     utfbytes = 0;
     utf8 = 0;
-
+    hexbytes = 0;
+    for(int n = 0; n < maxhex; n++)
+        hexbyte[n] = 0;
     setPlainText("");
 }
 
@@ -57,6 +69,19 @@ void Console::keyPressEvent(QKeyEvent *event)
     }
 }
 
+void Console::resizeEvent(QResizeEvent *e)
+{
+    QFontMetrics fm(this->font());
+    maxcol = this->width()/8;
+    if(fm.width("X") > 0) {
+        maxcol = width()/fm.width("X")-3;
+    }
+
+    //qDebug() << maxcol << width() << fm.width("X");
+    QPlainTextEdit::resizeEvent(e);
+}
+
+
 #ifdef EVENT_DRIVEN
 enum { BUFFERSIZE = 2048 };
 #else
@@ -67,7 +92,6 @@ enum { BUFFERSIZE = 64 };
 #endif
 #endif
 
-#if 0
 void Console::updateReady(QextSerialPort* port)
 {
     if(isEnabled == false)
@@ -82,128 +106,64 @@ void Console::updateReady(QextSerialPort* port)
     if(length < 1)
         return;
 
-    QString text = "";
-    QTextCursor cur = this->textCursor();
-
-    if(cur.block().length() > 200)
-        cur.insertBlock();
-
-    // always start at the end just in case someone clicked the window
-    moveCursor(QTextCursor::End);
-    //qDebug() << QByteArray(buffer,length);
-
-    for(int n = 0; n < length; n++)
-    {
-        char ch = ba[n];
-
-        //qDebug(QString(" %1 %2").arg(ch, 2, 16, QChar('0')).arg(QChar(ch)).toAscii());
-        //insertPlainText(QString(" %1 ").arg(ch, 2, 16, QChar('0')));
-        //insertPlainText(QChar(ch));
-
-        if (ch & 0x80) {    //UTF-8 parsing and handling
-            if (utfparse == true) {
-
-                utf8 <<= 6;
-                utf8 |= (ch & 0x3F);
-
-                utfbytes--;
-
-                if (utfbytes == 0) {
-                    utfparse = false;
-                    cur.insertText(QChar(utf8));
-                }
-            } else {
-                utfparse = true;
-                utf8 = 0;
-
-                while (ch & 0x80) {
-                    ch <<= 1;
-                    utfbytes++;
-                }
-
-                ch >>= utfbytes;
-
-                utf8 = (int)ch;
-
-                utfbytes--;
-            }
-            continue;
-        }
-
-        switch(ch)
-        {
-            case 0: {
-                setPlainText("");
-                moveCursor(QTextCursor::End);
-                break;
-            }
-            case '\b': {
-                text = toPlainText();
-                setPlainText(text.mid(0,text.length()-1));
-                moveCursor(QTextCursor::End);
-                break;
-            }
-            case '\n': {
-                cur.insertText(QString(ch));
-                moveCursor(QTextCursor::End);
-                break;
-            }
-            case '\r': {
-                char nc = ba[n+1];
-                if(n >= length-1) {
-                    ba = port->read(BUFFERSIZE);
-                    length = ba.length();
-                    n = 0;
-                    nc = ba[n];
-                    /* for loop incrs back to 0 for next round
-                     * we need to process nc == '\n' and other chars there
-                     */
-                    n--;
-                }
-                if(nc != '\n') {
-                    text = toPlainText();
-                    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
-                    cur.removeSelectedText();
-                }
-                break;
-            }
-            default: {
-                cur.insertText(QString(ch));
-                moveCursor(QTextCursor::End);
-                break;
-            }
-        }
+    if(hexmode != false) {
+        for(int n = 0; n < length; n++)
+            dumphex((int)ba.at(n));
+        return;
     }
-}
-#else
-
-void Console::updateReady(QextSerialPort* port)
-{
-    if(isEnabled == false)
-        return;
-
-    if(port->bytesAvailable() < 1)
-        return;
-
-    QByteArray ba = port->read(BUFFERSIZE);
-    int length = ba.length();
-
-    if(length < 1)
-        return;
-
     for(int n = 0; n < length; n++)
         update(ba.at(n));
 }
-#endif
 
+void Console::dumphex(int ch)
+{
+    QTextCursor cur = this->textCursor();
+    // always start at the end just in case someone clicked the window
+    moveCursor(QTextCursor::End);
+
+    if(hexdump != true) {
+        if(wrapMode > 0) {
+            if(cur.block().length() > wrapMode)
+                cur.insertBlock();
+        }
+        else if(cur.block().length() > maxcol-2) {
+            cur.insertBlock();
+        }
+
+        cur.insertText(QString(" %1").arg(ch,2,16,QChar('0')));
+    }
+    else {
+        int byte = hexbytes % maxhex;
+        if(byte == 0) {
+            cur.insertText(QString("  "));
+            for(int n = 0; n < maxhex; n++) {
+                if(isprint(hexbyte[n]))
+                    cur.insertText(QString(hexbyte[n]));
+                else
+                    cur.insertText(QString("."));
+            }
+            cur.insertBlock();
+        }
+        hexbyte[byte] = ch;
+        hexbytes++;
+
+        cur.insertText(QString(" %1").arg(ch,2,16,QChar('0')));
+    }
+}
 
 void Console::update(char ch)
 {
     QString text = "";
     QTextCursor cur = this->textCursor();
+    this->setWordWrapMode(QTextOption::WrapAnywhere);
 
-    if(cur.block().length() > 120)
+    if(wrapMode > 0) {
+        if(cur.block().length() > wrapMode)
+            cur.insertBlock();
+    }
+    else if(cur.block().length() > maxcol) {
         cur.insertBlock();
+    }
 
     // always start at the end just in case someone clicked the window
     moveCursor(QTextCursor::End);
@@ -242,6 +202,8 @@ void Console::update(char ch)
         //continue;
         return;
     }
+
+    int col = cur.columnNumber();
 
     switch(pcmd)
     {
@@ -356,9 +318,11 @@ void Console::update(char ch)
 
             case EN_Tab: {
                     if(this->enableTab) {
-                        int column = cur.columnNumber() % 8;
-                        while(column++ < 8)
-                            cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor);
+                        int column = cur.columnNumber() % tabsize;
+                        while(column++ < tabsize) {
+                            moveCursor(QTextCursor::End);
+                            cur.insertText(" ");
+                        }
                         setTextCursor(cur);
                     }
                 }
@@ -373,6 +337,15 @@ void Console::update(char ch)
                         if(enableNewLine) {
                             cur.insertBlock();
                             setTextCursor(cur);
+#if 0
+                            if(this->enableAddCRtoNL == false) {
+                                while(col-- > -1) {
+                                    cur.insertText(" ");
+                                    cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor, 1);
+                                }
+                                setTextCursor(cur);
+                            }
+#endif
                         }
                     }
                     else if(ch == creturn) {
@@ -380,6 +353,16 @@ void Console::update(char ch)
                             text = toPlainText();
                             cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
                             setTextCursor(cur);
+#if 0
+                            if(this->enableAddNLtoCR) {
+                                cur.insertBlock();
+                                setTextCursor(cur);
+                            }
+                            else {
+                                cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+                                setTextCursor(cur);
+                            }
+#endif
                         }
                     }
                     lastchar = ch; // later check for appendCR and add it

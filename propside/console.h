@@ -61,6 +61,16 @@ public:
     void setEnablePosCursorY(bool value) {
          enablePosCursorY = value;
     }
+    void setEnableClearScreen16(bool value) {
+         enableClearScreen = value;
+    }
+    void setEnableAddCRtoNL(bool value) {
+         enableAddCRtoNL = value;
+    }
+    void setEnableAddNLtoCR(bool value) {
+         enableAddNLtoCR = value;
+    }
+
 
     void setEnableSwapNLCR(bool value) {
          enableSwapNLCR = value;
@@ -74,21 +84,29 @@ public:
          }
     }
 
-    void setRnableAddCRtoNL(bool value) {
-         enableAddCRtoNL = value;
+    void setWrapMode(int mode) {
+        wrapMode = mode;
+        if(mode == 0) {
+            this->setWordWrapMode(QTextOption::WordWrap);
+        }
+        else {
+            this->setWordWrapMode(QTextOption::WrapAnywhere);
+        }
     }
 
-private:
+    void setTabSize(int size) {
+        tabsize = size;
+    }
 
-    typedef enum {
-        PCMD_NONE = 0,
-        PCMD_CURPOS_X,
-        PCMD_CURPOS_Y,
-        PCMD_CURPOS_XY
-    } PCmdEn;
+    void setHexMode(bool enable) {
+        hexmode = enable;
+    }
 
-    PCmdEn  pcmd;
-    int     pcmdlen;
+    void setHexDump(bool enable) {
+        hexdump = enable;
+    }
+
+public:
 
     typedef enum {
         EN_ClearScreen = 0,
@@ -107,8 +125,24 @@ private:
         EN_NewLine,
         EN_PosCursorX,
         EN_PosCursorY,
-        EN_ClearScreen2 //16
+        EN_ClearScreen2, //16
+         // everything from here down is to make save/restore settings easier
+        EN_AddCRtoNL,
+        EN_AddNLtoCR,
+        EN_LAST
     } EnableEn;
+
+private:
+
+    typedef enum {
+        PCMD_NONE = 0,
+        PCMD_CURPOS_X,
+        PCMD_CURPOS_Y,
+        PCMD_CURPOS_XY
+    } PCmdEn;
+
+    PCmdEn  pcmd;
+    int     pcmdlen;
 
     bool enableClearScreen;
     bool enableHomeCursor;
@@ -126,9 +160,10 @@ private:
     bool enableNewLine;
     bool enablePosCursorX;
     bool enablePosCursorY;
+    bool enableAddCRtoNL;
+    bool enableAddNLtoCR;
 
     bool enableSwapNLCR;
-    bool enableAddCRtoNL;
 
     bool enableANSI;
 
@@ -141,12 +176,25 @@ private:
     int  utfbytes;
     int  utf8;
 
+    int  maxcol;
+    int  wrapMode;
+    int  tabsize;
+
+    bool hexmode;
+    int  hexbytes;
+    int  maxhex;
+    int  hexbyte[17];
+    bool hexdump;
+
 protected:
     void keyPressEvent(QKeyEvent* event);
+    void resizeEvent(QResizeEvent *e);
 
 public slots:
     void updateReady(QextSerialPort*);
+    void dumphex(int ch);
     void update(char ch);
+
 };
 
 #endif // CONSOLE_H
