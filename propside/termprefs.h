@@ -27,7 +27,7 @@
 #define enableKeyPosCursorY         appNameKey "_enablePosCursorY"
 #define enableKeySwapNLCR           appNameKey "_enableSwapNLCR"
 #define enableKeyAddNLtoCR          appNameKey "_enableAddNLtoCR"
-#define enableKeyAddCRtoNL          appNameKey "_enableAddCRtoNL"
+#define enableKeyEnterIsNL          appNameKey "_enableEnterIsNL"
 
 #define termKeyForeground           appNameKey "_termForeground"
 #define termKeyBackground           appNameKey "_termBackground"

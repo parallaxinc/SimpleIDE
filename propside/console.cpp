@@ -13,6 +13,9 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
     setFont(QFont("courier"));
     isEnabled = true;
+    pcmd = Console::PCMD_NONE;
+    pcmdx = 0;
+    pcmdy = 0;
     maxcol = 32;
     wrapMode = 0;
     tabsize = 8;
@@ -166,48 +169,29 @@ void Console::update(char ch)
     }
 
     // always start at the end just in case someone clicked the window
-    moveCursor(QTextCursor::End);
+    //moveCursor(QTextCursor::End);
+    // now that we have cursor positioning we can't always start at the end.
 
     //qDebug(QString(" %1 %2").arg(ch, 2, 16, QChar('0')).arg(QChar(ch)).toAscii());
     //insertPlainText(QString(" %1 ").arg(ch, 2, 16, QChar('0')));
     //insertPlainText(QChar(ch));
 
-    if (ch & 0x80) {    //UTF-8 parsing and handling
-        if (utfparse == true) {
-
-            utf8 <<= 6;
-            utf8 |= (ch & 0x3F);
-
-            utfbytes--;
-
-            if (utfbytes == 0) {
-                utfparse = false;
-                cur.insertText(QChar(utf8));
-            }
-        } else {
-            utfparse = true;
-            utf8 = 0;
-
-            while (ch & 0x80) {
-                ch <<= 1;
-                utfbytes++;
-            }
-
-            ch >>= utfbytes;
-
-            utf8 = (int)ch;
-
-            utfbytes--;
-        }
-        //continue;
-        return;
-    }
-
-    int col = cur.columnNumber();
-
+    qDebug() << QString("%1 %2,%3 %4,%5").arg(pcmd,2,10,QChar('0')).arg(cur.columnNumber(),2,10,QChar('0')).arg(cur.blockNumber(),2,10,QChar('0')).arg(ch,2,10,QChar('0')).arg(ch,1,QChar('0'));
     switch(pcmd)
     {
         case PCMD_CURPOS_X: {
+                pcmdx = ch;
+                cur.movePosition(QTextCursor::Start,QTextCursor::MoveAnchor);
+                cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,pcmdy);
+                setTextCursor(cur);
+
+                int j = cur.block().length();
+                if(j < ch) {
+                    for(; j <= ch; j++) {
+                        cur.movePosition(QTextCursor::EndOfBlock,QTextCursor::MoveAnchor);
+                        cur.insertText(" ");
+                    }
+                }
                 cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
                 cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor,ch);
                 setTextCursor(cur);
@@ -216,8 +200,20 @@ void Console::update(char ch)
             break;
 
         case PCMD_CURPOS_Y: {
+                pcmdy = ch;
+                int j = this->blockCount();
+                if(this->blockCount() < ch) {
+                    for(; j <= ch; j++) {
+                        cur.movePosition(QTextCursor::End);
+                        cur.insertBlock(cur.blockFormat(),cur.charFormat());
+                    }
+                }
                 cur.movePosition(QTextCursor::Start,QTextCursor::MoveAnchor);
                 cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,ch);
+                setTextCursor(cur);
+
+                cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+                cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor,pcmdx);
                 setTextCursor(cur);
                 pcmd = PCMD_NONE;
             }
@@ -225,13 +221,30 @@ void Console::update(char ch)
 
         case PCMD_CURPOS_XY: {
                 if(pcmdlen == 2) {
-                    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-                    cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor,ch);
-                    setTextCursor(cur);
+                    pcmdx = ch;
                 }
                 else if(pcmdlen == 1) {
+                    pcmdy = ch;
+                    int j = this->blockCount();
+                    if(this->blockCount() < ch) {
+                        for(; j < ch; j++) {
+                            cur.movePosition(QTextCursor::End);
+                            cur.insertBlock(cur.blockFormat(),cur.charFormat());
+                        }
+                    }
                     cur.movePosition(QTextCursor::Start,QTextCursor::MoveAnchor);
-                    cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,ch);
+                    cur.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, ch);
+                    setTextCursor(cur);
+
+                    j = cur.block().length();
+                    if(j < pcmdx) {
+                        for(; j < pcmdx; j++) {
+                            cur.movePosition(QTextCursor::EndOfBlock,QTextCursor::MoveAnchor);
+                            cur.insertText(" ");
+                        }
+                    }
+                    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+                    cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor,ch);
                     setTextCursor(cur);
                 }
                 pcmdlen--;
@@ -241,6 +254,37 @@ void Console::update(char ch)
             break;
 
         default: {
+
+            if (ch & 0x80) {    //UTF-8 parsing and handling
+                if (utfparse == true) {
+
+                    utf8 <<= 6;
+                    utf8 |= (ch & 0x3F);
+
+                    utfbytes--;
+
+                    if (utfbytes == 0) {
+                        utfparse = false;
+                        cur.insertText(QChar(utf8));
+                    }
+                } else {
+                    utfparse = true;
+                    utf8 = 0;
+
+                    while (ch & 0x80) {
+                        ch <<= 1;
+                        utfbytes++;
+                    }
+
+                    ch >>= utfbytes;
+
+                    utf8 = (int)ch;
+
+                    utfbytes--;
+                }
+                //continue;
+                return;
+            }
 
             switch(ch)
             {
@@ -256,6 +300,22 @@ void Console::update(char ch)
                     if(this->enableHomeCursor) {
                         cur.movePosition(QTextCursor::Start,QTextCursor::MoveAnchor);
                         setTextCursor(cur);
+                    }
+                }
+                break;
+
+            case EN_PosCursorX: {
+                    if(this->enablePosCursorX) {
+                        pcmd = PCMD_CURPOS_X;
+                        pcmdlen  = 1;
+                    }
+                }
+                break;
+
+            case EN_PosCursorY: {
+                    if(this->enablePosCursorY) {
+                        pcmd = PCMD_CURPOS_Y;
+                        pcmdlen  = 1;
                     }
                 }
                 break;
@@ -335,17 +395,15 @@ void Console::update(char ch)
             case EN_CReturn: {
                     if(ch == newline) {
                         if(enableNewLine) {
+                            int col = cur.columnNumber();
                             cur.insertBlock();
-                            setTextCursor(cur);
-#if 0
                             if(this->enableAddCRtoNL == false) {
                                 while(col-- > -1) {
                                     cur.insertText(" ");
                                     cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor, 1);
                                 }
-                                setTextCursor(cur);
                             }
-#endif
+                            setTextCursor(cur);
                         }
                     }
                     else if(ch == creturn) {
@@ -400,6 +458,9 @@ void Console::update(char ch)
                 break;
             }
             break;
+
+            pcmdx = cur.columnNumber();
+            pcmdy = cur.blockNumber();
 
         } // end pcmd default
     } // end pcmd switch
