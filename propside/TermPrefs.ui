@@ -485,7 +485,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Swap CR/NL</string>
+      <string>Swap Receive CR/NL</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="cbBeepSpeaker">
@@ -573,7 +573,7 @@
       <rect>
        <x>230</x>
        <y>260</y>
-       <width>211</width>
+       <width>201</width>
        <height>22</height>
       </rect>
      </property>
@@ -584,17 +584,20 @@
       <bool>false</bool>
      </property>
     </widget>
-    <widget class="QCheckBox" name="cbAddNLtoCR">
+    <widget class="QCheckBox" name="cbEnterIsNL">
      <property name="geometry">
       <rect>
        <x>230</x>
        <y>290</y>
-       <width>211</width>
+       <width>201</width>
        <height>22</height>
       </rect>
      </property>
      <property name="text">
-      <string>Add NL to CR</string>
+      <string>Enter is NL</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QCheckBox" name="cbClearScreen16">

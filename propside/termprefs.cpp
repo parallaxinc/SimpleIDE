@@ -35,7 +35,7 @@ TermPrefs::TermPrefs(Console *con) : ui(new Ui::TermPrefs)
     settingNames.append(enableKeyPosCursorY);
     settingNames.append(enableKeyClearScreen16);
     settingNames.append(enableKeyAddNLtoCR);
-    settingNames.append(enableKeyAddCRtoNL);
+    settingNames.append(enableKeyEnterIsNL);
 
 
     propertyColors.insert(PColor::Black, new PColor(tr("Black"), Qt::black));
@@ -109,7 +109,7 @@ void TermPrefs::resetSettings()
     ui->cbPositionCursorY->setChecked(true);
     ui->cbClearScreen16->setChecked(true);
     ui->cbAddCRtoNL->setChecked(false);
-    ui->cbAddNLtoCR->setChecked(false);
+    ui->cbEnterIsNL->setChecked(true);
     ui->cbSwapNLCR->setChecked(false);
 
     saveSettings();
@@ -213,8 +213,8 @@ void TermPrefs::saveSettings()
     enable[j] = ui->cbAddCRtoNL->isChecked();
     serialConsole->setEnableAddCRtoNL(enable[j++]);
 
-    enable[j] = ui->cbAddNLtoCR->isChecked();
-    serialConsole->setEnableAddNLtoCR(enable[j++]);
+    enable[j] = ui->cbEnterIsNL->isChecked();
+    serialConsole->setEnableEnterIsNL(enable[j++]);
 
     /*
      * now save "function" settings
@@ -344,7 +344,7 @@ void TermPrefs::readSettings()
     enable[n++] = ui->cbPositionCursorY->isChecked();
     enable[n++] = ui->cbClearScreen16->isChecked();
     enable[n++] = ui->cbAddCRtoNL->isChecked();
-    enable[n++] = ui->cbAddNLtoCR->isChecked();
+    enable[n++] = ui->cbEnterIsNL->isChecked();
     enable[n++] = ui->cbSwapNLCR->isChecked();
 
     QVariant var;
@@ -420,8 +420,8 @@ void TermPrefs::readSettings()
     ui->cbAddCRtoNL->setChecked(enable[j]);
     serialConsole->setEnableAddCRtoNL(enable[j++]);
 
-    ui->cbAddNLtoCR->setChecked(enable[j]);
-    serialConsole->setEnableAddNLtoCR(enable[j++]);
+    ui->cbEnterIsNL->setChecked(enable[j]);
+    serialConsole->setEnableEnterIsNL(enable[j++]);
 
 
     /*

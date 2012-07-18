@@ -67,8 +67,8 @@ public:
     void setEnableAddCRtoNL(bool value) {
          enableAddCRtoNL = value;
     }
-    void setEnableAddNLtoCR(bool value) {
-         enableAddNLtoCR = value;
+    void setEnableEnterIsNL(bool value) {
+         enableEnterIsNL = value;
     }
 
 
@@ -82,6 +82,12 @@ public:
              newline = 13;
              creturn = 10;
          }
+    }
+
+    int getEnter() {
+        if(enableEnterIsNL)
+            return newline;
+        return creturn;
     }
 
     void setWrapMode(int mode) {
@@ -128,7 +134,7 @@ public:
         EN_ClearScreen2, //16
          // everything from here down is to make save/restore settings easier
         EN_AddCRtoNL,
-        EN_AddNLtoCR,
+        EN_EnterIsNL,
         EN_LAST
     } EnableEn;
 
@@ -136,13 +142,15 @@ private:
 
     typedef enum {
         PCMD_NONE = 0,
-        PCMD_CURPOS_X,
-        PCMD_CURPOS_Y,
-        PCMD_CURPOS_XY
+        PCMD_CURPOS_XY = 2,
+        PCMD_CURPOS_X = 14,
+        PCMD_CURPOS_Y = 15
     } PCmdEn;
 
     PCmdEn  pcmd;
     int     pcmdlen;
+    int     pcmdx;
+    int     pcmdy;
 
     bool enableClearScreen;
     bool enableHomeCursor;
@@ -161,7 +169,7 @@ private:
     bool enablePosCursorX;
     bool enablePosCursorY;
     bool enableAddCRtoNL;
-    bool enableAddNLtoCR;
+    bool enableEnterIsNL;
 
     bool enableSwapNLCR;
 
