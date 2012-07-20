@@ -64,10 +64,15 @@ int  BuildSpin::runBstc(QString spinfile)
     QString spin = properties->getSpinCompilerStr();
     QString comp = spin.mid(spin.lastIndexOf("/")+1);
 
+    QDir libdir;
+
     if((comp.compare("spin",Qt::CaseInsensitive) == 0) ||
        (comp.compare("spin.exe",Qt::CaseInsensitive) == 0)) {
         // Roy's compiler always makes a .binary
-        args.append("-I");
+        if(libdir.exists(properties->getSpinLibraryStr())) {
+            args.append("-I");
+            args.append(properties->getSpinLibraryStr());
+        }
     }
     else {
         /* other compiler options */
@@ -80,9 +85,11 @@ int  BuildSpin::runBstc(QString spinfile)
 
         // BSTC needs to be told to make a .binary
         args.append("-b");
-        args.append("-L");
+        if(libdir.exists(properties->getSpinLibraryStr())) {
+            args.append("-L");
+            args.append(properties->getSpinLibraryStr());
+        }
     }
-    args.append(properties->getSpinLibraryStr());
 
     args.append(spinfile); // using shortname limits us to files in the project directory.
 
