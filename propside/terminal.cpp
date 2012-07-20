@@ -44,6 +44,12 @@ void Terminal::init()
     buttonEnable->setDefault(false);
 #endif
 
+#if defined(ENABLEECHO)
+    QCheckBox *checkEchoOn = new QCheckBox(tr("Echo On"));
+    checkEchoOn->setChecked(options->echoOn());
+    connect(checkEchoOn,SIGNAL(clicked(bool)),this,SLOT(setEchoOn(bool)));
+#endif
+
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
@@ -57,6 +63,11 @@ void Terminal::init()
     butLayout->addWidget(buttonOpt);
 #ifdef TERM_ENABLE_BUTTON
     butLayout->addWidget(buttonEnable);
+#endif
+
+#if defined(ENABLEECHO)
+    butLayout->addWidget(checkEchoOn);
+    butLayout->addWidget(comboBaud);
 #endif
     butLayout->addWidget(buttonBox);
     setLayout(termLayout);

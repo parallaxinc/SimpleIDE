@@ -40,6 +40,9 @@
 #define termKeyHexMode              appNameKey "_termHexMode"
 #define termKeyHexDump              appNameKey "_termHexDumpMode"
 
+#define termKeyEchoOn               appNameKey "_termEchoOn"
+#define termKeyBaudRate             appNameKey "_termBaudRate"
+
 namespace Ui {
     class TermPrefs;
 }
@@ -55,6 +58,11 @@ public:
     void readSettings();
 
     void showDialog();
+
+    int  baudRate();
+    void setBaudRate(int val);
+    bool echoOn();
+    void setEchoOn(bool val);
 
 public slots:
     void chooseFont();

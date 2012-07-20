@@ -1,6 +1,8 @@
 #include <QtGui>
 #include "mainspinwindow.h"
 
+//#undef IDEDEBUG
+
 QPlainTextEdit *status;
 
 void myMessageOutput(QtMsgType type, const char *msg)
@@ -11,12 +13,6 @@ void myMessageOutput(QtMsgType type, const char *msg)
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
-    MainSpinWindow w;
-#if defined(IDEDEBUG)
-    status = w.getDebugEditor();
-    qInstallMsgHandler(myMessageOutput);
-#endif
 
     a.setWindowIcon(QIcon(":/images/SimpleIDE6.png"));
 
@@ -45,6 +41,7 @@ int main(int argc, char *argv[])
         a.installTranslator(&qtTranslator);
     }
 
+    MainSpinWindow w;
 
     if(argc > 1) {
         QString s = QString(argv[1]);
@@ -53,6 +50,11 @@ int main(int argc, char *argv[])
             w.closeTab(0);
         w.openFile(QString(argv[1]));
     }
+
+#if defined(IDEDEBUG)
+    status = w.getDebugEditor();
+    qInstallMsgHandler(myMessageOutput);
+#endif
     w.show();
 
     return a.exec();
