@@ -625,6 +625,8 @@ void Console::update(char ch)
                 break;
 
             default: {
+                    if(cur.block().length()-1 > cur.columnNumber())
+                        cur.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor);
                     cur.insertText(QString(ch));
                     setTextCursor(cur);
                 }
