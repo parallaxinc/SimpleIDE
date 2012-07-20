@@ -151,6 +151,12 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     term = new Terminal(this);
     termEditor = term->getEditor();
 
+    QVariant gv = settings->value(termGeometryKey);
+    if(gv.canConvert(QVariant::ByteArray)) {
+        QByteArray geo = gv.toByteArray();
+        term->restoreGeometry(geo);
+    }
+
     /* tell port listener to use terminal editor for i/o */
     portListener = new PortListener(this, termEditor);
     portListener->setTerminalWindow(termEditor);
@@ -231,12 +237,21 @@ void MainSpinWindow::keyHandler(QKeyEvent* event)
     case Qt::Key_Backspace:
         key = '\b';
         break;
+    case Qt::Key_Alt:
+        return;
+    case Qt::Key_Control:
+        return;
+    case Qt::Key_Shift:
+        return;
     default:
-        if(key & Qt::Key_Escape)
-            return;
-        if(event->text().length() > 0) {
-            QChar c = event->text().at(0);
-            key = (int)c.toAscii();
+        if(QApplication::keyboardModifiers() & Qt::CTRL) {
+            key &= ~0xe0;
+        }
+        else {
+            if(event->text().length() > 0) {
+                QChar c = event->text().at(0);
+                key = (int)c.toAscii();
+            }
         }
         break;
     }
@@ -428,6 +443,10 @@ void MainSpinWindow::quitProgram()
     // save user's width/height
     QByteArray geo = this->saveGeometry();
     settings->setValue(ASideGuiGeometry,geo);
+
+    // save terminal geometry width/height
+    geo = term->saveGeometry();
+    settings->setValue(termGeometryKey,geo);
 
     delete replaceDialog;
     delete propDialog;
@@ -2634,7 +2653,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 
     debugStatus = new QPlainTextEdit(this);
     debugStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
-    debugStatus->setReadOnly(true);
+    //debugStatus->setReadOnly(true);
 #if defined(IDEDEBUG)
     statusTabs->addTab(debugStatus,tr("IDE Debug"));
 #endif

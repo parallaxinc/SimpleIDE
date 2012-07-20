@@ -13,104 +13,32 @@ public:
     bool enabled();
     void clear();
 
-    void setEnableClearScreen(bool value) {
-         enableClearScreen = value;
-    }
-    void setEnableHomeCursor(bool value) {
-         enableHomeCursor = value;
-    }
-    void setEnablePosXYCursor(bool value) {
-         enablePosXYCursor = value;
-    }
-    void setEnableMoveCursorLeft(bool value) {
-         enableMoveCursorLeft = value;
-    }
-    void setEnableMoveCursorRight(bool value) {
-         enableMoveCursorRight = value;
-    }
-    void setEnableMoveCursorUp(bool value) {
-         enableMoveCursorUp = value;
-    }
-    void setEnableMoveCursorDown(bool value) {
-         enableMoveCursorDown = value;
-    }
-    void setEnableBeepSpeaker(bool value) {
-         enableBeepSpeaker = value;
-    }
-    void setEnableBackspace(bool value) {
-         enableBackspace = value;
-    }
-    void setEnableTab(bool value) {
-         enableTab = value;
-    }
-    void setEnableCReturn(bool value) {
-         enableCReturn = value;
-    }
-    void setEnableClearToEOL(bool value) {
-         enableClearToEOL = value;
-    }
-    void setEnableClearLinesBelow(bool value) {
-         enableClearLinesBelow = value;
-    }
-    void setEnableNewLine(bool value) {
-         enableNewLine = value;
-    }
-    void setEnablePosCursorX(bool value) {
-         enablePosCursorX = value;
-    }
-    void setEnablePosCursorY(bool value) {
-         enablePosCursorY = value;
-    }
-    void setEnableClearScreen16(bool value) {
-         enableClearScreen = value;
-    }
-    void setEnableAddCRtoNL(bool value) {
-         enableAddCRtoNL = value;
-    }
-    void setEnableEnterIsNL(bool value) {
-         enableEnterIsNL = value;
-    }
+    void setEnableClearScreen(bool value);
+    void setEnableHomeCursor(bool value);
+    void setEnablePosXYCursor(bool value);
+    void setEnableMoveCursorLeft(bool value);
+    void setEnableMoveCursorRight(bool value);
+    void setEnableMoveCursorUp(bool value);
+    void setEnableMoveCursorDown(bool value);
+    void setEnableBeepSpeaker(bool value);
+    void setEnableBackspace(bool value);
+    void setEnableTab(bool value);
+    void setEnableCReturn(bool value);
+    void setEnableClearToEOL(bool value);
+    void setEnableClearLinesBelow(bool value);
+    void setEnableNewLine(bool value);
+    void setEnablePosCursorX(bool value);
+    void setEnablePosCursorY(bool value);
+    void setEnableClearScreen16(bool value);
+    void setEnableAddCRtoNL(bool value);
+    void setEnableEnterIsNL(bool value);
+    void setEnableSwapNLCR(bool value);
 
-
-    void setEnableSwapNLCR(bool value) {
-         enableSwapNLCR = value;
-         if(enableSwapNLCR) {
-             newline = 10;
-             creturn = 13;
-         }
-         else {
-             newline = 13;
-             creturn = 10;
-         }
-    }
-
-    int getEnter() {
-        if(enableEnterIsNL)
-            return newline;
-        return creturn;
-    }
-
-    void setWrapMode(int mode) {
-        wrapMode = mode;
-        if(mode == 0) {
-            this->setWordWrapMode(QTextOption::WordWrap);
-        }
-        else {
-            this->setWordWrapMode(QTextOption::WrapAnywhere);
-        }
-    }
-
-    void setTabSize(int size) {
-        tabsize = size;
-    }
-
-    void setHexMode(bool enable) {
-        hexmode = enable;
-    }
-
-    void setHexDump(bool enable) {
-        hexdump = enable;
-    }
+    int  getEnter();
+    void setWrapMode(int mode);
+    void setTabSize(int size);
+    void setHexMode(bool enable);
+    void setHexDump(bool enable);
 
 public:
 
@@ -168,6 +96,7 @@ private:
     bool enableNewLine;
     bool enablePosCursorX;
     bool enablePosCursorY;
+    bool enableClearScreen16;
     bool enableAddCRtoNL;
     bool enableEnterIsNL;
 
@@ -185,6 +114,8 @@ private:
     int  utf8;
 
     int  maxcol;
+    int  maxrow;
+
     int  wrapMode;
     int  tabsize;
 
@@ -193,6 +124,9 @@ private:
     int  maxhex;
     int  hexbyte[17];
     bool hexdump;
+
+    // screen buffer
+    char *sbuff;
 
 protected:
     void keyPressEvent(QKeyEvent* event);

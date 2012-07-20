@@ -79,6 +79,22 @@ TermPrefs::~TermPrefs()
     delete settings;
 }
 
+int  baudRate()
+{
+}
+
+void setBaudRate(int val)
+{
+}
+
+bool echoOn()
+{
+}
+
+void setEchoOn(bool val)
+{
+}
+
 void TermPrefs::resetSettings()
 {
     QStringList list = settings->allKeys();
@@ -91,7 +107,7 @@ void TermPrefs::resetSettings()
 
     readSettings();
 
-    ui->cbClearScreen->setChecked(false);
+    ui->cbClearScreen->setChecked(true);
     ui->cbHomeCursor->setChecked(true);
     ui->cbPositionCursorXY->setChecked(true);
     ui->cbMoveLeft->setChecked(true);
@@ -442,7 +458,7 @@ void TermPrefs::readSettings()
     /*
      * read users background setting
      */
-    int bgindex = PColor::LightGray;
+    int bgindex = PColor::DarkBlue;
     var = settings->value(termKeyBackground,QVariant(bgindex));
     if(var.canConvert(QVariant::Int)) {
         bgindex = var.toInt();
@@ -452,7 +468,7 @@ void TermPrefs::readSettings()
     /*
      * read user's foreground setting.
      */
-    int fgindex = PColor::Black;
+    int fgindex = PColor::Yellow;
     var = settings->value(termKeyForeground,QVariant(fgindex));
     if(var.canConvert(QVariant::Int)) {
         fgindex = var.toInt();
@@ -578,6 +594,18 @@ void TermPrefs::readSettings()
     }
     serialConsole->setHexDump(hexdump);
 
+#if defined(ENABLEECHO)
+    /*
+     * read the echo button
+     */
+    bool echo = false;
+    var = settings->value(termKeyEchoOn, QVariant(echo));
+    if(var.canConvert(QVariant::Bool)) {
+        echo = var.toBool();
+        checkEchoOn->setChecked(echo);
+    }
+    serialConsole->setEchoOn(echo);
+#endif
 }
 
 void TermPrefs::showDialog()
