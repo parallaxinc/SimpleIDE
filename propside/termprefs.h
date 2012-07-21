@@ -61,6 +61,7 @@ public:
     bool setBaudRate(int val);
 
 public slots:
+    void hexDump(bool hex);
     void chooseFont();
     void resetSettings();
     void accept();
