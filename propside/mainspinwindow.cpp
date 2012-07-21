@@ -514,6 +514,17 @@ void MainSpinWindow::openFile(const QString &path)
     */
 }
 
+bool MainSpinWindow::isFileUTF16(QFile *file)
+{
+    char str[2];
+    file->read(str,2);
+    file->seek(0);
+    if(str[0] == -1 && str[1] == -2) {
+        return true;
+    }
+    return false;
+}
+
 void MainSpinWindow::openFileName(QString fileName)
 {
     QString data;
@@ -522,7 +533,10 @@ void MainSpinWindow::openFileName(QString fileName)
         if (file.open(QFile::ReadOnly))
         {
             QTextStream in(&file);
-            in.setCodec("UTF-8");
+            if(this->isFileUTF16(&file))
+                in.setCodec("UTF-16");
+            else
+                in.setCodec("UTF-8");
             data = in.readAll();
             file.close();
             data = data.replace('\t',"    ");
@@ -670,7 +684,7 @@ void MainSpinWindow::newProjectAccepted()
     QFile mainfile(mainName);
     if(mainfile.exists() == false) {
         QTextStream os(&mainfile);
-        os.setCodec("UTF-8");
+        os.setCodec("UTF-8"); // for now save everything as UTF-8
         if(mainfile.open(QFile::ReadWrite)) {
             os << mains;
             mainfile.close();
@@ -1243,10 +1257,9 @@ void MainSpinWindow::saveFile()
         if (!fileName.isEmpty()) {
             QFile file(fileName);
             QTextStream os(&file);
-            os.setCodec("UTF-8");
+            os.setCodec("UTF-8"); // for now save everything as UTF-8
             if (file.open(QFile::WriteOnly)) {
                 os << data;
-                //file.write(data.toUtf8());
                 file.close();
             }
         }
@@ -1556,7 +1569,10 @@ void MainSpinWindow::fileChanged()
     int ret = 0;
 
     QTextStream in(&file);
-    in.setCodec("UTF-8");
+    if(this->isFileUTF16(&file))
+        in.setCodec("UTF-16");
+    else
+        in.setCodec("UTF-8");
 
     QChar ch = name.at(name.length()-1);
     if(file.open(QFile::ReadOnly))
@@ -3839,9 +3855,12 @@ void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, 
 {
     Editor *editor = editors->at(num);
     fileChangeDisable = true;
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    disconnect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
     editor->setPlainText(text);
     editor->setHighlights(shortName);
-
+    connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
+    QApplication::restoreOverrideCursor();
     fileChangeDisable = false;
     editorTabs->setTabText(num,shortName);
     editorTabs->setTabToolTip(num,fileName);

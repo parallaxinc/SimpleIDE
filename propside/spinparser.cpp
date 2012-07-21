@@ -22,7 +22,7 @@ SpinParser::SpinParser()
     KeyWord keyNull= {NULL,  K_NONE, 0};
 
     spin_keywords.append(keyCon);
-    spin_keywords.append(keyObj);
+    spin_keywords.append(keyObj); // keep as item 1.
     spin_keywords.append(keyPub);
     spin_keywords.append(keyPri);
     spin_keywords.append(keyVar);
@@ -69,7 +69,9 @@ QStringList SpinParser::spinFileTree(QString file, QString libpath)
     spinFiles.append(file.mid(file.lastIndexOf("/")+1));
     QStringList keys = db.keys();
 
+#if defined(SPIN_AUTOCOMPLETE)
     makeTags(file);
+#endif
 
     for(int n = 0; n < keys.length(); n++) {
         key = keys[n];
@@ -77,6 +79,8 @@ QStringList SpinParser::spinFileTree(QString file, QString libpath)
         QStringList levels = key.split("/");
         int lcount = levels.count()-1;
         QStringList keyel = levels[lcount].split(KEY_ELEMENT_SEP);
+        if(keyel.count() < 2)
+            continue;
         if(QString(keyel[0]).compare(keyel[1]) == 0) {
             objectInfo(value, subnode, subfile);
             //for(int n = 0; n < lcount; n++) subfile = " " + subfile;
@@ -601,7 +605,7 @@ void SpinParser::findSpinTags (QString fileName, QString objnode)
     for(int n = 0; n < list.length(); n++)
     {
         // give app a chance to do work? parsing can take a while.
-        //QApplication::processEvents();
+        // QApplication::processEvents();
 
         // do here in case OBJ detect causes context change
         objectNode  = objnode;
@@ -636,6 +640,37 @@ void SpinParser::findSpinTags (QString fileName, QString objnode)
         if (line.length() < 1)
             continue;
 
+#if !defined(SPIN_AUTOCOMPLETE)
+        /* In Spin, keywords always are at the start of the line. */
+        SpinKind type = K_NONE;
+        KeyWord kw = spin_keywords[1]; // K_OBJECT is not 1, but OBJ keyword is.
+        line = line.trimmed();
+        QRegExp tokens("\\b(con|obj|pri|pub|dat|var)\\b");
+        tokens.setCaseSensitivity(Qt::CaseInsensitive);
+        if(line.indexOf(tokens) == 0) {
+            // if line has obj at position 0, get the type and store it
+            // else set to some other type so we stop looking for objects
+            if(line.indexOf("obj",0,Qt::CaseInsensitive) == 0)
+                type = (SpinKind) match_keyword (line.toAscii(), &kw, tag);
+            else
+                type = this->K_CONST;
+
+            // keep state until it changes from K_NONE
+            if(type != K_NONE) {
+                state = type;
+            }
+        }
+
+        //printf ("state %d\n", state);
+        switch(state) {
+            case K_OBJECT:
+                match_object(line);
+            break;
+            default:
+                tag = "";
+            break;
+        }
+#else
         /* In Spin, keywords always are at the start of the line. */
         SpinKind type = K_NONE;
         foreach(KeyWord kw, spin_keywords) {
@@ -679,5 +714,6 @@ void SpinParser::findSpinTags (QString fileName, QString objnode)
                 tag = "";
             break;
         }
+#endif
     }
 }
