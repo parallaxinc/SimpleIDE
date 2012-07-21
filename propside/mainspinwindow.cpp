@@ -43,6 +43,7 @@
 
 #define GDB_TABNAME "GDB Output"
 #define SIDE_EXTENSION ".side"
+#define SPIN_TEXT      "SPIN"
 #define SPIN_EXTENSION ".spin"
 
 MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
@@ -668,7 +669,7 @@ void MainSpinWindow::newProjectAccepted()
     else if(comp.compare("Spin", Qt::CaseInsensitive) == 0) {
         mains = SPIN_maintemplate;
         mainName += SPIN_EXTENSION;
-        projectOptions->setCompiler("SPIN");
+        projectOptions->setCompiler(SPIN_TEXT);
     }
     else {
         return;
@@ -1975,18 +1976,22 @@ void MainSpinWindow::setProject()
     if(fileName.length() > 0)
     {
         if(fileName.indexOf(SPIN_EXTENSION))
-            projectOptions->setCompiler("SPIN");
+            projectOptions->setCompiler(SPIN_TEXT);
         else
             projectOptions->setCompiler("C");
         updateProjectTree(fileName);
         setCurrentProject(projectFile);
     }
     QString extension = fileName.mid(fileName.lastIndexOf(".")+1);
-    if(extension.compare("spin",Qt::CaseInsensitive) == 0) {
-        projectOptions->setCompiler("SPIN");
+    if(extension.compare(SPIN_TEXT,Qt::CaseInsensitive) == 0) {
+        projectOptions->setCompiler(SPIN_TEXT);
         //projectOptions->setBoardType("HUB"); // HUB is only option for SPIN
         this->closeFile(); // do this so spin highlighter works.
         this->openFileName(fileName);
+        btnDownloadSdCard->setEnabled(false);
+    }
+    else {
+        btnDownloadSdCard->setEnabled(true);
     }
 }
 
@@ -2346,18 +2351,26 @@ QString MainSpinWindow::sourcePath(QString srcpath)
 bool MainSpinWindow::isSpinProject()
 {
     QString compiler = projectOptions->getCompiler();
-    if(compiler.compare("Spin", Qt::CaseInsensitive) == 0)
+    if(compiler.compare(SPIN_TEXT, Qt::CaseInsensitive) == 0) {
+        btnDownloadSdCard->setEnabled(false);
         return true;
+    }
+    btnDownloadSdCard->setEnabled(true);
     return false;
 }
 
 bool MainSpinWindow::isCProject()
 {
     QString compiler = projectOptions->getCompiler();
-    if(compiler.compare("C", Qt::CaseInsensitive) == 0)
+    if(compiler.compare("C", Qt::CaseInsensitive) == 0) {
+        btnDownloadSdCard->setEnabled(true);
         return true;
-    else if(compiler.compare("C++", Qt::CaseInsensitive) == 0)
+    }
+    else if(compiler.compare("C++", Qt::CaseInsensitive) == 0) {
+        btnDownloadSdCard->setEnabled(true);
         return true;
+    }
+    btnDownloadSdCard->setEnabled(false);
     return false;
 }
 
@@ -2671,10 +2684,10 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     connect(compileStatus,SIGNAL(selectionChanged()),this,SLOT(compileStatusClicked()));
     statusTabs->addTab(compileStatus,tr("Build Status"));
 
+#if defined(IDEDEBUG)
     debugStatus = new QPlainTextEdit(this);
     debugStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
     //debugStatus->setReadOnly(true);
-#if defined(IDEDEBUG)
     statusTabs->addTab(debugStatus,tr("IDE Debug"));
 #endif
 
@@ -3420,7 +3433,7 @@ void MainSpinWindow::updateProjectTree(QString fileName)
     projectModel = new CBuildTree(projName, this);
 
     if(fileName.contains(SPIN_EXTENSION,Qt::CaseInsensitive)) {
-        projectOptions->setCompiler("SPIN");
+        projectOptions->setCompiler(SPIN_TEXT);
     }
     else {
         QFile proj(projectFile);
@@ -3429,7 +3442,7 @@ void MainSpinWindow::updateProjectTree(QString fileName)
             type = proj.readAll();
             proj.close();
             if(type.contains(">compiler=SPIN",Qt::CaseInsensitive))
-                projectOptions->setCompiler("SPIN");
+                projectOptions->setCompiler(SPIN_TEXT);
             else if(type.contains(">compiler=C++",Qt::CaseInsensitive))
                 projectOptions->setCompiler("C++");
             else
@@ -4116,7 +4129,7 @@ void MainSpinWindow::setupToolBars()
     //connect(btnSaveToSdCard, SIGNAL(clicked()),this,SLOT(savePexFile()));
     //btnSaveToSdCard->setToolTip(tr("Save AUTOEXEC.PEX to Local SD Card."));
 
-    QToolButton *btnDownloadSdCard = new QToolButton(this);
+    btnDownloadSdCard = new QToolButton(this);
     addToolButton(toolsToolBar, btnDownloadSdCard, QString(":/images/download.png"));
     connect(btnDownloadSdCard, SIGNAL(clicked()),this,SLOT(downloadSdCard()));
     btnDownloadSdCard->setToolTip(tr("Send File to Target SD Card."));

@@ -280,6 +280,7 @@ private:
     QComboBox       *cbPort;
     QStringList     friendlyPortName;
     QToolButton     *btnConnected;
+    QToolButton     *btnDownloadSdCard;
 
 #if defined(LOADER_TERMINAL)
     Loader          *termEditor;
