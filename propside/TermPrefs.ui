@@ -39,7 +39,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="tabAppearance">
     <attribute name="title">
@@ -568,17 +568,17 @@
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QCheckBox" name="cbAddCRtoNL">
+    <widget class="QCheckBox" name="cbEchoOn">
      <property name="geometry">
       <rect>
        <x>230</x>
-       <y>260</y>
+       <y>290</y>
        <width>201</width>
        <height>22</height>
       </rect>
      </property>
      <property name="text">
-      <string>Add CR to NL</string>
+      <string>Echo On</string>
      </property>
      <property name="checked">
       <bool>false</bool>
@@ -588,7 +588,7 @@
      <property name="geometry">
       <rect>
        <x>230</x>
-       <y>290</y>
+       <y>260</y>
        <width>201</width>
        <height>22</height>
       </rect>

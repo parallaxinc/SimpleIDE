@@ -12,6 +12,7 @@ public:
     void setPortEnable(bool value);
     bool enabled();
     void clear();
+    int  eventKey(QKeyEvent* event);
 
     void setEnableClearScreen(bool value);
     void setEnableHomeCursor(bool value);
@@ -30,7 +31,7 @@ public:
     void setEnablePosCursorX(bool value);
     void setEnablePosCursorY(bool value);
     void setEnableClearScreen16(bool value);
-    void setEnableAddCRtoNL(bool value);
+    void setEnableEchoOn(bool value);
     void setEnableEnterIsNL(bool value);
     void setEnableSwapNLCR(bool value);
 
@@ -97,7 +98,7 @@ private:
     bool enablePosCursorX;
     bool enablePosCursorY;
     bool enableClearScreen16;
-    bool enableAddCRtoNL;
+    bool enableEchoOn;
     bool enableEnterIsNL;
 
     bool enableSwapNLCR;

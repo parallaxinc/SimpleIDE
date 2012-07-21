@@ -67,6 +67,17 @@ int ASideConfig::loadBoards(QString filePath)
     }
     boards->clear();
     boardNames.clear();
+    boardNames.append("NONE");
+
+    addBoards(filePath);
+}
+
+
+int ASideConfig::addBoards(QString filePath)
+{
+    QDir dir(filePath);
+    if(!dir.exists())
+        return 0;
 
     QStringList filter;
     filter << "*.cfg";

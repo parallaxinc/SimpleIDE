@@ -51,18 +51,14 @@ class TermPrefs : public QDialog
 {
     Q_OBJECT
 public:
-    TermPrefs(Console *con);
+    TermPrefs(Console *con, QComboBox *baud);
     virtual ~TermPrefs();
     void addColors(QComboBox *box, QVector<PColor*> pcolor);
     void saveSettings();
     void readSettings();
 
     void showDialog();
-
-    int  baudRate();
-    void setBaudRate(int val);
-    bool echoOn();
-    void setEchoOn(bool val);
+    bool setBaudRate(int val);
 
 public slots:
     void chooseFont();
@@ -72,6 +68,7 @@ public slots:
 
 private:
     Ui::TermPrefs  *ui;
+    QComboBox      *comboBoxBaud;
     Console        *serialConsole;
     QSettings      *settings;
     QStringList     settingNames;

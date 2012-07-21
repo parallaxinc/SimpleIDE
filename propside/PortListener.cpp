@@ -30,6 +30,11 @@ void PortListener::init(const QString & portName, BaudRateType baud)
     port->setTimeout(10);
 }
 
+QString PortListener::getPortName()
+{
+    return port->portName();
+}
+
 void PortListener::setDtr(bool enable)
 {
     this->port->setDtr(enable);

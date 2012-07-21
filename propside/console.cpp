@@ -54,6 +54,39 @@ void Console::clear()
     setPlainText("");
 }
 
+int  Console::eventKey(QKeyEvent* event)
+{
+    int key = event->key();
+    switch(key)
+    {
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+        key = getEnter();
+        break;
+    case Qt::Key_Backspace:
+        key = '\b';
+        break;
+    case Qt::Key_Alt:
+        return 0;
+    case Qt::Key_Control:
+        return 0;
+    case Qt::Key_Shift:
+        return 0;
+    default:
+        if(QApplication::keyboardModifiers() & Qt::CTRL) {
+            key &= ~0xe0;
+        }
+        else {
+            if(event->text().length() > 0) {
+                QChar c = event->text().at(0);
+                key = (int)c.toAscii();
+            }
+        }
+        break;
+    }
+    return key;
+}
+
 void Console::keyPressEvent(QKeyEvent *event)
 {
     // qDebug() << "keyPressEvent";
@@ -69,6 +102,13 @@ void Console::keyPressEvent(QKeyEvent *event)
         parentMain->sendPortMessage(clip->text());
     }
     else {
+        int key = eventKey(event);
+        if(key < 1)
+            return;
+        if(this->enableEchoOn) {
+            if(isascii(key) != 0)
+                this->insertPlainText(QChar(key));
+        }
         parentMain->keyHandler(event);
     }
 }
@@ -153,9 +193,9 @@ void Console::setEnableClearScreen16(bool value)
 {
      enableClearScreen16 = value;
 }
-void Console::setEnableAddCRtoNL(bool value)
+void Console::setEnableEchoOn(bool value)
 {
-     enableAddCRtoNL = value;
+     enableEchoOn = value;
 }
 void Console::setEnableEnterIsNL(bool value)
 {

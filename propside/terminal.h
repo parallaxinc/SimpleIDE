@@ -16,11 +16,14 @@ public:
     void setPosition(int x, int y);
     void accept();
     void reject();
+    int  baudRate();
+    bool setBaudRate(int baud);
 
 private:
     void init();
 
 public slots:
+    void baudRateChange(int index);
     void toggleEnable();
     void setPortEnabled(bool value);
     void clearScreen();
@@ -34,6 +37,7 @@ public:
 private:
     Console     *termEditor;
     TermPrefs   *options;
+    QComboBox   *comboBoxBaud;
 
 private:
     QPushButton     *buttonEnable;

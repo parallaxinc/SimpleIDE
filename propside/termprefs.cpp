@@ -2,10 +2,11 @@
 #include "ui_TermPrefs.h"
 #include "console.h"
 
-TermPrefs::TermPrefs(Console *con) : ui(new Ui::TermPrefs)
+TermPrefs::TermPrefs(Console *con, QComboBox *baud) : ui(new Ui::TermPrefs)
 {
     ui->setupUi(this);
     serialConsole = con;
+    comboBoxBaud = baud;
 
     /* setup application registry info */
     QCoreApplication::setOrganizationName(publisherKey);
@@ -79,20 +80,15 @@ TermPrefs::~TermPrefs()
     delete settings;
 }
 
-int  baudRate()
+bool TermPrefs::setBaudRate(int baud)
 {
-}
-
-void setBaudRate(int val)
-{
-}
-
-bool echoOn()
-{
-}
-
-void setEchoOn(bool val)
-{
+    for(int n = comboBoxBaud->count(); n > -1; n--) {
+        if(comboBoxBaud->itemData(n) == baud) {
+            comboBoxBaud->setCurrentIndex(n);
+            return true;
+        }
+    }
+    return false;
 }
 
 void TermPrefs::resetSettings()
@@ -124,9 +120,10 @@ void TermPrefs::resetSettings()
     ui->cbPositionCursorX->setChecked(true);
     ui->cbPositionCursorY->setChecked(true);
     ui->cbClearScreen16->setChecked(true);
-    ui->cbAddCRtoNL->setChecked(false);
+    ui->cbEchoOn->setChecked(false);
     ui->cbEnterIsNL->setChecked(true);
     ui->cbSwapNLCR->setChecked(false);
+
 
     saveSettings();
 }
@@ -226,8 +223,8 @@ void TermPrefs::saveSettings()
     enable[j] = ui->cbClearScreen16->isChecked();
     serialConsole->setEnableClearScreen16(enable[j++]);
 
-    enable[j] = ui->cbAddCRtoNL->isChecked();
-    serialConsole->setEnableAddCRtoNL(enable[j++]);
+    enable[j] = ui->cbEchoOn->isChecked();
+    serialConsole->setEnableEchoOn(enable[j++]);
 
     enable[j] = ui->cbEnterIsNL->isChecked();
     serialConsole->setEnableEnterIsNL(enable[j++]);
@@ -359,7 +356,7 @@ void TermPrefs::readSettings()
     enable[n++] = ui->cbPositionCursorX->isChecked();
     enable[n++] = ui->cbPositionCursorY->isChecked();
     enable[n++] = ui->cbClearScreen16->isChecked();
-    enable[n++] = ui->cbAddCRtoNL->isChecked();
+    enable[n++] = ui->cbEchoOn->isChecked();
     enable[n++] = ui->cbEnterIsNL->isChecked();
     enable[n++] = ui->cbSwapNLCR->isChecked();
 
@@ -433,8 +430,8 @@ void TermPrefs::readSettings()
     ui->cbClearScreen16->setChecked(enable[j]);
     serialConsole->setEnableClearScreen16(enable[j++]);
 
-    ui->cbAddCRtoNL->setChecked(enable[j]);
-    serialConsole->setEnableAddCRtoNL(enable[j++]);
+    ui->cbEchoOn->setChecked(enable[j]);
+    serialConsole->setEnableEchoOn(enable[j++]);
 
     ui->cbEnterIsNL->setChecked(enable[j]);
     serialConsole->setEnableEnterIsNL(enable[j++]);
@@ -594,18 +591,6 @@ void TermPrefs::readSettings()
     }
     serialConsole->setHexDump(hexdump);
 
-#if defined(ENABLEECHO)
-    /*
-     * read the echo button
-     */
-    bool echo = false;
-    var = settings->value(termKeyEchoOn, QVariant(echo));
-    if(var.canConvert(QVariant::Bool)) {
-        echo = var.toBool();
-        checkEchoOn->setChecked(echo);
-    }
-    serialConsole->setEchoOn(echo);
-#endif
 }
 
 void TermPrefs::showDialog()
