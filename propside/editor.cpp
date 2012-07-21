@@ -107,6 +107,7 @@ void Editor::keyPressEvent (QKeyEvent *e)
         contextHelp();
         QPlainTextEdit::keyPressEvent(e);
     }
+#if defined(SPIN_AUTOCOMPLETE)
     /* #-auto complete */
     else if(key == Qt::Key_NumberSign) {
         if(isSpin) {
@@ -127,6 +128,7 @@ void Editor::keyPressEvent (QKeyEvent *e)
             QPlainTextEdit::keyPressEvent(e);
         }
     }
+#endif
     /* if TAB key do block move */
     else if(key == Qt::Key_Tab || key == Qt::Key_Backtab) {
         tabBlockShift();

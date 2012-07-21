@@ -204,6 +204,7 @@ private:
     void showBuildStart(QString progName, QStringList args);
     int  buildResult(int exitStatus, int exitCode, QString progName, QString result);
 
+    bool isFileUTF16(QFile *file);
     void openFileName(QString fileName);
     void checkAndSaveFiles();
     void setupEditor();

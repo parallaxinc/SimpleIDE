@@ -351,7 +351,7 @@ void Console::update(char ch)
 
 
     //qDebug() << QString("%1 %2 %3 %4 %5").arg(pcmd,2,10,QChar('0')).arg(pcmdx,2,10,QChar('0')).arg(pcmdy,2,10,QChar('0')).arg(ch,2,10,QChar('0')).arg(ch,1,QChar('0'));
-    qDebug() << QString("P %1,%2 X,Y %3,%4 %5").arg(pcmdx,2,10,QChar('0')).arg(pcmdy,2,10,QChar('0')).arg(cur.columnNumber(),2,10,QChar('0')).arg(cur.blockNumber(),2,10,QChar('0')).arg(ch,2,10,QChar('0'));
+    //qDebug() << QString("P %1,%2 X,Y %3,%4 %5").arg(pcmdx,2,10,QChar('0')).arg(pcmdy,2,10,QChar('0')).arg(cur.columnNumber(),2,10,QChar('0')).arg(cur.blockNumber(),2,10,QChar('0')).arg(ch,2,10,QChar('0'));
     switch(pcmd)
     {
         case PCMD_CURPOS_X: {
