@@ -38,7 +38,7 @@
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 270
 
-#define SOURCE_FILE_TYPES "Source Files (*.c *.ccp *.h *.cogc *.ecogc *.spin *.espin);; All (*)"
+#define SOURCE_FILE_TYPES "Source Files (*.c *.cpp *.h *.cogc *.ecogc *.spin *.espin);; All (*)"
 #define PROJECT_FILE_FILTER "SIDE Project (*.side);; All (*)"
 
 #define GDB_TABNAME "GDB Output"
@@ -227,6 +227,10 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 void MainSpinWindow::keyHandler(QKeyEvent* event)
 {
     //qDebug() << "MainSpinWindow::keyHandler";
+#if 1
+    int key = termEditor->eventKey(event);
+    if(key < 1) return;
+#else
     int key = event->key();
     switch(key)
     {
@@ -255,6 +259,8 @@ void MainSpinWindow::keyHandler(QKeyEvent* event)
         }
         break;
     }
+#endif
+
     QByteArray barry;
     barry.append((char)key);
     portListener->send(barry);
@@ -443,10 +449,6 @@ void MainSpinWindow::quitProgram()
     // save user's width/height
     QByteArray geo = this->saveGeometry();
     settings->setValue(ASideGuiGeometry,geo);
-
-    // save terminal geometry width/height
-    geo = term->saveGeometry();
-    settings->setValue(termGeometryKey,geo);
 
     delete replaceDialog;
     delete propDialog;
@@ -2392,7 +2394,9 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     }
     QString bname = this->cbBoard->currentText();
     ASideBoard* board = aSideConfig->getBoardData(bname);
-    QString reset = board->get(ASideBoard::reset);
+    QString reset("DTR");
+    if(board != NULL)
+        reset = board->get(ASideBoard::reset);
 
     if(this->propDialog->getResetType() == Properties::CFG) {
         if(reset.contains("RTS",Qt::CaseInsensitive))
@@ -2413,9 +2417,9 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     if(compileType == ProjectOptions::TAB_C_COMP) {
         args.append("-I");
         args.append(aSideIncludes);
+        args.append("-b");
+        args.append(boardName);
     }
-    args.append("-b");
-    args.append(boardName);
     args.append("-p");
     args.append(portName);
 
@@ -2850,9 +2854,10 @@ void MainSpinWindow::compilerChanged()
     }
     else if(isSpinProject()) {
         projectMenu->setEnabled(false);
-        //cbBoard->setEnabled(false);
+        cbBoard->setEnabled(false);
+        int n = cbBoard->findText("NONE");
+        if(n > -1) cbBoard->setCurrentIndex(n);
     }
-
 }
 
 void MainSpinWindow::projectTreeClicked(QModelIndex index)
@@ -3794,6 +3799,7 @@ void MainSpinWindow::initBoardTypes()
 
     /* get board types */
     QStringList boards = aSideConfig->getBoardNames();
+    boards.sort();
     for(int n = 0; n < boards.count(); n++)
         cbBoard->addItem(boards.at(n));
 

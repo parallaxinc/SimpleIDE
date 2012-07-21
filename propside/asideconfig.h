@@ -18,6 +18,7 @@ public:
     ~ASideConfig();
 
     int         loadBoards(QString filePath);
+    int         addBoards(QString filePath);
     ASideBoard *newBoard(QString name);
     void        deleteBoardByName(QString name);
 

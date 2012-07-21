@@ -24,6 +24,8 @@ public:
     int  readData(char *buff, int length);
     virtual void run();
 
+    QString getPortName();
+
 private:
 
     Console         *terminal;
