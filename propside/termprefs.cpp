@@ -70,6 +70,8 @@ TermPrefs::TermPrefs(Console *con, QComboBox *baud) : ui(new Ui::TermPrefs)
     connect(ui->buttonBox,SIGNAL(rejected()),this,SLOT(reject()));
     connect(ui->buttonBox, SIGNAL(accepted()),this,SLOT(accept()));
 
+    connect(ui->checkBoxHexMode,SIGNAL(toggled(bool)),this,SLOT(hexDump(bool)));
+
     styleText = "QScrollBar:vertical { background: white; }";
     
     readSettings();
@@ -322,6 +324,10 @@ void TermPrefs::saveSettings()
     bool hexd = ui->checkBoxHexDump->isChecked();
     settings->setValue(termKeyHexDump, QVariant(hexd));
     serialConsole->setHexDump(hexd);
+    if(hex == false)
+        ui->checkBoxHexDump->setEnabled(false);
+    else
+        ui->checkBoxHexDump->setEnabled(true);
 
 }
 
@@ -587,10 +593,24 @@ void TermPrefs::readSettings()
     var = settings->value(termKeyHexDump, QVariant(hexdump));
     if(var.canConvert(QVariant::Bool)) {
         hexdump = var.toBool();
+
         ui->checkBoxHexDump->setChecked(hexdump);
     }
     serialConsole->setHexDump(hexdump);
 
+    if(hex == false)
+        ui->checkBoxHexDump->setEnabled(false);
+    else
+        ui->checkBoxHexDump->setEnabled(true);
+
+}
+
+void TermPrefs::hexDump(bool hex)
+{
+    if(hex == false)
+        ui->checkBoxHexDump->setEnabled(false);
+    else
+        ui->checkBoxHexDump->setEnabled(true);
 }
 
 void TermPrefs::showDialog()
