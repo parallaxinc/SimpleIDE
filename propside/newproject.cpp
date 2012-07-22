@@ -192,6 +192,7 @@ void NewProject::showDialog()
     okButton->setDisabled(true);
 
     this->setWindowTitle(QString(ASideGuiKey)+tr(" New Project"));
+    this->nameChanged();
     this->exec();
 }
 
