@@ -1244,11 +1244,14 @@ void MainSpinWindow::updateRecentProjectActions()
 void MainSpinWindow::saveFile()
 {
     try {
+        bool saveas = false;
         int n = this->editorTabs->currentIndex();
         QString fileName = editorTabs->tabToolTip(n);
         QString data = editors->at(n)->toPlainText();
-        if(fileName.isEmpty())
+        if(fileName.isEmpty()) {
             fileName = fileDialog.getSaveFileName(this, tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
+            saveas = true;
+        }
         if (fileName.isEmpty())
             return;
         if(fileName.length() > 0)
@@ -1262,6 +1265,10 @@ void MainSpinWindow::saveFile()
             if (file.open(QFile::WriteOnly)) {
                 os << data;
                 file.close();
+            }
+            if(saveas) {
+                this->closeTab(n);
+                this->openFileName(fileName);
             }
         }
         saveProjectOptions();
@@ -1314,6 +1321,9 @@ void MainSpinWindow::saveAsFile(const QString &path)
                 file.write(data.toUtf8());
                 file.close();
             }
+            // close and reopen to make sure syntax highlighting works.
+            this->closeTab(n);
+            this->openFileName(fileName);
             setCurrentFile(fileName);
         }
     } catch(...) {
