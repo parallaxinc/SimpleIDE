@@ -29,7 +29,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="ProjectControl">
     <attribute name="title">
@@ -139,7 +139,7 @@
       <string>Reload Board Configurations</string>
      </property>
      <property name="icon">
-      <iconset>
+      <iconset resource="resources.qrc">
        <normaloff>:/images/hardware.png</normaloff>:/images/hardware.png</iconset>
      </property>
      <property name="iconSize">
@@ -327,7 +327,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>30</y>
+       <y>50</y>
        <width>121</width>
        <height>21</height>
       </rect>
@@ -368,6 +368,19 @@
       <string>Strip ELF</string>
      </property>
     </widget>
+    <widget class="QCheckBox" name="checkBoxMakeLibrary">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>241</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Create Project Library</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="SpinOptions">
     <attribute name="title">
@@ -405,6 +418,8 @@
    </widget>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

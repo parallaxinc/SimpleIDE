@@ -203,7 +203,8 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
      */
     QString libname = QString(list[0]);
     libname = libname.mid(0,libname.lastIndexOf(".")) + ".a";
-    this->runAR(clist, libname);
+    if(projectOptions->getMakeLibrary().isEmpty() != true)
+        this->runAR(clist, libname);
 
     /* add main file */
     clist.append(list[0]);

@@ -279,10 +279,11 @@ void Console::updateReady(QextSerialPort* port)
     if(hexmode != false) {
         for(int n = 0; n < length; n++)
             dumphex((int)buf[n]);
-        return;
     }
-    for(int n = 0; n < length; n++)
-        update(buf[n]);
+    else {
+        for(int n = 0; n < length; n++)
+            update(buf[n]);
+    }
 }
 
 void Console::dumphex(int ch)
@@ -602,7 +603,7 @@ void Console::update(char ch)
                                 text = cur.selectedText();
                                 cur.removeSelectedText();
                                 cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor);
-                                //cur.movePosition(QTextCursor::Start,QTextCursor::MoveAnchor);
+                                cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
                                 cur.insertText(text);
                             }
                             else {
