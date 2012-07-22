@@ -65,6 +65,7 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
     ui->checkBoxPthreadLib->setChecked(false);
     ui->checkBoxSimplePrintf->setChecked(false);
     ui->checkBoxStripELF->setChecked(false);
+    ui->checkBoxMakeLibrary->setChecked(false);
 
     // keep strip and no exceptions but hide them
     ui->checkBoxStripELF->setVisible(false);
@@ -113,6 +114,7 @@ void ProjectOptions::clearOptions()
     ui->checkBoxPthreadLib->setChecked(false);
     ui->checkBoxSimplePrintf->setChecked(false);
     ui->checkBoxStripELF->setChecked(false);
+    ui->checkBoxMakeLibrary->setChecked(false);
     ui->lineEditCompOptions->setText("");
     ui->lineEditLinkOptions->setText("");
     ui->lineEditSpinCompOptions->setText("");
@@ -248,7 +250,10 @@ QString  ProjectOptions::getBoardType()
 {
     return boardType;
 }
-
+QString ProjectOptions::getMakeLibrary()
+{
+    return ui->checkBoxMakeLibrary->isChecked() ? QString ("create_library") : QString("");
+}
 
 void ProjectOptions::setOptions(QString s)
 {
@@ -327,6 +332,10 @@ void ProjectOptions::setOptions(QString s)
         else
         if(s.contains("simple_printf")) {
             setSimplePrintf(true);
+        }
+        else
+        if(s.contains("create_library")) {
+            setMakeLibrary(true);
         }
     }
 }
@@ -413,7 +422,10 @@ void ProjectOptions::setBoardType(QString s)
 {
     boardType = s.trimmed();
 }
-
+void ProjectOptions::setMakeLibrary(bool s)
+{
+    ui->checkBoxMakeLibrary->setChecked(s);
+}
 
 
 QStringList ProjectOptions::getSpinOptions()

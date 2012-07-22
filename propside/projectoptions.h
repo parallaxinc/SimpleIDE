@@ -56,6 +56,7 @@ public:
     QString getCompOptions();
     QString getLinkOptions();
     QString getBoardType();
+    QString getMakeLibrary();
 
     void setCompiler(QString s);
     void setMemModel(QString s);
@@ -73,6 +74,7 @@ public:
     void setCompOptions(QString s);
     void setLinkOptions(QString s);
     void setBoardType(QString s);
+    void setMakeLibrary(bool s);
 
     QStringList getOptions();
     void        setOptions(QString s);
