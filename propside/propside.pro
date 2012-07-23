@@ -1,9 +1,7 @@
 # -------------------------------------------------
 # Project created by QtCreator 2011-11-19T08:29:49
 # -------------------------------------------------
-# add spin compiler
-# make builder handle complicated projects
-# hook terminal to loader
+# beta version
 QT += core gui
 TARGET = SimpleIDE
 TEMPLATE = app
