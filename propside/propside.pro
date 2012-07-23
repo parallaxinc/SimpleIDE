@@ -18,7 +18,7 @@ DEFINES += SPIN_AUTOCOMPLETE
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=8
-DEFINES += FIXVERSION=0
+DEFINES += FIXVERSION=1
 SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \
