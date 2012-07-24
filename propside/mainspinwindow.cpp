@@ -2053,6 +2053,11 @@ void MainSpinWindow::programBurnEE()
 {
     if(runBuild(""))
         return;
+#ifdef Q_WS_WIN32
+    portListener->close();
+    btnConnected->setChecked(false);
+    term->setPortEnabled(false);
+#endif
     runLoader("-e -r");
 }
 
@@ -2067,6 +2072,7 @@ void MainSpinWindow::programRun()
 #ifdef Q_WS_WIN32
     portListener->close();
     btnConnected->setChecked(false);
+    term->setPortEnabled(false);
 #endif
     runLoader("-r");
 }
