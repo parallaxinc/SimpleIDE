@@ -161,6 +161,7 @@ void Terminal::toggleEnable()
         buttonEnable->setText("Disable");
         termEditor->setPortEnable(true);
         portListener->open();
+        termEditor->setFocus(Qt::OtherFocusReason);
     }
     else {
         buttonEnable->setText("Enable");
