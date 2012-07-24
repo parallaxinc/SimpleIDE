@@ -23,6 +23,14 @@ void SpinHighlighter::highlight()
 
     HighlightingRule rule;
 
+    // quoted strings
+    quotationFormat.setFontItalic(hlQuoteStyle);
+    quotationFormat.setForeground(hlQuoteColor);
+    quotationFormat.setFontWeight(hlQuoteWeight);
+    rule.pattern = QRegExp("[\"].*[\"]");
+    rule.format = quotationFormat;
+    highlightingRules.append(rule);
+
     // numbers
     numberFormat.setForeground(hlNumColor);
     numberFormat.setFontWeight(hlNumWeight);
@@ -356,15 +364,6 @@ void SpinHighlighter::highlight()
         highlightingRules.append(rule);
     }
 
-    // quoted strings
-    quotationFormat.setFontItalic(hlQuoteStyle);
-    quotationFormat.setForeground(hlQuoteColor);
-    quotationFormat.setFontWeight(hlQuoteWeight);
-
-    rule.pattern = QRegExp("[\"].*[\"]");
-    rule.format = quotationFormat;
-    highlightingRules.append(rule);
-
     // single line comments
     singleLineCommentFormat.setFontItalic(hlLineComStyle);
     singleLineCommentFormat.setForeground(hlLineComColor);
@@ -377,7 +376,7 @@ void SpinHighlighter::highlight()
     multiLineCommentFormat.setFontItalic(hlBlockComStyle);
     multiLineCommentFormat.setForeground(hlBlockComColor);
     multiLineCommentFormat.setFontWeight(hlBlockComWeight);
-    commentStartExpression = QRegExp("{",Qt::CaseInsensitive,QRegExp::Wildcard);
+    commentStartExpression = QRegExp("[^']{*",Qt::CaseInsensitive,QRegExp::Wildcard);
     commentEndExpression = QRegExp("*}",Qt::CaseInsensitive,QRegExp::Wildcard);
 
 }
