@@ -11,6 +11,7 @@ CTAGS="../../ctags-5.8/ctags"
 LIBS="/usr/lib/libQtGui.so.4 /usr/lib/libQtCore.so.4"
 LIBAUDIO="/usr/lib/libaudio.so.2"
 LIBAUDIO2="/usr/lib/x86_64-linux-gnu/libaudio.so.2"
+SPINLIB="../../spin"
 
 CLEAN=$1
 
@@ -139,6 +140,12 @@ rm -rf parallax
 cp -r ${PROPGCC} ${VERSION}
 if test $? != 0; then
    echo "copy ${PROPGCC} failed."
+   exit 1
+fi
+
+cp -rf ${SPINLIB} ${VERSION}/parallax
+if test $? != 0; then
+   echo "copy ${CTAGS} failed."
    exit 1
 fi
 
