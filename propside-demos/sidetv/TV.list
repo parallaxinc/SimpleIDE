@@ -1,0 +1,407 @@
+|===========================================================================|
+Objects : -
+TV
+
+Object Address : 0010 : Object Name : TV
+
+Binary Image Information :
+PBASE : 0010
+VBASE : 0488
+DBASE : 0494
+PCURR : 0470
+DCURR : 049C
+|===========================================================================|
+|===========================================================================|
+Object TV
+Object Base is 0010
+|===========================================================================|
+Object Constants
+|===========================================================================|
+Constant fntsc = 00369E99 (3579545)
+Constant lntsc = 00000E38 (3640)
+Constant sntsc = 00000270 (624)
+Constant fpal = 0043A6D2 (4433618)
+Constant lpal = 000011BC (4540)
+Constant spal = 00000350 (848)
+Constant paramcount = 0000000E (14)
+Constant colortable = 00000180 (384)
+|===========================================================================|
+|===========================================================================|
+VBASE Global Variables
+|===========================================================================|
+VBASE : 0000 LONG Size 0004 Variable cog
+|===========================================================================|
+Object DAT Blocks
+|===========================================================================|
+001C(0000)             |                         org
+001C(0000) 5C 2A FE A0 | entry                   mov     taskptr,#tasks          'reset tasks
+0020(0001) 0A 36 FE A0 |                         mov     x,#10                   'perform task sections initially
+0024(0002) 15 2D BE 5C | :init                   jmpret  taskret,taskptr
+0028(0003) 02 36 FE E4 |                         djnz    x,#:init
+002C(0004) 5C 2A FE A0 | superfield              mov     taskptr,#tasks          'reset tasks
+0030(0005) 01 6A 7E 61 |                         test    _mode,#%0001    wc      'if ntsc, set phaseflip
+0034(0006) FC F6 8D A0 |         if_nc           mov     phaseflip,phasemask
+0038(0007) 02 6A 7E 62 |                         test    _mode,#%0010    wz      'get interlace into nz
+003C(0008) 2C 37 BE A0 | field                   mov     x,vinv                  'do invisible back porch lines
+0040(0009) 4A A4 FC 5C | :black                  call    #hsync                  'do hsync
+0044(000A) 03 5D 3E FC |                         waitvid burst,sync_high2        'do black
+0048(000B) 15 2D BE 5C |                         jmpret  taskret,taskptr         'call task section (z undisturbed)
+004C(000C) 09 36 FE E4 |                         djnz    x,#:black               'another black line?
+0050(000D) F0 F5 3D 08 |                         wrlong  visible,par             'set status to visible
+0054(000E) 20 37 BE A0 |                         mov     x,vb                    'do visible back porch lines
+0058(000F) 45 92 FC 5C |                         call    #blank_lines
+005C(0010) 36 49 BE A0 |                         mov     screen,_screen          'point to first tile (upper-leftmost)
+0060(0011) 39 39 BE A0 |                         mov     y,_vt                   'set vertical tiles
+0064(0012) 3B 45 BE A0 | :line                   mov     vx,_vx                  'set vertical expand
+0068(0013) 01 F0 E9 6C | :vert   if_z            xor     interlace,#1            'interlace skip?
+006C(0014) 2B F0 69 EC |         if_z            tjz     interlace,#:skip
+0070(0015) 4A A4 FC 5C |                         call    #hsync                  'do hsync
+0074(0016) 1E FF BF A0 |                         mov     vscl,hb                 'do visible back porch pixels
+0078(0017) 80 4B BE 6C |                         xor     tile,colortable
+007C(0018) 00 4A 7E FC |                         waitvid tile,#0
+0080(0019) 38 37 BE A0 |                         mov     x,_ht                   'set horizontal tiles
+0084(001A) 21 FF BF A0 |                         mov     vscl,hx                 'set horizontal expand
+0088(001B) 24 4B BE 04 | :tile                   rdword  tile,screen             'read tile
+008C(001C) FD 4A BE 68 |                         or      tile,line               'set pointer bits into tile
+0090(001D) 06 4A FE 24 |                         rol     tile,#6                 'read tile pixels
+0094(001E) 25 4D BE 08 |                         rdlong  pixels,tile             '(2 instructions between reads)
+0098(001F) 10 4A FE 28 |                         shr     tile,#10+6              'set tile colors
+009C(0020) 25 47 BC 50 |                         movs    :color,tile
+00A0(0021) 02 48 FE 80 |                         add     screen,#2               'point to next tile
+00A4(0022) FB 4A BE A0 |                         mov     tile,phaseflip
+00A8(0023) 80 4B BE 6C | :color                  xor     tile,colortable
+00AC(0024) 26 4B 3E FC |                         waitvid tile,pixels             'pass colors and pixels to video
+00B0(0025) 1B 36 FE E4 |                         djnz    x,#:tile                'another tile?
+00B4(0026) 23 49 BE 84 |                         sub     screen,hc2x             'repoint to first tile in same line
+00B8(0027) 1D FF BF A0 |                         mov     vscl,hf                 'do visible front porch pixels
+00BC(0028) FB 4A BE A0 |                         mov     tile,phaseflip
+00C0(0029) 80 4B BE 6C |                         xor     tile,colortable
+00C4(002A) 00 4A 7E FC |                         waitvid tile,#0
+00C8(002B) 13 44 FE E4 | :skip                   djnz    vx,#:vert               'vertical expand?
+00CC(002C) FF FA BD 20 |                         ror     line,linerot            'set next line
+00D0(002D) 27 FB BD 81 |                         add     line,lineadd    wc
+00D4(002E) FF FA BD 24 |                         rol     line,linerot      
+00D8(002F) 12 00 4C 5C |         if_nc           jmp     #:line
+00DC(0030) 23 49 BE 80 |                         add     screen,hc2x             'point to first tile in next line
+00E0(0031) 12 38 FE E4 |                         djnz    y,#:line                'another tile line?
+00E4(0032) 01 F0 E9 6E |         if_z            xor     interlace,#1    wz      'get interlace and field1 into z
+00E8(0033) 01 6A 7E 61 |                         test    _mode,#%0001    wc      'do visible front porch lines
+00EC(0034) 1F 37 BE A0 |                         mov     x,vf
+00F0(0035) 01 36 D2 80 |         if_nz_and_c     add     x,#1
+00F4(0036) 45 92 FC 5C |                         call    #blank_lines
+00F8(0037) F0 F3 15 08 |         if_nz           wrlong  invisible,par           'unless interlace and field1, set status to invisible
+00FC(0038) 4A A4 E4 5C |         if_z_eq_c       call    #hsync                  'if required, do short line
+0100(0039) 29 FF A7 A0 |         if_z_eq_c       mov     vscl,hrest
+0104(003A) 03 5D 26 FC |         if_z_eq_c       waitvid burst,sync_high2
+0108(003B) FC F6 A5 6C |         if_z_eq_c       xor     phaseflip,phasemask
+010C(003C) 53 B6 FC 5C |                         call    #vsync_high             'do high vsync pulses
+0110(003D) 04 AF FC 50 |                         movs    vsync1,#sync_low1       'do low vsync pulses
+0114(003E) 05 B3 FC 50 |                         movs    vsync2,#sync_low2
+0118(003F) 55 B6 FC 5C |                         call    #vsync_low
+011C(0040) 53 B6 FC 5C |                         call    #vsync_high             'do high vsync pulses
+0120(0041) 2A FF 97 A0 |         if_nz           mov     vscl,hhalf              'if odd frame, do half line
+0124(0042) 03 5D 16 FC |         if_nz           waitvid burst,sync_high2
+0128(0043) 08 00 68 5C |         if_z            jmp     #field                  'if interlace and field1, display field2
+012C(0044) 04 00 7C 5C |                         jmp     #superfield             'else, new superfield
+0130(0045) 4A A4 FC 5C | blank_lines             call    #hsync                  'do hsync
+0134(0046) 80 4B BE 6C |                         xor     tile,colortable         'do background
+0138(0047) 00 4A 7E FC |                         waitvid tile,#0
+013C(0048) 45 36 FE E4 |                         djnz    x,#blank_lines
+0140(0049) 00 00 7C 5C | blank_lines_ret         ret
+0144(004A) 01 6A 7E 61 | hsync                   test    _mode,#%0001    wc      'if pal, toggle phaseflip
+0148(004B) FC F6 B1 6C |         if_c            xor     phaseflip,phasemask
+014C(004C) 30 FF BF A0 |                         mov     vscl,sync_scale1        'do hsync       
+0150(004D) FB 4A BE A0 |                         mov     tile,phaseflip
+0154(004E) 2E 4B BE 6C |                         xor     tile,burst
+0158(004F) 32 4B 3E FC |                         waitvid tile,sync_normal
+015C(0050) 28 FF BF A0 |                         mov     vscl,hvis               'setup in case blank line
+0160(0051) FB 4A BE A0 |                         mov     tile,phaseflip
+0164(0052) 00 00 7C 5C | hsync_ret               ret
+0168(0053) 02 AF FC 50 | vsync_high              movs    vsync1,#sync_high1      'vertical sync
+016C(0054) 03 B3 FC 50 |                         movs    vsync2,#sync_high2
+0170(0055) 2D 37 BE A0 | vsync_low               mov     x,vrep
+0174(0056) 30 FF BF A0 | vsyncx                  mov     vscl,sync_scale1
+0178(0057) 02 5D 3E FC | vsync1                  waitvid burst,sync_high1
+017C(0058) 31 FF BF A0 |                         mov     vscl,sync_scale2
+0180(0059) 03 5D 3E FC | vsync2                  waitvid burst,sync_high2
+0184(005A) 56 36 FE E4 |                         djnz    x,#vsyncx
+0188(005B)             | vsync_low_ret
+0188(005B) 00 00 7C 5C | vsync_high_ret          ret
+018C(005C) F0 2F BE A0 | tasks                   mov     t1,par                  'load parameters
+0190(005D) 33 C1 FC 54 |                         movd    :par,#_enable           '(skip _status)
+0194(005E) 0D 30 FE A0 |                         mov     t2,#paramcount - 1
+0198(005F) 04 2E FE 80 | :load                   add     t1,#4
+019C(0060) 17 01 BC 08 | :par                    rdlong  0,t1
+01A0(0061) F5 C0 BC 80 |                         add     :par,d0
+01A4(0062) 5F 30 FE E4 |                         djnz    t2,#:load               '+119
+01A8(0063) 34 2F BE A0 |                         mov     t1,_pins                'set video pins and directions
+01AC(0064) 08 2E 7E 61 |                         test    t1,#$08         wc
+01B0(0065) 00 31 8E A0 |         if_nc           mov     t2,pins0
+01B4(0066) 01 31 B2 A0 |         if_c            mov     t2,pins1
+01B8(0067) 40 2E 7E 61 |                         test    t1,#$40         wc
+01BC(0068) 01 2E FE 28 |                         shr     t1,#1
+01C0(0069) 03 2E FE 2C |                         shl     t1,#3
+01C4(006A) 17 31 BE 28 |                         shr     t2,t1
+01C8(006B) 18 FD BF 50 |                         movs    vcfg,t2
+01CC(006C) 06 2E FE 28 |                         shr     t1,#6
+01D0(006D) 17 FD BF 54 |                         movd    vcfg,t1
+01D4(006E) 03 2E FE 2C |                         shl     t1,#3
+01D8(006F) FF 30 FE 60 |                         and     t2,#$FF
+01DC(0070) 17 31 BE 2C |                         shl     t2,t1
+01E0(0071) 18 ED 8F A0 |         if_nc           mov     dira,t2
+01E4(0072) 00 EE CF A0 |         if_nc           mov     dirb,#0
+01E8(0073) 00 EC F3 A0 |         if_c            mov     dira,#0
+01EC(0074) 18 EF B3 A0 |         if_c            mov     dirb,t2                 '+18
+01F0(0075) E9 66 7E EC |                         tjz     _enable,#disabled       '+2, disabled?
+01F4(0076) 16 2B BE 5C |                         jmpret  taskptr,taskret         '+1=140, break and return later
+01F8(0077) 06 F7 FC 50 |                         movs    :rd,#wtab               'load ntsc/pal metrics from word table
+01FC(0078) 28 FF FC 54 |                         movd    :wr,#hvis
+0200(0079) 07 2E FE A0 |                         mov     t1,#wtabx - wtab
+0204(007A) 01 6A 7E 61 |                         test    _mode,#%0001    wc
+0208(007B) 00 30 BE A0 | :rd                     mov     t2,0
+020C(007C) 01 F6 FC 80 |                         add     :rd,#1
+0210(007D) 10 30 CE 2C |         if_nc           shl     t2,#16
+0214(007E) 10 30 FE 28 |                         shr     t2,#16
+0218(007F) 18 01 BC A0 | :wr                     mov     0,t2
+021C(0080) F5 FE BC 80 |                         add     :wr,d0
+0220(0081) 7B 2E FE E4 |                         djnz    t1,#:rd                 '+54
+0224(0082) 0D 0D CD 50 |         if_nc           movs    :ltab,#ltab             'load ntsc/pal metrics from long table
+0228(0083) 0E 0D F1 50 |         if_c            movs    :ltab,#ltab+1
+022C(0084) 2F 0D FD 54 |                         movd    :ltab,#fcolor
+0230(0085) 04 2E FE A0 |                         mov     t1,#(ltabx - ltab) >> 1
+0234(0086) 00 00 BC A0 | :ltab                   mov     0,0
+0238(0087) F7 0C BD 80 |                         add     :ltab,d0s1
+023C(0088) 86 2E FE E4 |                         djnz    t1,#:ltab               '+17
+0240(0089) 00 2E FE 08 |                         rdlong  t1,#0                   'get CLKFREQ
+0244(008A) 01 2E FE 28 |                         shr     t1,#1                   'if CLKFREQ < 16MHz, cancel _broadcast
+0248(008B) F3 2E 3E 85 |                         cmp     t1,m8           wc
+024C(008C) 00 7C F2 A0 |         if_c            mov     _broadcast,#0
+0250(008D) 01 2E FE 28 |                         shr     t1,#1                   'if CLKFREQ < color frequency * 4, disable
+0254(008E) 2F 2F 3E 85 |                         cmp     t1,fcolor       wc
+0258(008F) E9 00 70 5C |         if_c            jmp     #disabled               '+11
+025C(0090) 16 2B BE 5C |                         jmpret  taskptr,taskret         '+1=83, break and return later
+0260(0091) 2F 2F BE A0 |                         mov     t1,fcolor               'set ctra pll to fcolor * 16
+0264(0092) DC C4 FD 5C |                         call    #divide                 'if ntsc, set vco to fcolor * 32 (114.5454 MHz)
+0268(0093) 01 6A 7E 61 |                         test    _mode,#%0001    wc      'if pal, set vco to fcolor * 16 (70.9379 MHz)
+026C(0094) 0F F0 F3 58 |         if_c            movi    ctra,#%00001_111        'select fcolor * 16 output (ntsc=/2, pal=/1)
+0270(0095) 0E F0 CF 58 |         if_nc           movi    ctra,#%00001_110
+0274(0096) 01 30 CE 2C |         if_nc           shl     t2,#1
+0278(0097) 18 F5 BF A0 |                         mov     frqa,t2                 '+147
+027C(0098) 16 2B BE 5C |                         jmpret  taskptr,taskret         '+1=148, break and return later
+0280(0099) 3E 2F BE A0 |                         mov     t1,_broadcast           'set ctrb pll to _broadcast
+0284(009A) 00 30 FE A0 |                         mov     t2,#0                   'if 0, turn off ctrb
+0288(009B) A3 2E 7E EC |                         tjz     t1,#:off
+028C(009C) F3 2E BE 48 |                         min     t1,m8                   'limit from 8MHz to 128MHz
+0290(009D) F4 2E BE 4C |                         max     t1,m128
+0294(009E) 0C 30 FE A0 |                         mov     t2,#%00001_100          'adjust _broadcast to be within 4MHz-8MHz
+0298(009F) 01 2E FE 28 | :scale                  shr     t1,#1                   '(vco will be within 64MHz-128MHz)
+029C(00A0) 17 E7 3D 85 |                         cmp     m8,t1           wc
+02A0(00A1) 01 30 F2 80 |         if_c            add     t2,#%00000_001
+02A4(00A2) 9F 00 70 5C |         if_c            jmp     #:scale
+02A8(00A3) 18 F3 BF 58 | :off                    movi    ctrb,t2
+02AC(00A4) DC C4 FD 5C |                         call    #divide
+02B0(00A5) 18 F7 BF A0 |                         mov     frqb,t2                 '+165
+02B4(00A6) 16 2B BE 5C |                         jmpret  taskptr,taskret         '+1=166, break and return later
+02B8(00A7) A0 2E FE A0 |                         mov     t1,#%10100_000          'set video configuration
+02BC(00A8) 01 68 7E 61 |                         test    _pins,#$01      wc      '(swap broadcast/baseband output bits?)
+02C0(00A9) 40 2E F2 68 |         if_c            or      t1,#%01000_000
+02C4(00AA) 08 6A 7E 61 |                         test    _mode,#%1000    wc      '(strip chroma from broadcast?)
+02C8(00AB) 10 2E CE 68 |         if_nc           or      t1,#%00010_000
+02CC(00AC) 04 6A 7E 61 |                         test    _mode,#%0100    wc      '(strip chroma from baseband?)
+02D0(00AD) 08 2E CE 68 |         if_nc           or      t1,#%00001_000
+02D4(00AE) 07 7E FE 60 |                         and     _auralcog,#%111         '(set aural cog)
+02D8(00AF) 3F 2F BE 68 |                         or      t1,_auralcog
+02DC(00B0) 17 FD BF 58 |                         movi    vcfg,t1                 '+10
+02E0(00B1) 3A 43 BE A0 |                         mov     hx,_hx                  'compute horizontal metrics
+02E4(00B2) 08 42 FE 2C |                         shl     hx,#8
+02E8(00B3) 3A 43 BE 68 |                         or      hx,_hx
+02EC(00B4) 04 42 FE 2C |                         shl     hx,#4
+02F0(00B5) 38 47 BE A0 |                         mov     hc2x,_ht
+02F4(00B6) 01 46 FE 2C |                         shl     hc2x,#1
+02F8(00B7) 38 2F BE A0 |                         mov     t1,_ht
+02FC(00B8) 3A 31 BE A0 |                         mov     t2,_hx
+0300(00B9) E3 D0 FD 5C |                         call    #multiply
+0304(00BA) 28 3B BE A0 |                         mov     hf,hvis
+0308(00BB) 17 3B BE 84 |                         sub     hf,t1
+030C(00BC) 01 3A FE 29 |                         shr     hf,#1           wc
+0310(00BD) 3C 3D BE A0 |                         mov     hb,_ho
+0314(00BE) 1D 3D BE C8 |                         addx    hb,hf
+0318(00BF) 3C 3B BE 84 |                         sub     hf,_ho                  '+52
+031C(00C0) 39 2F BE A0 |                         mov     t1,_vt                  'compute vertical metrics
+0320(00C1) 3B 31 BE A0 |                         mov     t2,_vx
+0324(00C2) E3 D0 FD 5C |                         call    #multiply
+0328(00C3) 10 6A 7E 61 |                         test    _mode,#%10000   wc      'consider tile size
+032C(00C4) 01 FE FD 70 |                         muxc    linerot,#1
+0330(00C5) FE 4E BE A0 |                         mov     lineadd,lineinc
+0334(00C6) 01 4E F2 28 |         if_c            shr     lineadd,#1
+0338(00C7) 01 2E F2 2C |         if_c            shl     t1,#1
+033C(00C8) 02 6A 7E 61 |                         test    _mode,#%0010    wc      'consider interlace
+0340(00C9) 01 2E F2 28 |         if_c            shr     t1,#1
+0344(00CA) 2B 3F BE A0 |                         mov     vf,vvis
+0348(00CB) 17 3F BE 84 |                         sub     vf,t1
+034C(00CC) 01 3E FE 29 |                         shr     vf,#1           wc
+0350(00CD) 3D 41 BE A4 |                         neg     vb,_vo
+0354(00CE) 1F 41 BE C8 |                         addx    vb,vf
+0358(00CF) 3D 3F BE 80 |                         add     vf,_vo                  '+53
+035C(00D0) 02 6A FE 6C |                         xor     _mode,#%0010            '+1, flip interlace bit for display
+0360(00D1) 16 2B BE 5C | :colors                 jmpret  taskptr,taskret         '+1=117/160, break and return later
+0364(00D2) 0D 2E FE A0 |                         mov     t1,#13                  'load next 13 colors into colortable
+0368(00D3) D7 30 BE A0 | :colorloop              mov     t2,:colorreg            '5 times = 65 (all 64 colors loaded)
+036C(00D4) 07 30 FE 28 |                         shr     t2,#9-2
+0370(00D5) FC 30 FE 60 |                         and     t2,#$FC
+0374(00D6) 37 31 BE 80 |                         add     t2,_colors
+0378(00D7) 18 01 BF 08 | :colorreg               rdlong  colortable,t2
+037C(00D8) F5 AE BD 80 |                         add     :colorreg,d0
+0380(00D9) F6 AE BD 64 |                         andn    :colorreg,d6
+0384(00DA) D3 2E FE E4 |                         djnz    t1,#:colorloop          '+158
+0388(00DB) D1 00 7C 5C |                         jmp     #:colors                '+1, keep loading colors
+038C(00DC) 00 32 FE 08 | divide                  rdlong  m1,#0                   'get CLKFREQ
+0390(00DD) 21 34 FE A0 |                         mov     m2,#32+1
+0394(00DE) 19 2F BE E1 | :loop                   cmpsub  t1,m1           wc
+0398(00DF) 01 30 FE 34 |                         rcl     t2,#1
+039C(00E0) 01 2E FE 2C |                         shl     t1,#1
+03A0(00E1) DE 34 FE E4 |                         djnz    m2,#:loop
+03A4(00E2) 00 00 7C 5C | divide_ret              ret                             '+140
+03A8(00E3) 0B 30 FE 2C | multiply                shl     t2,#8+4-1
+03AC(00E4) 08 32 FE A0 |                         mov     m1,#8
+03B0(00E5) 01 2E FE 29 | :loop                   shr     t1,#1           wc
+03B4(00E6) 18 2F B2 80 |         if_c            add     t1,t2
+03B8(00E7) E5 32 FE E4 |                         djnz    m1,#:loop
+03BC(00E8) 00 00 7C 5C | multiply_ret            ret                             '+37
+03C0(00E9) 00 F0 FF A0 | disabled                mov     ctra,#0                 'reset ctra
+03C4(00EA) 00 F2 FF A0 |                         mov     ctrb,#0                 'reset ctrb
+03C8(00EB) 00 FC FF A0 |                         mov     vcfg,#0                 'reset video
+03CC(00EC) F0 E9 3F 08 |                         wrlong  outa,par                'set status to disabled
+03D0(00ED) 00 2E FE 08 |                         rdlong  t1,#0                   'get CLKFREQ
+03D4(00EE) 08 2E FE 28 |                         shr     t1,#8                   'nap for ~4ms
+03D8(00EF) 03 2E FE 48 |                         min     t1,#3
+03DC(00F0) F1 2F BE 80 |                         add     t1,cnt
+03E0(00F1) 00 2E FE F8 |                         waitcnt t1,#0
+03E4(00F2) 00 00 7C 5C |                         jmp     #entry                  'reload parameters
+03E8(00F3) 00 12 7A 00 | m8                      long    8_000_000
+03EC(00F4) 00 20 A1 07 | m128                    long    128_000_000
+03F0(00F5) 00 02 00 00 | d0                      long    1 << 9 << 0
+03F4(00F6) 00 80 00 00 | d6                      long    1 << 9 << 6
+03F8(00F7) 02 02 00 00 | d0s1                    long    1 << 9 << 0 + 1 << 1
+03FC(00F8) 00 00 00 00 | interlace               long    0
+0400(00F9) 01 00 00 00 | invisible               long    1
+0404(00FA) 02 00 00 00 | visible                 long    2
+0408(00FB) 00 00 00 00 | phaseflip               long    $00000000
+040C(00FC) F0 F0 F0 F0 | phasemask               long    $F0F0F0F0
+0410(00FD) 00 00 06 00 | line                    long    $00060000
+0414(00FE) 00 00 00 10 | lineinc                 long    $10000000
+0418(00FF) 00 00 00 00 | linerot                 long    0
+041C(0100) 07 0F 70 F0 | pins0                   long    %11110000_01110000_00001111_00000111
+0420(0101) 77 7F F7 FF | pins1                   long    %11111111_11110111_01111111_01110111
+0424(0102) A5 56 55 55 | sync_high1              long    %0101010101010101010101_101010_0101
+0428(0103) 55 55 55 55 | sync_high2              long    %01010101010101010101010101010101       'used for black
+042C(0104) A5 AA AA AA | sync_low1               long    %1010101010101010101010101010_0101
+0430(0105) AA AA AA 6A | sync_low2               long    %01_101010101010101010101010101010
+0434(0106) C8 0B       | wtab                    word    lntsc - sntsc,          lpal - spal     'hvis
+0436(0106) 6C 0E       | 
+0438(0107) AC 04       |                         word    lntsc / 2 - sntsc,      lpal / 2 - spal 'hrest
+043A(0107) 8E 05       | 
+043C(0108) 1C 07       |                         word    lntsc / 2,              lpal / 2        'hhalf
+043E(0108) DE 08       | 
+0440(0109) F3 00       |                         word    243,                    286             'vvis
+0442(0109) 1E 01       | 
+0444(010A) 0A 00       |                         word    10,                     18              'vinv
+0446(010A) 12 00       | 
+0448(010B) 06 00       |                         word    6,                      5               'vrep
+044A(010B) 05 00       | 
+044C(010C) 8A 02       |                         word    $02_8A,                 $02_AA          'burst
+044E(010C) AA 02       | 
+0450(010D)             | wtabx
+0450(010D) 99 9E 36 00 | ltab                    long    fntsc                                   'fcolor
+0454(010E) D2 A6 43 00 |                         long    fpal
+0458(010F) 70 72 02 00 |                         long    sntsc >> 4 << 12 + sntsc                'sync_scale1
+045C(0110) 50 53 03 00 |                         long    spal >> 4 << 12 + spal
+0460(0111) AC 34 04 00 |                         long    67 << 12 + lntsc / 2 - sntsc            'sync_scale2
+0464(0112) 8E F5 04 00 |                         long    79 << 12 + lpal / 2 - spal
+0468(0113) A5 AA 06 50 |                         long    %0101_00000000_01_10101010101010_0101   'sync_normal
+046C(0114) A5 AA 01 54 |                         long    %010101_00000000_01_101010101010_0101
+0470(0115)             | ltabx
+0470(0115)             | taskptr                 res     1                       'tasks
+0470(0116)             | taskret                 res     1
+0470(0117)             | t1                      res     1
+0470(0118)             | t2                      res     1
+0470(0119)             | m1                      res     1
+0470(011A)             | m2                      res     1
+0470(011B)             | x                       res     1                       'display
+0470(011C)             | y                       res     1
+0470(011D)             | hf                      res     1
+0470(011E)             | hb                      res     1
+0470(011F)             | vf                      res     1
+0470(0120)             | vb                      res     1
+0470(0121)             | hx                      res     1
+0470(0122)             | vx                      res     1
+0470(0123)             | hc2x                    res     1
+0470(0124)             | screen                  res     1
+0470(0125)             | tile                    res     1
+0470(0126)             | pixels                  res     1
+0470(0127)             | lineadd                 res     1
+0470(0128)             | hvis                    res     1                       'loaded from word table
+0470(0129)             | hrest                   res     1
+0470(012A)             | hhalf                   res     1
+0470(012B)             | vvis                    res     1
+0470(012C)             | vinv                    res     1
+0470(012D)             | vrep                    res     1
+0470(012E)             | burst                   res     1
+0470(012F)             | fcolor                  res     1                       'loaded from long table
+0470(0130)             | sync_scale1             res     1
+0470(0131)             | sync_scale2             res     1
+0470(0132)             | sync_normal             res     1
+0470(0133)             | _enable                 res     1       '0/non-0        read-only
+0470(0134)             | _pins                   res     1       '%pppmmmm       read-only
+0470(0135)             | _mode                   res     1       '%tccip         read-only
+0470(0136)             | _screen                 res     1       '@word          read-only
+0470(0137)             | _colors                 res     1       '@long          read-only
+0470(0138)             | _ht                     res     1       '1+             read-only
+0470(0139)             | _vt                     res     1       '1+             read-only
+0470(013A)             | _hx                     res     1       '4+             read-only
+0470(013B)             | _vx                     res     1       '1+             read-only
+0470(013C)             | _ho                     res     1       '0+-            read-only
+0470(013D)             | _vo                     res     1       '0+-            read-only
+0470(013E)             | _broadcast              res     1       '0+             read-only
+0470(013F)             | _auralcog               res     1       '0-7            read-only
+0470(0140)             |                         fit     colortable              'fit underneath colortable ($180-$1BF)
+0470(0140)             | There are 64 ($040) Longs left in the cog
+|===========================================================================|
+|===========================================================================|
+Spin Block start with 1 Parameters and 0 Extra Stack Longs. Method 1
+PUB start(tvptr) : okay
+
+Local Parameter DBASE:0000 - okay
+Local Parameter DBASE:0004 - tvptr
+|===========================================================================|
+39                        stop
+Addr : 0470:             01  : Drop Anchor   
+Addr : 0471:          05 02  : Call Sub 2    
+40                        okay := cog := cognew(@entry, tvptr) + 1
+Addr : 0473:             34  : Constant 0 $FFFFFFFF
+Addr : 0474:          C7 0C  : Memory Op Long PBASE + ADDRESS Address = 000C
+Addr : 0476:             64  : Variable Operation Local Offset - 1 Read
+Addr : 0477:             28  : CogInit(Id, Addr, Ptr) Push
+Addr : 0478:             36  : Constant 2 $00000001
+Addr : 0479:             EC  : Math Op +     
+Addr : 047A:          42 80  : Variable Operation Global Offset - 0 Assign Write Push
+Addr : 047C:             61  : Variable Operation Local Offset - 0 Write
+Addr : 047D:             32  : Return        
+|===========================================================================|
+Spin Block stop with 0 Parameters and 0 Extra Stack Longs. Method 2
+PUB stop
+
+Local Parameter DBASE:0000 - Result
+|===========================================================================|
+47                        if cog
+Addr : 047E:             40  : Variable Operation Global Offset - 0 Read
+Addr : 047F: JZ Label0002
+Addr : 047F:          0A 05  : jz Address = 0486 5
+48                          cogstop(cog~ - 1)
+Addr : 0481:          42 98  : Variable Operation Global Offset - 0 Assign VAR~ Post-clear Push
+Addr : 0483:             36  : Constant 2 $00000001
+Addr : 0484:             ED  : Math Op -     
+Addr : 0485:             21  : CogStop(id)   
+Addr : 0486: Label0002
+Addr : 0486: Label0003
+Addr : 0486:             32  : Return        

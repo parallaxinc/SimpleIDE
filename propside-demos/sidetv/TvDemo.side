@@ -1,0 +1,10 @@
+TvDemo.c
+TvText.c
+TvText.h
+TvDriver.c
+TV.spin
+>compiler=C
+>memtype=lmm
+>optimize=-Os
+>-fno-exceptions
+>BOARD::C3
