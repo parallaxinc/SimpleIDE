@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-8-0"
+#define MyAppVersion "0-8-1"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -18,13 +18,15 @@
 #define MyGccMingwPath "C:\mingw"
 #define MyTranslations "..\propside\translations"
 #define MyUserGuide "..\propside\userguide"
+#define MySpinPath "..\spin"
 #define MyAppBin "{app}\bin"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppID={{4FA91D9B-6633-4229-B3BE-DF96DFD916F3}
+; AppID={{4FA91D9B-6633-4229-B3BE-DF96DFD916F3} - old v0-7-2 AppID
+AppID={{CE380BA3-F51E-4DCB-A068-216961358E89}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -72,6 +74,7 @@ Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ign
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyTranslations}\*"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
 ;Source: "{#MyUserGuide}\*"; DestDir: {app}/userguide/; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
+Source: "{#MySpinPath}\*"; DestDir: "{code:GetCompilerDir}\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -90,6 +93,9 @@ Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; V
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Includes; ValueData: {code:GetCompilerDir}\propeller-load\; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Workspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
+Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinCompiler; ValueData: {code:GetCompilerDir}\bin\bstc.exe; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinLibrary; ValueData: {code:GetCompilerDir}\spin\; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinWorkspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
 
 [Code]
 var
