@@ -16,15 +16,6 @@ SPINLIB="../../spin"
 CLEAN=$1
 
 #
-# remove build step temporarily
-#
-if [ 1 -eq 1 ]; then
-
-    BUILD=../../propside
-
-else
-
-#
 # remove package
 #
 if [ -e ${PKG} ]; then
@@ -59,11 +50,6 @@ if test $? != 0; then
    exit 1
 fi
 cd ${DIR}
-
-#
-# end temporary remove build step
-#
-fi
 
 
 # extract version from propside.pro
