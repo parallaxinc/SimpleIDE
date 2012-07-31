@@ -1579,15 +1579,15 @@ void MainSpinWindow::fileChanged()
     QString text;
     int ret = 0;
 
-    QTextStream in(&file);
-    if(this->isFileUTF16(&file))
-        in.setCodec("UTF-16");
-    else
-        in.setCodec("UTF-8");
-
     QChar ch = name.at(name.length()-1);
     if(file.open(QFile::ReadOnly))
     {
+        QTextStream in(&file);
+        if(this->isFileUTF16(&file))
+            in.setCodec("UTF-16");
+        else
+            in.setCodec("UTF-8");
+
         text = in.readAll();
         file.close();
 
