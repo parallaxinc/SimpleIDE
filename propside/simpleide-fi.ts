@@ -19,64 +19,64 @@
     <message>
         <location filename="build.cpp" line="103"/>
         <source> error ... (%1)</source>
-        <translation type="unfinished"> virhe ... (%1)</translation>
+        <translation> virhe ... (%1)</translation>
     </message>
     <message>
         <location filename="build.cpp" line="307"/>
         <source> Could not start.</source>
-        <translation type="unfinished"> Ei voinut käynnistyä.</translation>
+        <translation> Ei voida käynnistää.</translation>
     </message>
     <message>
         <location filename="build.cpp" line="312"/>
         <source> Error waiting for program to finish.</source>
-        <translation type="unfinished"> Virhe odottaessa ohjelman suoritusta loppuun.</translation>
+        <translation> Virhe odottaessa ohjelman suoritusta loppuun.</translation>
     </message>
     <message>
         <location filename="build.cpp" line="336"/>
         <location filename="build.cpp" line="337"/>
         <source>Compiler Crashed</source>
-        <translation type="unfinished">Kääntäjä kaatui</translation>
+        <translation>Kääntäjä kaatui</translation>
     </message>
     <message>
         <location filename="build.cpp" line="342"/>
         <source> Error:</source>
-        <translation type="unfinished"> Virhe:</translation>
+        <translation> Virhe:</translation>
     </message>
     <message>
         <location filename="build.cpp" line="344"/>
         <source>Load Error</source>
-        <translation type="unfinished">Lataus virhe</translation>
+        <translation>Lataus virhe</translation>
     </message>
     <message>
         <location filename="build.cpp" line="347"/>
         <source>Serial Port Error</source>
-        <translation type="unfinished">Sarjaportti virhe</translation>
+        <translation>Sarjaportti virhe</translation>
     </message>
     <message>
         <location filename="build.cpp" line="349"/>
         <location filename="build.cpp" line="383"/>
         <source>Build Error</source>
-        <translation type="unfinished">Rakennusvirhe</translation>
+        <translation>Rakennusvirhe</translation>
     </message>
     <message>
         <location filename="build.cpp" line="355"/>
         <source> Error: </source>
-        <translation type="unfinished"> Virhe: </translation>
+        <translation> Virhe: </translation>
     </message>
     <message>
         <location filename="build.cpp" line="359"/>
         <source> Compiled OK with Warning(s).</source>
-        <translation type="unfinished"> Kääntyi OK varoitusten kanssa.</translation>
+        <translation> Kääntyi onnistuneesti varoitusten kanssa.</translation>
     </message>
     <message>
         <location filename="build.cpp" line="385"/>
         <source>Please specify compiler application in properties.</source>
-        <translation type="unfinished">Määrittele käytettävä kääntäjä asetuksista.</translation>
+        <translation>Määrittele käytettävä kääntäjä asetuksista.</translation>
     </message>
     <message>
         <location filename="build.cpp" line="391"/>
         <source>Please specify loader folder in properties.</source>
-        <translation type="unfinished">Määrittele käytettävän lataajan hakemisto asetuksista.</translation>
+        <translation>Määrittele käytettävän lataajan hakemisto asetuksista.</translation>
     </message>
 </context>
 <context>
@@ -84,25 +84,25 @@
     <message>
         <location filename="buildc.cpp" line="56"/>
         <source>Project Directory: </source>
-        <translation type="unfinished">Projektin hakemisto:</translation>
+        <translation>Projektin hakemisto: </translation>
     </message>
     <message>
         <location filename="buildc.cpp" line="58"/>
         <source>Building ...</source>
-        <translation type="unfinished">Rakennetaan ...</translation>
+        <translation>Rakennetaan ...</translation>
     </message>
     <message>
         <location filename="buildc.cpp" line="82"/>
         <location filename="buildc.cpp" line="100"/>
         <source>Can&apos;t Remove File</source>
-        <translation type="unfinished">Tiedostoa ei voi poistaa</translation>
+        <translation>Tiedostoa ei voi poistaa</translation>
     </message>
     <message>
         <location filename="buildc.cpp" line="83"/>
         <source>Can&apos;t Remove output file before build.
 Please close any program using the file &quot;a.out&quot;.
 Continue?</source>
-        <translation type="unfinished">Rakennettavaa tiedostosta ei voida poistaa ennen rakentamista.
+        <translation>Rakennettavaa tiedostosta ei voida poistaa ennen rakentamista.
 Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;a.out&quot;.
 Jatketaanko?</translation>
     </message>
@@ -110,28 +110,28 @@ Jatketaanko?</translation>
         <location filename="buildc.cpp" line="101"/>
         <source>Can&apos;t Remove output file before build.
 Please close any program using the file &quot;</source>
-        <translation type="unfinished">Rakennettavaa tiedostosta ei voida poistaa ennen rakentamista.
+        <translation>Rakennettavaa tiedostosta ei voida poistaa ennen rakentamista.
 Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     </message>
     <message>
         <location filename="buildc.cpp" line="697"/>
         <source>Compile Error</source>
-        <translation type="unfinished">Kääntämisvirhe</translation>
+        <translation>Kääntämisvirhe</translation>
     </message>
     <message>
         <location filename="buildc.cpp" line="698"/>
         <source>Please check the compiler, loader path, and workspace.</source>
-        <translation type="unfinished">Valitse kääntäjä, lataajan hakemisto sekä työtila.</translation>
+        <translation>Tarkista käytettävä kääntäjä, lataajan hakemisto sekä työtila.</translation>
     </message>
     <message>
         <location filename="buildc.cpp" line="752"/>
         <source>Ignoring</source>
-        <translation type="unfinished">Sivutetaan</translation>
+        <translation>Sivutetaan</translation>
     </message>
     <message>
         <location filename="buildc.cpp" line="752"/>
         <source> flag in COG mode program.</source>
-        <translation type="unfinished"> lippu COG moodi ohjelmassa.</translation>
+        <translation> lippu COG moodi ohjelmassa.</translation>
     </message>
 </context>
 <context>
@@ -139,12 +139,12 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     <message>
         <location filename="buildspin.cpp" line="35"/>
         <source>Project Directory: </source>
-        <translation type="unfinished">Projektin hakemisto:</translation>
+        <translation>Projektin hakemisto: </translation>
     </message>
     <message>
         <location filename="buildspin.cpp" line="37"/>
         <source>Building ...</source>
-        <translation type="unfinished">Rakennetaan ...</translation>
+        <translation>Rakennetaan ...</translation>
     </message>
 </context>
 <context>
@@ -162,7 +162,8 @@ Debugger Done ....
 </source>
         <translation>
 
-Debuggeri valmis ...</translation>
+Debuggeri valmis ...
+</translation>
     </message>
 </context>
 <context>
@@ -540,7 +541,8 @@ Loader Done ....
 </source>
         <translation>
 
-Lataaja valmis ...</translation>
+Lataaja valmis ...
+</translation>
     </message>
 </context>
 <context>
@@ -627,7 +629,7 @@ Lataaja valmis ...</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="883"/>
         <source>System can not create project in </source>
-        <translation>Järjestelmä ei voi luoda projektia kohteeseen</translation>
+        <translation>Järjestelmä ei voi luoda projektia kohteeseen </translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="937"/>
@@ -640,14 +642,15 @@ Lataaja valmis ...</translation>
         <location filename="mainspinwindow.cpp" line="938"/>
         <source>Save As Project expected a link, but got:
 </source>
-        <translation>Tallennettaessa nimellä odotettiin linkkiä, mutta saatiin:</translation>
+        <translation>Tallennettaessa nimellä odotettiin linkkiä, mutta saatiin:
+</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="939"/>
         <location filename="mainspinwindow.cpp" line="963"/>
         <location filename="mainspinwindow.cpp" line="987"/>
         <source>Please manually adjust it by adding a correct link in the Project Manager list.</source>
-        <translation>Muuta asetuksia manuaalisesti liittämällä oikea linkki projektin hallinan listaukseen.</translation>
+        <translation>Muuta asetuksia manuaalisesti lisäämällä oikea linkki projektin hallinan listaukseen.</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="940"/>
@@ -672,7 +675,8 @@ Lataaja valmis ...</translation>
         <location filename="mainspinwindow.cpp" line="999"/>
         <source>Save As Project was not able to fix the link:
 </source>
-        <translation>Tallenna projekti nimellä ei pystynyt korjaamaan linkkiä:</translation>
+        <translation>Tallenna projekti nimellä ei pystynyt korjaamaan linkkiä:
+</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="952"/>
@@ -685,13 +689,15 @@ Lataaja valmis ...</translation>
         <location filename="mainspinwindow.cpp" line="962"/>
         <source>Save As Project expected a -I link, but got:
 </source>
-        <translation>Tallenna nimellä odotti -l linkkiä, mutta sai:</translation>
+        <translation>Tallenna nimellä odotti -l linkkiä, mutta sai:
+</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="986"/>
         <source>Save As Project expected a -L link, but got:
 </source>
-        <translation>Tallenna nimellä odotti -L linkkiä, mutta sai:</translation>
+        <translation>Tallenna nimellä odotti -L linkkiä, mutta sai:
+</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="1055"/>
@@ -741,7 +747,7 @@ Lataaja valmis ...</translation>
         <location filename="mainspinwindow.cpp" line="1573"/>
         <location filename="mainspinwindow.cpp" line="1607"/>
         <source> *</source>
-        <translation>*</translation>
+        <translation> *</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="1629"/>
@@ -767,7 +773,8 @@ Library declarations will not be found.
 Voit myös käyttää &quot;Command+vasen klikkaus&quot; löytääksesi esittelyn.
 Käytä &quot;Command+[&quot; mennäksesi takaisin.
 
-Kirjastojen esittelyjä ei voi löytää.</translation>
+Kirjastojen esittelyjä ei voi löytää.
+</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="1869"/>
@@ -781,7 +788,8 @@ Library declarations will not be found.
 Voit myös käyttää &quot;Ctrl+vasen klikkaus&quot; löytääksesi esittelyn.
 Käytä &quot;Alt+vasen nuoli&quot; mennäksesi takaisin.
 
-Kirjastojen esittelyjä ei voi löytää.</translation>
+Kirjastojen esittelyjä ei voi löytää.
+</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="1976"/>
@@ -807,7 +815,7 @@ Kirjastojen esittelyjä ei voi löytää.</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="2206"/>
         <source> for more information.</source>
-        <translation> sivustolla saadaksesi lisää tietoa.</translation>
+        <translation> sivustolla saadaksesi lisätietoja.</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="2213"/>
@@ -827,7 +835,7 @@ Kirjastojen esittelyjä ei voi löytää.</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="2230"/>
         <source> uses &lt;a href=&quot;http://propgcc.googlecode.com&quot;&gt;Propeller GCC tool chain&lt;/a&gt; based on GCC 4.6.1 under GPLv3. </source>
-        <translation> käyttää &lt;a href=&quot;http://propgcc.googlecode.com&quot;&gt; Propeller GCC työkaluketjua&lt;/a&gt; perustuen GPLv3 alaiseen GCC 4.6.1.</translation>
+        <translation> käyttää &lt;a href=&quot;http://propgcc.googlecode.com&quot;&gt; Propeller GCC työkaluketjua&lt;/a&gt; perustuen GPLv3 alaiseen GCC 4.6.1. </translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="2231"/>
@@ -911,7 +919,8 @@ Kirjastojen esittelyjä ei voi löytää.</translation>
         <location filename="mainspinwindow.cpp" line="2350"/>
         <source>&quot; is not part of the current project.
 </source>
-        <translation>&quot; ei ole osa tämänhetkistä projektia.</translation>
+        <translation>&quot; ei ole osa tämänhetkistä projektia.
+</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="2344"/>
@@ -1070,7 +1079,7 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="2661"/>
         <source>Project Options</source>
-        <translation>Projektin asetukset</translation>
+        <translation>Projektin valinnat</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="2665"/>
@@ -1159,7 +1168,7 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="3911"/>
         <source>Save &amp;As</source>
-        <translation>Tallessa &amp;nimellä</translation>
+        <translation>Tallenna &amp;nimellä</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="3913"/>
@@ -1257,7 +1266,7 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="3981"/>
         <source>&amp;Undo</source>
-        <translation>&amp;Peruuta</translation>
+        <translation>&amp;Kumoa</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="3983"/>
@@ -1277,7 +1286,7 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="3998"/>
         <source>Font</source>
-        <translation>Fontti</translation>
+        <translation>Valitse fontti</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="4004"/>
@@ -1292,7 +1301,7 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="2707"/>
         <source>IDE Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>IDE debuggaus</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="4017"/>
@@ -1349,7 +1358,7 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="4034"/>
         <source>&amp;Step In</source>
-        <translation>&amp;Astu sisään</translation>
+        <translation>&amp;Askella sisään</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="4035"/>
@@ -1369,7 +1378,7 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="4038"/>
         <source>&amp;Interrupt</source>
-        <translation>&amp;Keskeytys</translation>
+        <translation>&amp;Keskeytä</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="4039"/>
@@ -1449,7 +1458,7 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     <message>
         <location filename="mainspinwindow.cpp" line="4174"/>
         <source>Stop Build or Loader</source>
-        <translation type="unfinished"></translation>
+        <translation>Pysäytä rakentaminen tai lataaja</translation>
     </message>
     <message>
         <location filename="mainspinwindow.cpp" line="4176"/>
@@ -1522,7 +1531,7 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     <message>
         <location filename="newproject.cpp" line="38"/>
         <source>Creating a new project:</source>
-        <translation>Luodaan uutta projektia:</translation>
+        <translation>Luo uusi projekti:</translation>
     </message>
     <message>
         <location filename="newproject.cpp" line="41"/>
@@ -1536,7 +1545,8 @@ The new folder will have a main .c file and a .side project file.
 2) Syötä projektin nimi
 
 Projektin hakemisto luodaan sen nimen mukaisesti työtilaan.
-Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedoston.</translation>
+Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedoston.
+</translation>
     </message>
     <message>
         <location filename="newproject.cpp" line="128"/>
@@ -1561,13 +1571,14 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="newproject.cpp" line="165"/>
         <source>Create new project file &quot;</source>
-        <translation>Luo uusi projektin tiedosto &quot;</translation>
+        <translation>Luodaan uusi projektin tiedosto &quot;</translation>
     </message>
     <message>
         <location filename="newproject.cpp" line="165"/>
         <source> in
 </source>
-        <translation>sisällä</translation>
+        <translation> hakemistoon
+</translation>
     </message>
     <message>
         <location filename="newproject.cpp" line="165"/>
@@ -1590,7 +1601,7 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="project.ui" line="36"/>
         <source>Project Options</source>
-        <translation>Projektin asetukset</translation>
+        <translation>Projektin valinnat</translation>
     </message>
     <message>
         <location filename="project.ui" line="48"/>
@@ -1642,7 +1653,7 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
         <location filename="project.ui" line="177"/>
         <location filename="project.ui" line="412"/>
         <source>Compile Options</source>
-        <translation>Kääntäjän asetukset</translation>
+        <translation>Kääntäjän valinnat</translation>
     </message>
     <message>
         <location filename="project.ui" line="193"/>
@@ -1698,7 +1709,7 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
         <location filename="project.ui" line="273"/>
         <location filename="project.ui" line="399"/>
         <source>Other Compiler Options</source>
-        <translation>Muut kääntäjän asetukset</translation>
+        <translation>Muut kääntäjän valinnat</translation>
     </message>
     <message>
         <location filename="project.ui" line="279"/>
@@ -1729,7 +1740,7 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="project.ui" line="323"/>
         <source>Linker Options</source>
-        <translation>Linkkerin asetukset</translation>
+        <translation>Linkkerin valinnat</translation>
     </message>
     <message>
         <location filename="project.ui" line="339"/>
@@ -1739,7 +1750,7 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="project.ui" line="352"/>
         <source>Other Linker Options</source>
-        <translation>Muut linkkerin asetukset</translation>
+        <translation>Muut linkkerin valinnat</translation>
     </message>
     <message>
         <location filename="project.ui" line="365"/>
@@ -1754,7 +1765,7 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="project.ui" line="381"/>
         <source>Create Project Library</source>
-        <translation type="unfinished"></translation>
+        <translation>Luo projektin kirjasto</translation>
     </message>
 </context>
 <context>
@@ -1814,7 +1825,7 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="properties.cpp" line="313"/>
         <source>Clear options for next startup.</source>
-        <translation>Tyhjennä asetukset seuraavaan käynnistykseen.</translation>
+        <translation>Tyhjennä valinnat seuraavaan käynnistykseen.</translation>
     </message>
     <message>
         <location filename="properties.cpp" line="315"/>
@@ -1840,12 +1851,12 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="properties.cpp" line="55"/>
         <source>GCC Compiler</source>
-        <translation type="unfinished"></translation>
+        <translation>GCC kääntäjä</translation>
     </message>
     <message>
         <location filename="properties.cpp" line="142"/>
         <source>Library Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Kirjasto hakemisto</translation>
     </message>
     <message>
         <location filename="properties.cpp" line="357"/>
@@ -1940,7 +1951,7 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="properties.cpp" line="415"/>
         <source>White</source>
-        <translation type="unfinished"></translation>
+        <translation>Valkoinen</translation>
     </message>
     <message>
         <location filename="properties.cpp" line="453"/>
@@ -2021,12 +2032,12 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
         <location filename="properties.cpp" line="814"/>
         <location filename="properties.cpp" line="816"/>
         <source>Select Spin Compiler</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse Spin kääntäjä</translation>
     </message>
     <message>
         <location filename="properties.cpp" line="833"/>
         <source>Select Spin Library Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse Spin kirjastojen hakemisto</translation>
     </message>
 </context>
 <context>
@@ -2255,127 +2266,127 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="TermPrefs.ui" line="14"/>
         <source>Simple Terminal Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Sisäisen terminaalin valinnat</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="46"/>
         <source>Appearance</source>
-        <translation type="unfinished"></translation>
+        <translation>Ulkoasu</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="58"/>
         <source>Foreground Color</source>
-        <translation type="unfinished"></translation>
+        <translation>Tekstin väri</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="71"/>
         <source>Background Color</source>
-        <translation type="unfinished"></translation>
+        <translation>Taustan väri</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="84"/>
         <source>Wrap Text</source>
-        <translation type="unfinished"></translation>
+        <translation>Tekstin rivitys</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="98"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Ikkuna</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="103"/>
         <source>Page</source>
-        <translation type="unfinished"></translation>
+        <translation>Sivu</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="137"/>
         <source>Set Font </source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse fontti </translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="150"/>
         <source>Page Wrap Length</source>
-        <translation type="unfinished"></translation>
+        <translation>Tekstin rivityksen pituus</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="185"/>
         <source>Max Buffer Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Maksimi rivipuskurin koko</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="199"/>
         <source>256</source>
-        <translation type="unfinished">256</translation>
+        <translation>256</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="204"/>
         <source>512</source>
-        <translation type="unfinished">512</translation>
+        <translation>512</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="209"/>
         <source>1024</source>
-        <translation type="unfinished">1024</translation>
+        <translation>1024</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="214"/>
         <source>2048</source>
-        <translation type="unfinished">2048</translation>
+        <translation>2048</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="219"/>
         <source>Infinite</source>
-        <translation type="unfinished"></translation>
+        <translation>Loputon</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="233"/>
         <source>Tab Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Tabulaattorin koko</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="268"/>
         <source>Font Family (size)</source>
-        <translation type="unfinished"></translation>
+        <translation>Fonttiperhe (koko)</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="281"/>
         <source>Show Hexadecimal Input</source>
-        <translation type="unfinished"></translation>
+        <translation>Näytä hexadesimaalinen syöte</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="294"/>
         <source>ASCII-Hex Dump</source>
-        <translation type="unfinished"></translation>
+        <translation>ASCII Hex dumppaus</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="303"/>
         <source>Function</source>
-        <translation type="unfinished"></translation>
+        <translation>Toiminnot</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="315"/>
         <source>(10) Carriage Return CR</source>
-        <translation type="unfinished"></translation>
+        <translation>(10) Rivinvaihto (CR)</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="379"/>
         <source>(0) Clear Screen</source>
-        <translation type="unfinished"></translation>
+        <translation>(0) Tyhjennä ruutu</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="408"/>
         <source>(13) New Line NL</source>
-        <translation type="unfinished"></translation>
+        <translation>(13) Uusi rivi (NL)</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="488"/>
         <source>Swap Receive CR/NL</source>
-        <translation type="unfinished"></translation>
+        <translation>Vaihda rivinvaihto ja uusi rivi CR/NL</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="517"/>
         <source>(2) Position Cursor X,Y</source>
-        <translation type="unfinished"></translation>
+        <translation>(2) Kohdista kursori X,Y</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="549"/>
@@ -2385,32 +2396,32 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="TermPrefs.ui" line="581"/>
         <source>Echo On</source>
-        <translation type="unfinished"></translation>
+        <translation>Näppäinten kaiutus päällä</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="597"/>
         <source>Enter is NL</source>
-        <translation type="unfinished"></translation>
+        <translation>Rivinvaihto on uusi rivi</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="613"/>
         <source>(16) Clear Screen</source>
-        <translation type="unfinished"></translation>
+        <translation>(16) Tyhjennä ruutu</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="631"/>
         <source>Reset Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Resetoi valinnat</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="636"/>
         <source>termPrefsOk</source>
-        <translation type="unfinished"></translation>
+        <translation>Hyväksy</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="641"/>
         <source>termPrefsCancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Peruuta</translation>
     </message>
     <message>
         <location filename="TermPrefs.ui" line="392"/>
@@ -2463,92 +2474,92 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="termprefs.cpp" line="42"/>
         <source>Black</source>
-        <translation type="unfinished">Musta</translation>
+        <translation>Musta</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="43"/>
         <source>Dark Gray</source>
-        <translation type="unfinished">Tummanharmaa</translation>
+        <translation>Tummanharmaa</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="44"/>
         <source>Gray</source>
-        <translation type="unfinished">Harmaa</translation>
+        <translation>Harmaa</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="45"/>
         <source>Light Gray</source>
-        <translation type="unfinished">Vaaleanharmaa</translation>
+        <translation>Vaaleanharmaa</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="46"/>
         <source>Blue</source>
-        <translation type="unfinished">Sininen</translation>
+        <translation>Sininen</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="47"/>
         <source>Dark Blue</source>
-        <translation type="unfinished">Tummansininen</translation>
+        <translation>Tummansininen</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="48"/>
         <source>Cyan</source>
-        <translation type="unfinished">Sinivihreä</translation>
+        <translation>Sinivihreä</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="49"/>
         <source>Dark Cyan</source>
-        <translation type="unfinished">Tummansinivihreä</translation>
+        <translation>Tummansinivihreä</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="50"/>
         <source>Green</source>
-        <translation type="unfinished">Vihreä</translation>
+        <translation>Vihreä</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="51"/>
         <source>Dark Green</source>
-        <translation type="unfinished">Tummanvihreä</translation>
+        <translation>Tummanvihreä</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="52"/>
         <source>Magenta</source>
-        <translation type="unfinished">Purppura</translation>
+        <translation>Purppura</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="53"/>
         <source>Dark Magenta</source>
-        <translation type="unfinished">Tummanpurppura</translation>
+        <translation>Tummanpurppura</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="54"/>
         <source>Red</source>
-        <translation type="unfinished">Punainen</translation>
+        <translation>Punainen</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="55"/>
         <source>Dark Red</source>
-        <translation type="unfinished">Tummanpunainen</translation>
+        <translation>Tummanpunainen</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="56"/>
         <source>Yellow</source>
-        <translation type="unfinished">Keltainen</translation>
+        <translation>Keltainen</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="57"/>
         <source>Dark Yellow</source>
-        <translation type="unfinished">Tummankeltainen</translation>
+        <translation>Tummankeltainen</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="58"/>
         <source>White</source>
-        <translation type="unfinished"></translation>
+        <translation>Valkoinen</translation>
     </message>
     <message>
         <location filename="termprefs.cpp" line="141"/>
         <source>Choose Font</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse fontti</translation>
     </message>
 </context>
 <context>
@@ -2571,12 +2582,12 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     <message>
         <location filename="terminal.cpp" line="46"/>
         <source>Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Valinnat</translation>
     </message>
     <message>
         <location filename="terminal.cpp" line="52"/>
         <source>Disable</source>
-        <translation>Poista käytöstä</translation>
+        <translation>Passivoi</translation>
     </message>
 </context>
 </TS>

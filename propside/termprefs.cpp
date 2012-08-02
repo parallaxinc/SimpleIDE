@@ -39,27 +39,27 @@ TermPrefs::TermPrefs(Console *con, QComboBox *baud) : ui(new Ui::TermPrefs)
     settingNames.append(enableKeyEnterIsNL);
 
 
-    propertyColors.insert(PColor::Black, new PColor(tr("Black"), Qt::black));
-    propertyColors.insert(PColor::DarkGray, new PColor(tr("Dark Gray"), Qt::darkGray));
-    propertyColors.insert(PColor::Gray, new PColor(tr("Gray"),Qt::gray));
-    propertyColors.insert(PColor::LightGray, new PColor(tr("Light Gray"),Qt::lightGray));
-    propertyColors.insert(PColor::Blue, new PColor(tr("Blue"),Qt::blue));
-    propertyColors.insert(PColor::DarkBlue, new PColor(tr("Dark Blue"),Qt::darkBlue));
-    propertyColors.insert(PColor::Cyan, new PColor(tr("Cyan"),Qt::cyan));
-    propertyColors.insert(PColor::DarkCyan, new PColor(tr("Dark Cyan"),Qt::darkCyan));
-    propertyColors.insert(PColor::Green, new PColor(tr("Green"),Qt::green));
-    propertyColors.insert(PColor::DarkGreen, new PColor(tr("Dark Green"),Qt::darkGreen));
-    propertyColors.insert(PColor::Magenta, new PColor(tr("Magenta"),Qt::magenta));
-    propertyColors.insert(PColor::DarkMagenta, new PColor(tr("Dark Magenta"),Qt::darkMagenta));
-    propertyColors.insert(PColor::Red, new PColor(tr("Red"),Qt::red));
-    propertyColors.insert(PColor::DarkRed, new PColor(tr("Dark Red"),Qt::darkRed));
-    propertyColors.insert(PColor::Yellow, new PColor(tr("Yellow"),Qt::yellow));
-    propertyColors.insert(PColor::DarkYellow, new PColor(tr("Dark Yellow"),Qt::darkYellow));
-    propertyColors.insert(PColor::White, new PColor(tr("White"), Qt::white));
+    propertyColors.insert(PColor::Black, new PColor(tr("Black"), "Black", Qt::black));
+    propertyColors.insert(PColor::DarkGray, new PColor(tr("Dark Gray"), "Dark Gray", Qt::darkGray));
+    propertyColors.insert(PColor::Gray, new PColor(tr("Gray"), "Gray", Qt::gray));
+    propertyColors.insert(PColor::LightGray, new PColor(tr("Light Gray"), "Light Gray", Qt::lightGray));
+    propertyColors.insert(PColor::Blue, new PColor(tr("Blue"), "Blue", Qt::blue));
+    propertyColors.insert(PColor::DarkBlue, new PColor(tr("Dark Blue"), "Dark Blue", Qt::darkBlue));
+    propertyColors.insert(PColor::Cyan, new PColor(tr("Cyan"), "Cyan", Qt::cyan));
+    propertyColors.insert(PColor::DarkCyan, new PColor(tr("Dark Cyan"), "Dark Cyan", Qt::darkCyan));
+    propertyColors.insert(PColor::Green, new PColor(tr("Green"), "Green", Qt::green));
+    propertyColors.insert(PColor::DarkGreen, new PColor(tr("Dark Green"), "Dark Green", Qt::darkGreen));
+    propertyColors.insert(PColor::Magenta, new PColor(tr("Magenta"), "Magenta", Qt::magenta));
+    propertyColors.insert(PColor::DarkMagenta, new PColor(tr("Dark Magenta"), "Dark Magenta", Qt::darkMagenta));
+    propertyColors.insert(PColor::Red, new PColor(tr("Red"), "Red", Qt::red));
+    propertyColors.insert(PColor::DarkRed, new PColor(tr("Dark Red"), "Dark Red", Qt::darkRed));
+    propertyColors.insert(PColor::Yellow, new PColor(tr("Yellow"), "Yellow", Qt::yellow));
+    propertyColors.insert(PColor::DarkYellow, new PColor(tr("Dark Yellow"), "Dark Yellow", Qt::darkYellow));
+    propertyColors.insert(PColor::White, new PColor(tr("White"), "White", Qt::white));
 
     QStringList colorlist;
     for(int n = 0; n < propertyColors.count(); n++) {
-        colorlist.append(static_cast<PColor*>(propertyColors[n])->getName());
+        colorlist.append(static_cast<PColor*>(propertyColors[n])->getTrName());
     }
 
     addColors(ui->comboBoxBackground,propertyColors);
