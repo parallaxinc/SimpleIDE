@@ -136,7 +136,7 @@ void Properties::setupSpinFolders()
     QVBoxLayout *layout = new QVBoxLayout(this);
     QFrame *box = new QFrame();
     box->setLayout(layout);
-    tabWidget.addTab(box," Spin Folders ");
+    tabWidget.addTab(box," "+tr("Spin Folders")+" ");
 
     QGroupBox *gbCompiler = new QGroupBox(tr("Spin Compiler"), this);
     QGroupBox *gbLibrary  = new QGroupBox(tr("Library Folder"), this);
@@ -259,7 +259,7 @@ void Properties::setupGeneral()
 
     QFrame *tbox = new QFrame();
 
-    tabWidget.addTab(tbox," General ");
+    tabWidget.addTab(tbox," "+tr("General")+" ");
 
     QVBoxLayout *glayout = new QVBoxLayout();
     tbox->setLayout(glayout);

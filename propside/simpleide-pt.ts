@@ -111,6 +111,21 @@ Please close any program using the file &quot;</source>
         <translation type="unfinished">Não é possível remover o ficheiro de saída antes de construir. Pro favor feche qualquer programa usando o ficheiro &quot;</translation>
     </message>
     <message>
+        <location filename="buildc.cpp" line="591"/>
+        <source>Code Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="buildc.cpp" line="591"/>
+        <source>bytes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="buildc.cpp" line="591"/>
+        <source>total</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="buildc.cpp" line="697"/>
         <source>Compile Error</source>
         <translation type="unfinished">Erro ao Compilar</translation>
@@ -142,6 +157,16 @@ Please close any program using the file &quot;</source>
         <location filename="buildspin.cpp" line="37"/>
         <source>Building ...</source>
         <translation type="unfinished">Construindo...</translation>
+    </message>
+    <message>
+        <location filename="buildspin.cpp" line="104"/>
+        <source>Code Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="buildspin.cpp" line="104"/>
+        <source>bytes</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -812,6 +837,11 @@ Declarações da biblioteca não existem.</translation>
         <translation> para maís informação.</translation>
     </message>
     <message>
+        <location filename="mainspinwindow.cpp" line="2207"/>
+        <source>Email bug reports to</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="mainspinwindow.cpp" line="2213"/>
         <source>&amp;About</source>
         <translation>&amp;Sobre</translation>
@@ -1290,6 +1320,11 @@ Please close any program using the file &quot;</source>
         <translation>Fonte Menor</translation>
     </message>
     <message>
+        <location filename="mainspinwindow.cpp" line="167"/>
+        <source>Simple Terminal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="mainspinwindow.cpp" line="2707"/>
         <source>IDE Debug</source>
         <translation type="unfinished"></translation>
@@ -1760,6 +1795,20 @@ A nova pasta terá um ficheiro principal com extensão .c e um projecto com exte
     </message>
 </context>
 <context>
+    <name>ProjectOptions</name>
+    <message>
+        <location filename="projectoptions.cpp" line="90"/>
+        <location filename="projectoptions.cpp" line="96"/>
+        <source>Compiler</source>
+        <translation type="unfinished">Compilador</translation>
+    </message>
+    <message>
+        <location filename="projectoptions.cpp" line="91"/>
+        <source>Linker</source>
+        <translation type="unfinished">Linker</translation>
+    </message>
+</context>
+<context>
     <name>Properties</name>
     <message>
         <location filename="properties.cpp" line="8"/>
@@ -1845,8 +1894,18 @@ A nova pasta terá um ficheiro principal com extensão .c e um projecto com exte
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="properties.cpp" line="139"/>
+        <source>Spin Folders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="properties.cpp" line="142"/>
         <source>Library Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="properties.cpp" line="262"/>
+        <source>General</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2245,7 +2304,7 @@ A nova pasta terá um ficheiro principal com extensão .c e um projecto com exte
         <translation type="obsolete">Cursor Posição(x,y)</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="565"/>
+        <location filename="TermPrefs.ui" line="568"/>
         <source>(3) Move Cursor Left</source>
         <translation>Mover Cursor para a Esquerda</translation>
     </message>
@@ -2365,72 +2424,72 @@ A nova pasta terá um ficheiro principal com extensão .c e um projecto com exte
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="408"/>
+        <location filename="TermPrefs.ui" line="411"/>
         <source>(13) New Line NL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="488"/>
+        <location filename="TermPrefs.ui" line="491"/>
         <source>Swap Receive CR/NL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="517"/>
+        <location filename="TermPrefs.ui" line="520"/>
         <source>(2) Position Cursor X,Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="549"/>
+        <location filename="TermPrefs.ui" line="552"/>
         <source>(5) Move Cursor Up</source>
         <translation>Mover Cursor para Cima</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="581"/>
+        <location filename="TermPrefs.ui" line="584"/>
         <source>Echo On</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="597"/>
+        <location filename="TermPrefs.ui" line="600"/>
         <source>Enter is NL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="613"/>
+        <location filename="TermPrefs.ui" line="616"/>
         <source>(16) Clear Screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="631"/>
+        <location filename="TermPrefs.ui" line="634"/>
         <source>Reset Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="636"/>
+        <location filename="TermPrefs.ui" line="639"/>
         <source>termPrefsOk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="641"/>
+        <location filename="TermPrefs.ui" line="644"/>
         <source>termPrefsCancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="392"/>
+        <location filename="TermPrefs.ui" line="395"/>
         <source>(6) Move Cursor Down</source>
         <translation>Mover Cursor para Baixo</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="501"/>
+        <location filename="TermPrefs.ui" line="504"/>
         <source>(7) Beep Speaker</source>
         <translation>Alto-Falante Beep</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="456"/>
+        <location filename="TermPrefs.ui" line="459"/>
         <source>(8) Backspace</source>
         <translation>Retrocesso</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="472"/>
+        <location filename="TermPrefs.ui" line="475"/>
         <source>(9) Tab</source>
         <translation>Tabulação</translation>
     </message>
@@ -2444,7 +2503,7 @@ A nova pasta terá um ficheiro principal com extensão .c e um projecto com exte
         <translation>Limpar até Fim da Linha</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="424"/>
+        <location filename="TermPrefs.ui" line="427"/>
         <source>(12) Clear Lines Below</source>
         <translation>Limpar Linhas Abaixo</translation>
     </message>
@@ -2453,12 +2512,12 @@ A nova pasta terá um ficheiro principal com extensão .c e um projecto com exte
         <translation type="obsolete">Nova Linha</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="440"/>
+        <location filename="TermPrefs.ui" line="443"/>
         <source>(14) Position Cursor (x)</source>
         <translation>Cursor Posição(x)</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="533"/>
+        <location filename="TermPrefs.ui" line="536"/>
         <source>(15) Position Cursor (y)</source>
         <translation>Cursor Posição(y)</translation>
     </message>

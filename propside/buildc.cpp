@@ -588,7 +588,7 @@ int  BuildC::runCompiler(QStringList copts)
      * Use the projectFile instead of the current tab file
      */
     if(codeSize == 0) codeSize = memorySize;
-    QString ssize = QString("Code Size %L1 bytes (%L2 total)").arg(codeSize).arg(memorySize);
+    QString ssize = QString(tr("Code Size")+" %L1 "+tr("bytes")+" (%L2 "+tr("total")+")").arg(codeSize).arg(memorySize);
     programSize->setText(ssize);
 
     return rc;

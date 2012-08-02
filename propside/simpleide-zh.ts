@@ -111,6 +111,21 @@ Please close any program using the file &quot;</source>
         <translation type="unfinished">不可在生成之前清除输出文件。请退出在用的程序“</translation>
     </message>
     <message>
+        <location filename="buildc.cpp" line="591"/>
+        <source>Code Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="buildc.cpp" line="591"/>
+        <source>bytes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="buildc.cpp" line="591"/>
+        <source>total</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="buildc.cpp" line="697"/>
         <source>Compile Error</source>
         <translation type="unfinished"></translation>
@@ -142,6 +157,16 @@ Please close any program using the file &quot;</source>
         <location filename="buildspin.cpp" line="37"/>
         <source>Building ...</source>
         <translation type="unfinished">生成中</translation>
+    </message>
+    <message>
+        <location filename="buildspin.cpp" line="104"/>
+        <source>Code Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="buildspin.cpp" line="104"/>
+        <source>bytes</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -543,6 +568,11 @@ Loader Done ....
 <context>
     <name>MainSpinWindow</name>
     <message>
+        <location filename="mainspinwindow.cpp" line="167"/>
+        <source>Simple Terminal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="mainspinwindow.cpp" line="364"/>
         <source>Save File?</source>
         <translation type="unfinished"></translation>
@@ -809,6 +839,11 @@ Library declarations will not be found.
     <message>
         <location filename="mainspinwindow.cpp" line="2206"/>
         <source> for more information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainspinwindow.cpp" line="2207"/>
+        <source>Email bug reports to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2234,6 +2269,20 @@ The new folder will have a main .c file and a .side project file.
     </message>
 </context>
 <context>
+    <name>ProjectOptions</name>
+    <message>
+        <location filename="projectoptions.cpp" line="90"/>
+        <location filename="projectoptions.cpp" line="96"/>
+        <source>Compiler</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectoptions.cpp" line="91"/>
+        <source>Linker</source>
+        <translation type="unfinished">链接器</translation>
+    </message>
+</context>
+<context>
     <name>Properties</name>
     <message>
         <location filename="properties.cpp" line="8"/>
@@ -2319,8 +2368,18 @@ The new folder will have a main .c file and a .side project file.
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="properties.cpp" line="139"/>
+        <source>Spin Folders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="properties.cpp" line="142"/>
         <source>Library Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="properties.cpp" line="262"/>
+        <source>General</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2719,7 +2778,7 @@ The new folder will have a main .c file and a .side project file.
         <translation type="obsolete">（2）光标 (x,y) 位子</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="565"/>
+        <location filename="TermPrefs.ui" line="568"/>
         <source>(3) Move Cursor Left</source>
         <translation type="unfinished">（3）移光标左边</translation>
     </message>
@@ -2839,72 +2898,72 @@ The new folder will have a main .c file and a .side project file.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="408"/>
+        <location filename="TermPrefs.ui" line="411"/>
         <source>(13) New Line NL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="488"/>
+        <location filename="TermPrefs.ui" line="491"/>
         <source>Swap Receive CR/NL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="517"/>
+        <location filename="TermPrefs.ui" line="520"/>
         <source>(2) Position Cursor X,Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="549"/>
+        <location filename="TermPrefs.ui" line="552"/>
         <source>(5) Move Cursor Up</source>
         <translation type="unfinished">（5）移上光标</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="581"/>
+        <location filename="TermPrefs.ui" line="584"/>
         <source>Echo On</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="597"/>
+        <location filename="TermPrefs.ui" line="600"/>
         <source>Enter is NL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="613"/>
+        <location filename="TermPrefs.ui" line="616"/>
         <source>(16) Clear Screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="631"/>
+        <location filename="TermPrefs.ui" line="634"/>
         <source>Reset Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="636"/>
+        <location filename="TermPrefs.ui" line="639"/>
         <source>termPrefsOk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="641"/>
+        <location filename="TermPrefs.ui" line="644"/>
         <source>termPrefsCancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="392"/>
+        <location filename="TermPrefs.ui" line="395"/>
         <source>(6) Move Cursor Down</source>
         <translation type="unfinished">（6）移下光标</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="501"/>
+        <location filename="TermPrefs.ui" line="504"/>
         <source>(7) Beep Speaker</source>
         <translation type="unfinished">（7）电脑声</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="456"/>
+        <location filename="TermPrefs.ui" line="459"/>
         <source>(8) Backspace</source>
         <translation type="unfinished">（8）望后一个字为</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="472"/>
+        <location filename="TermPrefs.ui" line="475"/>
         <source>(9) Tab</source>
         <translation type="unfinished">（9）TAB</translation>
     </message>
@@ -2918,7 +2977,7 @@ The new folder will have a main .c file and a .side project file.
         <translation type="unfinished">（11）全体清洁荧幕</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="424"/>
+        <location filename="TermPrefs.ui" line="427"/>
         <source>(12) Clear Lines Below</source>
         <translation type="unfinished">（12）清洁下一行</translation>
     </message>
@@ -2927,12 +2986,12 @@ The new folder will have a main .c file and a .side project file.
         <translation type="obsolete">（13）新行</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="440"/>
+        <location filename="TermPrefs.ui" line="443"/>
         <source>(14) Position Cursor (x)</source>
         <translation type="unfinished">（14）光标 (x) 位子</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="533"/>
+        <location filename="TermPrefs.ui" line="536"/>
         <source>(15) Position Cursor (y)</source>
         <translation type="unfinished">（15）光标 (y) 位子</translation>
     </message>
