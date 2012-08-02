@@ -114,6 +114,21 @@ Please close any program using the file &quot;</source>
 Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
     </message>
     <message>
+        <location filename="buildc.cpp" line="591"/>
+        <source>Code Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="buildc.cpp" line="591"/>
+        <source>bytes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="buildc.cpp" line="591"/>
+        <source>total</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="buildc.cpp" line="697"/>
         <source>Compile Error</source>
         <translation>Kääntämisvirhe</translation>
@@ -145,6 +160,16 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
         <location filename="buildspin.cpp" line="37"/>
         <source>Building ...</source>
         <translation>Rakennetaan ...</translation>
+    </message>
+    <message>
+        <location filename="buildspin.cpp" line="104"/>
+        <source>Code Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="buildspin.cpp" line="104"/>
+        <source>bytes</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -818,6 +843,11 @@ Kirjastojen esittelyjä ei voi löytää.
         <translation> sivustolla saadaksesi lisätietoja.</translation>
     </message>
     <message>
+        <location filename="mainspinwindow.cpp" line="2207"/>
+        <source>Email bug reports to</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="mainspinwindow.cpp" line="2213"/>
         <source>&amp;About</source>
         <translation>&amp;Tietoja</translation>
@@ -1299,6 +1329,11 @@ Sulje kaikki ohjelmat jotka voivat käyttää tiedostoa &quot;</translation>
         <translation>Pienempi fontti</translation>
     </message>
     <message>
+        <location filename="mainspinwindow.cpp" line="167"/>
+        <source>Simple Terminal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="mainspinwindow.cpp" line="2707"/>
         <source>IDE Debug</source>
         <translation>IDE debuggaus</translation>
@@ -1769,6 +1804,20 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
     </message>
 </context>
 <context>
+    <name>ProjectOptions</name>
+    <message>
+        <location filename="projectoptions.cpp" line="90"/>
+        <location filename="projectoptions.cpp" line="96"/>
+        <source>Compiler</source>
+        <translation type="unfinished">Kääntäjä</translation>
+    </message>
+    <message>
+        <location filename="projectoptions.cpp" line="91"/>
+        <source>Linker</source>
+        <translation type="unfinished">Linkkeri</translation>
+    </message>
+</context>
+<context>
     <name>Properties</name>
     <message>
         <location filename="properties.cpp" line="8"/>
@@ -1854,9 +1903,19 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
         <translation>GCC kääntäjä</translation>
     </message>
     <message>
+        <location filename="properties.cpp" line="139"/>
+        <source>Spin Folders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="properties.cpp" line="142"/>
         <source>Library Folder</source>
         <translation>Kirjasto hakemisto</translation>
+    </message>
+    <message>
+        <location filename="properties.cpp" line="262"/>
+        <source>General</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="properties.cpp" line="357"/>
@@ -2254,7 +2313,7 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
         <translation type="obsolete">(2) Kohdista kursori (x,y)</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="565"/>
+        <location filename="TermPrefs.ui" line="568"/>
         <source>(3) Move Cursor Left</source>
         <translation>(3) Siirrä kursoria vasemmalle</translation>
     </message>
@@ -2374,72 +2433,72 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
         <translation>(0) Tyhjennä ruutu</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="408"/>
+        <location filename="TermPrefs.ui" line="411"/>
         <source>(13) New Line NL</source>
         <translation>(13) Uusi rivi (NL)</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="488"/>
+        <location filename="TermPrefs.ui" line="491"/>
         <source>Swap Receive CR/NL</source>
         <translation>Vaihda rivinvaihto ja uusi rivi CR/NL</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="517"/>
+        <location filename="TermPrefs.ui" line="520"/>
         <source>(2) Position Cursor X,Y</source>
         <translation>(2) Kohdista kursori X,Y</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="549"/>
+        <location filename="TermPrefs.ui" line="552"/>
         <source>(5) Move Cursor Up</source>
         <translation>(5) Siirrä kursoria ylös</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="581"/>
+        <location filename="TermPrefs.ui" line="584"/>
         <source>Echo On</source>
         <translation>Näppäinten kaiutus päällä</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="597"/>
+        <location filename="TermPrefs.ui" line="600"/>
         <source>Enter is NL</source>
         <translation>Rivinvaihto on uusi rivi</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="613"/>
+        <location filename="TermPrefs.ui" line="616"/>
         <source>(16) Clear Screen</source>
         <translation>(16) Tyhjennä ruutu</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="631"/>
+        <location filename="TermPrefs.ui" line="634"/>
         <source>Reset Options</source>
         <translation>Resetoi valinnat</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="636"/>
+        <location filename="TermPrefs.ui" line="639"/>
         <source>termPrefsOk</source>
         <translation>Hyväksy</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="641"/>
+        <location filename="TermPrefs.ui" line="644"/>
         <source>termPrefsCancel</source>
         <translation>Peruuta</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="392"/>
+        <location filename="TermPrefs.ui" line="395"/>
         <source>(6) Move Cursor Down</source>
         <translation>(6) Siirrä kursoria alas</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="501"/>
+        <location filename="TermPrefs.ui" line="504"/>
         <source>(7) Beep Speaker</source>
         <translation>(7) Soita kelloa</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="456"/>
+        <location filename="TermPrefs.ui" line="459"/>
         <source>(8) Backspace</source>
         <translation>(8) Pyyhi merkki kursorin vasemmalta puolelta</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="472"/>
+        <location filename="TermPrefs.ui" line="475"/>
         <source>(9) Tab</source>
         <translation>(9) Tabulaattori</translation>
     </message>
@@ -2453,7 +2512,7 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
         <translation>(11) Pyyhi rivin loppuun saakka</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="424"/>
+        <location filename="TermPrefs.ui" line="427"/>
         <source>(12) Clear Lines Below</source>
         <translation>(12) Pyyhi rivit alta</translation>
     </message>
@@ -2462,12 +2521,12 @@ Uusi hakemisto pitää sisällään main .c tiedoston sekä .side project tiedos
         <translation type="obsolete">(13) Uusi rivi</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="440"/>
+        <location filename="TermPrefs.ui" line="443"/>
         <source>(14) Position Cursor (x)</source>
         <translation>(14) Kohdista kursori (x)</translation>
     </message>
     <message>
-        <location filename="TermPrefs.ui" line="533"/>
+        <location filename="TermPrefs.ui" line="536"/>
         <source>(15) Position Cursor (y)</source>
         <translation>(15) Kohdista kursori (y)</translation>
     </message>

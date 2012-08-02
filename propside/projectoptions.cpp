@@ -87,13 +87,13 @@ void ProjectOptions::compilerChanged(QString comp)
     for(int n = ui->tabWidget->count()-1; n > 0; n--)
         ui->tabWidget->removeTab(n);
     if(comp.contains("C",Qt::CaseInsensitive)) {
-        ui->tabWidget->addTab(tabs.at(this->TAB_C_COMP),"Compiler");
-        ui->tabWidget->addTab(tabs.at(this->TAB_C_LIB),"Linker");
+        ui->tabWidget->addTab(tabs.at(this->TAB_C_COMP),tr("Compiler"));
+        ui->tabWidget->addTab(tabs.at(this->TAB_C_LIB),tr("Linker"));
         ui->comboBoxMemoryMode->setEnabled(true);
         ui->comboBoxOptimization->setEnabled(true);
     }
     else if(comp.contains("SPIN",Qt::CaseInsensitive)) {
-        ui->tabWidget->addTab(tabs.at(this->TAB_SPIN_COMP),"Compiler");
+        ui->tabWidget->addTab(tabs.at(this->TAB_SPIN_COMP),tr("Compiler"));
         ui->comboBoxMemoryMode->setEnabled(false);
         ui->comboBoxOptimization->setEnabled(false);
     }

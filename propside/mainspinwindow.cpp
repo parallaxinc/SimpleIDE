@@ -164,7 +164,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 
     term->setPortListener(portListener);
 
-    term->setWindowTitle(QString(ASideGuiKey)+" Simple Terminal");
+    term->setWindowTitle(QString(ASideGuiKey)+" "+tr("Simple Terminal"));
     connect(term,SIGNAL(accepted()),this,SLOT(terminalClosed()));
     connect(term,SIGNAL(rejected()),this,SLOT(terminalClosed()));
 
@@ -2204,7 +2204,7 @@ void MainSpinWindow::setupHelpMenu()
         "<a href=\"http://www.parallax.com/propellergcc/\">"+
         ASideGuiKey+"</a>"+
         tr(" for more information.")+"<br/>"+
-        "Email bug reports to <a href=\"mailto:gccbeta@parallax.com\">gccbeta@parallax.com</a>"+
+        tr("Email bug reports to")+" <a href=\"mailto:gccbeta@parallax.com\">gccbeta@parallax.com</a>"+
         "<br/></body></html>";
 
     menuBar()->addMenu(helpMenu);
