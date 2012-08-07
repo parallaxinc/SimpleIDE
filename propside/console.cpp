@@ -288,6 +288,7 @@ void Console::updateReady(QextSerialPort* port)
 
 void Console::dumphex(int ch)
 {
+    unsigned char c = ch;
     QTextCursor cur = this->textCursor();
     // always start at the end just in case someone clicked the window
     moveCursor(QTextCursor::End);
@@ -301,7 +302,7 @@ void Console::dumphex(int ch)
             cur.insertBlock();
         }
 
-        cur.insertText(QString(" %1").arg(ch,2,16,QChar('0')));
+        cur.insertText(QString(" %1").arg(c,2,16,QChar('0')));
     }
     else {
         int byte = hexbytes % maxhex;
@@ -318,7 +319,7 @@ void Console::dumphex(int ch)
         hexbyte[byte] = ch;
         hexbytes++;
 
-        cur.insertText(QString(" %1").arg(ch,2,16,QChar('0')));
+        cur.insertText(QString(" %1").arg(c,2,16,QChar('0')));
     }
 }
 
