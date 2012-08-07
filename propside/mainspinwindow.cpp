@@ -4187,6 +4187,7 @@ void MainSpinWindow::setupToolBars()
     connect(cbBoard,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentBoard(int)));
 #endif
     cbPort = new QComboBox(this);
+    cbPort->setEditable(true);
     cbPort->setLayoutDirection(Qt::LeftToRight);
     cbPort->setToolTip(tr("Serial Port Select"));
     cbPort->setSizeAdjustPolicy(QComboBox::AdjustToContents);
