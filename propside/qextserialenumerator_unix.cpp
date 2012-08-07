@@ -69,7 +69,7 @@ QList<QextPortInfo> QextSerialEnumeratorPrivate::getPorts_sys()
     // (USB-serial, bluetooth-serial, 18F PICs, and so on)
     // if you know an other name prefix for serial ports please let us know
     portNamePrefixes.clear();
-    portNamePrefixes << QLatin1String("ttyACM*") << QLatin1String("ttyUSB*") << QLatin1String("rfcomm*");
+    portNamePrefixes << QLatin1String("ttyA*") << QLatin1String("ttyUSB*") << QLatin1String("rfcomm*");
     portNameList += dir.entryList(portNamePrefixes, (QDir::System | QDir::Files), QDir::Name);
 
     foreach (QString str , portNameList) {
@@ -79,6 +79,9 @@ QList<QextPortInfo> QextSerialEnumeratorPrivate::getPorts_sys()
 
         if (str.contains(QLatin1String("ttyS"))) {
             inf.friendName = QLatin1String("Serial port ")+str.remove(0, 4);
+        }
+        else if (str.contains(QLatin1String("ttyA"))) {
+            inf.friendName = QLatin1String("ARM UART ")+str.remove(0, 6);
         }
         else if (str.contains(QLatin1String("ttyUSB"))) {
             inf.friendName = QLatin1String("USB-serial adapter ")+str.remove(0, 6);
