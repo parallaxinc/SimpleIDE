@@ -842,5 +842,5 @@ void BuildC::appendLoaderParameters(QString copts, QString projfile, QStringList
     for (int n = 0; n < olist.length(); n++)
         args->append(olist[n]);
 
-    qDebug() << args;
+    //qDebug() << args;
 }
