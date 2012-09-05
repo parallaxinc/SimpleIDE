@@ -20,17 +20,21 @@
  */
 struct {
     unsigned stack[STACK_SIZE];
-    struct toggle_mailbox m;
+    volatile struct toggle_mailbox m;
 } par;
 
 /*
  * function to start up a new cog running the toggle
- * code (which we've placed in the .coguser1 section)
+ * code (which we've placed in the toggle_fw.cog section)
  */
-void start(void *parptr)
+void start(volatile void *parptr)
 {
     extern unsigned int _load_start_toggle_fw_cog[];
+#if defined(__PROPELLER_XMM__) || defined(__PROPELLER_XMMC__)
+    load_cog_driver_xmm(_load_start_toggle_fw_cog, 496, (uint32_t *)parptr);
+#else
     cognew(_load_start_toggle_fw_cog, parptr);
+#endif
 }
 
 /*
@@ -70,7 +74,7 @@ int main (int argc,  char* argv[])
 }
 
 /* +--------------------------------------------------------------------
- * ¦  TERMS OF USE: MIT License
+ * | TERMS OF USE: MIT License
  * +--------------------------------------------------------------------
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files

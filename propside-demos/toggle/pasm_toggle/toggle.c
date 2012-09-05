@@ -56,7 +56,7 @@ int main (int argc,  char* argv[])
     printf("hello, world!\n");            // let the lead LMM COG say hello
     delay = CLKFREQ>>1;                    // set the delay rate in the STATIC mailbox
                                         // this is actually the duty cycle of the blink 0.5 sec on, 0.5 sec off
-    pins = 0x3fFFffff;                     // set the PIN mask into the STATIC mailbox
+    pins = 0xfFFffff;                     // set the PIN mask into the STATIC mailbox
                                         // light up all pins except 30 & 31 since we don't know board config
     loop_cnt = 20;                        // number of time through the loop (20 toggles, 10 on/off cycles)
     pasm_done = 0;                        // make sure it's zero since we'll sit and wait on it to change in a few lines
