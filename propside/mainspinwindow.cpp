@@ -3257,7 +3257,11 @@ void MainSpinWindow::showProjectFile()
         int tabs = editorTabs->count();
         for(int n = 0; n < tabs; n++) {
             QString tab = editorTabs->tabText(n);
-            if(tab.contains(this->shortFileName(fileName))) {
+            if(tab.contains("*")) {
+                tab = tab.mid(0,tab.indexOf("*"));
+                tab = tab.trimmed();
+            }
+            if(tab.compare(this->shortFileName(fileName)) == 0) {
                 editorTabs->setCurrentIndex(n);
                 return;
             }

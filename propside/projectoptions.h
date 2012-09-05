@@ -20,6 +20,7 @@ public:
     static const QString compiler;
     static const QString memtype;
     static const QString memTypeCOG;
+    static const QString memTypeCMM;
     static const QString memTypeLMM;
     static const QString memTypeXMM;
     static const QString memTypeXMMC;

@@ -139,7 +139,7 @@
       <string>Reload Board Configurations</string>
      </property>
      <property name="icon">
-      <iconset resource="resources.qrc">
+      <iconset>
        <normaloff>:/images/hardware.png</normaloff>:/images/hardware.png</iconset>
      </property>
      <property name="iconSize">
@@ -327,7 +327,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>50</y>
+       <y>30</y>
        <width>121</width>
        <height>21</height>
       </rect>
@@ -372,7 +372,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>30</y>
+       <y>50</y>
        <width>241</width>
        <height>17</height>
       </rect>
@@ -418,8 +418,6 @@
    </widget>
   </widget>
  </widget>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

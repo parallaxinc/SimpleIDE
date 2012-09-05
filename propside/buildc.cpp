@@ -766,13 +766,18 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
     if(projectOptions->getNoFcache().length())
         args->append(projectOptions->getNoFcache());
 
-    if(projectOptions->getSimplePrintf().length()) {
+    if(projectOptions->getSimplePrintf().length() > 0) {
         /* don't use simple printf flag for COG model programs. */
-        if(model.contains("cog",Qt::CaseInsensitive) == false)
-            args->append(projectOptions->getSimplePrintf());
-        else {
+        if(model.contains("cog",Qt::CaseInsensitive) == true) {
             this->compileStatus->insertPlainText(tr("Ignoring")+" \"Simple printf\""+tr(" flag in COG mode program.")+"\n");
             this->compileStatus->moveCursor(QTextCursor::End);
+        }
+        else if(projectOptions->getTinyLib().length() > 0) {
+            this->compileStatus->insertPlainText(tr("Ignoring")+" \"Simple printf\""+tr(" flag in a program using -ltiny.")+"\n");
+            this->compileStatus->moveCursor(QTextCursor::End);
+        }
+        else {
+            args->append(projectOptions->getSimplePrintf());
         }
     }
 
@@ -812,6 +817,23 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
     }
 
     /* libraries */
+    if(projectOptions->getTinyLib().length()) {
+        if(model.contains("cog",Qt::CaseInsensitive) == true) {
+            this->compileStatus->insertPlainText(tr("Ignoring")+" \"-ltiny\""+tr(" flag in COG mode programs.")+"\n");
+            this->compileStatus->moveCursor(QTextCursor::End);
+        }
+        else  if(model.contains("xmm",Qt::CaseInsensitive) == true) {
+            this->compileStatus->insertPlainText(tr("Ignoring")+" \"-ltiny\""+tr(" flag in XMM mode programs.")+"\n");
+            this->compileStatus->moveCursor(QTextCursor::End);
+        }
+        else  if(projectOptions->getMathLib().length()) {
+            this->compileStatus->insertPlainText(tr("Ignoring")+" \"-ltiny\""+tr(" flag in -lm floating point programs.")+"\n");
+            this->compileStatus->moveCursor(QTextCursor::End);
+        }
+        else {
+            args->append(projectOptions->getTinyLib());
+        }
+    }
     if(projectOptions->getMathLib().length())
         args->append(projectOptions->getMathLib());
     if(projectOptions->getPthreadLib().length())

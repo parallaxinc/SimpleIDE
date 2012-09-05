@@ -6,6 +6,7 @@
 const QString ProjectOptions::compiler = "compiler";
 const QString ProjectOptions::memtype = "memtype";
 const QString ProjectOptions::memTypeLMM = "LMM";
+const QString ProjectOptions::memTypeCMM = "CMM";
 const QString ProjectOptions::memTypeCOG = "COG";
 const QString ProjectOptions::memTypeXMM = "XMM";
 const QString ProjectOptions::memTypeXMMC = "XMMC";
@@ -44,8 +45,8 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
     }
     else {
         ui->comboBoxMemoryMode->addItem(memTypeLMM);
+        ui->comboBoxMemoryMode->addItem(memTypeCMM);
         ui->comboBoxMemoryMode->addItem(memTypeCOG);
-        //ui->comboBoxMemoryMode->addItem(memTypeXMM); // leave this out, it's confusing
         ui->comboBoxMemoryMode->addItem(memTypeXMMC);
         ui->comboBoxMemoryMode->addItem(memTypeXMMSINGLE);
         ui->comboBoxMemoryMode->addItem(memTypeXMMSPLIT);
@@ -72,7 +73,7 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
     //ui->checkBoxExceptions->setVisible(false);
 
     // turn this on when Ted commits tiny lib
-    ui->checkBoxTinylib->setVisible(false);
+    ui->checkBoxTinylib->setVisible(true);
 
     // start with project options
     ui->tabWidget->setCurrentIndex(0);
