@@ -822,10 +822,6 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
             this->compileStatus->insertPlainText(tr("Ignoring")+" \"-ltiny\""+tr(" flag in COG mode programs.")+"\n");
             this->compileStatus->moveCursor(QTextCursor::End);
         }
-        else  if(model.contains("xmm",Qt::CaseInsensitive) == true) {
-            this->compileStatus->insertPlainText(tr("Ignoring")+" \"-ltiny\""+tr(" flag in XMM mode programs.")+"\n");
-            this->compileStatus->moveCursor(QTextCursor::End);
-        }
         else  if(projectOptions->getMathLib().length()) {
             this->compileStatus->insertPlainText(tr("Ignoring")+" \"-ltiny\""+tr(" flag in -lm floating point programs.")+"\n");
             this->compileStatus->moveCursor(QTextCursor::End);
