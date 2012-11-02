@@ -180,9 +180,7 @@ int Editor::autoEnterColumn()
     //qDebug() << text.length();
     if(text.length() == 0)
         return 0;
-    // don't use move Right, ... text.length() ... Fedora doesn't behave properly
-    //cur.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,text.length());
-    cur.movePosition(QTextCursor::EndOfLine, QTextCursor::MoveAnchor);
+    cur.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,text.length());
     setTextCursor(cur);
     cur.clearSelection();
     cur.insertText("\n");
