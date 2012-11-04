@@ -199,13 +199,6 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
 
     }
 
-    /* let's make a library before compiling the whole program.
-     */
-    QString libname = QString(list[0]);
-    libname = libname.mid(0,libname.lastIndexOf(".")) + ".a";
-    if(projectOptions->getMakeLibrary().isEmpty() != true)
-        this->runAR(clist, libname);
-
     /* add main file */
     clist.append(list[0]);
 
@@ -543,13 +536,14 @@ int  BuildC::runAR(QStringList copts, QString libname)
     args.append(libname);
 
     foreach(QString s, copts) {
-        // add only certain types of objects
-        if(s.lastIndexOf(".cog") == s.lastIndexOf("."))
-            args.append(s);
-        else if(s.lastIndexOf(".ecog") == s.lastIndexOf("."))
-            args.append(s);
-        else if(s.lastIndexOf(".c")  == s.lastIndexOf("."))
-            args.append(s);
+        if(s.contains(".out",Qt::CaseInsensitive))
+            continue;
+        if(s.contains(".o",Qt::CaseInsensitive))
+            args.append(s.mid(s.lastIndexOf("/")+1));
+        if(s.contains(".cog",Qt::CaseInsensitive))
+            args.append(s.mid(s.lastIndexOf("/")+1));
+        if(s.contains(".ecog",Qt::CaseInsensitive))
+            args.append(s.mid(s.lastIndexOf("/")+1));
     }
 
 #if defined(Q_WS_WIN32)
@@ -559,6 +553,9 @@ int  BuildC::runAR(QStringList copts, QString libname)
 #endif
     compstr = compstr.replace("gcc","ar");
 
+    /* remove old archive */
+    if(QFile::exists(sourcePath(projectFile)+libname))
+        QFile::remove(sourcePath(projectFile)+libname);
 
     /* this runs the archiver */
     rc = startProgram(compstr,sourcePath(projectFile),args);
@@ -595,7 +592,114 @@ int  BuildC::runCompiler(QStringList copts)
         compstr+="c++";
     }
 
-    /* this is the final compile/link */
+    /* this is intermediate compile */
+    QStringList tlist;
+    int inc = 0;
+    int lib = 0;
+    QStringList libs;
+
+    // remove and save libs
+    foreach (QString s, args) {
+        if(s.contains("-l")) {
+            args.removeOne(s);
+            libs.append(s);
+            continue;
+        }
+    }
+
+    QString libname = QString(args.last());
+    QString projname = libname;
+
+    // remove main file. put back after library build
+    args.removeLast();
+
+    foreach (QString s, args) {
+
+        if( s.contains(".spin",Qt::CaseInsensitive) ||
+            s.contains(".a",Qt::CaseInsensitive) ||
+            s.contains(".o",Qt::CaseInsensitive) ||
+            s.contains(".cog",Qt::CaseInsensitive) ||
+            s.contains(".ecog",Qt::CaseInsensitive) ||
+            s.contains(".out",Qt::CaseInsensitive) ||
+            s.contains(".elf",Qt::CaseInsensitive) ||
+            s.contains("-o")
+            )
+            continue;
+
+        // *.spin should never happen because of C build rules
+        // remove .h files
+        if(s.contains(".h",Qt::CaseInsensitive)) {
+            args.removeOne(s);
+            continue;
+        }
+
+        if(inc) {
+            inc = 0;
+            tlist.append(s);
+        }
+        else if(lib) {
+            lib = 0;
+            tlist.append(s);
+        }
+        else if(s.indexOf("-I") == 0) {
+            inc++;
+            tlist.append(s);
+        }
+        else if(s.indexOf("-L") == 0) {
+            lib++;
+            tlist.append(s);
+        }
+        else if(s.indexOf("-") == 0) {
+            tlist.append(s);
+        }
+        else if(s.compare(".") != 0) {
+            if(!tlist.contains("-c"))
+                tlist.append("-c");
+            tlist.append(s);
+            args.removeOne(s);
+            s = s.mid(s.lastIndexOf("/")+1);
+            args.append(s.mid(0,s.indexOf("."))+".o");
+            rc = startProgram(compstr,sourcePath(projectFile),tlist);
+            tlist.removeLast();
+            if(rc != 0)
+                return rc;
+        }
+    }
+
+    /* let's make a library after compiling the program so we can use .o from save-temps
+     */
+    libname = libname.mid(0,libname.lastIndexOf(".")) + ".a";
+    if(projectOptions->getMakeLibrary().isEmpty() != true)
+    {
+
+        QString projobj = projname;
+        projobj.replace(".c",".o");
+        if(args.contains(projobj)) {
+            args.removeOne(projobj);
+        }
+        this->runAR(args, sourcePath(projectFile)+libname); //QString("lib"+libname));
+
+        foreach(QString s, args) {
+            if(s.contains(".out",Qt::CaseInsensitive))
+                continue;
+            if(s.contains(".o",Qt::CaseInsensitive))
+                args.removeOne(s);
+            if(s.contains(".cog",Qt::CaseInsensitive))
+                args.removeOne(s);
+            if(s.contains(".ecog",Qt::CaseInsensitive))
+                args.removeOne(s);
+        }
+    }
+
+    // add main file back
+    args.append(projname);
+
+    // add libs back
+    foreach(QString s, libs) {
+        args.append(s);
+    }
+
+    // this is the final compile/link
     rc = startProgram(compstr,sourcePath(projectFile),args);
     if(rc != 0)
         return rc;
@@ -751,11 +855,14 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
     }
     args->append("-o");
     args->append("a.out");
+
     args->append(projectOptions->getOptimization());
     args->append("-m"+model);
 
     args->append("-I");
-    args->append("."); // just in case for a project configuration header
+    args->append(".");
+    args->append("-L");
+    args->append(".");
 
     if(projectOptions->getWarnAll().length())
         args->append(projectOptions->getWarnAll());
