@@ -696,6 +696,11 @@ int  BuildC::runCompiler(QStringList copts)
 
     // add libs back
     foreach(QString s, libs) {
+        if(libname.contains(s.mid(2))) {
+            if(projectOptions->getMakeLibrary().isEmpty() != true)
+                args.append(s);
+            continue;
+        }
         args.append(s);
     }
 
