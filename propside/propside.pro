@@ -10,7 +10,10 @@ TARGET = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 DEFINES += SPINSIDE
-DEFINES += SPIN_AUTOCOMPLETE
+
+# Turn off SPIN features for EDU release
+# DEFINES += SPIN
+# DEFINES += SPIN_AUTOCOMPLETE
 
 # IDEDEBUG define sends qDebug() output to a Debug TAB.
 # This is most useful with windows as console output is not available there.
