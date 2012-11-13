@@ -48,6 +48,8 @@
 
 #define ProjectView "Set Project View"
 #define SimpleView  "Set Simple View"
+#define SaveAsProject "Save As Project"
+#define CloneProject "Clone Project"
 
 MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -72,7 +74,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     connect(propDialog,SIGNAL(accepted()),this,SLOT(propertiesAccepted()));
 
     /* detect user's startup view */
-    simpleViewType = false;
+    simpleViewType = true;
     QVariant viewv = settings->value(simpleViewKey);
     if(viewv.canConvert(QVariant::Bool)) {
         simpleViewType = viewv.toBool();
@@ -204,6 +206,9 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
         }
         setCurrentPort(ndx);
     }
+
+    this->show();
+    QApplication::processEvents();
 
     /* load the last file into the editor to make user happy */
     QVariant lastfilev = settings->value(lastFileNameKey);
@@ -4049,14 +4054,14 @@ void MainSpinWindow::setupFileMenu()
 
     fileMenu->addAction(QIcon(":/images/exit.png"), tr("E&xit"), this, SLOT(quitProgram()), QKeySequence::Quit);
 
-    QMenu *projMenu = new QMenu(tr("&Project"), this);
+    projMenu = new QMenu(tr("&Project"), this);
     menuBar()->addMenu(projMenu);
 
     projMenu->addAction(QIcon(":/images/newproj.png"), tr("New Project"), this, SLOT(newProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_N);
     projMenu->addAction(QIcon(":/images/openproj.png"), tr("Open Project"), this, SLOT(openProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_O);
-    projMenu->addAction(QIcon(":/images/saveasproj.png"), tr("Save As Project"), this, SLOT(saveAsProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_S);
-    //projMenu->addAction(QIcon(":/images/cloneproj.png"), tr("Clone Project"), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
-    projMenu->addAction(tr("Clone Project"), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
+    projMenu->addAction(QIcon(":/images/saveasproj.png"), tr(SaveAsProject), this, SLOT(saveAsProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_S);
+    //projMenu->addAction(QIcon(":/images/cloneproj.png"), tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
+    projMenu->addAction(tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
     projMenu->addAction(QIcon(":/images/closeproj.png"), tr("Save and Close Project"), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
     projMenu->addAction(QIcon(":/images/project.png"), tr("Set Project"), this, SLOT(setProject()), Qt::Key_F4);
     //projMenu->addAction(QIcon(":/images/hardware.png"), tr("Load Board Types"), this, SLOT(hardware()), Qt::Key_F6);
@@ -4371,17 +4376,37 @@ void MainSpinWindow::showSimpleView(bool simple)
      * file toolbar
      * btn Project Set App
      */
+    QList <QAction*> projMenuList = projMenu->actions();
+
     if(simple) {
         leftSplit->hide();
         statusTabs->hide();
         fileToolBar->hide();
         propToolBar->hide();
+        foreach(QAction *pa, projMenuList) {
+            QString txt = pa->text();
+            if(txt != NULL) {
+                if(txt.contains(CloneProject))
+                    pa->setVisible(false);
+                if(txt.contains(SaveAsProject))
+                    pa->setVisible(false);
+            }
+        }
     }
     else {
         leftSplit->show();
         statusTabs->show();
         fileToolBar->show();
         propToolBar->show();
+        foreach(QAction *pa, projMenuList) {
+            QString txt = pa->text();
+            if(txt != NULL) {
+                if(txt.contains(CloneProject))
+                    pa->setVisible(true);
+                if(txt.contains(SaveAsProject))
+                    pa->setVisible(true);
+            }
+        }
     }
     QVariant viewv = simple;
     settings->setValue(simpleViewKey, viewv);

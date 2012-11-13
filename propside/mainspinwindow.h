@@ -256,6 +256,7 @@ private:
     QToolBar        *programToolBar;
     QToolBar        *ctrlToolBar;
 
+    QMenu           *projMenu;
     QMenu           *toolsMenu;
 
     QSplitter       *leftSplit;
