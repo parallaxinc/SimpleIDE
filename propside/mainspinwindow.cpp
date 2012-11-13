@@ -176,7 +176,10 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 
     term->setPortListener(portListener);
 
-    term->setWindowTitle(QString(ASideGuiKey)+" "+tr("Simple Terminal"));
+    //term->setWindowTitle(QString(ASideGuiKey)+" "+tr("Simple Terminal"));
+    // education request that the window title be SimpleIDE Terminal
+    term->setWindowTitle(QString(ASideGuiKey)+" "+tr("Terminal"));
+
     connect(term,SIGNAL(accepted()),this,SLOT(terminalClosed()));
     connect(term,SIGNAL(rejected()),this,SLOT(terminalClosed()));
 
