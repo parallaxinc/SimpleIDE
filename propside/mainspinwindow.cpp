@@ -154,7 +154,9 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     projectFile = "none";
 
     buildC = new BuildC(projectOptions, compileStatus, status, programSize, progress, cbBoard, propDialog);
+#ifdef SPIN
     buildSpin = new BuildSpin(projectOptions, compileStatus, status, programSize, progress, cbBoard, propDialog);
+#endif
     builder = buildC;
 
     /* setup loader and port listener */
@@ -206,6 +208,15 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
         if(lastfilev.canConvert(QVariant::String)) {
             QString fileName = lastfilev.toString();
             if(fileName.length() > 0 && QFile::exists(fileName)) {
+#ifndef SPIN
+                if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
+                    QMessageBox::critical(
+                            this,tr("SPIN Not Supported"),
+                            tr("Spin projects are not supported with this version."),
+                            QMessageBox::Ok);
+                    return;
+                }
+#endif
                 openFileName(fileName);
                 setProject(); // last file is always first project
             }
@@ -505,6 +516,15 @@ void MainSpinWindow::openFile(const QString &path)
             fileName = fileName.trimmed();
             proj.close();
         }
+#ifndef SPIN
+        if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
+            QMessageBox::critical(
+                    this,tr("SPIN Not Supported"),
+                    tr("Spin projects are not supported with this version."),
+                    QMessageBox::Ok);
+            return;
+        }
+#endif
         updateProjectTree(fileName);
     }
     else
@@ -648,7 +668,7 @@ void MainSpinWindow::newProjectAccepted()
          "    return 0;\n" \
          "}\n" \
          "\n");
-
+#ifdef SPIN
     QString SPIN_maintemplate("{{\n" \
          " * @file "+name+".spin\n" \
          " * This is the main "+name+" program start point.\n" \
@@ -662,7 +682,7 @@ void MainSpinWindow::newProjectAccepted()
          "    repeat\n" \
          "\n" \
          "\n");
-
+#endif
     QString mains;
     QString mainName(path+"/"+name);
     
@@ -676,12 +696,15 @@ void MainSpinWindow::newProjectAccepted()
         mainName += ".cpp";
         projectOptions->setCompiler("C++");
     }
+#ifdef SPIN
     else if(comp.compare("Spin", Qt::CaseInsensitive) == 0) {
         mains = SPIN_maintemplate;
         mainName += SPIN_EXTENSION;
         projectOptions->setCompiler(SPIN_TEXT);
     }
-    else {
+    else
+#endif
+    {
         return;
     }
 
@@ -719,6 +742,16 @@ void MainSpinWindow::openProject(const QString &path)
 {
     QString fileName = path;
 
+#ifndef SPIN
+        if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
+            QMessageBox::critical(
+                    this,tr("SPIN Not Supported"),
+                    tr("Spin projects are not supported with this version."),
+                    QMessageBox::Ok);
+            return;
+        }
+#endif
+
     if (fileName.isNull()) {
         fileName = fileDialog.getOpenFileName(this, tr("Open Project"), lastPath, "Project Files (*.side)");
         if(fileName.length() > 0)
@@ -736,6 +769,17 @@ void MainSpinWindow::openProject(const QString &path)
             fileName = fileName.trimmed();
             proj.close();
         }
+
+#ifndef SPIN
+        if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
+            QMessageBox::critical(
+                    this,tr("SPIN Not Supported"),
+                    tr("Spin projects are not supported with this version."),
+                    QMessageBox::Ok);
+            return;
+        }
+#endif
+
         updateProjectTree(fileName);
     }
     openFileName(fileName);
@@ -1794,8 +1838,10 @@ void MainSpinWindow::findDeclaration(QTextCursor cur)
         if(text.length() > 0 && text.at(0).isLetter()) {
             if(this->isCProject())
                 ctags->runCtags(projectFile);
+#ifdef SPIN
             else if(this->isSpinProject())
                 ctags->runSpinCtags(projectFile, propDialog->getSpinLibraryStr());
+#endif
         }
         else {
             return;
@@ -1842,8 +1888,10 @@ bool MainSpinWindow::isTagged(QString text)
     if(text.length() > 0 && text.at(0).isLetter()) {
         if(this->isCProject())
             ctags->runCtags(projectFile);
+#ifdef SPIN
         else if(this->isSpinProject())
             ctags->runSpinCtags(projectFile, propDialog->getSpinLibraryStr());
+#endif
     }
     else {
         return rc;
@@ -1995,13 +2043,26 @@ void MainSpinWindow::setProject()
     fileName = editorTabs->tabToolTip(index);
     if(fileName.length() > 0)
     {
-        if(fileName.indexOf(SPIN_EXTENSION))
+        if(fileName.indexOf(SPIN_EXTENSION)) {
+#ifdef SPIN
             projectOptions->setCompiler(SPIN_TEXT);
-        else
+#else
+            if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
+                QMessageBox::critical(
+                        this,tr("SPIN Not Supported"),
+                        tr("Spin projects are not supported with this version."),
+                        QMessageBox::Ok);
+                return;
+            }
+#endif
+        }
+        else {
             projectOptions->setCompiler("C");
+        }
         updateProjectTree(fileName);
         setCurrentProject(projectFile);
     }
+#ifdef SPIN
     QString extension = fileName.mid(fileName.lastIndexOf(".")+1);
     if(extension.compare(SPIN_TEXT,Qt::CaseInsensitive) == 0) {
         projectOptions->setCompiler(SPIN_TEXT);
@@ -2010,7 +2071,9 @@ void MainSpinWindow::setProject()
         this->openFileName(fileName);
         btnDownloadSdCard->setEnabled(false);
     }
-    else {
+    else
+#endif
+    {
         btnDownloadSdCard->setEnabled(true);
     }
 }
@@ -2347,6 +2410,7 @@ void MainSpinWindow::checkAndSaveFiles()
         QString tabName = editorTabs->tabText(tab);
         if(tabName.at(tabName.length()-1) == '*')
         {
+#ifdef SPIN
             if(!isSpinProject()) {
                 QMessageBox::information(this,
                     tr("Not a Project File"),
@@ -2354,7 +2418,9 @@ void MainSpinWindow::checkAndSaveFiles()
                     tr("Please save and add the file to the project to build it."),
                     QMessageBox::Ok);
             }
-            else {
+            else
+#endif
+            {
                 QMessageBox::information(this,
                     tr("Not a Project File"),
                     tr("The file \"")+tabName+tr("\" is not part of the current project.\n"),
@@ -2376,11 +2442,13 @@ QString MainSpinWindow::sourcePath(QString srcpath)
 
 bool MainSpinWindow::isSpinProject()
 {
+#ifdef SPIN
     QString compiler = projectOptions->getCompiler();
     if(compiler.compare(SPIN_TEXT, Qt::CaseInsensitive) == 0) {
         btnDownloadSdCard->setEnabled(false);
         return true;
     }
+#endif
     btnDownloadSdCard->setEnabled(true);
     return false;
 }
@@ -2402,9 +2470,11 @@ bool MainSpinWindow::isCProject()
 
 void MainSpinWindow::selectBuilder()
 {
+#ifdef SPIN
     if(isSpinProject())
         builder = buildSpin;
     else if(isCProject())
+#endif
         builder = buildC;
 }
 
@@ -2421,11 +2491,14 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     // QString srcpath = sourcePath(projectFile);
 
     int compileType = ProjectOptions::TAB_OPT; // 0
+#ifdef SPIN
     if(isSpinProject()) {
         builder = buildSpin;
         compileType = ProjectOptions::TAB_SPIN_COMP;
     }
-    else if(isCProject()) {
+    else if(isCProject())
+#endif
+    {
         builder = buildC;
         compileType = ProjectOptions::TAB_C_COMP;
     }
@@ -2826,6 +2899,8 @@ void MainSpinWindow::spinStatusClicked(QString line)
     QString file = line.mid(0,line.indexOf("("));
     if(file.contains("..."))
         file = file.mid(file.indexOf("...")+3);
+
+    // this is useful for C and SPIN
     if(file.contains(SPIN_EXTENSION, Qt::CaseInsensitive) == false)
         file += SPIN_EXTENSION;
 
@@ -2896,10 +2971,11 @@ void MainSpinWindow::compileStatusClicked(void)
     if(isCProject()) {
         cStatusClicked(line);
     }
+#ifdef SPIN
     else if(isSpinProject()) {
         spinStatusClicked(line);
     }
-
+#endif
 }
 
 void MainSpinWindow::compilerChanged()
@@ -2908,12 +2984,14 @@ void MainSpinWindow::compilerChanged()
         projectMenu->setEnabled(true);
         cbBoard->setEnabled(true);
     }
+#ifdef SPIN
     else if(isSpinProject()) {
         projectMenu->setEnabled(false);
         cbBoard->setEnabled(false);
         int n = cbBoard->findText("NONE");
         if(n > -1) cbBoard->setCurrentIndex(n);
     }
+#endif
 }
 
 void MainSpinWindow::projectTreeClicked(QModelIndex index)
@@ -2989,10 +3067,11 @@ void MainSpinWindow::addProjectListFile(QString fileName)
         }
         projstr += fileName + "\n";
         list.clear();
-
+#ifdef SPIN
         if(isSpinProject())
             list = projectOptions->getSpinOptions();
         else if(isCProject())
+#endif
             list = projectOptions->getOptions();
 
         foreach(QString arg, list) {
@@ -3229,10 +3308,11 @@ void MainSpinWindow::deleteProjectFile()
                 projstr += arg + "\n";
         }
         list.clear();
-
+#ifdef SPIN
         if(isSpinProject())
             list = projectOptions->getSpinOptions();
         else if(isCProject())
+#endif
             list = projectOptions->getOptions();
 
         foreach(QString arg, list) {
@@ -3289,6 +3369,7 @@ void MainSpinWindow::showProjectFile()
             if(isCProject()) {
                 openFileName(sourcePath(projectFile)+fileName);
             }
+#ifdef SPIN
             else if(isSpinProject()) {
 
                 /* Spin files can be case-insensitive. Deal with it.
@@ -3323,6 +3404,7 @@ void MainSpinWindow::showProjectFile()
                 }
 
             }
+#endif
         }
     }
 }
@@ -3337,10 +3419,11 @@ void MainSpinWindow::saveProjectOptions()
 
     if(projectFile.length() > 0)
         setWindowTitle(QString(ASideGuiKey)+" "+QDir::convertSeparators(projectFile));
-
+#ifdef SPIN
     if(isSpinProject())
         saveSpinProjectOptions();
     else if(isCProject())
+#endif
         saveManagedProjectOptions();
 }
 
@@ -3366,7 +3449,7 @@ void MainSpinWindow::saveSpinProjectOptions()
         QString projName = shortFileName(projectFile);
         if(projectModel != NULL) delete projectModel;
         projectModel = new CBuildTree(projName, this);
-
+#ifdef SPIN
         /* for spin-side we always parse the program and stuff the file list */
         list = spinParser.spinFileTree(fileName, propDialog->getSpinLibraryStr());
         for(int n = 0; n < list.count(); n ++) {
@@ -3378,7 +3461,7 @@ void MainSpinWindow::saveSpinProjectOptions()
 
         list.clear();
         list = projectOptions->getSpinOptions();
-
+#endif
         /* add options */
         foreach(QString arg, list) {
             if(arg.contains(ProjectOptions::board+"::"))
@@ -3462,7 +3545,7 @@ void MainSpinWindow::updateProjectTree(QString fileName)
 
     if(projectModel != NULL) delete projectModel;
     projectModel = new CBuildTree(projName, this);
-
+#ifdef SPIN
     if(fileName.contains(SPIN_EXTENSION,Qt::CaseInsensitive)) {
         projectOptions->setCompiler(SPIN_TEXT);
     }
@@ -3480,18 +3563,33 @@ void MainSpinWindow::updateProjectTree(QString fileName)
                 projectOptions->setCompiler("C");
         }
     }
+#else
+    QFile proj(projectFile);
+    QString type;
+    if(proj.open(QFile::ReadOnly | QFile::Text)) {
+        type = proj.readAll();
+        proj.close();
+        if(type.contains(">compiler=C++",Qt::CaseInsensitive))
+            projectOptions->setCompiler("C++");
+        else
+            projectOptions->setCompiler("C");
+    }
+#endif
 
     /* in the case of a spin project, we need to parse a tree.
      * in other project cases, we use the project manager.
      */
+#ifdef SPIN
     if(isSpinProject())
         updateSpinProjectTree(fileName, projName);
     else if(isCProject())
+#endif
         updateManagedProjectTree(fileName, projName);
 }
 
 void MainSpinWindow::updateSpinProjectTree(QString fileName, QString projName)
 {
+#ifdef SPIN
     QFile file(projectFile);
 
     /* for spin-side we always parse the program and stuff the file list */
@@ -3592,6 +3690,7 @@ void MainSpinWindow::updateSpinProjectTree(QString fileName, QString projName)
     projectTree->setModel(projectModel);
     projectTree->hide();
     projectTree->show();
+#endif
 }
 
 void MainSpinWindow::updateManagedProjectTree(QString fileName, QString projName)

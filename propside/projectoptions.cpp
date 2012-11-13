@@ -23,8 +23,9 @@ ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Pr
 
     ui->comboBoxCompiler->addItem("C");
     ui->comboBoxCompiler->addItem("C++");
+#ifdef SPIN
     ui->comboBoxCompiler->addItem("SPIN");
-
+#endif
     tabs.append(ui->tabWidget->widget(this->TAB_OPT));
     tabs.append(ui->tabWidget->widget(this->TAB_C_COMP));
     tabs.append(ui->tabWidget->widget(this->TAB_C_LIB));
