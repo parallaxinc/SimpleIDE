@@ -170,6 +170,7 @@ public slots:
     int  makeDebugFiles(QString fileName);
 
     QPlainTextEdit* getDebugEditor();
+    void toggleSimpleView();
 
 private:
     QString pathDiff(QString s2, QString s1);
@@ -231,6 +232,8 @@ private:
     void cStatusClicked(QString line);
     void spinStatusClicked(QString line);
 
+    void showSimpleView(bool simple);
+
     AboutDialog     *aboutDialog;
     QString         aboutLanding;
 
@@ -244,6 +247,7 @@ private:
     QString         aSideCfgFile;
     QString         aSideSeparator;
     QString         aSideDocPath;
+    bool            simpleViewType;
 
     QToolBar        *fileToolBar;
     QToolBar        *projToolBar;
@@ -251,6 +255,8 @@ private:
     QToolBar        *browseToolBar;
     QToolBar        *programToolBar;
     QToolBar        *ctrlToolBar;
+
+    QMenu           *toolsMenu;
 
     QSplitter       *leftSplit;
     QSplitter       *rightSplit;

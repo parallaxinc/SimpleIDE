@@ -46,6 +46,9 @@
 #define SPIN_TEXT      "SPIN"
 #define SPIN_EXTENSION ".spin"
 
+#define ProjectView "Set Project View"
+#define SimpleView  "Set Simple View"
+
 MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 {
     /* setup application registry info */
@@ -67,6 +70,13 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     /* setup properties dialog */
     propDialog = new Properties(this);
     connect(propDialog,SIGNAL(accepted()),this,SLOT(propertiesAccepted()));
+
+    /* detect user's startup view */
+    simpleViewType = false;
+    QVariant viewv = settings->value(simpleViewKey);
+    if(viewv.canConvert(QVariant::Bool)) {
+        simpleViewType = viewv.toBool();
+    }
 
     /* setup user's editor font */
     QVariant fontv = settings->value(editorFontKey);
@@ -2742,6 +2752,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     statusBar->setMaximumHeight(22);
 
     this->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
+
 }
 
 void MainSpinWindow::cStatusClicked(QString line)
@@ -3984,12 +3995,15 @@ void MainSpinWindow::setupFileMenu()
     editMenu->addAction(QIcon(":/images/redo.png"), tr("&Redo"), this, SLOT(redoChange()), QKeySequence::Redo);
     editMenu->addAction(QIcon(":/images/undo.png"), tr("&Undo"), this, SLOT(undoChange()), QKeySequence::Undo);
 
-    QMenu *toolsMenu = new QMenu(tr("&Tools"), this);
+    toolsMenu = new QMenu(tr("&Tools"), this);
     menuBar()->addMenu(toolsMenu);
+
+    QString viewstr = this->simpleViewType ? tr(ProjectView) : tr(SimpleView);
+    toolsMenu->addAction(viewstr,this,SLOT(toggleSimpleView()));
 
 #if defined(SD_TOOLS)
     //toolsMenu->addAction(QIcon(":/images/flashdrive.png"), tr("Save .PEX to Local SD Card"), this, SLOT(savePexFile()));
-    toolsMenu->addAction(QIcon(":/images/download.png"), tr("Send File to Target SD Card"), this, SLOT(downloadSdCard()));
+    toolsMenu->addAction(QIcon(":/images/download.png"), tr("File to SD Card"), this, SLOT(downloadSdCard()));
 #endif
 
     if(ctags->enabled()) {
@@ -4092,6 +4106,8 @@ void MainSpinWindow::setupToolBars()
     //QToolButton *btnProjectClone = new QToolButton(this);
     QToolButton *btnProjectSaveAs = new QToolButton(this);
     QToolButton *btnProjectClose = new QToolButton(this);
+
+    propToolBar = addToolBar(tr("Misc. Project"));
     QToolButton *btnProjectApp = new QToolButton(this);
 
 
@@ -4100,7 +4116,7 @@ void MainSpinWindow::setupToolBars()
     addToolButton(projToolBar, btnProjectSaveAs, QString(":/images/saveasproj.png"));
     //addToolButton(projToolBar, btnProjectClone, QString(":/images/cloneproj2.png"));
     addToolButton(projToolBar, btnProjectClose, QString(":/images/closeproj.png"));
-    addToolButton(projToolBar, btnProjectApp, QString(":/images/project.png"));
+    addToolButton(propToolBar, btnProjectApp, QString(":/images/project.png"));
 
     connect(btnProjectNew,SIGNAL(clicked()),this,SLOT(newProject()));
     connect(btnProjectOpen,SIGNAL(clicked()),this,SLOT(openProject()));
@@ -4124,7 +4140,7 @@ void MainSpinWindow::setupToolBars()
     btnProjectBoard->setToolTip(tr("Configuration"));
 */
     QToolButton *btnProjectProperties = new QToolButton(this);
-    addToolButton(projToolBar, btnProjectProperties, QString(":/images/properties.png"));
+    addToolButton(propToolBar, btnProjectProperties, QString(":/images/properties.png"));
     connect(btnProjectProperties,SIGNAL(clicked()),this,SLOT(properties()));
     btnProjectProperties->setToolTip(tr("Properties"));
 
@@ -4223,9 +4239,49 @@ void MainSpinWindow::setupToolBars()
     ctrlToolBar->addWidget(cbBoard);
 #endif
     ctrlToolBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
+
+    showSimpleView(simpleViewType);
+
 }
 
 QPlainTextEdit* MainSpinWindow::getDebugEditor()
 {
     return this->debugStatus;
 }
+
+void MainSpinWindow::toggleSimpleView()
+{
+     simpleViewType = !simpleViewType;
+     QList<QAction*> list = toolsMenu->actions();
+     QAction *action = list.at(0);
+     action->setText(this->simpleViewType ? tr(ProjectView) : tr(SimpleView));
+     showSimpleView(simpleViewType);
+}
+
+/*
+ * show simple/project view
+ */
+void MainSpinWindow::showSimpleView(bool simple)
+{
+    /* in simple view, we don't show:
+     * project manager
+     * status tabs
+     * file toolbar
+     * btn Project Set App
+     */
+    if(simple) {
+        leftSplit->hide();
+        statusTabs->hide();
+        fileToolBar->hide();
+        propToolBar->hide();
+    }
+    else {
+        leftSplit->show();
+        statusTabs->show();
+        fileToolBar->show();
+        propToolBar->show();
+    }
+    QVariant viewv = simple;
+    settings->setValue(simpleViewKey, viewv);
+}
+
