@@ -256,6 +256,7 @@ private:
     QToolBar        *programToolBar;
     QToolBar        *ctrlToolBar;
 
+    QMenu           *fileMenu;
     QMenu           *projMenu;
     QMenu           *toolsMenu;
 

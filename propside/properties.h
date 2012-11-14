@@ -38,6 +38,7 @@
 #define ASideGuiKey         "SimpleIDE"
 
 #define simpleViewKey       "SimpleIDE_SimpleViewType"
+#define oldViewBoxKey       "SimpleIDE_OldViewBoxReminder"
 #define ASideGuiGeometry    "SimpleIDE_WindowGeometry"
 #define helpStartupKey      "SimpleIDE_ShowHelpStart"
 #define compilerKey         "SimpleIDE_Compiler"
