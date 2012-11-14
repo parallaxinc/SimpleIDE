@@ -14,11 +14,9 @@ DEFINES += SPINSIDE
 # Turn off SPIN features for EDU release
 # DEFINES += SPIN
 # DEFINES += SPIN_AUTOCOMPLETE
-
 # IDEDEBUG define sends qDebug() output to a Debug TAB.
 # This is most useful with windows as console output is not available there.
 # DEFINES += IDEDEBUG
-
 # EVENT_DRIVEN QEXTSERIALPORT is no longer used.
 # GDBENABLE is not ready, and will only be used for development testing
 # DEFINES += GDBENABLE
@@ -90,7 +88,8 @@ HEADERS += mainspinwindow.h \
     spinparser.h \
     gdb.h \
     highlightc.h \
-    propertycolor.h
+    propertycolor.h \
+    qportcombobox.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui

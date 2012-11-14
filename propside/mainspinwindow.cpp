@@ -30,6 +30,7 @@
 
 #include "mainspinwindow.h"
 #include "qextserialenumerator.h"
+#include "qportcombobox.h"
 #include "Sleeper.h"
 
 #define SD_TOOLS
@@ -46,10 +47,16 @@
 #define SPIN_TEXT      "SPIN"
 #define SPIN_EXTENSION ".spin"
 
-#define ProjectView "Set Project View"
-#define SimpleView  "Set Simple View"
+#define NewFile "&New"
+#define OpenFile "&Open"
+#define SaveFile "&Save"
+#define SaveAsFile "Save &As"
+
 #define SaveAsProject "Save As Project"
 #define CloneProject "Clone Project"
+
+#define ProjectView "Set Project View"
+#define SimpleView  "Set Simple View"
 
 MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -3832,6 +3839,7 @@ int MainSpinWindow::makeDebugFiles(QString fileName)
 void MainSpinWindow::enumeratePorts()
 {
     if(cbPort != NULL) cbPort->clear();
+
     friendlyPortName.clear();
     QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
     QStringList stringlist;
@@ -4024,13 +4032,13 @@ void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, 
  */
 void MainSpinWindow::setupFileMenu()
 {
-    QMenu *fileMenu = new QMenu(tr("&File"), this);
+    fileMenu = new QMenu(tr("&File"), this);
     menuBar()->addMenu(fileMenu);
 
-    fileMenu->addAction(QIcon(":/images/newfile.png"), tr("&New"), this, SLOT(newFile()), QKeySequence::New);
-    fileMenu->addAction(QIcon(":/images/openfile.png"), tr("&Open"), this, SLOT(openFile()), QKeySequence::Open);
-    fileMenu->addAction(QIcon(":/images/savefile.png"), tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save);
-    fileMenu->addAction(QIcon(":/images/saveasfile2.png"), tr("Save &As"), this, SLOT(saveAsFile()),QKeySequence::SaveAs);
+    fileMenu->addAction(QIcon(":/images/newfile.png"), tr(NewFile), this, SLOT(newFile()), QKeySequence::New);
+    fileMenu->addAction(QIcon(":/images/openfile.png"), tr(OpenFile), this, SLOT(openFile()), QKeySequence::Open);
+    fileMenu->addAction(QIcon(":/images/savefile.png"), tr(SaveFile), this, SLOT(saveFile()), QKeySequence::Save);
+    fileMenu->addAction(QIcon(":/images/saveasfile2.png"), tr(SaveAsFile), this, SLOT(saveAsFile()),QKeySequence::SaveAs);
 
     fileMenu->addAction(QIcon(":/images/Delete.png"),tr("Close"), this, SLOT(closeFile()));
     fileMenu->addAction(tr("Close All"), this, SLOT(closeAll()));
@@ -4313,12 +4321,13 @@ void MainSpinWindow::setupToolBars()
     cbBoard->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(cbBoard,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentBoard(int)));
 #endif
-    cbPort = new QComboBox(this);
+    cbPort = new QPortComboBox(this);
     cbPort->setEditable(true);
     cbPort->setLayoutDirection(Qt::LeftToRight);
     cbPort->setToolTip(tr("Serial Port Select"));
     cbPort->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
+    connect(cbPort,SIGNAL(clicked()),this,SLOT(enumeratePorts()));
 
     btnConnected = new QToolButton(this);
     btnConnected->setToolTip(tr("Serial Port Console"));
@@ -4328,10 +4337,11 @@ void MainSpinWindow::setupToolBars()
     QToolButton *reset = new QToolButton(this);
     reset->setToolTip(tr("Reset Port"));
     connect(reset,SIGNAL(clicked()),this,SLOT(portResetButton()));
-
+#ifdef BUTTON_PORT_SCAN
     QToolButton *btnPortScan = new QToolButton(this);
     btnPortScan->setToolTip(tr("Rescan Serial Ports"));
     connect(btnPortScan,SIGNAL(clicked()),this,SLOT(enumeratePorts()));
+#endif
 #ifdef BOARD_TOOLBAR
     QToolButton *btnLoadBoards = new QToolButton(this);
     btnLoadBoards->setToolTip(tr("Reload Board List"));
@@ -4339,7 +4349,9 @@ void MainSpinWindow::setupToolBars()
 #endif
     addToolButton(ctrlToolBar, btnConnected, QString(":/images/console.png"));
     addToolButton(ctrlToolBar, reset, QString(":/images/reset.png"));
+#ifdef BUTTON_PORT_SCAN
     addToolButton(ctrlToolBar, btnPortScan, QString(":/images/refresh.png"));
+#endif
     ctrlToolBar->addWidget(cbPort);
 #ifdef BOARD_TOOLBAR
     addToolButton(ctrlToolBar, btnLoadBoards, QString(":/images/hardware.png"));
@@ -4371,39 +4383,59 @@ void MainSpinWindow::toggleSimpleView()
 void MainSpinWindow::showSimpleView(bool simple)
 {
     /* in simple view, we don't show:
+     * selected items in fileMenu and projMenu
      * project manager
      * status tabs
      * file toolbar
      * btn Project Set App
      */
+    QList <QAction*> fileMenuList = fileMenu->actions();
     QList <QAction*> projMenuList = projMenu->actions();
 
-    if(simple) {
+    if(simple)
+    {
         leftSplit->hide();
         statusTabs->hide();
         fileToolBar->hide();
         propToolBar->hide();
+        foreach(QAction *fa, fileMenuList) {
+            QString txt = fa->text();
+            if(txt != NULL) {
+                if(txt.contains(NewFile) ||
+                   txt.contains(OpenFile) ||
+                   txt.contains(SaveFile) ||
+                   txt.contains(SaveAsFile))
+                    fa->setVisible(false);
+            }
+        }
         foreach(QAction *pa, projMenuList) {
             QString txt = pa->text();
             if(txt != NULL) {
-                if(txt.contains(CloneProject))
-                    pa->setVisible(false);
-                if(txt.contains(SaveAsProject))
+                if(txt.contains(CloneProject) || txt.contains(SaveAsProject))
                     pa->setVisible(false);
             }
         }
     }
-    else {
+    else
+    {
         leftSplit->show();
         statusTabs->show();
         fileToolBar->show();
         propToolBar->show();
+        foreach(QAction *fa, fileMenuList) {
+            QString txt = fa->text();
+            if(txt != NULL) {
+                if(txt.contains(NewFile) ||
+                   txt.contains(OpenFile) ||
+                   txt.contains(SaveFile) ||
+                   txt.contains(SaveAsFile))
+                    fa->setVisible(true);
+            }
+        }
         foreach(QAction *pa, projMenuList) {
             QString txt = pa->text();
             if(txt != NULL) {
-                if(txt.contains(CloneProject))
-                    pa->setVisible(true);
-                if(txt.contains(SaveAsProject))
+                if(txt.contains(CloneProject) || txt.contains(SaveAsProject))
                     pa->setVisible(true);
             }
         }
