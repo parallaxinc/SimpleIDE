@@ -4411,6 +4411,8 @@ void MainSpinWindow::showSimpleView(bool simple)
         statusTabs->hide();
         fileToolBar->hide();
         propToolBar->hide();
+        btnShowProjectPane->show();
+        btnShowStatusPane->show();
         btnShowProjectPane->setChecked(false);
         btnShowStatusPane->setChecked(false);
         showProjectPane(false);
@@ -4439,6 +4441,8 @@ void MainSpinWindow::showSimpleView(bool simple)
         statusTabs->show();
         fileToolBar->show();
         propToolBar->show();
+        btnShowProjectPane->hide();
+        btnShowStatusPane->hide();
         btnShowProjectPane->setChecked(true);
         btnShowStatusPane->setChecked(true);
         showProjectPane(true);
