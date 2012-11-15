@@ -172,6 +172,9 @@ public slots:
     QPlainTextEdit* getDebugEditor();
     void toggleSimpleView();
 
+    void showProjectPane(bool show);
+    void showStatusPane(bool show);
+
 private:
     QString pathDiff(QString s2, QString s1);
     QString saveAsProjectLinkFix(QString srcPath, QString dstPath, QString link);
@@ -262,6 +265,9 @@ private:
 
     QSplitter       *leftSplit;
     QSplitter       *rightSplit;
+
+    QPushButton     *btnShowProjectPane;
+    QPushButton     *btnShowStatusPane;
 
     QTabWidget      *editorTabs;
     QVector<Editor*> *editors;

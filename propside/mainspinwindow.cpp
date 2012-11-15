@@ -35,7 +35,7 @@
 
 #define SD_TOOLS
 #define APPWINDOW_MIN_HEIGHT 480
-#define APPWINDOW_MIN_WIDTH 780
+#define APPWINDOW_MIN_WIDTH 480
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 270
 
@@ -2830,12 +2830,25 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     progress->setMaximumSize(90,20);
     progress->hide();
 
+    btnShowProjectPane = new QPushButton(">");
+    btnShowProjectPane->setCheckable(true);
+    btnShowProjectPane->setMaximumWidth(20);
+    connect(btnShowProjectPane,SIGNAL(clicked(bool)),this,SLOT(showProjectPane(bool)));
+
+    btnShowStatusPane = new QPushButton("^");
+    btnShowStatusPane->setCheckable(true);
+    btnShowStatusPane->setMaximumWidth(20);
+    connect(btnShowStatusPane,SIGNAL(clicked(bool)),this,SLOT(showStatusPane(bool)));
+
     programSize = new QLabel();
     programSize->setMinimumWidth(PROJECT_WIDTH+6);
+
     status = new QLabel();
 
     statusBar->addPermanentWidget(progress);
+    statusBar->addWidget(btnShowProjectPane);
     statusBar->addWidget(programSize);
+    statusBar->addWidget(btnShowStatusPane);
     statusBar->addWidget(status);
     statusBar->setMaximumHeight(22);
 
@@ -4283,7 +4296,7 @@ void MainSpinWindow::setupToolBars()
     btnDownloadSdCard = new QToolButton(this);
     addToolButton(toolsToolBar, btnDownloadSdCard, QString(":/images/download.png"));
     connect(btnDownloadSdCard, SIGNAL(clicked()),this,SLOT(downloadSdCard()));
-    btnDownloadSdCard->setToolTip(tr("Send File to Target SD Card."));
+    btnDownloadSdCard->setToolTip(tr("File to SD Card."));
 
 #endif
 
@@ -4398,6 +4411,10 @@ void MainSpinWindow::showSimpleView(bool simple)
         statusTabs->hide();
         fileToolBar->hide();
         propToolBar->hide();
+        btnShowProjectPane->setChecked(false);
+        btnShowStatusPane->setChecked(false);
+        showProjectPane(false);
+        showStatusPane(false);
         foreach(QAction *fa, fileMenuList) {
             QString txt = fa->text();
             if(txt != NULL) {
@@ -4422,6 +4439,10 @@ void MainSpinWindow::showSimpleView(bool simple)
         statusTabs->show();
         fileToolBar->show();
         propToolBar->show();
+        btnShowProjectPane->setChecked(true);
+        btnShowStatusPane->setChecked(true);
+        showProjectPane(true);
+        showStatusPane(true);
         foreach(QAction *fa, fileMenuList) {
             QString txt = fa->text();
             if(txt != NULL) {
@@ -4444,3 +4465,14 @@ void MainSpinWindow::showSimpleView(bool simple)
     settings->setValue(simpleViewKey, viewv);
 }
 
+void MainSpinWindow::showProjectPane(bool show)
+{
+    leftSplit->setVisible(show);
+    btnShowProjectPane->setText(show ? "<" : ">");
+}
+
+void MainSpinWindow::showStatusPane(bool show)
+{
+    statusTabs->setVisible(show);
+    btnShowStatusPane->setText(show ? "v" : "^");
+}
