@@ -174,6 +174,7 @@ public slots:
 
     void showProjectPane(bool show);
     void showStatusPane(bool show);
+    void splitterChanged();
 
 private:
     QString pathDiff(QString s2, QString s1);

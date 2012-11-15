@@ -852,6 +852,7 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
     //boardName = cbBoard->itemText(cbBoard->currentIndex());
 
     QString model = projectOptions->getMemModel();
+    model = model.mid(0,model.indexOf(" ")); // anything after the first word is just description
 
     if(copts.length() > 0) {
         QString s = copts.at(0);

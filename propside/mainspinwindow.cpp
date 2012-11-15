@@ -2823,6 +2823,9 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 
     rightSplit->adjustSize();
 
+    connect(vsplit,SIGNAL(splitterMoved(int,int)),this,SLOT(splitterChanged()));
+    connect(rightSplit,SIGNAL(splitterMoved(int,int)),this,SLOT(splitterChanged()));
+
     /* status bar for progressbar */
     QStatusBar *statusBar = new QStatusBar(this);
     this->setStatusBar(statusBar);
@@ -4413,10 +4416,15 @@ void MainSpinWindow::showSimpleView(bool simple)
         propToolBar->hide();
         btnShowProjectPane->show();
         btnShowStatusPane->show();
+        programSize->setMinimumWidth(PROJECT_WIDTH-btnShowStatusPane->width());
+        programSize->setMaximumWidth(PROJECT_WIDTH-btnShowStatusPane->width());
+        programSize->hide();
+        programSize->show();
         btnShowProjectPane->setChecked(false);
         btnShowStatusPane->setChecked(false);
         showProjectPane(false);
         showStatusPane(false);
+
         foreach(QAction *fa, fileMenuList) {
             QString txt = fa->text();
             if(txt != NULL) {
@@ -4447,6 +4455,9 @@ void MainSpinWindow::showSimpleView(bool simple)
         btnShowStatusPane->setChecked(true);
         showProjectPane(true);
         showStatusPane(true);
+        programSize->setMinimumWidth(PROJECT_WIDTH+6);
+        programSize->setMaximumWidth(PROJECT_WIDTH+6);
+
         foreach(QAction *fa, fileMenuList) {
             QString txt = fa->text();
             if(txt != NULL) {
@@ -4479,4 +4490,10 @@ void MainSpinWindow::showStatusPane(bool show)
 {
     statusTabs->setVisible(show);
     btnShowStatusPane->setText(show ? "v" : "^");
+}
+
+void MainSpinWindow::splitterChanged()
+{
+    showProjectPane(leftSplit->isVisible());
+    showStatusPane(statusTabs->isVisible());
 }

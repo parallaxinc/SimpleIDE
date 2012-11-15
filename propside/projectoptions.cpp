@@ -5,13 +5,13 @@
 
 const QString ProjectOptions::compiler = "compiler";
 const QString ProjectOptions::memtype = "memtype";
-const QString ProjectOptions::memTypeLMM = "LMM";
-const QString ProjectOptions::memTypeCMM = "CMM";
-const QString ProjectOptions::memTypeCOG = "COG";
+const QString ProjectOptions::memTypeLMM = "LMM Large";
+const QString ProjectOptions::memTypeCMM = "CMM Compact";
+const QString ProjectOptions::memTypeCOG = "COG Code Only";
 const QString ProjectOptions::memTypeXMM = "XMM";
-const QString ProjectOptions::memTypeXMMC = "XMMC";
-const QString ProjectOptions::memTypeXMMSINGLE = "XMM-SINGLE";
-const QString ProjectOptions::memTypeXMMSPLIT = "XMM-SPLIT";
+const QString ProjectOptions::memTypeXMMC = "XMMC Code Only External";
+const QString ProjectOptions::memTypeXMMSINGLE = "XMM-SINGLE Single RAM";
+const QString ProjectOptions::memTypeXMMSPLIT = "XMM-SPLIT Split Code/Data";
 const QString ProjectOptions::optimization = "optimize";
 const QString ProjectOptions::cflags = "defs";
 const QString ProjectOptions::lflags = "linker";
