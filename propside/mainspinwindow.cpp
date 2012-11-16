@@ -717,8 +717,8 @@ void MainSpinWindow::newProjectAccepted()
         mainName += SPIN_EXTENSION;
         projectOptions->setCompiler(SPIN_TEXT);
     }
-    else
 #endif
+    else
     {
         return;
     }
