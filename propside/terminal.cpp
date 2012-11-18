@@ -45,6 +45,7 @@ void Terminal::init()
     connect(cbEchoOn,SIGNAL(clicked(bool)),this,SLOT(echoOnChange(bool)));
 
     options = new TermPrefs(this);
+    setEchoOn(options->getEchoOn());
 
     QPushButton *buttonOpt = new QPushButton(tr("Options"),this);
     connect(buttonOpt,SIGNAL(clicked()), this, SLOT(showOptions()));
@@ -81,12 +82,6 @@ void Terminal::init()
     resize(800,400);
 }
 
-void Terminal::start()
-{
-    setBaudRate(options->getBaudRate());
-    setEchoOn(options->getEchoOn());
-}
-
 Console *Terminal::getEditor()
 {
     return termEditor;
@@ -110,7 +105,8 @@ void Terminal::baudRateChange(int index)
     bool ok;
     int baud = var.toInt(&ok);
     portListener->init(portListener->getPortName(), (BaudRateType) baud);
-    options->saveBaudRate(baud);
+    // saving the baud rate is not currently working
+    //options->saveBaudRate(baud);
 }
 
 bool Terminal::setBaudRate(int baud)

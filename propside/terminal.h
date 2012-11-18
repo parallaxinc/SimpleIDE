@@ -16,9 +16,9 @@ public:
     explicit Terminal(QWidget *parent);
     void setPortListener(PortListener *listener);
     void setPosition(int x, int y);
-    void start();
     void accept();
     void reject();
+    int  getBaudRate() { return options->getBaudRate(); }
     bool setBaudRate(int baud);
     void setEchoOn(bool echoOn);
 
