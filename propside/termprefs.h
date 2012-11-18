@@ -1,7 +1,10 @@
 #ifndef TERMPREFS_H
 #define TERMPREFS_H
 
+class TermPrefs;
+
 #include <QtGui>
+#include "terminal.h"
 #include "console.h"
 #include "properties.h"
 #include "propertycolor.h"
@@ -51,14 +54,18 @@ class TermPrefs : public QDialog
 {
     Q_OBJECT
 public:
-    TermPrefs(Console *con, QComboBox *baud);
+    TermPrefs(Terminal *term);
     virtual ~TermPrefs();
     void addColors(QComboBox *box, QVector<PColor*> pcolor);
     void saveSettings();
     void readSettings();
 
+    int  getBaudRate();
+    void saveBaudRate(int baud);
+    bool  getEchoOn();
+    void saveEchoOn(bool echoOn);
+
     void showDialog();
-    bool setBaudRate(int val);
 
 public slots:
     void hexDump(bool hex);
@@ -69,7 +76,7 @@ public slots:
 
 private:
     Ui::TermPrefs  *ui;
-    QComboBox      *comboBoxBaud;
+    Terminal       *terminal;
     Console        *serialConsole;
     QSettings      *settings;
     QStringList     settingNames;

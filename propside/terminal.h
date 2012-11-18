@@ -1,6 +1,8 @@
 #ifndef TERMINAL_H
 #define TERMINAL_H
 
+class Terminal;
+
 #include <QtGui>
 #include "console.h"
 #include "PortListener.h"
@@ -14,16 +16,18 @@ public:
     explicit Terminal(QWidget *parent);
     void setPortListener(PortListener *listener);
     void setPosition(int x, int y);
+    void start();
     void accept();
     void reject();
-    int  baudRate();
     bool setBaudRate(int baud);
+    void setEchoOn(bool echoOn);
 
 private:
     void init();
 
 public slots:
     void baudRateChange(int index);
+    void echoOnChange(bool value);
     void toggleEnable();
     void setPortEnabled(bool value);
     void clearScreen();
@@ -38,6 +42,7 @@ private:
     Console     *termEditor;
     TermPrefs   *options;
     QComboBox   *comboBoxBaud;
+    QCheckBox   *cbEchoOn;
 
 private:
     QPushButton     *buttonEnable;
