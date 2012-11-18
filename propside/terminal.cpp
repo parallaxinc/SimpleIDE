@@ -4,7 +4,7 @@
 #define TERM_ENABLE_BUTTON
 //#endif
 
-Terminal::Terminal(QWidget *parent) : QDialog(parent)
+Terminal::Terminal(QWidget *parent) : QDialog(parent), portListener(NULL)
 {
     termEditor = new Console(parent);
     init();
@@ -41,7 +41,10 @@ void Terminal::init()
     comboBoxBaud->addItem("1200", QVariant(BAUD1200));
     connect(comboBoxBaud,SIGNAL(currentIndexChanged(int)),this,SLOT(baudRateChange(int)));
 
-    options = new TermPrefs(termEditor, comboBoxBaud);
+    cbEchoOn = new QCheckBox(tr("Echo On"),this);
+    connect(cbEchoOn,SIGNAL(clicked(bool)),this,SLOT(echoOnChange(bool)));
+
+    options = new TermPrefs(this);
 
     QPushButton *buttonOpt = new QPushButton(tr("Options"),this);
     connect(buttonOpt,SIGNAL(clicked()), this, SLOT(showOptions()));
@@ -70,11 +73,18 @@ void Terminal::init()
     butLayout->addWidget(buttonEnable);
 #endif
     butLayout->addWidget(comboBoxBaud);
+    butLayout->addWidget(cbEchoOn);
     butLayout->addWidget(buttonBox);
     setLayout(termLayout);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     setWindowIcon(QIcon(":/images/console.png"));
     resize(800,400);
+}
+
+void Terminal::start()
+{
+    setBaudRate(options->getBaudRate());
+    setEchoOn(options->getEchoOn());
 }
 
 Console *Terminal::getEditor()
@@ -100,14 +110,7 @@ void Terminal::baudRateChange(int index)
     bool ok;
     int baud = var.toInt(&ok);
     portListener->init(portListener->getPortName(), (BaudRateType) baud);
-}
-
-int Terminal::baudRate()
-{
-    QVariant var = comboBoxBaud->itemData(comboBoxBaud->currentIndex());
-    bool ok;
-    int baud = var.toInt(&ok);
-    return baud;
+    options->saveBaudRate(baud);
 }
 
 bool Terminal::setBaudRate(int baud)
@@ -119,6 +122,18 @@ bool Terminal::setBaudRate(int baud)
         }
     }
     return false;
+}
+
+void Terminal::echoOnChange(bool value)
+{
+    termEditor->setEnableEchoOn(value);
+    options->saveEchoOn(value);
+}
+
+void Terminal::setEchoOn(bool echoOn)
+{
+    termEditor->setEnableEchoOn(echoOn);
+    cbEchoOn->setChecked(echoOn);
 }
 
 void Terminal::accept()
