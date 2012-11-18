@@ -105,7 +105,7 @@ void Terminal::baudRateChange(int index)
     bool ok;
     int baud = var.toInt(&ok);
     portListener->init(portListener->getPortName(), (BaudRateType) baud);
-    // saving the baud rate is not currently working
+    // saving the baud rate is not currently working (dbetz)
     //options->saveBaudRate(baud);
 }
 
