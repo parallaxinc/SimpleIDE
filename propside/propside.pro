@@ -55,7 +55,8 @@ SOURCES += mainspin.cpp \
     spinhighlighter.cpp \
     spinparser.cpp \
     gdb.cpp \
-    highlightc.cpp
+    highlightc.cpp \
+    hintdialog.cpp
 HEADERS += mainspinwindow.h \
     editor.h \
     ctags.h \
@@ -89,10 +90,12 @@ HEADERS += mainspinwindow.h \
     gdb.h \
     highlightc.h \
     propertycolor.h \
-    qportcombobox.h
+    qportcombobox.h \
+    hintdialog.h
 FORMS += hardware.ui \
     project.ui \
-    TermPrefs.ui
+    TermPrefs.ui \
+    hintdialog.ui
 RESOURCES += resources.qrc
 unix:SOURCES += qextserialport_unix.cpp
 

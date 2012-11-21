@@ -86,6 +86,7 @@
 #define hlBlockComStyleKey  "SimpleIDE_HighlightBlockCommentTypeStyle"
 #define hlBlockComWeightKey "SimpleIDE_HighlightBlockCommentTypeWeight"
 #define hlBlockComColorKey  "SimpleIDE_HighlightBlockCommentTypeColor"
+#define HintKeyPrefix       "SimpleIDE_Hint_"
 
 #include <QtGui>
 

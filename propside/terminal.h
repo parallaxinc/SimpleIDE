@@ -18,7 +18,7 @@ public:
     void setPosition(int x, int y);
     void accept();
     void reject();
-    int  getBaudRate() { return options->getBaudRate(); }
+    int  getBaudRate();
     bool setBaudRate(int baud);
     void setEchoOn(bool echoOn);
 
