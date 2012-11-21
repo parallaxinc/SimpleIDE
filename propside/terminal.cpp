@@ -109,6 +109,11 @@ void Terminal::baudRateChange(int index)
     //options->saveBaudRate(baud);
 }
 
+int Terminal::getBaudRate()
+{
+    return options->getBaudRate();
+}
+
 bool Terminal::setBaudRate(int baud)
 {
     for(int n = comboBoxBaud->count(); n > -1; n--) {
