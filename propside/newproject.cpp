@@ -83,7 +83,8 @@ void NewProject::nameChanged()
     path->setText(mypath+myname);
     QDir path(mypath);
     okButton->setDisabled(true);
-    if(path.exists()) {
+    /* don't allow project if mypath is empty */
+    if(mypath.length() != 0 && path.exists()) {
         /* make sure our new file has no spaces */
         if(myname.indexOf(" ") > -1 || myname.indexOf("\t") > -1) {
             return;
@@ -150,6 +151,8 @@ void NewProject::browsePath()
     int fontSize = path->fontInfo().pixelSize();
     setMinimumWidth(mypath.length()*fontSize+100);
     qDebug() << "New Project Folder " << mypath << name->text();
+
+    nameChanged();
 }
 
 void NewProject::accept()
