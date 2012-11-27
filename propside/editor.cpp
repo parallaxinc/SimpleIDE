@@ -99,8 +99,13 @@ void Editor::keyPressEvent (QKeyEvent *e)
 
 
     if((key == Qt::Key_Enter) || (key == Qt::Key_Return)) {
+#ifdef Q_WS_WIN32
         if(autoEnterColumn() == 0)
             QPlainTextEdit::keyPressEvent(e);
+#else
+        // temporarily remove auto indent for other platforms
+        QPlainTextEdit::keyPressEvent(e);
+#endif
     }
     /* if F1 get word under mouse and pass to findSymbolHelp. no word is ok too. */
     else if(key == Qt::Key_F1) {
