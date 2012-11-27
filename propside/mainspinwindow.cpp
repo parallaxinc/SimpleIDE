@@ -32,6 +32,7 @@
 #include "qextserialenumerator.h"
 #include "qportcombobox.h"
 #include "Sleeper.h"
+#include "hintdialog.h"
 
 #define SD_TOOLS
 #define APPWINDOW_MIN_HEIGHT 480
@@ -251,6 +252,12 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 
     this->show(); // show gui before about for mac
     QApplication::processEvents();
+
+    /* show hint for Simple/Project view settings */
+    if(this->simpleViewType)
+        HintDialog::hint("SimpleProjectView", "Menu->Tools->Set Project View selects project mode.");
+    else
+        HintDialog::hint("SimpleProjectView", "Menu->Tools->Set Simple View selects simple mode.");
 
     /* show help dialog */
     QVariant helpStartup = settings->value(helpStartupKey,true);
@@ -585,7 +592,10 @@ void MainSpinWindow::openFileName(QString fileName)
                 in.setCodec("UTF-8");
             data = in.readAll();
             file.close();
+#ifdef TAB_SPACE_EXPANSION
+            // remove tab to space conversion for now.
             data = data.replace('\t',"    ");
+#endif
             QString sname = this->shortFileName(fileName);
             if(editorTabs->count()>0) {
                 for(int n = editorTabs->count()-1; n > -1; n--) {
