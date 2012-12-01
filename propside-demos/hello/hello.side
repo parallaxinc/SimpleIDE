@@ -1,7 +1,7 @@
 hello.c
 >compiler=C
->memtype=cog
+>memtype=cmm compact
 >optimize=-Os
 >-fno-exceptions
->-Dprintf=__simple_printf
+>-ltiny
 >BOARD::HUB
