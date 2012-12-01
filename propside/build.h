@@ -19,6 +19,7 @@ public:
     virtual int  runBuild(QString option, QString projfile, QString compiler);
     virtual int  makeDebugFiles(QString fileName, QString projfile, QString compiler);
     virtual void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
+    virtual QString getOutputPath(QString projfile);
 
 #if 0
     void setCompiler(QString compiler);

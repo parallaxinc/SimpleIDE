@@ -2,6 +2,7 @@
 #include "Sleeper.h"
 #include "properties.h"
 #include "asideconfig.h"
+#include "hintdialog.h"
 
 #include <QtGui>
 
@@ -17,6 +18,13 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     projectFile = projfile;
     aSideCompiler = compiler;
     aSideCompilerPath = sourcePath(compiler);
+
+    if (ensureOutputDirectory() != 0)
+        return -1;
+
+    projName = shortFileName(projectFile).replace(".side", ".c");
+    exeName = projName.mid(0, projName.lastIndexOf(".")) + ".elf";
+    exePath = outputPath + exeName;
 
 #if defined(GDBENABLE)
     /* stop debugger */
@@ -75,13 +83,13 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
 
     /* remove a.out before build
      */
-    QFile aout(sourcePath(projectFile)+"a.out");
+    QFile aout(exePath);
     if(aout.exists()) {
         if(aout.remove() == false) {
             rc = QMessageBox::question(0,
                 tr("Can't Remove File"),
                 tr("Can't Remove output file before build.\n"\
-                   "Please close any program using the file \"a.out\".\n"\
+                   "Please close any program using the file \"") + exeName + tr("\".\n"\
                    "Continue?"),
                 QMessageBox::No, QMessageBox::Yes);
             if(rc == QMessageBox::No)
@@ -130,8 +138,9 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
             if(runBstc(name))
                 rc = -1;
             if(proj.toLower().lastIndexOf(".dat") < 0) // intermediate
-                list.append(name.mid(0,name.lastIndexOf(".spin"))+".dat");
+                list.append(outputPath+shortFileName(name.mid(0,name.lastIndexOf(".spin")))+".dat");
         }
+#if 0 // this needs to be updated for the memory model directories
         else if(suffix.compare(".espin") == 0) {
             QString basepath = sourcePath(projectFile);
             this->compileStatus->appendPlainText("Copying "+name+" to tmp.spin for spin compiler.");
@@ -154,40 +163,41 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
             if(proj.toLower().lastIndexOf(".edat") < 0) // intermediate
                 list.append(name.mid(0,name.lastIndexOf(".espin"))+".edat");
         }
+#endif
         else if(suffix.compare(".dat") == 0) {
-            name = shortFileName(name);
             if(runObjCopy(name))
                 rc = -1;
             if(proj.toLower().lastIndexOf("_firmware.o") < 0)
-                clist.append(name.mid(0,name.lastIndexOf(".dat"))+"_firmware.o");
+                clist.append(outputPath+shortFileName(name.mid(0,name.lastIndexOf(".dat")))+"_firmware.o");
         }
 
+#if 0 // this needs to be updated for the memory model directories
         else if(suffix.compare(".edat") == 0) {
-            name = shortFileName(name);
             if(runObjCopy(name))
                 rc = -1;
             if(runCogObjCopy(base+"_firmware.ecog",base+"_firmware.o"))
                 rc = -1;
             if(proj.toLower().lastIndexOf("_firmware.o") < 0)
-                clist.append(base+"_firmware.o");
+                clist.append(outputPath+base+"_firmware.o");
         }
+#endif
         else if(suffix.compare(".s") == 0) {
             if(runGAS(name))
                 rc = -1;
             if(proj.toLower().lastIndexOf(".o") < 0)
-                clist.append(name.mid(0,name.lastIndexOf(".s"))+".o");
+                clist.append(outputPath+name.mid(0,name.lastIndexOf(".s"))+".o");
         }
         /* .cogc also does COG specific objcopy */
         else if(suffix.compare(".cogc") == 0) {
             if(runCOGC(name,".cog"))
                 rc = -1;
-            clist.append(shortFileName(base)+".cog");
+            clist.append(outputPath+shortFileName(base)+".cog");
         }
         /* .cogc also does COG specific objcopy */
         else if(suffix.compare(".ecogc") == 0) {
             if(runCOGC(name,".ecog"))
                 rc = -1;
-            clist.append(shortFileName(base)+".ecog");
+            clist.append(outputPath+shortFileName(base)+".ecog");
         }
         /* dont add .a yet */
         else if(suffix.compare(".a") == 0) {
@@ -246,7 +256,7 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
             runpex = true;
         }
         if(runpex) {
-            rc = runPexMake("a.out");
+            rc = runPexMake(exePath);
             if(rc != 0)
                 compileStatus->appendPlainText("Could not make AUTORUN.PEX\n");
         }
@@ -324,7 +334,7 @@ int  BuildC::runCOGC(QString name, QString outext)
     args.append("-Os"); // default optimization for -mcog
     args.append("-mcog"); // compile for cog
     args.append("-o"); // create a .cog object
-    args.append(base+outext);
+    args.append(outputPath+base+outext);
     args.append("-xc"); // code to compile is C code
     //args.append("-c");
     args.append(name);
@@ -338,7 +348,7 @@ int  BuildC::runCOGC(QString name, QString outext)
     args.append("--localize-text");
     args.append("--rename-section");
     args.append(".text="+base+outext);
-    args.append(base+outext);
+    args.append(outputPath+base+outext);
 
     /* run object copy to localize fix up .cog object */
     rc = startProgram(objcopy, sourcePath(projectFile), args);
@@ -364,6 +374,8 @@ int  BuildC::runBstc(QString spinfile)
 
     QDir libdir;
 
+    QString binaryfile = outputPath+spinfile.mid(0,spinfile.lastIndexOf("."));
+
     if((comp.compare("spin",Qt::CaseInsensitive) == 0) ||
        (comp.compare("spin.exe",Qt::CaseInsensitive) == 0)) {
         // Roy's compiler always makes a .binary
@@ -371,6 +383,7 @@ int  BuildC::runBstc(QString spinfile)
             args.append("-I");
             args.append(properties->getSpinLibraryStr());
         }
+        binaryfile += +".dat";
     }
     else {
         /* other compiler options */
@@ -388,6 +401,8 @@ int  BuildC::runBstc(QString spinfile)
         }
     }
 
+    args.append("-o");
+    args.append(binaryfile);
     args.append(spinfile); // using shortname limits us to files in the project directory.
     rc = startProgram(comp, sourcePath(projectFile), args);
 
@@ -441,6 +456,10 @@ int  BuildC::runObjCopyRedefineSym(QString oldsym, QString newsym, QString file)
 
 int  BuildC::runObjCopy(QString datfile)
 {
+    QString oldsym = datfile;
+    oldsym = "_binary_" + oldsym.replace(separator, "_").replace(".", "_");
+    QString newsym = datfile;
+    newsym = "_binary_" + newsym.mid(newsym.lastIndexOf(separator)+1).replace(".", "_");
     int rc = 0;
 
     //getApplicationSettings();
@@ -448,7 +467,7 @@ int  BuildC::runObjCopy(QString datfile)
         return -1;
     }
 
-    QString objfile = datfile.mid(0,datfile.lastIndexOf("."))+"_firmware.o";
+    QString objfile = outputPath+shortFileName(datfile.mid(0,datfile.lastIndexOf(".")))+"_firmware.o";
     QStringList args;
     args.append("-I");
     args.append("binary");
@@ -456,6 +475,15 @@ int  BuildC::runObjCopy(QString datfile)
     args.append("propeller");
     args.append("-O");
     args.append("propeller-elf-gcc");
+
+    // with the memory model directories objcopy will generate symbols like "_binary_lmm_toggle_start"
+    // but the user will expect "_binary_toggle_start" so we need to rename the generated symbols
+    args.append("--redefine-sym");
+    args.append(oldsym+"_start"+"="+newsym+"_start");
+    args.append("--redefine-sym");
+    args.append(oldsym+"_end"+"="+newsym+"_end");
+    args.append("--redefine-sym");
+    args.append(oldsym+"_size"+"="+newsym+"_size");
     args.append(datfile);
     args.append(objfile);
 
@@ -475,7 +503,7 @@ int  BuildC::runGAS(QString gasfile)
         return -1;
     }
 
-    QString objfile = gasfile.mid(0,gasfile.lastIndexOf("."))+".o";
+    QString objfile = outputPath+shortFileName(gasfile.mid(0,gasfile.lastIndexOf(".")))+".o";
     QStringList args;
     args.append("-o");
     args.append(objfile);
@@ -538,12 +566,14 @@ int  BuildC::runAR(QStringList copts, QString libname)
     foreach(QString s, copts) {
         if(s.contains(".out",Qt::CaseInsensitive))
             continue;
+        if(s.contains(".elf",Qt::CaseInsensitive))
+            continue;
         if(s.contains(".o",Qt::CaseInsensitive))
-            args.append(s.mid(s.lastIndexOf("/")+1));
+            args.append(s);
         if(s.contains(".cog",Qt::CaseInsensitive))
-            args.append(s.mid(s.lastIndexOf("/")+1));
+            args.append(s);
         if(s.contains(".ecog",Qt::CaseInsensitive))
-            args.append(s.mid(s.lastIndexOf("/")+1));
+            args.append(s);
     }
 
 #if defined(Q_WS_WIN32)
@@ -607,9 +637,6 @@ int  BuildC::runCompiler(QStringList copts)
         }
     }
 
-    QString libname = QString(args.last());
-    QString projname = libname;
-
     // remove main file. put back after library build
     args.removeLast();
 
@@ -657,10 +684,15 @@ int  BuildC::runCompiler(QStringList copts)
                 tlist.append("-c");
             tlist.append(s);
             args.removeOne(s);
-            s = s.mid(s.lastIndexOf("/")+1);
-            args.append(s.mid(0,s.indexOf("."))+".o");
+            QString objPath = outputPath + shortFileName(s);
+            objPath = objPath.replace(".c", ".o");
+            args.append(objPath);
+            tlist.append("-o");
+            tlist.append(objPath);
             rc = startProgram(compstr,sourcePath(projectFile),tlist);
-            tlist.removeLast();
+            tlist.removeLast(); // objPath
+            tlist.removeLast(); // "-o"
+            tlist.removeLast(); // srcFile
             if(rc != 0)
                 return rc;
         }
@@ -668,35 +700,45 @@ int  BuildC::runCompiler(QStringList copts)
 
     /* let's make a library after compiling the program so we can use .o from save-temps
      */
-    libname = libname.mid(0,libname.lastIndexOf(".")) + ".a";
+    QString libbase = projName.mid(0, projName.lastIndexOf("."));
+    QString libname = outputPath + libbase + ".a";
     if(projectOptions->getMakeLibrary().isEmpty() != true)
     {
+        QStringList objs;
 
-        QString projobj = projname;
-        projobj.replace(".c",".o");
+        QString projobj = exePath;
+        projobj.replace(".elf",".o");
         if(args.contains(projobj)) {
             args.removeOne(projobj);
         }
-        this->runAR(args, sourcePath(projectFile)+libname); //QString("lib"+libname));
 
         foreach(QString s, args) {
             if(s.contains(".out",Qt::CaseInsensitive))
                 continue;
-            if(s.contains(".o",Qt::CaseInsensitive))
+            if(s.contains(".elf",Qt::CaseInsensitive))
+                continue;
+            if(s.contains(".o",Qt::CaseInsensitive) ||
+               s.contains(".cog",Qt::CaseInsensitive) ||
+               s.contains(".ecog",Qt::CaseInsensitive)) {
+                objs.append(s);
                 args.removeOne(s);
-            if(s.contains(".cog",Qt::CaseInsensitive))
-                args.removeOne(s);
-            if(s.contains(".ecog",Qt::CaseInsensitive))
-                args.removeOne(s);
+             }
         }
+
+        this->runAR(objs, libname);
     }
 
     // add main file back
-    args.append(projname);
+    args.append(projName);
+
+    // add the project library if necessary
+    if(projectOptions->getMakeLibrary().isEmpty() != true)
+        args.append(libname);
 
     // add libs back
+    // skip the project library if it was also included in the linker options
     foreach(QString s, libs) {
-        if(libname.contains(s.mid(2))) {
+        if(libbase.mid(0, 3) == "lib" && libbase.mid(3) == s.mid(2)) {
             if(projectOptions->getMakeLibrary().isEmpty() != true)
                 args.append(s);
             continue;
@@ -711,7 +753,7 @@ int  BuildC::runCompiler(QStringList copts)
 
     args.clear();
     args.append("-h");
-    args.append("a.out");
+    args.append(exePath);
     rc = startProgram("propeller-elf-objdump",sourcePath(projectFile),args,this->DumpReadSizes);
 
     /*
@@ -733,6 +775,9 @@ int BuildC::makeDebugFiles(QString fileName, QString projfile, QString compiler)
     projectFile = projfile;
     aSideCompiler = compiler;
     aSideCompilerPath = sourcePath(compiler);
+
+    if (ensureOutputDirectory() != 0)
+        return -1;
 
     if(fileName.length() == 0)
         return -1;
@@ -816,8 +861,10 @@ int BuildC::makeDebugFiles(QString fileName, QString projfile, QString compiler)
 
     removeArg(args,"-S"); // peward++ Thanks! C & asm
     removeArg(args,"-o");
-    removeArg(args,"a.out");
-    args.insert(0,"-Wa,-ahdnl="+name+SHOW_ASM_EXTENTION); // peward++
+    removeArg(args,exePath);
+    args.append("-o");
+    args.append(outputPath+name+".o");
+    args.insert(0,"-Wa,-ahdnl="+outputPath+name+SHOW_ASM_EXTENTION); // peward++
     args.insert(0,"-c"); // peward++
     args.insert(0,"-g"); // peward++
 
@@ -834,6 +881,14 @@ int BuildC::makeDebugFiles(QString fileName, QString projfile, QString compiler)
     compileStatus->appendPlainText("Done. Compile Debug Ok.");
 
     return 0;
+}
+
+QString BuildC::getOutputPath(QString projfile)
+{
+    projectFile = projfile;
+    if (ensureOutputDirectory() != 0)
+        return "";
+    return outputPath;
 }
 
 QStringList BuildC::getCompilerParameters(QStringList copts)
@@ -860,7 +915,7 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
             args->append(s);
     }
     args->append("-o");
-    args->append("a.out");
+    args->append(exePath);
 
     args->append(projectOptions->getOptimization());
     args->append("-m"+model);
@@ -919,6 +974,9 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
             for(m = 1; m < sp.length()-1; m++)
                 join += sp.at(m) + " ";
             join += sp.at(m);
+            // add the memory model subdirectory for library paths
+            if (sp[0] == "-L")
+                join += model + separator;
             args->append(join);
         }
         else if (parm.indexOf(".cfg",0, Qt::CaseInsensitive) > -1){
@@ -963,11 +1021,31 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
     return args->length();
 }
 
+int BuildC::ensureOutputDirectory()
+{
+    QString modelOption = projectOptions->getMemModel();
+    model = modelOption.mid(0, modelOption.indexOf(" "));
+    outputPath = model + separator;
+    int rc = 0;
+
+    QDir projectDir(sourcePath(projectFile));
+    if (!projectDir.exists(model)) {
+        if (!projectDir.mkdir(model)) {
+            QMessageBox::critical(0,
+                tr("Can't Create Output Directory"),
+                tr("Can't create output directory for build."));
+            rc = -1;
+        }
+    }
+
+    return rc;
+}
+
 void BuildC::appendLoaderParameters(QString copts, QString projfile, QStringList *args)
 {
     /* if propeller-load parameters -l or -z in copts, don't append a.out */
     if((copts.indexOf("-l") > 0 || copts.indexOf("-z") > 0) == false)
-        args->append("a.out");
+        args->append(exePath);
 
     QStringList olist = copts.split(" ",QString::SkipEmptyParts);
     for (int n = 0; n < olist.length(); n++)

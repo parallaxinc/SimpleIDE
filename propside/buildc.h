@@ -12,6 +12,7 @@ public:
 
     int  runBuild(QString option, QString projfile, QString compiler);
     int  makeDebugFiles(QString fileName, QString projfile, QString compiler);
+    QString getOutputPath(QString projfile);
 
     int  runCOGC(QString filename, QString outext);
     int  runBstc(QString spinfile);
@@ -25,7 +26,15 @@ public:
 
     QStringList getCompilerParameters(QStringList copts);
     int  getCompilerParameters(QStringList copts, QStringList *args);
+    int ensureOutputDirectory();
     void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
+
+private:
+    QString projName;
+    QString model;
+    QString outputPath;
+    QString exePath;
+    QString exeName;
 };
 
 #endif // BUILDC_H

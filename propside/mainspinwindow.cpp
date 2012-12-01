@@ -3814,6 +3814,7 @@ void MainSpinWindow::updateManagedProjectTree(QString fileName, QString projName
  */
 void MainSpinWindow::showAssemblyFile()
 {
+    QString outputPath = builder->sourcePath(projectFile)+builder->getOutputPath(projectFile);
     QString fileName;
     QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
     if(vs.canConvert(QVariant::String))
@@ -3824,24 +3825,26 @@ void MainSpinWindow::showAssemblyFile()
     QString outfile = fileName.mid(0,fileName.lastIndexOf("."));
     if(outfile.contains(FILELINK)) {
         outfile = outfile.mid(outfile.indexOf(FILELINK)+QString(FILELINK).length());
-        openFileName(outfile+SHOW_ASM_EXTENTION);
+        openFileName(outputPath+outfile+SHOW_ASM_EXTENTION);
     }
     else {
-        openFileName(sourcePath(projectFile)+outfile+SHOW_ASM_EXTENTION);
+        openFileName(outputPath+outfile+SHOW_ASM_EXTENTION);
     }
+    qDebug() << "outputPath:" << outputPath << "outfile:" << outfile;
 }
 
 void MainSpinWindow::showMapFile()
 {
+    QString outputPath = builder->sourcePath(projectFile)+builder->getOutputPath(projectFile);
     QString fileName;
     QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
     if(vs.canConvert(QVariant::String))
         fileName = vs.toString();
 
     QString outfile = fileName.mid(0,fileName.lastIndexOf("."));
-    runBuild("-Xlinker -Map="+outfile+SHOW_MAP_EXTENTION);
+    runBuild("-Xlinker -Map="+outputPath+outfile+SHOW_MAP_EXTENTION);
 
-    openFileName(sourcePath(projectFile)+outfile+SHOW_MAP_EXTENTION);
+    openFileName(outputPath+outfile+SHOW_MAP_EXTENTION);
 }
 
 /*

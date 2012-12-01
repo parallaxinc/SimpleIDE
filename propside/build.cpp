@@ -35,6 +35,14 @@ int Build::makeDebugFiles(QString fileName, QString projfile, QString compiler)
     return -1;
 }
 
+/*
+ * virtual, must be overloaded.
+ */
+QString Build::getOutputPath(QString projfile)
+{
+    return "";
+}
+
 void Build::abortProcess()
 {
     if(procDone != true) {
@@ -431,4 +439,3 @@ void Build::removeArg(QStringList &list, QString arg)
 void Build::appendLoaderParameters(QString copts, QString projfile, QStringList *args)
 {
 }
-
