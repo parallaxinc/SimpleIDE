@@ -1,7 +1,7 @@
 toggle.c
 toggle_firmware.s
 >compiler=C
->memtype=lmm
+>memtype=lmm large
 >optimize=-Os
 >-fno-exceptions
 >BOARD::HUB

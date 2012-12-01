@@ -3,7 +3,7 @@ toggle.h
 toggle_fw.cogc
 toggle.h
 >compiler=C
->memtype=lmm
+>memtype=lmm large
 >optimize=-Os
 >-fno-exceptions
 >-Dprintf=__simple_printf
