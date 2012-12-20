@@ -57,13 +57,15 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
 
     QHBoxLayout *optLayout = new QHBoxLayout();
 
-    okButton = new QPushButton(tr("&OK"));
+    okButton = new QPushButton(tr("&Cancel"));
 
     layout = new QGridLayout();
     layout->addWidget(findLabel,row,col,span,span);
     layout->addWidget(findEdit,row,++col,span,span);
     layout->addWidget(findPrevButton,row,++col,span,span);
     layout->addWidget(findNextButton,row,++col,span,span);
+
+    QLabel *label = new QLabel(tr("Use Up/Down arrows to find/replace. Other buttons filter."));
 
     optLayout->addWidget(wholeWordButton);
     optLayout->addWidget(caseSensitiveButton);
@@ -81,6 +83,7 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
     layout->addWidget(replaceAllButton,row,++col,span,span);
     row+=2;
     layout->addWidget(okButton,row,col,span,span);
+    layout->addWidget(label,row,0,span,4);
     okButton->setDefault(true);
 
     setLayout(layout);
@@ -401,7 +404,7 @@ bool ReplaceDialog::showEndMessage(QString type)
 
 void ReplaceDialog::accept()
 {
-    findNextClicked();
+    //findNextClicked();
     hide();
 }
 

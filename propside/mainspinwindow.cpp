@@ -651,7 +651,146 @@ void MainSpinWindow::closeAll()
  */
 void MainSpinWindow::newProject()
 {
-    newProjDialog->showDialog();
+    if(this->simpleViewType == false) {
+        // projectView version
+        newProjDialog->showDialog();
+    }
+    else {
+        // simpleView version
+        QFileDialog dialog(this,tr("New Project"), lastPath, "");
+        QStringList filters;
+        filters << "C Project (*.c)";
+        filters << "C++ Project (*.cpp)";
+#ifdef SPIN
+        filters << "Spin Project (*.spin)";
+#endif
+        dialog.setNameFilters(filters);
+        dialog.exec();
+        QStringList dstList = dialog.selectedFiles();
+        if(dstList.length() < 1)
+            return;
+        QString dstPath = dstList.at(0);
+        if(dstPath.length() < 1)
+           return;
+
+        QString ftype = dialog.selectedNameFilter();
+        QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
+        dstName = dstName.mid(0,dstName.lastIndexOf("."));
+        dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+        lastPath = dstPath;
+
+        QString dstProjFile= dstPath+dstName+SIDE_EXTENSION;
+        QFile sidefile(dstProjFile);
+        /**
+         * for now this code is unnecessary, but it may be useful pending clarifications.
+         *
+        bool isSide = dstPath.endsWith(".side",Qt::CaseInsensitive);
+        if(sidefile.exists() && isMain == false && isSide == false) {
+            int rc;
+            rc = QMessageBox::question(this,
+                        tr("Overwrite?"),
+                        tr("The .side file exists. Overwrite it?"),
+                        QMessageBox::Yes, QMessageBox::No);
+            if(rc == QMessageBox::No)
+                return;
+        }
+        */
+
+        ftype = ftype.mid(ftype.lastIndexOf("."));
+        ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+        QString sidestr = dstName+ftype+"\n";
+        if(sidefile.open(QFile::WriteOnly | QFile::Text)) {
+            sidefile.write(sidestr.toAscii());
+            sidefile.close();
+        }
+        else {
+            QString trs = tr("Can't save file: ")+dstProjFile;
+            QMessageBox::critical(this,tr("Save Failed"), trs);
+            return;
+        }
+
+        QString dstSourceFile = dstPath+dstName+ftype;
+        QFile mainfile(dstSourceFile);
+
+        /**
+         * for now this code is unnecessary, but it may be useful pending clarifications.
+        bool isMain = dstPath.endsWith(".c",Qt::CaseInsensitive);
+         */
+        if(mainfile.exists()) { // && isSide == false && isMain == false) {
+            int rc;
+            rc = QMessageBox::question(this,
+                        tr("Overwrite?"),
+                        dstSourceFile + tr(" file exists. Overwrite it?"),
+                        QMessageBox::Yes, QMessageBox::No);
+            if(rc == QMessageBox::No)
+                return;
+        }
+
+        QString mainstr = NULL;
+
+        if(ftype.endsWith(".c")) {
+            QString main("/**\n" \
+              " * This is the main "+dstName+" program start point.\n" \
+              " */\n" \
+              "#include \"simpleio.h\"\n\n" \
+              "int main(void)\n" \
+              "{\n" \
+              "    return 0;\n" \
+              "}\n" \
+              "\n");
+            mainstr = main;
+        }
+        else if(ftype.endsWith(".cpp")) {
+            QString main("/**\n" \
+              " * This is the main "+dstName+" program start point.\n" \
+              " */\n" \
+              "#include \"simpleio.h\"\n\n" \
+              "int main(void)\n" \
+              "{\n" \
+              "    return 0;\n" \
+              "}\n" \
+              "\n");
+            mainstr = main;
+        }
+        else if(ftype.endsWith(".spin")) {
+            QString main("pub main\n" \
+                 "\n" \
+                 "    repeat\n" \
+                 "\n" \
+                 "\n");
+            mainstr = main;
+        }
+
+        if(mainstr != NULL) {
+            if(mainfile.open(QIODevice::WriteOnly)) {
+                mainfile.write(mainstr.toUtf8());
+                mainfile.close();
+            }
+            else {
+                QString trs = tr("Can't save file: ")+dstSourceFile;
+                QMessageBox::critical(this,tr("Save Failed"), trs);
+                return;
+            }
+        }
+        else {
+            QString trs = tr("Can't save file: ")+dstSourceFile;
+            QMessageBox::critical(this,tr("Save Failed"), trs);
+            return;
+        }
+
+        projectFile = dstProjFile;
+
+        qDebug() << "Project File: " << projectFile;
+        setCurrentProject(projectFile);
+        qDebug() << "Update Project: " << projectFile;
+        updateProjectTree(dstSourceFile);
+        qDebug() << "Open Project File: " << projectFile;
+        openFile(projectFile);
+        qDebug() << "Set Compiler: C";
+        projectOptions->setCompiler("C");
+        qDebug() << "Save Project File: " << projectFile;
+        saveProjectOptions();
+    }
 }
 
 void MainSpinWindow::newProjectAccepted()
@@ -2846,11 +2985,13 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     btnShowProjectPane = new QPushButton(">");
     btnShowProjectPane->setCheckable(true);
     btnShowProjectPane->setMaximumWidth(20);
+    btnShowProjectPane->setToolTip(tr("Show Project Manager"));
     connect(btnShowProjectPane,SIGNAL(clicked(bool)),this,SLOT(showProjectPane(bool)));
 
     btnShowStatusPane = new QPushButton("^");
     btnShowStatusPane->setCheckable(true);
     btnShowStatusPane->setMaximumWidth(20);
+    btnShowStatusPane->setToolTip(tr("Show Build Status"));
     connect(btnShowStatusPane,SIGNAL(clicked(bool)),this,SLOT(showStatusPane(bool)));
 
     programSize = new QLabel();
