@@ -12,8 +12,9 @@ DEFINES += QEXTSERIALPORT_LIB
 DEFINES += SPINSIDE
 
 # Turn off SPIN features for EDU release
-# DEFINES += SPIN
 # DEFINES += SPIN_AUTOCOMPLETE
+DEFINES += SPIN
+
 # IDEDEBUG define sends qDebug() output to a Debug TAB.
 # This is most useful with windows as console output is not available there.
 # DEFINES += IDEDEBUG
