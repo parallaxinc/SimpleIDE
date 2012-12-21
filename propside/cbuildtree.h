@@ -10,6 +10,8 @@ public:
 
     CBuildTree(const QString &shortFileName, QObject *parent);
 
+    QStringList getRowList();
+
     void addRootItem(QString text);
     void aSideIncludes(QString &text);
     void aSideIncludes(QString &filePath, QString &incPath, QString &separator, QString &text, bool root = false);

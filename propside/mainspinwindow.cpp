@@ -1319,16 +1319,6 @@ void MainSpinWindow::closeProject()
     if(projectFile.length() == 0)
         return;
 
-    rc = QMessageBox::question(this,
-            tr("Save Project?"),
-            tr("Save project manager settings before close?"),
-            QMessageBox::Yes, QMessageBox::No);
-
-    /* save options
-     */
-    if(rc == QMessageBox::Yes)
-        saveProjectOptions();
-
     /* go through project file list and close files
      */
     QFile file(projectFile);
@@ -1340,6 +1330,39 @@ void MainSpinWindow::closeProject()
 
     proj = proj.trimmed(); // kill extra white space
     QStringList list = proj.split("\n");
+
+    QStringList options = projectOptions->getOptions();
+    QStringList files = projectModel->getRowList();
+
+    int n = files.count();
+    while(--n >= 0) {
+        options.insert(0,files[n]);
+    }
+
+    n = list.count();
+    int mismatch = 0;
+    if(n != options.count()) {
+        mismatch++;
+    }
+    else {
+        while(--n >= 0) {
+            if(list[n].endsWith(options[n]))
+                continue;
+            mismatch++;
+        }
+    }
+
+    if(mismatch) {
+        rc = QMessageBox::question(this,
+                tr("Save Project?"),
+                tr("Save project manager settings before close?"),
+                QMessageBox::Yes, QMessageBox::No);
+
+        /* save options
+         */
+        if(rc == QMessageBox::Yes)
+            saveProjectOptions();
+    }
 
     /* Run through file list and delete matches.
      */
@@ -3709,6 +3732,8 @@ void MainSpinWindow::saveManagedProjectOptions()
          * finally save file.
          */
         list = projstr.split("\n");
+        list.removeDuplicates();
+
         projstr = "";
         /* add source files */
         for(int n = 0; n < list.length(); n++) {
