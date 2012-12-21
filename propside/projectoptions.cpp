@@ -5,26 +5,30 @@
 
 const QString ProjectOptions::compiler = "compiler";
 const QString ProjectOptions::memtype = "memtype";
-const QString ProjectOptions::memTypeLMM = "LMM Large";
-const QString ProjectOptions::memTypeCMM = "CMM Compact";
-const QString ProjectOptions::memTypeCOG = "COG Code Only";
+const QString ProjectOptions::memTypeLMM = "LMM Main RAM";
+const QString ProjectOptions::memTypeCMM = "CMM Main RAM Compact";
+const QString ProjectOptions::memTypeCOG = "COG Cog RAM";
 const QString ProjectOptions::memTypeXMM = "XMM";
-const QString ProjectOptions::memTypeXMMC = "XMMC Code Only External";
-const QString ProjectOptions::memTypeXMMSINGLE = "XMM-SINGLE Single RAM";
-const QString ProjectOptions::memTypeXMMSPLIT = "XMM-SPLIT Split Code/Data";
+const QString ProjectOptions::memTypeXMMC = "XMMC External Flash Code Main RAM Data";
+const QString ProjectOptions::memTypeXMMSINGLE = "XMM-SINGLE External RAM";
+const QString ProjectOptions::memTypeXMMSPLIT = "XMM-SPLIT External Flash Code + RAM Data";
 const QString ProjectOptions::optimization = "optimize";
 const QString ProjectOptions::cflags = "defs";
 const QString ProjectOptions::lflags = "linker";
 const QString ProjectOptions::board = "BOARD";
 
+const QString ProjectOptions::C_COMPILER = "C";
+const QString ProjectOptions::CPP_COMPILER = "C++";
+const QString ProjectOptions::SPIN_COMPILER = "SPIN";
+
 ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Project)
 {
     ui->setupUi(this);
 
-    ui->comboBoxCompiler->addItem("C");
-    ui->comboBoxCompiler->addItem("C++");
+    ui->comboBoxCompiler->addItem(ProjectOptions::C_COMPILER);
+    ui->comboBoxCompiler->addItem(ProjectOptions::CPP_COMPILER);
 #ifdef SPIN
-    ui->comboBoxCompiler->addItem("SPIN");
+    ui->comboBoxCompiler->addItem(ProjectOptions::SPIN_COMPILER);
 #endif
     tabs.append(ui->tabWidget->widget(this->TAB_OPT));
     tabs.append(ui->tabWidget->widget(this->TAB_C_COMP));

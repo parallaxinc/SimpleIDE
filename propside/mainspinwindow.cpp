@@ -664,8 +664,22 @@ void MainSpinWindow::newProject()
 #ifdef SPIN
         filters << "Spin Project (*.spin)";
 #endif
+
+        QString comp = projectOptions->getCompiler();
+        if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
+            filters.removeAt(1);
+            filters.insert(0,"C++ Project (*.cpp)");
+        }
+#ifdef SPIN
+        else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
+            filters.removeAt(2);
+            filters.insert(0,"Spin Project (*.spin)");
+        }
+#endif
+
         dialog.setNameFilters(filters);
-        dialog.exec();
+        if(dialog.exec() == QDialog::Rejected)
+            return;
         QStringList dstList = dialog.selectedFiles();
         if(dstList.length() < 1)
             return;
@@ -698,6 +712,17 @@ void MainSpinWindow::newProject()
 
         ftype = ftype.mid(ftype.lastIndexOf("."));
         ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+        if(ftype.endsWith(".c", Qt::CaseInsensitive)) {
+            comp = projectOptions->C_COMPILER;
+        }
+        else if(ftype.endsWith(".cpp", Qt::CaseInsensitive)) {
+            comp = projectOptions->CPP_COMPILER;
+        }
+#ifdef SPIN
+        else if(ftype.endsWith(".spin", Qt::CaseInsensitive)) {
+            comp = projectOptions->SPIN_COMPILER;
+        }
+#endif
         QString sidestr = dstName+ftype+"\n";
         if(sidefile.open(QFile::WriteOnly | QFile::Text)) {
             sidefile.write(sidestr.toAscii());
@@ -786,8 +811,10 @@ void MainSpinWindow::newProject()
         updateProjectTree(dstSourceFile);
         qDebug() << "Open Project File: " << projectFile;
         openFile(projectFile);
-        qDebug() << "Set Compiler: C";
-        projectOptions->setCompiler("C");
+        qDebug() << "Set Compiler: " + comp;
+        projectOptions->setCompiler(comp);
+        qDebug() << "Set Memory Model: CMM";
+        projectOptions->setMemModel(projectOptions->memTypeCMM);
         qDebug() << "Save Project File: " << projectFile;
         saveProjectOptions();
     }
