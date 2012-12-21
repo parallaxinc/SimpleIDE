@@ -8,6 +8,25 @@ CBuildTree::CBuildTree(const QString &shortFileName, QObject *parent)
 }
 
 /*
+ * Get rows as a QStringList
+ */
+QStringList CBuildTree::getRowList()
+{
+    QStringList list;
+    int rows = this->rowCount();
+    QModelIndex none;
+    for(int n = 0; n < rows; n++) {
+        QVariant qv = this->data(this->index(n,0,none),Qt::DisplayRole);
+        QString s;
+        if(qv.canConvert(QVariant::String)) {
+            s = qv.toString();
+            list.append(s);
+        }
+    }
+    return list;
+}
+
+/*
  * this should be part of a child class, but I'm lazy right now
  */
 void CBuildTree::addRootItem(QString text)
