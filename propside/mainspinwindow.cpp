@@ -757,7 +757,7 @@ void MainSpinWindow::newProject()
             QString main("/**\n" \
               " * This is the main "+dstName+" program start point.\n" \
               " */\n" \
-              "#include \"simpleio.h\"\n\n" \
+              "#include \"simpletools.h\"\n\n" \
               "int main(void)\n" \
               "{\n" \
               "    return 0;\n" \
@@ -769,7 +769,7 @@ void MainSpinWindow::newProject()
             QString main("/**\n" \
               " * This is the main "+dstName+" program start point.\n" \
               " */\n" \
-              "#include \"simpleio.h\"\n\n" \
+              "#include \"simpletools.h\"\n\n" \
               "int main(void)\n" \
               "{\n" \
               "    return 0;\n" \
