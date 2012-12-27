@@ -638,6 +638,7 @@ int  BuildC::runCompiler(QStringList copts)
     }
 
     // remove main file. put back after library build
+    QString mainProjectFile = args.at(args.count()-1);
     args.removeLast();
 
     foreach (QString s, args) {
@@ -729,7 +730,7 @@ int  BuildC::runCompiler(QStringList copts)
     }
 
     // add main file back
-    args.append(projName);
+    args.append(mainProjectFile);
 
     // add the project library if necessary
     if(projectOptions->getMakeLibrary().isEmpty() != true)
@@ -987,7 +988,12 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
         }
     }
 
-    /* libraries */
+    /*
+     * libraries - use libs to make copy, then add it twice to args.
+     * we do this because there may be some library interdependencies.
+     */
+    QStringList libs;
+
     if(projectOptions->getTinyLib().length()) {
         if(model.contains("cog",Qt::CaseInsensitive) == true) {
             this->compileStatus->insertPlainText(tr("Ignoring")+" \"-ltiny\""+tr(" flag in COG mode programs.")+"\n");
@@ -998,20 +1004,30 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
             this->compileStatus->moveCursor(QTextCursor::End);
         }
         else {
-            args->append(projectOptions->getTinyLib());
+            libs.append(projectOptions->getTinyLib());
         }
     }
-    if(projectOptions->getMathLib().length())
-        args->append(projectOptions->getMathLib());
-    if(projectOptions->getPthreadLib().length())
-        args->append(projectOptions->getPthreadLib());
+    if(projectOptions->getMathLib().length()) {
+        libs.append(projectOptions->getMathLib());
+    }
+    if(projectOptions->getPthreadLib().length()) {
+        libs.append(projectOptions->getPthreadLib());
+    }
 
     /* other linker options */
     if(projectOptions->getLinkOptions().length()) {
         QStringList linklist = projectOptions->getLinkOptions().split(" ",QString::SkipEmptyParts);
         foreach(QString linkopt, linklist) {
-            args->append(linkopt);
+            libs.append(linkopt);
         }
+    }
+
+    /* append libs twice */
+    foreach(QString s, libs) {
+        args->append(s);
+    }
+    foreach(QString s, libs) {
+        args->append(s);
     }
 
     /* strip */
