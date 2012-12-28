@@ -53,6 +53,7 @@
 #define SaveFile "&Save"
 #define SaveAsFile "Save &As"
 
+#define SaveAndCloseProject "Save and Close Project"
 #define SaveAsProject "Save As Project"
 #define CloneProject "Clone Project"
 
@@ -2853,6 +2854,24 @@ void MainSpinWindow::closeTab(int tab)
     if(editors->count() < 1)
         return;
 
+    saveTab(tab);
+
+    fileChangeDisable = true;
+
+    editors->at(tab)->setPlainText("");
+    editors->remove(tab);
+    if(editorTabs->count() == 1)
+        newFile();
+    editorTabs->removeTab(tab);
+
+    fileChangeDisable = false;
+}
+
+void MainSpinWindow::saveTab(int tab)
+{
+    if(editors->count() < 1)
+        return;
+
     QMessageBox mbox(QMessageBox::Question, "Save File?", "",
                      QMessageBox::Discard | QMessageBox::Save, this);
 
@@ -2871,12 +2890,6 @@ void MainSpinWindow::closeTab(int tab)
                 saveFileByTabIndex(tab);
         }
     }
-
-    editors->at(tab)->setPlainText("");
-    editors->remove(tab);
-    if(editorTabs->count() == 1)
-        newFile();
-    editorTabs->removeTab(tab);
 
     fileChangeDisable = false;
 }
@@ -3642,6 +3655,42 @@ void MainSpinWindow::showProjectFile()
 }
 
 /*
+ * save project.
+ */
+void MainSpinWindow::saveProject()
+{
+    if(projectModel == NULL)
+        return;
+
+    /* go through project file list and save files
+     */
+    QFile file(projectFile);
+    QString proj = "";
+    if(file.open(QFile::ReadOnly | QFile::Text)) {
+        proj = file.readAll();
+        file.close();
+    }
+
+    proj = proj.trimmed(); // kill extra white space
+    QStringList list = proj.split("\n");
+
+    saveProjectOptions();
+
+    for(int n = 0; n < list.length(); n++) {
+        for(int tab = editorTabs->count()-1; tab > -1; tab--) {
+            QString s = sourcePath(projectFile)+list.at(n);
+            if(s.length() == 0)
+                continue;
+            if(s.at(0) == '>')
+                continue;
+            // save exact tab
+            if(editorTabs->tabToolTip(tab).compare(s) == 0)
+                saveTab(tab);
+        }
+    }
+}
+
+/*
  * save project file with options.
  */
 void MainSpinWindow::saveProjectOptions()
@@ -4289,10 +4338,11 @@ void MainSpinWindow::setupFileMenu()
 
     projMenu->addAction(QIcon(":/images/newproj.png"), tr("New Project"), this, SLOT(newProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_N);
     projMenu->addAction(QIcon(":/images/openproj.png"), tr("Open Project"), this, SLOT(openProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_O);
-    projMenu->addAction(QIcon(":/images/saveasproj.png"), tr(SaveAsProject), this, SLOT(saveAsProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_S);
+    projMenu->addAction(QIcon(":/images/saveproj.png"), tr("Save Project"), this, SLOT(saveProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_S);
+    projMenu->addAction(QIcon(":/images/saveasproj.png"), tr(SaveAsProject), this, SLOT(saveAsProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_A);
     //projMenu->addAction(QIcon(":/images/cloneproj.png"), tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
     projMenu->addAction(tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
-    projMenu->addAction(QIcon(":/images/closeproj.png"), tr("Save and Close Project"), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
+    projMenu->addAction(QIcon(":/images/closeproj.png"), tr(SaveAndCloseProject), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
     projMenu->addAction(QIcon(":/images/project.png"), tr("Set Project"), this, SLOT(setProject()), Qt::Key_F4);
     //projMenu->addAction(QIcon(":/images/hardware.png"), tr("Load Board Types"), this, SLOT(hardware()), Qt::Key_F6);
 
@@ -4441,6 +4491,7 @@ void MainSpinWindow::setupToolBars()
     QToolButton *btnProjectNew = new QToolButton(this);
     QToolButton *btnProjectOpen = new QToolButton(this);
     //QToolButton *btnProjectClone = new QToolButton(this);
+    QToolButton *btnProjectSave = new QToolButton(this);
     QToolButton *btnProjectSaveAs = new QToolButton(this);
     QToolButton *btnProjectClose = new QToolButton(this);
 
@@ -4450,13 +4501,15 @@ void MainSpinWindow::setupToolBars()
 
     addToolButton(projToolBar, btnProjectNew, QString(":/images/newproj.png"));
     addToolButton(projToolBar, btnProjectOpen, QString(":/images/openproj.png"));
+    addToolButton(projToolBar, btnProjectSave, QString(":/images/saveproj.png"));
     addToolButton(projToolBar, btnProjectSaveAs, QString(":/images/saveasproj.png"));
     //addToolButton(projToolBar, btnProjectClone, QString(":/images/cloneproj2.png"));
-    addToolButton(projToolBar, btnProjectClose, QString(":/images/closeproj.png"));
+    addToolButton(propToolBar, btnProjectClose, QString(":/images/closeproj.png"));
     addToolButton(propToolBar, btnProjectApp, QString(":/images/project.png"));
 
     connect(btnProjectNew,SIGNAL(clicked()),this,SLOT(newProject()));
     connect(btnProjectOpen,SIGNAL(clicked()),this,SLOT(openProject()));
+    connect(btnProjectSave,SIGNAL(clicked()),this,SLOT(saveProject()));
     connect(btnProjectSaveAs,SIGNAL(clicked()),this,SLOT(saveAsProject()));
     //connect(btnProjectClone,SIGNAL(clicked()),this,SLOT(cloneProject()));
     connect(btnProjectClose,SIGNAL(clicked()),this,SLOT(closeProject()));
@@ -4465,8 +4518,9 @@ void MainSpinWindow::setupToolBars()
     btnProjectNew->setToolTip(tr("New Project"));
     btnProjectOpen->setToolTip(tr("Open Project"));
     //btnProjectClone->setToolTip(tr("Clone Project"));
+    btnProjectSave->setToolTip(tr("Save Project"));
     btnProjectSaveAs->setToolTip(tr("Save As Project"));
-    btnProjectClose->setToolTip(tr("Save and Close Project"));
+    btnProjectClose->setToolTip(tr(SaveAndCloseProject));
     btnProjectApp->setToolTip(tr("Set Project to Current File"));
 
     //propToolBar = addToolBar(tr("Properties"));
@@ -4614,6 +4668,7 @@ void MainSpinWindow::showSimpleView(bool simple)
     QList <QAction*> fileMenuList = fileMenu->actions();
     QList <QAction*> projMenuList = projMenu->actions();
 
+    /* simple view */
     if(simple)
     {
         leftSplit->hide();
@@ -4644,11 +4699,15 @@ void MainSpinWindow::showSimpleView(bool simple)
         foreach(QAction *pa, projMenuList) {
             QString txt = pa->text();
             if(txt != NULL) {
-                if(txt.contains(CloneProject) || txt.contains(SaveAsProject))
+                if(txt.contains(CloneProject) ||
+                   txt.contains(SaveAsProject) ||
+                   txt.contains(SaveAndCloseProject)
+                   )
                     pa->setVisible(false);
             }
         }
     }
+    /* project view */
     else
     {
         leftSplit->show();
@@ -4677,7 +4736,10 @@ void MainSpinWindow::showSimpleView(bool simple)
         foreach(QAction *pa, projMenuList) {
             QString txt = pa->text();
             if(txt != NULL) {
-                if(txt.contains(CloneProject) || txt.contains(SaveAsProject))
+                if(txt.contains(CloneProject) ||
+                   txt.contains(SaveAsProject) ||
+                   txt.contains(SaveAndCloseProject)
+                   )
                     pa->setVisible(true);
             }
         }

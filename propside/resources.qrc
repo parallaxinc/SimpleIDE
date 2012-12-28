@@ -68,5 +68,6 @@
         <file>images/obj.png</file>
         <file>images/const.png</file>
         <file>images/Abort.png</file>
+        <file>images/saveproj.png</file>
     </qresource>
 </RCC>

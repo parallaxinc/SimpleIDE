@@ -79,6 +79,7 @@ public slots:
     void userguideShow();
     void projectTreeClicked(QModelIndex index);
     void closeTab(int index = 0);
+    void saveTab(int index = 0);
     void editorTabMenu(QPoint);
     void changeTab(bool trig);
     void setCurrentBoard(int index);
@@ -221,6 +222,7 @@ private:
     bool isOutputFile(QString file);
     void addProjectListFile(QString fileName);
 
+    void saveProject();
     void saveProjectOptions();
     void saveSpinProjectOptions();
     void saveManagedProjectOptions();
