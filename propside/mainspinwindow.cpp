@@ -1045,6 +1045,7 @@ QString MainSpinWindow::saveAsProjectLinkFix(QString srcPath, QString dstPath, Q
  *
  * 1. function assumes an empty projectFolder parameter means to copy existing project
  * 2. asks user for destination project name and folder (folder and name can be different)
+ *    (this is done differently for projectview and simpleview).
  * 3. creates new project folder if necessary (project can be in original folder)
  * 4. copy project file from source to destination as new project name
  * 5. copies the project main file from source to destination as new project main file
@@ -1056,6 +1057,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     bool ok;
     QString projFolder(sourcePath(inputProjFile));
     QString projFile = inputProjFile;
+
     /*
      * 1. function assumes an empty projectFolder parameter means to copy existing project.
      * if projectFolder is empty saveAs from existing project.
@@ -1088,31 +1090,121 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
         return;
     }
 
+
     /*
      * 2. asks user for destination project name and folder (folder and name can be different)
      * get project name
      */
-    dstName = QInputDialog::getText(this, tr("New Project Name"), tr("Enter new project name."), QLineEdit::Normal, "project", &ok) ;
-    if(ok == false)
-        return;
+    QString dstPath;
+    QString dstProjFile;
 
-    /*
-     * get project folder
-     */
-    QString dstPath = QFileDialog::getExistingDirectory(this,tr("Destination Project Folder"), lastPath, QFileDialog::ShowDirsOnly);
-    if(dstPath.length() < 1)
-        return;
-    lastPath = dstPath;
+    if(this->simpleViewType == false) {
 
-    dstPath = dstPath+"/";    // make sure we have a trailing / for file copy
+        dstName = QInputDialog::getText(this, tr("New Project Name"), tr("Enter new project name."), QLineEdit::Normal, "project", &ok) ;
+        if(ok == false)
+            return;
 
-    QString dstProjFile= dstPath+dstName+SIDE_EXTENSION;
-    int rc = QMessageBox::question(this,
-                 tr("Confirm Save As Project"),
-                 tr("Save As Project ?")+"\n"+dstProjFile,
-                 QMessageBox::Yes, QMessageBox::No);
-    if(rc == QMessageBox::No) {
-        return;
+        /*
+         * get project folder
+         */
+        dstPath = QFileDialog::getExistingDirectory(this,tr("Destination Project Folder"), lastPath, QFileDialog::ShowDirsOnly);
+        if(dstPath.length() < 1)
+            return;
+        lastPath = dstPath;
+
+        dstPath = dstPath+"/";    // make sure we have a trailing / for file copy
+
+        dstProjFile= dstPath+dstName+SIDE_EXTENSION;
+        int rc = QMessageBox::question(this,
+                     tr("Confirm Save As Project"),
+                     tr("Save As Project ?")+"\n"+dstProjFile,
+                     QMessageBox::Yes, QMessageBox::No);
+        if(rc == QMessageBox::No) {
+            return;
+        }
+
+    }
+
+    else {
+
+        // simpleView version
+        QFileDialog dialog(this, tr("Save Project As"), lastPath, "");
+        QStringList filters;
+
+        QString comp = projectOptions->getCompiler();
+        if(comp.compare(projectOptions->C_COMPILER) == 0) {
+            filters << "C Project (*.c)";
+        }
+        else if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
+            filters << "C++ Project (*.cpp)";
+        }
+    #ifdef SPIN
+        else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
+            filters << "Spin Project (*.spin)";
+        }
+    #endif
+
+        dialog.setNameFilters(filters);
+        if(dialog.exec() == QDialog::Rejected)
+            return;
+        QStringList dstList = dialog.selectedFiles();
+        if(dstList.length() < 1)
+            return;
+        dstPath = dstList.at(0);
+        if(dstPath.length() < 1)
+           return;
+
+        QString ftype = dialog.selectedNameFilter();
+        dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
+        dstName = dstName.mid(0,dstName.lastIndexOf("."));
+        dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+        lastPath = dstPath;
+
+        dstProjFile = dstPath+dstName+SIDE_EXTENSION;
+        QFile sidefile(dstProjFile);
+        /**
+         * Don't overwrite an existing sidefile without permission
+         */
+        if(sidefile.exists()) {
+            int rc;
+            rc = QMessageBox::question(this,
+                        tr("Overwrite?"),
+                        tr("The .side file exists. Overwrite it?"),
+                        QMessageBox::Yes, QMessageBox::No);
+            if(rc == QMessageBox::No)
+                return;
+        }
+
+        ftype = ftype.mid(ftype.lastIndexOf("."));
+        ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+
+        QString sidestr = dstName+ftype+"\n";
+        if(sidefile.open(QFile::WriteOnly | QFile::Text)) {
+            sidefile.write(sidestr.toAscii());
+            sidefile.close();
+        }
+        else {
+            QString trs = tr("Can't save file: ")+dstProjFile;
+            QMessageBox::critical(this,tr("Save Failed"), trs);
+            return;
+        }
+
+        QString dstSourceFile = dstPath+dstName+ftype;
+        QFile mainfile(dstSourceFile);
+
+        /**
+         * don't overwrite existing main file without permission
+         */
+        if(mainfile.exists()) {
+            int rc;
+            rc = QMessageBox::question(this,
+                        tr("Overwrite?"),
+                        dstSourceFile + tr(" file exists. Overwrite it?"),
+                        QMessageBox::Yes, QMessageBox::No);
+            if(rc == QMessageBox::No)
+                return;
+        }
+
     }
 
     /*
@@ -1281,7 +1373,6 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     }
 
     this->openProject(dstProjFile);
-
 }
 
 /*

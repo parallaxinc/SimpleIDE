@@ -331,6 +331,8 @@ void Build::showBuildStart(QString progName, QStringList args)
         argstr += " "+args[n];
     //qDebug() << progName+argstr;
     compileStatus->appendPlainText(shortFileName(progName)+argstr);
+    status->setStyleSheet("QLabel { background-color: palette(window);");
+
 }
 
 int  Build::buildResult(int exitStatus, int exitCode, QString progName, QString result)
@@ -365,13 +367,17 @@ int  Build::buildResult(int exitStatus, int exitCode, QString progName, QString 
     else if(result.toLower().indexOf("warning") > -1)
     {
         status->setText(status->text()+" "+progName+tr(" Compiled OK with Warning(s)."));
+        status->setStyleSheet("QLabel { background-color: \"green\"; }");
         return 0;
     }
     else
     {
         /* we can show progress of individual build steps, but that makes status unreasonable. */
+        status->setStyleSheet("QLabel { background-color: \"green\"; }");
         return 0;
     }
+    status->setStyleSheet("QLabel { background-color: \"red\"; }");
+
     return -1;
 }
 
