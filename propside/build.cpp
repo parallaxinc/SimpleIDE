@@ -388,6 +388,7 @@ int  Build::buildResult(int exitStatus, int exitCode, QString progName, QString 
 
     statusFailed();
     blinker->start(); // run status timer
+    emit showCompileStatusError();
 
     return -1;
 }
