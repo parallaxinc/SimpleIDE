@@ -170,7 +170,9 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 #endif
     builder = buildC;
 
-    connect(builder, SIGNAL(showCompileStatusError()), this, SLOT(showCompileStatusError()));
+    connect(buildC, SIGNAL(showCompileStatusError()), this, SLOT(showCompileStatusError()));
+    connect(buildSpin, SIGNAL(showCompileStatusError()), this, SLOT(showCompileStatusError()));
+
     /* setup loader and port listener */
     /* setup the terminal dialog box */
     term = new Terminal(this);
@@ -1604,7 +1606,6 @@ void MainSpinWindow::updateRecentProjectActions()
 
 void MainSpinWindow::saveFile()
 {
-    try {
         bool saveas = false;
         int n = this->editorTabs->currentIndex();
         QString fileName = editorTabs->tabToolTip(n);
@@ -1633,13 +1634,10 @@ void MainSpinWindow::saveFile()
             }
         }
         saveProjectOptions();
-    } catch(...) {
-    }
 }
 
 void MainSpinWindow::saveFileByTabIndex(int tab)
 {
-    try {
         QString fileName = editorTabs->tabToolTip(tab);
         QString data = editors->at(tab)->toPlainText();
         if(fileName.length() < 1) {
@@ -1654,13 +1652,10 @@ void MainSpinWindow::saveFileByTabIndex(int tab)
                 file.close();
             }
         }
-    } catch(...) {
-    }
 }
 
 void MainSpinWindow::saveAsFile(const QString &path)
 {
-    try {
         int n = this->editorTabs->currentIndex();
         QString data = editors->at(n)->toPlainText();
         QString fileName = path;
@@ -1687,8 +1682,6 @@ void MainSpinWindow::saveAsFile(const QString &path)
             this->openFileName(fileName);
             setCurrentFile(fileName);
         }
-    } catch(...) {
-    }
 }
 
 void MainSpinWindow::savePexFile()
