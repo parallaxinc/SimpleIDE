@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-8-1"
+#define MyAppVersion "0-9-3"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -64,8 +64,9 @@ Source: ..\ctags58\README; DestDir: {app}; Flags: ignoreversion; DestName: ctags
 Source: ..\ctags58\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: ctags-license.txt; 
 Source: ..\icons\24x24-free-application-icons\readme.txt; DestDir: {app}; Flags: ignoreversion; DestName: aha-soft-license.txt; 
 
-Source: "{#MyQtPath}\mingw\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyQtPath}\mingw\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyGccMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyGccMingwPath}\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyGccMingwPath}\bin\libstdc++*"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\qt\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\qt\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccPath}\*"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
