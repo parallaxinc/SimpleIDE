@@ -1,4 +1,5 @@
 #include "build.h"
+#include "Sleeper.h"
 
 Build::Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb, Properties *p)
 {
@@ -11,6 +12,10 @@ Build::Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, Q
     properties = p;
 
     process = new QProcess();
+    blinker = new Blinker(status);
+
+    connect(blinker, SIGNAL(statusNone()), this, SLOT(statusNone()));
+    connect(blinker, SIGNAL(statusFailed()), this, SLOT(statusFailed()));
 
 #ifdef Q_WS_WIN32
     separator = "\\";
@@ -18,6 +23,7 @@ Build::Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, Q
     separator = "/";
 #endif
 }
+
 
 /*
  * virtual, must be overloaded.
@@ -331,8 +337,11 @@ void Build::showBuildStart(QString progName, QStringList args)
         argstr += " "+args[n];
     //qDebug() << progName+argstr;
     compileStatus->appendPlainText(shortFileName(progName)+argstr);
-    status->setStyleSheet("QLabel { background-color: palette(window);"); 
 
+    while(blinker->isRunning()) {
+        QApplication::processEvents();
+    }
+    statusNone();
 }
 
 int  Build::buildResult(int exitStatus, int exitCode, QString progName, QString result)
@@ -367,18 +376,35 @@ int  Build::buildResult(int exitStatus, int exitCode, QString progName, QString 
     else if(result.toLower().indexOf("warning") > -1)
     {
         status->setText(status->text()+" "+progName+tr(" Compiled OK with Warning(s)."));
-        status->setStyleSheet("QLabel { background-color: \"lime\"; }");
+        statusPassed();
         return 0;
     }
     else
     {
         /* we can show progress of individual build steps, but that makes status unreasonable. */
-        status->setStyleSheet("QLabel { background-color: \"lime\"; }");
+        statusPassed();
         return 0;
     }
-    status->setStyleSheet("QLabel { background-color: \"red\"; }");
+
+    statusFailed();
+    blinker->start(); // run status timer
 
     return -1;
+}
+
+void Build::statusNone()
+{
+    status->setStyleSheet("QLabel { background-color: palette(window);");
+}
+
+void Build::statusFailed()
+{
+    status->setStyleSheet("QLabel { background-color: \"red\"; }");
+}
+
+void Build::statusPassed()
+{
+    status->setStyleSheet("QLabel { background-color: \"lime\"; }");
 }
 
 void Build::compilerError(QProcess::ProcessError error)

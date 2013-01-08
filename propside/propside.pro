@@ -57,7 +57,8 @@ SOURCES += mainspin.cpp \
     spinparser.cpp \
     gdb.cpp \
     highlightc.cpp \
-    hintdialog.cpp
+    hintdialog.cpp \
+    blinker.cpp
 HEADERS += mainspinwindow.h \
     editor.h \
     ctags.h \
@@ -92,7 +93,8 @@ HEADERS += mainspinwindow.h \
     highlightc.h \
     propertycolor.h \
     qportcombobox.h \
-    hintdialog.h
+    hintdialog.h \
+    blinker.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \
