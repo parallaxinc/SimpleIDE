@@ -2,6 +2,7 @@
 #define BUILD_H
 
 #include <QtGui>
+#include "blinker.h"
 #include "properties.h"
 #include "projectoptions.h"
 
@@ -21,12 +22,6 @@ public:
     virtual void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
     virtual QString getOutputPath(QString projfile);
 
-#if 0
-    void setCompiler(QString compiler);
-    QString getCompiler();
-    QString getCompilerPath();
-#endif
-
 protected:
     enum DumpType { DumpNormal, DumpReadSizes, DumpCat, DumpOff };
     int  startProgram(QString program, QString workpath, QStringList args, DumpType dump = DumpOff);
@@ -37,6 +32,10 @@ public slots:
     void procReadyReadCat();
     void procReadyRead();
     void procReadyReadSizes();
+
+    void statusNone();
+    void statusFailed();
+    void statusPassed();
 
 public:
     void abortProcess();
@@ -51,6 +50,8 @@ public:
     QString shortFileName(QString fileName);
     void removeArg(QStringList &list, QString arg);
 
+private:
+    Blinker *blinker;
 
 protected:
     QString         aSideCompiler;
