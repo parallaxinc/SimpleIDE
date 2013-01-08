@@ -50,6 +50,9 @@ public:
     QString shortFileName(QString fileName);
     void removeArg(QStringList &list, QString arg);
 
+signals:
+    void showCompileStatusError();
+
 private:
     Blinker *blinker;
 

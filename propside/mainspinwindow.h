@@ -148,6 +148,7 @@ public slots:
 
     void compileStatusClicked();
     void compilerChanged();
+    void showCompileStatusError();
 
     void procError(QProcess::ProcessError error);
     void procFinished(int exitCode, QProcess::ExitStatus exitStatus);

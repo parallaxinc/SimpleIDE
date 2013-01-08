@@ -170,6 +170,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 #endif
     builder = buildC;
 
+    connect(builder, SIGNAL(showCompileStatusError()), this, SLOT(showCompileStatusError()));
     /* setup loader and port listener */
     /* setup the terminal dialog box */
     term = new Terminal(this);
@@ -3312,6 +3313,13 @@ void MainSpinWindow::compileStatusClicked(void)
         spinStatusClicked(line);
     }
 #endif
+}
+
+void MainSpinWindow::showCompileStatusError()
+{
+    QMessageBox::critical(this,tr("Build Error"),tr("Build Failed. Check Build Status for errors."));
+    showStatusPane(true);
+    btnShowStatusPane->setChecked(true);
 }
 
 void MainSpinWindow::compilerChanged()
