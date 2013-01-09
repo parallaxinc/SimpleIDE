@@ -169,8 +169,6 @@ int ASideBoard::parseConfig(QString file)
     for (int n = 0; n < propNames_length; n++)
         propHash.insert(propNames->at(n), "");
 
-    try
-    {
         int lines_length =  lines.count();
         for (int n = 0; n < lines_length; n++)
         {
@@ -189,11 +187,6 @@ int ASideBoard::parseConfig(QString file)
                 propCount++;
             }
         }
-    }
-    catch (int exception)
-    {
-        return 0;
-    }
     return propCount+1;
 }
 
