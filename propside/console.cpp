@@ -281,8 +281,16 @@ void Console::updateReady(QextSerialPort* port)
             dumphex((int)buf[n]);
     }
     else {
+#ifdef EVENT_DRIVEN
+        while (length > 0) {
+            for(int n = 0; n < length; n++)
+                update(buf[n]);
+            length = port->readLine(buf,BUFFERSIZE);
+        }
+#else
         for(int n = 0; n < length; n++)
             update(buf[n]);
+#endif
     }
 }
 
