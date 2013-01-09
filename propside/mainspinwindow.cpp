@@ -1414,6 +1414,9 @@ void MainSpinWindow::closeProject()
     if(projectFile.length() == 0)
         return;
 
+    if(projectModel == NULL)
+        return;
+
     /* go through project file list and close files
      */
     QFile file(projectFile);
@@ -1500,9 +1503,17 @@ void MainSpinWindow::closeProject()
 void MainSpinWindow::openRecentProject()
 {
     QAction *action = qobject_cast<QAction *>(sender());
-    if (action) {
+    QVariant qv = action->data();
+    if(qv == NULL) {
+        return;
+    }
+    if(qv.canConvert(QVariant::String) == false) {
+        return;
+    }
+    QString data = qv.toString();
+    if (action != NULL && data != NULL) {
         closeProject();
-        openProject(action->data().toString());
+        openProject(data);
     }
 }
 
