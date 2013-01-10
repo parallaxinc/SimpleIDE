@@ -24,7 +24,7 @@ DEFINES += SPIN
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=3
+DEFINES += FIXVERSION=4
 SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \
@@ -58,7 +58,9 @@ SOURCES += mainspin.cpp \
     gdb.cpp \
     highlightc.cpp \
     hintdialog.cpp \
-    blinker.cpp
+    blinker.cpp \
+    buildstatus.cpp \
+    highlightbuild.cpp
 HEADERS += mainspinwindow.h \
     editor.h \
     ctags.h \
@@ -94,7 +96,9 @@ HEADERS += mainspinwindow.h \
     propertycolor.h \
     qportcombobox.h \
     hintdialog.h \
-    blinker.h
+    blinker.h \
+    buildstatus.h \
+    highlightbuild.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \

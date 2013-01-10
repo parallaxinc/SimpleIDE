@@ -33,6 +33,7 @@
 #include "qportcombobox.h"
 #include "Sleeper.h"
 #include "hintdialog.h"
+#include "buildstatus.h"
 
 #define SD_TOOLS
 #define APPWINDOW_MIN_HEIGHT 480
@@ -3100,7 +3101,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 
     statusTabs = new QTabWidget(this);
 
-    compileStatus = new QPlainTextEdit(this);
+    compileStatus = new BuildStatus(this);
     compileStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
     compileStatus->setReadOnly(true);
     connect(compileStatus,SIGNAL(selectionChanged()),this,SLOT(compileStatusClicked()));
@@ -3321,7 +3322,12 @@ void MainSpinWindow::compileStatusClicked(void)
 
 void MainSpinWindow::showCompileStatusError()
 {
-    QMessageBox::critical(this,tr("Build Error"),tr("Build Failed. Check Build Status for errors."));
+    if(this->simpleViewType) {
+        // only show message box in simple view
+        QMessageBox::critical(this,
+            tr("Build Error"),
+            tr("Build Failed. Check Build Status for errors."));
+    }
     showStatusPane(true);
     btnShowStatusPane->setChecked(true);
 }
