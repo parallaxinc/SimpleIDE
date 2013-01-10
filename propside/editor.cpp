@@ -68,6 +68,13 @@ void Editor::setLineNumber(int num)
 
 void Editor::keyPressEvent (QKeyEvent *e)
 {
+    if((QApplication::keyboardModifiers() & Qt::CTRL)) {
+        if(e->key() == Qt::Key_S) {
+            emit saveEditorFile();
+            return;
+        }
+    }
+
     /* source browser */
     if((QApplication::keyboardModifiers() & Qt::CTRL) && ctrlPressed == false) {
         ctrlPressed = true;
