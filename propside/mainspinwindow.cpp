@@ -1693,6 +1693,11 @@ void MainSpinWindow::saveFile()
         saveProjectOptions();
 }
 
+void MainSpinWindow::saveEditor()
+{
+    saveFile();
+}
+
 void MainSpinWindow::saveFileByTabIndex(int tab)
 {
         QString fileName = editorTabs->tabToolTip(tab);
@@ -4486,6 +4491,7 @@ void MainSpinWindow::setupEditor()
     editor->setFont(editorFont);
     editor->setLineWrapMode(Editor::NoWrap);
     connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
+    connect(editor, SIGNAL(saveEditorFile()), this, SLOT(saveEditor()));
     editors->append(editor);
 }
 

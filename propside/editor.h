@@ -72,6 +72,9 @@ private slots:
 private:
     QWidget *lineNumberArea;
     QString fileName;
+
+signals:
+    void saveEditorFile();
 };
 
 

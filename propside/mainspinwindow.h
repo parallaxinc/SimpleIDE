@@ -60,6 +60,7 @@ public slots:
     void newFile();
     void openFile(const QString &path = QString());
     void saveFile();
+    void saveEditor();
     void saveFileByTabIndex(int tab);
     void saveAsFile(const QString &path = QString());
     void savePexFile();
