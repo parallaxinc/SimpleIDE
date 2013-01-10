@@ -56,6 +56,7 @@ public:
 
 public slots:
     void terminalEditorTextChanged();
+    void addTab();
     void newFile();
     void openFile(const QString &path = QString());
     void saveFile();
@@ -72,6 +73,7 @@ public slots:
     void saveAsProject(const QString &path = QString());
     void cloneProject();
     void closeProject();
+    void zipProject();
     void aboutShow();
     void creditShow();
     void helpShow();
