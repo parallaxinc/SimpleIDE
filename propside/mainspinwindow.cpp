@@ -41,7 +41,8 @@
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 270
 
-#define SOURCE_FILE_TYPES "Source Files (*.c *.cpp *.h *.cogc *.ecogc *.spin *.espin);; All (*)"
+#define SOURCE_FILE_SAVE_TYPES "C (*.c);; C Header (*.h);; C++ (*.cpp);; COG C (*.cogc);; ECOG C (*.ecogc);; ESPIN (*.espin);; SPIN (*.spin);; Any (*)"
+#define SOURCE_FILE_TYPES "Source Files (*.c *.cogc *.cpp *.ecogc *.espin, *.h, *.spin);; Any (*)"
 #define PROJECT_FILE_FILTER "SIDE Project (*.side);; All (*)"
 
 #define GDB_TABNAME "GDB Output"
@@ -54,9 +55,11 @@
 #define SaveFile "&Save"
 #define SaveAsFile "Save &As"
 
+#define AddTab "Add New &Tab"
 #define SaveAndCloseProject "Save and Close Project"
 #define SaveAsProject "Save As Project"
 #define CloneProject "Clone Project"
+#define ZipProject "Archive Project"
 
 #define ProjectView "Set Project View"
 #define SimpleView  "Set Simple View"
@@ -505,6 +508,41 @@ void MainSpinWindow::quitProgram()
     delete term;
 
     qApp->exit(0);
+}
+
+void MainSpinWindow::addTab()
+{
+    // new file tab
+    newFile();
+    saveAsFile();
+
+    int tab = editors->count()-1;
+
+    // change tab file name and save file
+    QString filename = editorTabs->tabText(tab);
+
+    // add to project
+    addProjectListFile(filename);
+
+    Editor *ed = editors->at(tab);
+    if(ed->toPlainText().length() == 0) {
+        QString comp = projectOptions->getCompiler();
+        if(comp.compare(projectOptions->C_COMPILER) == 0) {
+            ed->insertPlainText("/**\n * @file " + filename);
+            ed->appendPlainText(" */\n");
+        }
+        else if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
+            ed->insertPlainText("/**\n * @file " + filename);
+            ed->appendPlainText(" */\n");
+        }
+#ifdef SPIN
+        else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
+            ed->insertPlainText("{{\n @file " + filename);
+            ed->appendPlainText("}}\n");
+        }
+#endif
+        saveFile();
+    }
 }
 
 void MainSpinWindow::newFile()
@@ -1401,7 +1439,6 @@ void MainSpinWindow::cloneProject()
     saveAsProject(srcFile);
 }
 
-
 /*
  * close project runs through project file list and closes files.
  * finally it closes the project manager side bar.
@@ -1498,6 +1535,14 @@ void MainSpinWindow::closeProject()
         projectModel = NULL;
     }
     projectFile.clear();
+}
+
+/*
+ * zip project runs through project file list creates an archive for sharing.
+ */
+void MainSpinWindow::zipProject()
+{
+    QMessageBox::information(this, tr("Feature Not Ready."), tr("The zip/archive feature not is available yet."));
 }
 
 
@@ -1672,8 +1717,62 @@ void MainSpinWindow::saveAsFile(const QString &path)
         QString data = editors->at(n)->toPlainText();
         QString fileName = path;
 
-        if (fileName.isEmpty())
-            fileName = fileDialog.getSaveFileName(this, tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
+        if (fileName.isEmpty()) {
+
+            // simpleView version
+            if(this->simpleViewType) {
+                QFileDialog dialog(this,tr("Save As File"), lastPath, "");
+                QStringList filters;
+                filters << "C File (*.c)";
+                filters << "C++ File (*.cpp)";
+#ifdef SPIN
+                filters << "Spin File (*.spin)";
+#endif
+                filters << "C Header File (*.h)";
+                filters << "COG C File (*.cog)";
+                filters << "E-COG C File (*.ecog)";
+#ifdef SPIN
+                filters << "E-Spin File (*.espin)";
+#endif
+
+                QString comp = projectOptions->getCompiler();
+                if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
+                    filters.removeAt(1);
+                    filters.insert(0,"C++ Project (*.cpp)");
+                }
+        #ifdef SPIN
+                else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
+                    filters.removeAt(2);
+                    filters.insert(0,"Spin Project (*.spin)");
+                }
+        #endif
+
+                dialog.setNameFilters(filters);
+                if(dialog.exec() == QDialog::Rejected)
+                    return;
+                QStringList dstList = dialog.selectedFiles();
+                if(dstList.length() < 1)
+                    return;
+                QString dstPath = dstList.at(0);
+                if(dstPath.length() < 1)
+                   return;
+
+                QString ftype = dialog.selectedNameFilter();
+                QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
+                dstName = dstName.mid(0,dstName.lastIndexOf("."));
+                dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+                lastPath = dstPath;
+
+                ftype = ftype.mid(ftype.lastIndexOf("."));
+                ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+
+                fileName = dstPath + dstName + ftype;
+            }
+            else {
+                fileName = fileDialog.getSaveFileName(this,
+                              tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
+            }
+        }
         if(fileName.length() > 0)
             lastPath = sourcePath(fileName);
 
@@ -4445,6 +4544,7 @@ void MainSpinWindow::setupFileMenu()
     projMenu = new QMenu(tr("&Project"), this);
     menuBar()->addMenu(projMenu);
 
+    projMenu->addAction(QIcon(":/images/addtab.png"), tr(AddTab), this, SLOT(addTab()), 0);
     projMenu->addAction(QIcon(":/images/newproj.png"), tr("New Project"), this, SLOT(newProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_N);
     projMenu->addAction(QIcon(":/images/openproj.png"), tr("Open Project"), this, SLOT(openProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_O);
     projMenu->addAction(QIcon(":/images/saveproj.png"), tr("Save Project"), this, SLOT(saveProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_S);
@@ -4454,6 +4554,7 @@ void MainSpinWindow::setupFileMenu()
     projMenu->addAction(QIcon(":/images/closeproj.png"), tr(SaveAndCloseProject), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
     projMenu->addAction(QIcon(":/images/project.png"), tr("Set Project"), this, SLOT(setProject()), Qt::Key_F4);
     //projMenu->addAction(QIcon(":/images/hardware.png"), tr("Load Board Types"), this, SLOT(hardware()), Qt::Key_F6);
+    projMenu->addAction(QIcon(":/images/zip2.png"), tr(ZipProject), this, SLOT(zipProject()), Qt::CTRL+Qt::Key_Z);
 
     // recent project actions
     separatorProjectAct = projMenu->addSeparator();
@@ -4534,7 +4635,7 @@ void MainSpinWindow::setupFileMenu()
     menuBar()->addMenu(programMenu);
 
     programMenu->addAction(QIcon(":/images/runconsole.png"), tr("Run Console"), this, SLOT(programDebug()), Qt::Key_F8);
-    programMenu->addAction(QIcon(":/images/build.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::Key_F9);
+    programMenu->addAction(QIcon(":/images/build2.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::Key_F9);
     programMenu->addAction(QIcon(":/images/run.png"), tr("Run Project"), this, SLOT(programRun()), Qt::Key_F10);
     programMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn Project"), this, SLOT(programBurnEE()), Qt::Key_F11);
 
@@ -4597,17 +4698,21 @@ void MainSpinWindow::setupToolBars()
      * Project Toobar
      */
     projToolBar = addToolBar(tr("Project"));
+
+    // for the moment we don't want a button for AddTab, that could change however.
+    //QToolButton *btnProjectAddTab = new QToolButton(this);
     QToolButton *btnProjectNew = new QToolButton(this);
     QToolButton *btnProjectOpen = new QToolButton(this);
     //QToolButton *btnProjectClone = new QToolButton(this);
     QToolButton *btnProjectSave = new QToolButton(this);
     QToolButton *btnProjectSaveAs = new QToolButton(this);
     QToolButton *btnProjectClose = new QToolButton(this);
+    QToolButton *btnProjectZip = new QToolButton(this);
 
     propToolBar = addToolBar(tr("Misc. Project"));
     QToolButton *btnProjectApp = new QToolButton(this);
 
-
+    //addToolButton(projToolBar, btnProjectAddTab, QString(":/images/addtab.png"));
     addToolButton(projToolBar, btnProjectNew, QString(":/images/newproj.png"));
     addToolButton(projToolBar, btnProjectOpen, QString(":/images/openproj.png"));
     addToolButton(projToolBar, btnProjectSave, QString(":/images/saveproj.png"));
@@ -4615,7 +4720,9 @@ void MainSpinWindow::setupToolBars()
     //addToolButton(projToolBar, btnProjectClone, QString(":/images/cloneproj2.png"));
     addToolButton(propToolBar, btnProjectClose, QString(":/images/closeproj.png"));
     addToolButton(propToolBar, btnProjectApp, QString(":/images/project.png"));
+    addToolButton(projToolBar, btnProjectZip, QString(":/images/zip2.png"));
 
+    //connect(btnProjectAddTab,SIGNAL(clicked()),this,SLOT(addTab()));
     connect(btnProjectNew,SIGNAL(clicked()),this,SLOT(newProject()));
     connect(btnProjectOpen,SIGNAL(clicked()),this,SLOT(openProject()));
     connect(btnProjectSave,SIGNAL(clicked()),this,SLOT(saveProject()));
@@ -4623,7 +4730,9 @@ void MainSpinWindow::setupToolBars()
     //connect(btnProjectClone,SIGNAL(clicked()),this,SLOT(cloneProject()));
     connect(btnProjectClose,SIGNAL(clicked()),this,SLOT(closeProject()));
     connect(btnProjectApp,SIGNAL(clicked()),this,SLOT(setProject()));
+    connect(btnProjectZip,SIGNAL(clicked()),this,SLOT(zipProject()));
 
+    //btnProjectAddTab->setToolTip(tr("Add New Tab to Project"));
     btnProjectNew->setToolTip(tr("New Project"));
     btnProjectOpen->setToolTip(tr("Open Project"));
     //btnProjectClone->setToolTip(tr("Clone Project"));
@@ -4631,6 +4740,7 @@ void MainSpinWindow::setupToolBars()
     btnProjectSaveAs->setToolTip(tr("Save As Project"));
     btnProjectClose->setToolTip(tr(SaveAndCloseProject));
     btnProjectApp->setToolTip(tr("Set Project to Current File"));
+    btnProjectZip->setToolTip(tr("Archive Project"));
 
     //propToolBar = addToolBar(tr("Properties"));
 /*
@@ -4680,7 +4790,7 @@ void MainSpinWindow::setupToolBars()
     QToolButton *btnProgramBurnEEP = new QToolButton(this);
 
     addToolButton(programToolBar, btnProgramStopBuild, QString(":/images/Abort.png"));
-    addToolButton(programToolBar, btnProgramBuild, QString(":/images/build.png"));
+    addToolButton(programToolBar, btnProgramBuild, QString(":/images/build2.png"));
     addToolButton(programToolBar, btnProgramBurnEEP, QString(":/images/burnee.png"));
     addToolButton(programToolBar, btnProgramRun, QString(":/images/run.png"));
     addToolButton(programToolBar, btnProgramDebugTerm, QString(":/images/runconsole.png"));
@@ -4815,6 +4925,9 @@ void MainSpinWindow::showSimpleView(bool simple)
                     pa->setVisible(false);
             }
         }
+        if(ctags->enabled()) {
+            browseToolBar->setVisible(false);
+        }
     }
     /* project view */
     else
@@ -4851,6 +4964,9 @@ void MainSpinWindow::showSimpleView(bool simple)
                    )
                     pa->setVisible(true);
             }
+        }
+        if(ctags->enabled()) {
+            browseToolBar->setVisible(true);
         }
     }
     QVariant viewv = simple;

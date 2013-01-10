@@ -5,7 +5,6 @@
         <file>images/saveasfile.png</file>
         <file>images/savefile.png</file>
         <file>images/build.png</file>
-        <file>images/zip.png</file>
         <file>images/hardware.png</file>
         <file>images/print.png</file>
         <file>images/connected.png</file>
@@ -69,5 +68,8 @@
         <file>images/const.png</file>
         <file>images/Abort.png</file>
         <file>images/saveproj.png</file>
+        <file>images/addtab.png</file>
+        <file>images/zip2.png</file>
+        <file>images/build2.png</file>
     </qresource>
 </RCC>
