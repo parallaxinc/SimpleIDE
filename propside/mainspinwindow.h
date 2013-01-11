@@ -54,6 +54,9 @@ public:
 
     enum DumpType { DumpNormal, DumpReadSizes, DumpCat, DumpOff };
 
+signals:
+    void highlightCurrentLine(QColor lineColor);
+
 public slots:
     void terminalEditorTextChanged();
     void addTab();
@@ -85,6 +88,7 @@ public slots:
     void saveTab(int index = 0);
     void editorTabMenu(QPoint);
     void changeTab(bool trig);
+    void clearTabHighlight();
     void setCurrentBoard(int index);
     void setCurrentPort(int index);
     void connectButton();
