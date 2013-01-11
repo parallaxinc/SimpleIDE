@@ -3115,6 +3115,7 @@ void MainSpinWindow::changeTab(bool checked)
     /* checked is a QAction menu state.
      * we don't really care about it
      */
+
     if(checked) return; // compiler happy :)
 
     int n = editorTabs->currentIndex();
@@ -3122,6 +3123,11 @@ void MainSpinWindow::changeTab(bool checked)
         editorTabs->setCurrentIndex(n+1);
     else
         editorTabs->setCurrentIndex(0);
+}
+
+void MainSpinWindow::clearTabHighlight()
+{
+    emit highlightCurrentLine(QColor(255, 255, 255));
 }
 
 void MainSpinWindow::addToolButton(QToolBar *bar, QToolButton *btn, QString imgfile)
@@ -3199,6 +3205,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     editorTabs = new QTabWidget(this);
     editorTabs->setTabsClosable(true);
     editorTabs->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(editorTabs,SIGNAL(currentChanged(int)),this,SLOT(clearTabHighlight()));
     connect(editorTabs,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
     connect(editorTabs,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(editorTabMenu(QPoint)));
     rightSplit->addWidget(editorTabs);
@@ -3330,6 +3337,13 @@ void MainSpinWindow::cStatusClicked(QString line)
         }
         editor->setTextCursor(c);
         editor->setFocus();
+
+        // clear old formatting ... wasteful but i don't have time for risk at the moment
+        c.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
+        editor->setTextCursor(c);
+
+        // highlight error
+        emit highlightCurrentLine(QColor(255, 255, 0));
     }
 }
 
@@ -3395,6 +3409,13 @@ void MainSpinWindow::spinStatusClicked(QString line)
         }
         editor->setTextCursor(c);
         editor->setFocus();
+
+        // clear old formatting ... wasteful but i don't have time for risk at the moment
+        c.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
+        editor->setTextCursor(c);
+
+        // highlight error
+        emit highlightCurrentLine(QColor(255, 255, 0));
     }
 }
 
@@ -3434,6 +3455,41 @@ void MainSpinWindow::showCompileStatusError()
     }
     showStatusPane(true);
     btnShowStatusPane->setChecked(true);
+
+    // find first error line
+    QTextDocument *doc = compileStatus->document();
+
+    QString line;
+    int len = doc->lineCount();
+    for(int n = 0; n < len; n++) {
+        QTextBlock block = doc->findBlockByLineNumber(n);
+        line = block.text();
+        if(line.contains("error:", Qt::CaseInsensitive))
+            break;
+    }
+
+    // open file and set line
+    /* if more than one line, we have a select all */
+    if(line.length() < 1)
+        return;
+
+    if(isCProject()) {
+        cStatusClicked(line);
+    }
+#ifdef SPIN
+    else if(isSpinProject()) {
+        spinStatusClicked(line);
+    }
+#endif
+
+    // clear old formatting
+    Editor *ed = editors->at(editorTabs->currentIndex());
+    QTextCursor edcur = ed->textCursor();
+    edcur.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
+    ed->setTextCursor(edcur);
+
+    // highlight error
+    emit highlightCurrentLine(QColor(255, 0, 0));
 }
 
 void MainSpinWindow::compilerChanged()

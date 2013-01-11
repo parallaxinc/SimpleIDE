@@ -66,9 +66,9 @@ protected:
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
-    void highlightCurrentLine();
+    void highlightCurrentLine(QColor lineColor = QColor::Invalid);
     void updateLineNumberArea(const QRect &, int);
-
+    
 private:
     QWidget *lineNumberArea;
     QString fileName;

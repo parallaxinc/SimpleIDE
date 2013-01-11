@@ -25,6 +25,7 @@ Editor::Editor(GDB *gdebug, SpinParser *parser, QWidget *parent) : QPlainTextEdi
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
+    connect(parent, SIGNAL(highlightCurrentLine(QColor)), this, SLOT(highlightCurrentLine(QColor)));
     updateLineNumberAreaWidth(0);
 
     highlighter = NULL;
@@ -742,18 +743,22 @@ void Editor::resizeEvent(QResizeEvent *e)
 
 //![cursorPositionChanged]
 
-void Editor::highlightCurrentLine()
-{
-#if defined(GDBENABLE)
-    if(gdb->enabled() == false)
-        return;
 
+//![cursorPositionChanged]
+
+/*
+ * variation of highlighCurrent line
+ */
+void Editor::highlightCurrentLine(QColor lineColor)
+{
+    if(lineColor.isValid() == false) {
+        lineColor.setRgb(255,255,255);
+    }
+    // for gdb use: QColor lineColor = QColor(Qt::yellow).lighter(160);
     QList<QTextEdit::ExtraSelection> extraSelections;
 
     if (!isReadOnly()) {
         QTextEdit::ExtraSelection selection;
-
-        QColor lineColor = QColor(Qt::yellow).lighter(160);
 
         selection.format.setBackground(lineColor);
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
@@ -763,10 +768,7 @@ void Editor::highlightCurrentLine()
     }
 
     setExtraSelections(extraSelections);
-#endif
 }
-
-//![cursorPositionChanged]
 
 //![extraAreaPaintEvent_0]
 
