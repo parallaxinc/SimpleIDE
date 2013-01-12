@@ -3480,6 +3480,9 @@ void MainSpinWindow::showCompileStatusError()
             break;
     }
 
+    if(line.contains("error: no propeller", Qt::CaseInsensitive))
+        return;
+
     // open file and set line
     /* if more than one line, we have a select all */
     if(line.length() < 1)
