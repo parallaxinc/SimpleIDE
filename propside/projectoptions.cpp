@@ -21,9 +21,55 @@ const QString ProjectOptions::C_COMPILER = "C";
 const QString ProjectOptions::CPP_COMPILER = "C++";
 const QString ProjectOptions::SPIN_COMPILER = "SPIN";
 
-ProjectOptions::ProjectOptions(QWidget *parent) : QWidget(parent), ui(new Ui::Project)
+ProjectOptions::ProjectOptions(QWidget *parent, QComboBox *boardType) : QWidget(parent), ui(new Ui::Project)
 {
     ui->setupUi(this);
+
+    if(boardType == NULL) {
+        cbBoard = ui->hardwareComboBox;
+    }
+    else {
+        cbBoard = boardType;
+        ui->labelHardware->setVisible(false);
+        ui->hardwareToolButton->setVisible(false);
+        ui->hardwareComboBox->setVisible(false);
+
+        QRect rect = ui->comboBoxCompiler->geometry();
+        int height = rect.height();
+        rect.setTop(rect.top()-height);
+        rect.setBottom(rect.bottom()-height);
+        ui->comboBoxCompiler->setGeometry(rect);
+
+        rect = ui->labelcompiler->geometry();
+        height = rect.height();
+        rect.setTop(rect.top()-height);
+        rect.setBottom(rect.bottom()-height);
+        ui->labelcompiler->setGeometry(rect);
+
+        rect = ui->comboBoxMemoryMode->geometry();
+        height = rect.height();
+        rect.setTop(rect.top()-height);
+        rect.setBottom(rect.bottom()-height);
+        ui->comboBoxMemoryMode->setGeometry(rect);
+
+        rect = ui->labelmem->geometry();
+        height = rect.height();
+        rect.setTop(rect.top()-height);
+        rect.setBottom(rect.bottom()-height);
+        ui->labelmem->setGeometry(rect);
+
+        rect = ui->comboBoxOptimization->geometry();
+        height = rect.height();
+        rect.setTop(rect.top()-height);
+        rect.setBottom(rect.bottom()-height);
+        ui->comboBoxOptimization->setGeometry(rect);
+
+        rect = ui->labelOptimization->geometry();
+        height = rect.height();
+        rect.setTop(rect.top()-height);
+        rect.setBottom(rect.bottom()-height);
+        ui->labelOptimization->setGeometry(rect);
+    }
 
     ui->comboBoxCompiler->addItem(ProjectOptions::C_COMPILER);
     ui->comboBoxCompiler->addItem(ProjectOptions::CPP_COMPILER);
@@ -133,7 +179,7 @@ QToolButton *ProjectOptions::getHardwareButton()
 
 QComboBox   *ProjectOptions::getHardwareComboBox()
 {
-    return ui->hardwareComboBox;
+    return cbBoard;
 }
 
 QStringList ProjectOptions::getOptions()

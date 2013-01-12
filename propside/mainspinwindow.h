@@ -59,6 +59,7 @@ signals:
 
 public slots:
     void terminalEditorTextChanged();
+    void addLib();
     void addTab();
     void newFile();
     void openFile(const QString &path = QString());
@@ -269,6 +270,8 @@ private:
     QToolBar        *browseToolBar;
     QToolBar        *programToolBar;
     QToolBar        *ctrlToolBar;
+    QToolBar        *boardToolBar;
+    QToolBar        *addToolsToolBar;
 
     QMenu           *fileMenu;
     QMenu           *projMenu;
