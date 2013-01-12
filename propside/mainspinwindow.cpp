@@ -43,7 +43,7 @@
 #define PROJECT_WIDTH 270
 
 #define SOURCE_FILE_SAVE_TYPES "C (*.c);; C Header (*.h);; C++ (*.cpp);; COG C (*.cogc);; ECOG C (*.ecogc);; ESPIN (*.espin);; SPIN (*.spin);; Any (*)"
-#define SOURCE_FILE_TYPES "Source Files (*.c *.cogc *.cpp *.ecogc *.espin, *.h, *.spin);; Any (*)"
+#define SOURCE_FILE_TYPES "Source Files (*.c *.cogc *.cpp *.ecogc *.espin *.h *.spin);; Any (*)"
 #define PROJECT_FILE_FILTER "SIDE Project (*.side);; All (*)"
 
 #define GDB_TABNAME "GDB Output"
@@ -512,10 +512,58 @@ void MainSpinWindow::quitProgram()
     qApp->exit(0);
 }
 
+/*
+ * The purpose of addLib is add an existing library to the project manager.
+ * Several things will be necessary for this.
+ * 1) #include "libname.h" gets added to source at top of the main project file
+ *    (after first comment block) or after existing includes.
+ * 2) -I and -L paths will be added to the project manager.
+ *    Open dialog automatically gets set to parallax library path.
+ * 3) -lname will be added to linker options.
+ */
 void MainSpinWindow::addLib()
 {
+    // find library to add
+    QString workspace = "";
+    QVariant wrkv = settings->value(workspaceKey);
+    if(wrkv.canConvert(QVariant::String)) {
+        workspace = wrkv.toString();
+    }
+
+    if(workspace.isEmpty()){
+        QMessageBox::warning(this, tr("No Workspace"), tr("A workspace should be defined in properties. Using last visited folder for library search."));
+        workspace = this->lastPath;
+    }
+
+    QString path = QFileDialog::getExistingDirectory(this, tr("Add Library from Folder"),workspace);
+    if(path.isEmpty())
+        return;
+
+    // make sure we have a library that matches the library folder name
+    QString libname = path;
+    if(path.at(path.length()-1) == '/')
+        path = path.left(path.length()-1);
+    if(path.isEmpty())
+        return;
+
+    QString incname = path.mid(path.lastIndexOf("/")+1)+".h";
+    libname = path.mid(path.lastIndexOf("/")+1)+".a";
+
+    QString model = projectOptions->getMemModel();
+    if(QFile::exists(path+"/"+model+"/"+libname) == false) {
+        QMessageBox::critical(this, tr("Can't find Library"),
+            tr("The Library for")+" "+model+" "+tr(" memory model not found."));
+        return;
+    }
+    // add #include to main file
+    // add -I and -L paths to project manager
+    // add -lname to linker options
 }
 
+/*
+ * The purpose of addTab is to create a new tab for the editor
+ * with a user's filename and add it to the project manager.
+ */
 void MainSpinWindow::addTab()
 {
     // new file tab
