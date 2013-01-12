@@ -2,6 +2,7 @@
 #define PROJECTOPTIONS_H
 
 #include <QWidget>
+#include <QComboBox>
 
 #include "asideconfig.h"
 
@@ -38,7 +39,7 @@ public:
 
     enum { TAB_OPT=0, TAB_C_COMP, TAB_C_LIB, TAB_SPIN_COMP };
 
-    explicit ProjectOptions(QWidget *parent = 0);
+    explicit ProjectOptions(QWidget *parent, QComboBox *boardType);
     ~ProjectOptions();
 
     void clearOptions();
@@ -99,6 +100,7 @@ public slots:
 private:
     QString     boardType;
     QVector<QWidget*> tabs;
+    QComboBox   *cbBoard;
 
 signals:
     void compilerChanged();

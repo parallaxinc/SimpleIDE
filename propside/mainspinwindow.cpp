@@ -35,6 +35,7 @@
 #include "hintdialog.h"
 #include "buildstatus.h"
 
+#define SIMPLE_BOARD_TOOLBAR
 #define SD_TOOLS
 #define APPWINDOW_MIN_HEIGHT 480
 #define APPWINDOW_MIN_WIDTH 480
@@ -56,6 +57,7 @@
 #define SaveAsFile "Save &As"
 
 #define AddTab "Add New &Tab"
+#define AddLib "Add &Library"
 #define SaveAndCloseProject "Save and Close Project"
 #define SaveAsProject "Save As Project"
 #define CloneProject "Clone Project"
@@ -508,6 +510,10 @@ void MainSpinWindow::quitProgram()
     delete term;
 
     qApp->exit(0);
+}
+
+void MainSpinWindow::addLib()
+{
 }
 
 void MainSpinWindow::addTab()
@@ -3172,17 +3178,23 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     projectMenu->addAction(tr("Show Map File"), this,SLOT(showMapFile()));
     projectMenu->addAction(tr("Show File"), this,SLOT(showProjectFile()));
 
-    projectOptions = new ProjectOptions(this);
+#ifdef SIMPLE_BOARD_TOOLBAR
+    projectOptions = new ProjectOptions(this, cbBoard);
+#else
+    projectOptions = new ProjectOptions(this, NULL);
+#endif
     projectOptions->setMinimumWidth(PROJECT_WIDTH);
     projectOptions->setMaximumWidth(PROJECT_WIDTH);
     projectOptions->setToolTip(tr("Project Options"));
     connect(projectOptions,SIGNAL(compilerChanged()),this,SLOT(compilerChanged()));
 
+#ifndef SIMPLE_BOARD_TOOLBAR
     cbBoard = projectOptions->getHardwareComboBox();
     cbBoard->setToolTip(tr("Board Type Select"));
     connect(cbBoard,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentBoard(int)));
     QToolButton *hardwareButton = projectOptions->getHardwareButton();
     connect(hardwareButton,SIGNAL(clicked()),this,SLOT(initBoardTypes()));
+#endif
 
     leftSplit->addWidget(projectOptions);
 
@@ -4607,6 +4619,7 @@ void MainSpinWindow::setupFileMenu()
     menuBar()->addMenu(projMenu);
 
     projMenu->addAction(QIcon(":/images/addtab.png"), tr(AddTab), this, SLOT(addTab()), 0);
+    projMenu->addAction(QIcon(":/images/addlib.png"), tr(AddLib), this, SLOT(addLib()), 0);
     projMenu->addAction(QIcon(":/images/newproj.png"), tr("New Project"), this, SLOT(newProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_N);
     projMenu->addAction(QIcon(":/images/openproj.png"), tr("Open Project"), this, SLOT(openProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_O);
     projMenu->addAction(QIcon(":/images/saveproj.png"), tr("Save Project"), this, SLOT(saveProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_S);
@@ -4757,12 +4770,24 @@ void MainSpinWindow::setupToolBars()
     //btnFileZip->setToolTip(tr("Archive"));
 
     /*
+     * Add Tools Toobar ... add tab, add lib
+     */
+    addToolsToolBar = addToolBar(tr("Add Tools"));
+    // put add tools on a separate tool bar
+    QToolButton *btnProjectAddTab = new QToolButton(this);
+    QToolButton *btnProjectAddLib = new QToolButton(this);
+    addToolButton(addToolsToolBar, btnProjectAddTab, QString(":/images/addtab.png"));
+    addToolButton(addToolsToolBar, btnProjectAddLib, QString(":/images/addlib.png"));
+    connect(btnProjectAddTab,SIGNAL(clicked()),this,SLOT(addTab()));
+    connect(btnProjectAddLib,SIGNAL(clicked()),this,SLOT(addLib()));
+    btnProjectAddTab->setToolTip(tr("Add New Tab to Project"));
+    btnProjectAddLib->setToolTip(tr("Add Library to Project"));
+
+    /*
      * Project Toobar
      */
     projToolBar = addToolBar(tr("Project"));
 
-    // for the moment we don't want a button for AddTab, that could change however.
-    //QToolButton *btnProjectAddTab = new QToolButton(this);
     QToolButton *btnProjectNew = new QToolButton(this);
     QToolButton *btnProjectOpen = new QToolButton(this);
     //QToolButton *btnProjectClone = new QToolButton(this);
@@ -4774,7 +4799,6 @@ void MainSpinWindow::setupToolBars()
     propToolBar = addToolBar(tr("Misc. Project"));
     QToolButton *btnProjectApp = new QToolButton(this);
 
-    //addToolButton(projToolBar, btnProjectAddTab, QString(":/images/addtab.png"));
     addToolButton(projToolBar, btnProjectNew, QString(":/images/newproj.png"));
     addToolButton(projToolBar, btnProjectOpen, QString(":/images/openproj.png"));
     addToolButton(projToolBar, btnProjectSave, QString(":/images/saveproj.png"));
@@ -4784,7 +4808,6 @@ void MainSpinWindow::setupToolBars()
     addToolButton(propToolBar, btnProjectApp, QString(":/images/project.png"));
     addToolButton(projToolBar, btnProjectZip, QString(":/images/zip2.png"));
 
-    //connect(btnProjectAddTab,SIGNAL(clicked()),this,SLOT(addTab()));
     connect(btnProjectNew,SIGNAL(clicked()),this,SLOT(newProject()));
     connect(btnProjectOpen,SIGNAL(clicked()),this,SLOT(openProject()));
     connect(btnProjectSave,SIGNAL(clicked()),this,SLOT(saveProject()));
@@ -4794,7 +4817,6 @@ void MainSpinWindow::setupToolBars()
     connect(btnProjectApp,SIGNAL(clicked()),this,SLOT(setProject()));
     connect(btnProjectZip,SIGNAL(clicked()),this,SLOT(zipProject()));
 
-    //btnProjectAddTab->setToolTip(tr("Add New Tab to Project"));
     btnProjectNew->setToolTip(tr("New Project"));
     btnProjectOpen->setToolTip(tr("Open Project"));
     //btnProjectClone->setToolTip(tr("Clone Project"));
@@ -4869,15 +4891,23 @@ void MainSpinWindow::setupToolBars()
     btnProgramRun->setToolTip(tr("Run Project"));
     btnProgramDebugTerm->setToolTip(tr("Run Project with Console"));
 
-    ctrlToolBar = addToolBar(tr("Hardware"));
-    ctrlToolBar->setLayoutDirection(Qt::RightToLeft);
-#ifdef BOARD_TOOLBAR
+#ifdef SIMPLE_BOARD_TOOLBAR
+    boardToolBar = addToolBar(tr("Board Type"));
     cbBoard = new QComboBox(this);
     cbBoard->setLayoutDirection(Qt::LeftToRight);
     cbBoard->setToolTip(tr("Board Type Select"));
     cbBoard->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(cbBoard,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentBoard(int)));
+    QToolButton *btnLoadBoards = new QToolButton(this);
+    btnLoadBoards->setToolTip(tr("Reload Board List"));
+    connect(btnLoadBoards,SIGNAL(clicked()),this,SLOT(initBoardTypes()));
+    addToolButton(boardToolBar, btnLoadBoards, QString(":/images/hardware.png"));
+    boardToolBar->addWidget(cbBoard);
+    boardToolBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 #endif
+
+    ctrlToolBar = addToolBar(tr("Serial Port"));
+    ctrlToolBar->setLayoutDirection(Qt::RightToLeft);
     cbPort = new QPortComboBox(this);
     cbPort->setEditable(true);
     cbPort->setLayoutDirection(Qt::LeftToRight);
@@ -4899,21 +4929,12 @@ void MainSpinWindow::setupToolBars()
     btnPortScan->setToolTip(tr("Rescan Serial Ports"));
     connect(btnPortScan,SIGNAL(clicked()),this,SLOT(enumeratePorts()));
 #endif
-#ifdef BOARD_TOOLBAR
-    QToolButton *btnLoadBoards = new QToolButton(this);
-    btnLoadBoards->setToolTip(tr("Reload Board List"));
-    connect(btnLoadBoards,SIGNAL(clicked()),this,SLOT(initBoardTypes()));
-#endif
     addToolButton(ctrlToolBar, btnConnected, QString(":/images/console.png"));
     addToolButton(ctrlToolBar, reset, QString(":/images/reset.png"));
 #ifdef BUTTON_PORT_SCAN
     addToolButton(ctrlToolBar, btnPortScan, QString(":/images/refresh.png"));
 #endif
     ctrlToolBar->addWidget(cbPort);
-#ifdef BOARD_TOOLBAR
-    addToolButton(ctrlToolBar, btnLoadBoards, QString(":/images/hardware.png"));
-    ctrlToolBar->addWidget(cbBoard);
-#endif
     ctrlToolBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 
     showSimpleView(simpleViewType);
@@ -4956,6 +4977,7 @@ void MainSpinWindow::showSimpleView(bool simple)
         statusTabs->hide();
         fileToolBar->hide();
         propToolBar->hide();
+        addToolsToolBar->hide();
         btnShowProjectPane->show();
         btnShowStatusPane->show();
         programSize->setMinimumWidth(PROJECT_WIDTH-btnShowStatusPane->width());
@@ -4998,6 +5020,7 @@ void MainSpinWindow::showSimpleView(bool simple)
         statusTabs->show();
         fileToolBar->show();
         propToolBar->show();
+        addToolsToolBar->show();
         btnShowProjectPane->hide();
         btnShowStatusPane->hide();
         btnShowProjectPane->setChecked(true);

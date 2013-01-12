@@ -71,5 +71,6 @@
         <file>images/addtab.png</file>
         <file>images/zip2.png</file>
         <file>images/build2.png</file>
+        <file>images/addlib.png</file>
     </qresource>
 </RCC>
