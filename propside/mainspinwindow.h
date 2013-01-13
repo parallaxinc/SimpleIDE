@@ -132,8 +132,8 @@ public slots:
     void addProjectFile();
     void addProjectLibFile();
     void addProjectLink();
-    void addProjectIncPath();
-    void addProjectLibPath();
+    void addProjectIncPath(const QString &inpath);
+    void addProjectLibPath(const QString &inpath);
     void deleteProjectFile();
     void showProjectFile();
 

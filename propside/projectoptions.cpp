@@ -219,6 +219,9 @@ QStringList ProjectOptions::getOptions()
     if(getPthreadLib().length())
         args.append(getPthreadLib());
 
+    if(getMakeLibrary().length())
+        args.append(getMakeLibrary());
+
     /* other linker options */
     if(getLinkOptions().length())
         args.append(lflags+"::"+getLinkOptions());
@@ -304,7 +307,7 @@ QString  ProjectOptions::getBoardType()
 }
 QString ProjectOptions::getMakeLibrary()
 {
-    return ui->checkBoxMakeLibrary->isChecked() ? QString ("create_library") : QString("");
+    return ui->checkBoxMakeLibrary->isChecked() ? QString ("-create_library") : QString("");
 }
 
 void ProjectOptions::setOptions(QString s)
