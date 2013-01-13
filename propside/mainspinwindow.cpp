@@ -538,6 +538,7 @@ void MainSpinWindow::addLib()
     QString path = QFileDialog::getExistingDirectory(this, tr("Add Library from Folder"),workspace);
     if(path.isEmpty())
         return;
+    lastPath = path;
 
     // make sure we have a library that matches the library folder name
     QString libname = path;
@@ -546,18 +547,111 @@ void MainSpinWindow::addLib()
     if(path.isEmpty())
         return;
 
-    QString incname = path.mid(path.lastIndexOf("/")+1)+".h";
-    libname = path.mid(path.lastIndexOf("/")+1)+".a";
+    libname = path.mid(path.lastIndexOf("/")+1);
+    QString s = libname;
+    s = s.left(3);
+    if(s.compare("lib") == 0)
+        libname = libname.mid(3);
+
+    QString linkOptions = projectOptions->getLinkOptions();
+    QStringList liblist = linkOptions.split(" ",QString::SkipEmptyParts);
+
+    foreach(QString lib, liblist) {
+        if(lib.compare("-l"+libname) == 0) {
+            QMessageBox::critical(this, tr("Library Already Added"), tr("A library with this name has already been added to the project."));
+            return;
+        }
+    }
 
     QString model = projectOptions->getMemModel();
-    if(QFile::exists(path+"/"+model+"/"+libname) == false) {
+    model = model.mid(0,model.indexOf(" "));
+    if(QFile::exists(path+"/"+model+"/lib"+libname+".a") == false) {
         QMessageBox::critical(this, tr("Can't find Library"),
             tr("The Library for")+" "+model+" "+tr(" memory model not found."));
         return;
     }
+
+    // get the project and main file
+    if(projectModel == NULL) {
+        QMessageBox::critical(this,
+            tr("No Project"),
+            tr("A project must be opened before trying to add a library."));
+        return;
+    }
+
+    QFile file(projectFile);
+    if(projectFile.isEmpty() || file.exists() == false) {
+        QMessageBox::critical(this,
+            tr("Project File Not Found"),
+            tr("Can't find the project file. A project file must exist before adding a library."));
+        return;
+    }
+
+    QString projstr;
+    if(file.open(QFile::ReadOnly | QFile::Text)) {
+        projstr = file.readAll();
+        file.close();
+    } else {
+        return;
+    }
+    QStringList list = projstr.split("\n");
+    QString mainFile = projectFile.mid(0,projectFile.lastIndexOf("/"));
+    mainFile += "/"+list[0];
+
     // add #include to main file
+    openFileName(mainFile); // make sure mainFile is open
+
+    Editor *ed = editors->at(editorTabs->currentIndex());
+    QTextCursor cur = ed->textCursor();
+
+    // find first error line
+    QTextDocument *doc = ed->document();
+
+    QString line;
+    int len = doc->lineCount();
+    int comment = 0;
+    int candidate = 0;
+    for(int n = 0; n < len; n++) {
+        QTextBlock block = doc->findBlockByLineNumber(n);
+        line = block.text();
+        if(line.contains("/*")) {
+            comment++;
+        } else if(comment != 0 && line.contains("*/")) {
+            comment = 0;
+            candidate = n+1;
+        } else if(line.contains("#include")) {
+            if(line.contains("#include \""+libname+".h\"") == true) {
+                break;
+            }
+            else {
+                candidate = n+1;
+            }
+        }
+        else if(candidate != 0) {
+            // insert here
+            cur.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
+            cur.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor,candidate);
+            cur.insertText("#include \""+libname+".h\"\n");
+            ed->setTextCursor(cur);
+            saveFile();
+            openFileName(mainFile);
+            break;
+        }
+    }
+
     // add -I and -L paths to project manager
+    this->addProjectIncPath(path);
+    this->addProjectLibPath(path);
+
     // add -lname to linker options
+    s = projectOptions->getLinkOptions();
+    if(s.isEmpty()) {
+        s = "-l"+libname;
+    }
+    else {
+        s += " -l"+libname;
+    }
+    projectOptions->setLinkOptions(s);
 }
 
 /*
@@ -3777,9 +3871,12 @@ void MainSpinWindow::addProjectLibFile()
     }
 }
 
-void MainSpinWindow::addProjectIncPath()
+void MainSpinWindow::addProjectIncPath(const QString &inpath)
 {
-    QString fileName = QFileDialog::getExistingDirectory(this,tr("Select Include Folder"),lastPath,QFileDialog::ShowDirsOnly);
+    QString fileName = inpath;
+    if(fileName.isEmpty()) {
+        fileName = QFileDialog::getExistingDirectory(this,tr("Select Include Folder"),lastPath,QFileDialog::ShowDirsOnly);
+    }
     if(fileName.length() < 1)
         return;
 
@@ -3813,9 +3910,12 @@ void MainSpinWindow::addProjectIncPath()
     }
 }
 
-void MainSpinWindow::addProjectLibPath()
+void MainSpinWindow::addProjectLibPath(const QString &inpath)
 {
-    QString fileName = QFileDialog::getExistingDirectory(this,tr("Select Library Folder"),lastPath,QFileDialog::ShowDirsOnly);
+    QString fileName = inpath;
+    if(fileName.isEmpty()) {
+        fileName = QFileDialog::getExistingDirectory(this,tr("Select Library Folder"),lastPath,QFileDialog::ShowDirsOnly);
+    }
     if(fileName.length() < 1)
         return;
     /*
