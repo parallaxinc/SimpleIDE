@@ -538,6 +538,7 @@ void MainSpinWindow::addLib()
     QString path = QFileDialog::getExistingDirectory(this, tr("Add Library from Folder"),workspace);
     if(path.isEmpty())
         return;
+    path = QDir::fromNativeSeparators(path);
     lastPath = path;
 
     // make sure we have a library that matches the library folder name
@@ -547,7 +548,7 @@ void MainSpinWindow::addLib()
     if(path.isEmpty())
         return;
 
-    libname = path.mid(path.lastIndexOf("/")+1);
+    libname = path.mid(path.lastIndexOf('/')+1);
     QString s = libname;
     s = s.left(3);
     if(s.compare("lib") == 0)
@@ -558,7 +559,8 @@ void MainSpinWindow::addLib()
 
     foreach(QString lib, liblist) {
         if(lib.compare("-l"+libname) == 0) {
-            QMessageBox::critical(this, tr("Library Already Added"), tr("A library with this name has already been added to the project."));
+            QMessageBox::critical(this, tr("Library Already Added"),
+                tr("A library with this name has already been added to the project."));
             return;
         }
     }
@@ -567,7 +569,7 @@ void MainSpinWindow::addLib()
     model = model.mid(0,model.indexOf(" "));
     if(QFile::exists(path+"/"+model+"/lib"+libname+".a") == false) {
         QMessageBox::critical(this, tr("Can't find Library"),
-            tr("The Library for")+" "+model+" "+tr(" memory model not found."));
+            model.toUpper()+" "+tr("memory model library not found in\n")+path);
         return;
     }
 
