@@ -3307,6 +3307,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     projectTree->setMaximumWidth(PROJECT_WIDTH-1);
     projectTree->setToolTip(tr("Current Project"));
     connect(projectTree,SIGNAL(clicked(QModelIndex)),this,SLOT(projectTreeClicked(QModelIndex)));
+    connect(projectTree, SIGNAL(deleteProjectItem()),this,SLOT(deleteProjectFile()));
     projectTab->addTab(projectTree,tr("Project Manager"));
     leftSplit->addWidget(projectTab);
 
