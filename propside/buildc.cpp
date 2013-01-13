@@ -977,7 +977,7 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
             join += sp.at(m);
             // add the memory model subdirectory for library paths
             if (sp[0] == "-L")
-                join += model + separator;
+                join += separator + model + separator;
             args->append(join);
         }
         else if (parm.indexOf(".cfg",0, Qt::CaseInsensitive) > -1){
