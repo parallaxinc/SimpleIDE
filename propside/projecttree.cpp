@@ -7,6 +7,10 @@ ProjectTree::ProjectTree(QWidget *parent) : QTreeView(parent)
     this->header()->setResizeMode(QHeaderView::ResizeToContents);
 }
 
+ProjectTree::~ProjectTree()
+{
+}
+
 void ProjectTree::mousePressEvent(QMouseEvent *event)
 {
     if(event->button() == Qt::RightButton)
@@ -24,6 +28,8 @@ bool ProjectTree::rightClick(bool value)
 void ProjectTree::keyPressEvent(QKeyEvent *event)
 {
     keyPressed = event->key();
+    if(keyPressed == Qt::Key_Delete)
+        emit deleteProjectItem();
     QTreeView::keyPressEvent(event);
 }
 

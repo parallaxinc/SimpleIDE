@@ -24,13 +24,15 @@ DEFINES += SPIN
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=5
+DEFINES += FIXVERSION=6
 SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \
     mainspinwindow.cpp \
+    cbuildtree.cpp \
     treemodel.cpp \
     treeitem.cpp \
+    projecttree.cpp \
     terminal.cpp \
     termprefs.cpp \
     properties.cpp \
@@ -42,12 +44,10 @@ SOURCES += mainspin.cpp \
     console.cpp \
     asideconfig.cpp \
     asideboard.cpp \
-    cbuildtree.cpp \
     projectoptions.cpp \
     replacedialog.cpp \
     aboutdialog.cpp \
     loader.cpp \
-    projecttree.cpp \
     qextserialport.cpp \
     qextserialenumerator.cpp \
     buildc.cpp \

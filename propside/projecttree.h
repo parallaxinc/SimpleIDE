@@ -5,8 +5,11 @@
 
 class ProjectTree : public QTreeView
 {
+Q_OBJECT
 public:
     ProjectTree(QWidget *parent = 0);
+    ~ProjectTree();
+
     bool rightClick(bool value);
 
 protected:
@@ -18,6 +21,8 @@ private:
     bool mouseRightClick;
     int  keyPressed;
 
+signals:
+    void deleteProjectItem();
 };
 
 #endif // PROJECTTREE_H
