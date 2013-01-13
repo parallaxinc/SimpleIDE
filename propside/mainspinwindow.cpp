@@ -557,11 +557,12 @@ void MainSpinWindow::addLib()
     QString linkOptions = projectOptions->getLinkOptions();
     QStringList liblist = linkOptions.split(" ",QString::SkipEmptyParts);
 
+    // don't error if libname exists in the linkOptions
+    // just skip adding it.
+    bool islname = false;
     foreach(QString lib, liblist) {
         if(lib.compare("-l"+libname) == 0) {
-            QMessageBox::critical(this, tr("Library Already Added"),
-                tr("A library with this name has already been added to the project."));
-            return;
+            islname = true;
         }
     }
 
@@ -601,7 +602,17 @@ void MainSpinWindow::addLib()
     mainFile += "/"+list[0];
 
     // add #include to main file
-    openFileName(mainFile); // make sure mainFile is open
+    // look for open file and use it if possible, else open a new file
+    bool isOpen = false;
+    for(int n = 0; n < editorTabs->count(); n++) {
+        s = editorTabs->tabToolTip(n);
+        if(s.compare(mainFile) == 0) {
+            isOpen = true;
+            editorTabs->setCurrentIndex(n);
+        }
+    }
+    if(isOpen == false)
+        openFileName(mainFile); // make sure mainFile is open
 
     Editor *ed = editors->at(editorTabs->currentIndex());
     QTextCursor cur = ed->textCursor();
@@ -645,15 +656,17 @@ void MainSpinWindow::addLib()
     this->addProjectIncPath(path);
     this->addProjectLibPath(path);
 
-    // add -lname to linker options
-    s = projectOptions->getLinkOptions();
-    if(s.isEmpty()) {
-        s = "-l"+libname;
+    // add -lname to linker options if it's not already there
+    if(islname == false) {
+        s = projectOptions->getLinkOptions();
+        if(s.isEmpty()) {
+            s = "-l"+libname;
+        }
+        else {
+            s += " -l"+libname;
+        }
+        projectOptions->setLinkOptions(s);
     }
-    else {
-        s += " -l"+libname;
-    }
-    projectOptions->setLinkOptions(s);
 }
 
 /*
@@ -4034,6 +4047,7 @@ void MainSpinWindow::showProjectFile()
             }
             if(tab.compare(this->shortFileName(fileName)) == 0) {
                 editorTabs->setCurrentIndex(n);
+                projectTree->setFocus();
                 return;
             }
         }
@@ -4044,10 +4058,12 @@ void MainSpinWindow::showProjectFile()
         if(fileName.contains(FILELINK)) {
             fileName = fileName.mid(fileName.indexOf(FILELINK)+QString(FILELINK).length());
             openFileName(fileName);
+            projectTree->setFocus();
         }
         else {
             if(isCProject()) {
                 openFileName(sourcePath(projectFile)+fileName);
+                projectTree->setFocus();
             }
 #ifdef SPIN
             else if(isSpinProject()) {
@@ -4070,6 +4086,7 @@ void MainSpinWindow::showProjectFile()
                     foreach(QString s, list) {
                         if(s.contains(shortfile,Qt::CaseInsensitive)) {
                             openFileName(sourcePath(projectFile)+s);
+                            projectTree->setFocus();
                             return;
                         }
                     }
@@ -4078,6 +4095,7 @@ void MainSpinWindow::showProjectFile()
                     foreach(QString s, list) {
                         if(s.contains(shortfile,Qt::CaseInsensitive)) {
                             openFileName(lib+s);
+                            projectTree->setFocus();
                             return;
                         }
                     }
