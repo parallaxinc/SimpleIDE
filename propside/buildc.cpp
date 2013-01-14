@@ -1022,12 +1022,11 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
         }
     }
 
-    /* append libs twice */
-    foreach(QString s, libs) {
-        args->append(s);
-    }
-    foreach(QString s, libs) {
-        args->append(s);
+    /* append libs lib count times */
+    for(int n = libs.count(); n > 0; n--) {
+        foreach(QString s, libs) {
+            args->append(s);
+        }
     }
 
     /* strip */
