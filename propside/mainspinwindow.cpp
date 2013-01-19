@@ -1709,35 +1709,29 @@ void MainSpinWindow::recursiveRemoveDir(QString dir)
     QStringList dlist;
     QStringList flist;
 
-    try {
+    if(dir.length() < 1)
+        return;
 
-        if(dir.length() < 1)
-            return;
+    if(dir.at(dir.length()-1) != QDir::separator())
+        dir += QDir::separator();
 
-        if(dir.at(dir.length()-1) != QDir::separator())
-            dir += QDir::separator();
-
-        flist = dpath.entryList(QDir::AllEntries, QDir::DirsLast);
-        foreach(file, flist) {
-            if(file.compare(".") == 0)
-                continue;
-            if(file.compare("..") == 0)
-                continue;
-            QFile::remove(dir+file);
-        }
-        dlist = dpath.entryList(QDir::AllDirs, QDir::DirsLast);
-        foreach(file, dlist) {
-            if(file.compare(".") == 0)
-                continue;
-            if(file.compare("..") == 0)
-                continue;
-            recursiveRemoveDir(dir+file);
-            dpath.rmdir(dir+file);
-        }
-    } catch (int) {
-        qDebug() << "Error " << dir+file;
+    flist = dpath.entryList(QDir::AllEntries, QDir::DirsLast);
+    foreach(file, flist) {
+        if(file.compare(".") == 0)
+            continue;
+        if(file.compare("..") == 0)
+            continue;
+        QFile::remove(dir+file);
     }
-    qDebug() << "removeAllDir " << dir+file;
+    dlist = dpath.entryList(QDir::AllDirs, QDir::DirsLast);
+    foreach(file, dlist) {
+        if(file.compare(".") == 0)
+            continue;
+        if(file.compare("..") == 0)
+            continue;
+        recursiveRemoveDir(dir+file);
+        dpath.rmdir(dir+file);
+    }
 }
 
 void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir)
@@ -1749,39 +1743,34 @@ void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir)
     QStringList slist;
     QStringList flist;
 
-    try {
+    if(srcdir.length() < 1)
+        return;
+    if(dstdir.length() < 1)
+        return;
 
-        if(srcdir.length() < 1)
-            return;
-        if(dstdir.length() < 1)
-            return;
+    if(srcdir.at(srcdir.length()-1) != QDir::separator())
+        srcdir += QDir::separator();
+    if(dstdir.at(dstdir.length()-1) != QDir::separator())
+        dstdir += QDir::separator();
 
-        if(srcdir.at(srcdir.length()-1) != QDir::separator())
-            srcdir += QDir::separator();
-        if(dstdir.at(dstdir.length()-1) != QDir::separator())
-            dstdir += QDir::separator();
+    if(dpath.exists() == false)
+        dpath.mkdir(dstdir);
 
-        if(dpath.exists() == false)
-            dpath.mkdir(dstdir);
-
-        flist = spath.entryList(QDir::AllEntries, QDir::DirsLast);
-        foreach(file, flist) {
-            if(file.compare(".") == 0)
-                break;
-            if(file.compare("..") == 0)
-                break;
-            QFile::copy(srcdir+file, dstdir+file);
-        }
-        slist = spath.entryList(QDir::AllDirs, QDir::DirsLast);
-        foreach(file, slist) {
-            if(file.compare(".") == 0)
-                continue;
-            if(file.compare("..") == 0)
-                continue;
-            recursiveCopyDir(srcdir+file, dstdir+file);
-        }
-    } catch (int) {
-        qDebug() << "Error " << srcdir+file << " -> " << dstdir+file;
+    flist = spath.entryList(QDir::AllEntries, QDir::DirsLast);
+    foreach(file, flist) {
+        if(file.compare(".") == 0)
+            break;
+        if(file.compare("..") == 0)
+            break;
+        QFile::copy(srcdir+file, dstdir+file);
+    }
+    slist = spath.entryList(QDir::AllDirs, QDir::DirsLast);
+    foreach(file, slist) {
+        if(file.compare(".") == 0)
+            continue;
+        if(file.compare("..") == 0)
+            continue;
+        recursiveCopyDir(srcdir+file, dstdir+file);
     }
 }
 
