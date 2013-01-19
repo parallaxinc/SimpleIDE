@@ -1961,12 +1961,11 @@ void MainSpinWindow::zipProject()
 
 void MainSpinWindow::zipIt(QString dir)
 {
-    QChar sep = QDir::separator();
-    QString kdir = dir;
-    if(dir.length() > 0 && dir.at(dir.length()-1) == sep)
+    dir = QDir::fromNativeSeparators(dir);
+    if(dir.length() > 0 && dir.at(dir.length()-1) == '/')
         dir = dir.left(dir.length()-1);
-    QString folder = dir.mid(dir.lastIndexOf(sep)+1);
-    dir = dir.mid(0,dir.lastIndexOf(sep));
+    QString folder = dir.mid(dir.lastIndexOf('/')+1);
+    dir = dir.mid(0,dir.lastIndexOf('/'));
     QString zipProgram("zip");
     if(QDir::separator() == '\\')
         zipProgram += ".exe";
