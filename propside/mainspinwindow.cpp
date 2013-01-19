@@ -1971,9 +1971,10 @@ void MainSpinWindow::zipIt(QString dir)
     if(QDir::separator() == '\\')
         zipProgram += ".exe";
     QStringList args;
-    args.append(kdir);
+    args.append(folder);
     args.append("-r9");
     args.append(folder);
+    this->compileStatus->setPlainText("");
     builder->startProgram(zipProgram, dir, args, Build::DumpOff);
 }
 
