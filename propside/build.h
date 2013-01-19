@@ -22,7 +22,6 @@ public:
     virtual void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
     virtual QString getOutputPath(QString projfile);
 
-protected:
     enum DumpType { DumpNormal, DumpReadSizes, DumpCat, DumpOff };
     int  startProgram(QString program, QString workpath, QStringList args, DumpType dump = DumpOff);
 
