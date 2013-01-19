@@ -186,6 +186,13 @@ public slots:
     void showStatusPane(bool show);
     void splitterChanged();
 
+    void recursiveRemoveDir(QString dir);
+    void recursiveCopyDir(QString srcdir, QString dstdir);
+
+    void zipIt(QString dir);
+    QStringList zipCproject(QStringList list, QString srcPath, QString projFile, QString dstPath, QString dstProjFile);
+    QStringList zipSPINproject(QStringList list, QString srcPath, QString projFile, QString dstPath, QString dstProjFile);
+
 private:
     QString pathDiff(QString s2, QString s1);
     QString saveAsProjectLinkFix(QString srcPath, QString dstPath, QString link);

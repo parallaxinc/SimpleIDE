@@ -33,6 +33,7 @@
 #include "qportcombobox.h"
 #include "Sleeper.h"
 #include "hintdialog.h"
+#include "build.h"
 #include "buildstatus.h"
 
 #define SIMPLE_BOARD_TOOLBAR
@@ -1259,7 +1260,6 @@ QString MainSpinWindow::saveAsProjectLinkFix(QString srcPath, QString dstPath, Q
  */
 void MainSpinWindow::saveAsProject(const QString &inputProjFile)
 {
-    bool ok;
     QString projFolder(sourcePath(inputProjFile));
     QString projFile = inputProjFile;
 
@@ -1303,6 +1303,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     QString dstPath;
     QString dstProjFile;
 
+#ifdef SAVE_AS_PROJECT_VIEW
     if(this->simpleViewType == false) {
 
         dstName = QInputDialog::getText(this, tr("New Project Name"), tr("Enter new project name."), QLineEdit::Normal, "project", &ok) ;
@@ -1329,9 +1330,9 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
         }
 
     }
-
-    else {
-
+    else
+#endif
+    {
         // simpleView version
         QFileDialog dialog(this, tr("Save Project As"), lastPath, "");
         QStringList filters;
@@ -1700,14 +1701,418 @@ void MainSpinWindow::closeProject()
     projectFile.clear();
 }
 
+void MainSpinWindow::recursiveRemoveDir(QString dir)
+{
+    QDir dpath(dir);
+    QString file;
+
+    QStringList dlist;
+    QStringList flist;
+
+    try {
+
+        if(dir.length() < 1)
+            return;
+
+        if(dir.at(dir.length()-1) != QDir::separator())
+            dir += QDir::separator();
+
+        flist = dpath.entryList(QDir::AllEntries, QDir::DirsLast);
+        foreach(file, flist) {
+            if(file.compare(".") == 0)
+                continue;
+            if(file.compare("..") == 0)
+                continue;
+            QFile::remove(dir+file);
+        }
+        dlist = dpath.entryList(QDir::AllDirs, QDir::DirsLast);
+        foreach(file, dlist) {
+            if(file.compare(".") == 0)
+                continue;
+            if(file.compare("..") == 0)
+                continue;
+            recursiveRemoveDir(dir+file);
+            dpath.rmdir(dir+file);
+        }
+    } catch (int) {
+        qDebug() << "Error " << dir+file;
+    }
+    qDebug() << "removeAllDir " << dir+file;
+}
+
+void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir)
+{
+    QDir spath(srcdir);
+    QDir dpath(dstdir);
+    QString file;
+
+    QStringList slist;
+    QStringList flist;
+
+    try {
+
+        if(srcdir.length() < 1)
+            return;
+        if(dstdir.length() < 1)
+            return;
+
+        if(srcdir.at(srcdir.length()-1) != QDir::separator())
+            srcdir += QDir::separator();
+        if(dstdir.at(dstdir.length()-1) != QDir::separator())
+            dstdir += QDir::separator();
+
+        if(dpath.exists() == false)
+            dpath.mkdir(dstdir);
+
+        flist = spath.entryList(QDir::AllEntries, QDir::DirsLast);
+        foreach(file, flist) {
+            if(file.compare(".") == 0)
+                break;
+            if(file.compare("..") == 0)
+                break;
+            QFile::copy(srcdir+file, dstdir+file);
+        }
+        slist = spath.entryList(QDir::AllDirs, QDir::DirsLast);
+        foreach(file, slist) {
+            if(file.compare(".") == 0)
+                continue;
+            if(file.compare("..") == 0)
+                continue;
+            recursiveCopyDir(srcdir+file, dstdir+file);
+        }
+    } catch (int) {
+        qDebug() << "Error " << srcdir+file << " -> " << dstdir+file;
+    }
+}
+
 /*
- * zip project runs through project file list creates an archive for sharing.
+ * Zip project saves any referenced non-standard libraries into a single library folder in the existing project.
+ * It then creates an archive project such as name_zip.side or name_archive.side having adjusted path names.
+ * If project options "Create Project Library" is checked, we save mem-model/\*.a and \*.elf, else no mem-model folders are archived.
  */
 void MainSpinWindow::zipProject()
 {
-    QMessageBox::information(this, tr("Feature Not Ready."), tr("The zip/archive feature not is available yet."));
+    if(projectFile.isEmpty()) {
+        QMessageBox::critical(this, tr("Empty Project"),
+            tr("Can't archive an empty project.")+"\n"+
+            tr("Please open a project and try again."));
+        return;
+    }
+
+    QString projFolder(sourcePath(projectFile));
+    QString projFile = projectFile;
+
+    /*
+     * 1. function assumes an empty projectFolder parameter means to copy existing project.
+     * if projectFolder is empty saveAs from existing project.
+     */
+    if(projFolder.length() == 0) {
+        projFolder = sourcePath(projectFile);
+    }
+    if(projFile.length() == 0) {
+        projFile = projectFile;
+    }
+
+    if(projFile.length() == 0) {
+        QMessageBox::critical(
+                this,tr("No Project"),
+                tr("Can't \"Archive Project\" from an empty project.")+"\n"+
+                tr("Please create a new project or open an existing one."),
+                QMessageBox::Ok);
+        return;
+    }
+
+    QString dstName;
+    QString srcPath  = projFolder;
+    QDir spath(srcPath);
+
+    if(spath.exists() == false) {
+        QMessageBox::critical(
+                this,tr("Project Folder not Found."),
+                tr("Can't \"Archive Project\" from a non-existing folder."),
+                QMessageBox::Ok);
+        return;
+    }
+
+    /*
+     * 2. asks user for destination folder ... use existing project name
+     * get project name
+     */
+    QString dstPath;
+    QString dstProjFile = this->shortFileName(projFile);
+
+    dstName = projFile.mid(0,projFile.lastIndexOf("."));
+
+    QFileDialog dialog;
+    QString afilter("Zip File (*.zip)");
+    QString lpath = lastPath;
+    //dstPath = dialog.getExistingDirectory(this, tr("Archive Project Folder"), lpath, QFileDialog::ShowDirsOnly);
+    dstPath = dialog.getSaveFileName(this, tr("Archive Project"), lpath+dstName+".zip", afilter);
+
+    if(dstPath.length() < 1)
+       return;
+
+    QString ftype = dialog.selectedNameFilter();
+    //dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
+    dstName = this->shortFileName(projFile);
+    dstName = dstName.mid(0,dstName.lastIndexOf("."));
+    dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+
+    lastPath = dstPath;
+
+    /**
+     * Get permission to overwrite folder
+     */
+    if(QFile::exists(dstPath+dstName)) {
+        int rc =
+        QMessageBox::question(this, tr("Archive Folder Already Exists"),
+            tr("Over-write existing folder?")+"\n"+dstPath+dstName,
+            QMessageBox::Yes, QMessageBox::No);
+
+        if(rc == QMessageBox::No) {
+                return;
+        }
+    }
+
+    /*
+     * 3. create a new archive project folder
+     */
+    dstPath += dstName+QDir::separator();
+    QDir dpath(dstPath);
+
+    if(dpath.exists()) {
+        recursiveRemoveDir(dstPath);
+    }
+    dpath.mkdir(dstPath);
+
+    if(dpath.exists() == false) {
+        QMessageBox::critical(
+                this,tr("Archive Project Error."),
+                tr("System can not create project in ")+dstPath,
+                QMessageBox::Ok);
+        return;
+    }
+
+    /*
+     * 4. copy project file from source to destination as new project name
+     */
+
+    // copy project file
+    dstProjFile = dstPath+dstName+SIDE_EXTENSION;
+    QFile::copy(projFile,dstProjFile);
+
+    QString projSrc;
+    QFile sproj(projFile);
+    if(sproj.open(QFile::ReadOnly | QFile::Text)) {
+        projSrc = sproj.readAll();
+        sproj.close();
+    }
+
+    if(projSrc.length() < 1) {
+        QMessageBox::critical(
+                this,tr("Archive Project Error."),
+                tr("The project is empty. ")+dstProjFile,
+                QMessageBox::Ok);
+        return;
+    }
+
+    /*
+     * 5. copies the project main file from source to destination as new project main file
+     */
+    QStringList projList = projSrc.split("\n", QString::SkipEmptyParts);
+    QString srcMainFile = sourcePath(projFile)+projList.at(0);
+    QString dstMainFile = projList.at(0);
+    dstMainFile = dstMainFile.trimmed();
+    QString dstMainExt = dstMainFile.mid(dstMainFile.lastIndexOf("."));
+    dstMainFile = dstPath+dstName+dstMainExt;
+
+    // remove new file before copy or copy will fail
+    if(QFile::exists(dstMainFile))
+        QFile::remove(dstMainFile);
+
+    // copy project main file
+    QFile::copy(srcMainFile,dstMainFile);
+
+    /*
+     * Make a new project list. preprend project main file after this.
+     * Copy libraries to this folder as ./library/\*
+     * Fix up any links in project file and writes file.
+     */
+
+    QStringList newList;
+
+    if(this->isCProject()) {
+        newList = zipCproject(projList, srcPath, projFile, dstPath, dstProjFile);
+    }
+#ifdef SPIN
+    else if(this->isSpinProject()) {
+        newList = zipSPINproject(projList, srcPath, projFile, dstPath, dstProjFile);
+    }
+#endif
+
+    if(newList.isEmpty()) {
+        return;
+    }
+
+    projSrc = dstName+dstMainExt+"\n";
+
+    for(int n = 0; n < newList.length(); n++) {
+        projSrc+=newList.at(n)+"\n";
+    }
+
+    QFile dproj(dstProjFile);
+    if(dproj.open(QFile::WriteOnly | QFile::Text)) {
+        dproj.write(projSrc.toAscii());
+        dproj.close();
+    }
+
+    //this->openProject(dstProjFile);
+    zipIt(dstPath);
 }
 
+void MainSpinWindow::zipIt(QString dir)
+{
+    QChar sep = QDir::separator();
+    QString kdir = dir;
+    if(dir.length() > 0 && dir.at(dir.length()-1) == sep)
+        dir = dir.left(dir.length()-1);
+    QString folder = dir.mid(dir.lastIndexOf(sep)+1);
+    dir = dir.mid(0,dir.lastIndexOf(sep));
+    QString zipProgram("zip");
+    if(QDir::separator() == '\\')
+        zipProgram += ".exe";
+    QStringList args;
+    args.append(kdir);
+    args.append("-r9");
+    args.append(folder);
+    builder->startProgram(zipProgram, dir, args, Build::DumpOff);
+}
+
+QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, QString projFile, QString dstPath, QString dstProjFile)
+{
+    /*
+     * Make a library directory only if necessary.
+     */
+    QString zipLib("library/");
+
+    // WORK IN PROGRESS
+    // need to call gcc -M to find other includes.
+
+    QStringList newList;
+    for(int n = 1; n < projList.length(); n++) {
+        QString item = projList.at(n);
+
+        // special handling
+        // in archive packaging, we need to copy the file
+        if(item.indexOf(FILELINK) > 0) {
+            QStringList list = item.split(FILELINK,QString::SkipEmptyParts);
+            if(list.length() < 2) {
+                QMessageBox::information(
+                        this,tr("Project File Error."),
+                        tr("Archive Project expected a link, but got:\n")+item+"\n\n"+
+                        tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
+                        tr("After adding the correct link, remove the bad link."));
+            }
+            else {
+                QString als = list[1];
+                // list item 0 contains basic file name
+                QFile::copy(als, list[0]);
+                if(als.length() > 0) {
+                    item = list[0];
+                    QFile::copy(list[1],dstPath+"/"+item);
+                }
+                else
+                    QMessageBox::information(
+                            this,tr("Can't Fix Link"),
+                            tr("Archive Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
+                            tr("After adding the correct link, remove the bad link."));
+                newList.append(item);
+            }
+        }
+        else if(item.indexOf("-I") == 0) {
+            QStringList list = item.split("-I",QString::SkipEmptyParts);
+            if(list.length() < 1) {
+                QMessageBox::information(
+                        this,tr("Project File Error."),
+                        tr("Archive Project expected a -I link, but got:\n")+item+"\n\n"+
+                        tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
+                        tr("After adding the correct link, remove the bad link."));
+            }
+            else {
+                QString als = list[0];
+                als = als.trimmed();
+                als = als.mid(als.lastIndexOf("/")+1);
+                als = "./"+zipLib+als;
+                if(als.length() > 0)
+                    item = "-I "+als;
+                else
+                    QMessageBox::information(
+                            this,tr("Can't Fix Link"),
+                            tr("Archive Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
+                            tr("After adding the correct link, remove the bad link."));
+                newList.append(item);
+            }
+        }
+        else if(item.indexOf("-L") == 0) {
+            QStringList list = item.split("-L",QString::SkipEmptyParts);
+            if(list.length() < 1) {
+                QMessageBox::information(
+                        this,tr("Project File Error."),
+                        tr("Archive Project expected a -L link, but got:\n")+item+"\n\n"+
+                        tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
+                        tr("After adding the correct link, remove the bad link."));
+            }
+            else {
+                QString als = list[0];
+                als = als.trimmed();
+                QString dls = als.mid(als.lastIndexOf("/")+1);
+                QDir libd;
+                if(libd.exists(dstPath+zipLib) == false)
+                    libd.mkdir(dstPath+zipLib);
+                recursiveCopyDir(srcPath+als, dstPath+zipLib+dls);
+                als = als.mid(als.lastIndexOf("/")+1);
+                als = "./"+zipLib+als;
+                if(als.length() > 0)
+                    item = "-L "+als;
+                else
+                    QMessageBox::information(
+                            this,tr("Can't Fix Link"),
+                            tr("Archive Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
+                            tr("After adding the correct link, remove the bad link."));
+                newList.append(item);
+            }
+        }
+        // project options
+        else if(item[0] == '>') {
+            newList.append(item);
+        }
+        // different destination
+        else if(sourcePath(projFile) != sourcePath(dstProjFile)) {
+            newList.append(item);
+            QString dst = sourcePath(dstProjFile)+item;
+            if(QFile::exists(dst))
+                QFile::remove(dst);
+            QFile::copy(sourcePath(projFile)+item, dst);
+        }
+        // same destination, just copy item
+        else {
+            newList.append(item);
+        }
+    }
+
+    newList.sort();
+    return newList;
+}
+
+QStringList MainSpinWindow::zipSPINproject(QStringList projList, QString srcPath, QString projFile, QString dstPath, QString dstProjFile)
+{
+    QStringList newList;
+    QMessageBox::information(this, tr("Feature Not Ready."), tr("The SPIN zip/archive feature is not available yet."));
+    return newList;
+}
 
 void MainSpinWindow::openRecentProject()
 {
