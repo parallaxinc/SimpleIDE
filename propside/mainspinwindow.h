@@ -193,6 +193,7 @@ public slots:
     void zipIt(QString dir);
     QStringList zipCproject(QStringList list, QString srcPath, QString projFile, QString dstPath, QString dstProjFile);
     QStringList zipSPINproject(QStringList list, QString srcPath, QString projFile, QString dstPath, QString dstProjFile);
+    QString findFileNoCase(QString file);
 
 private:
     QString pathDiff(QString s2, QString s1);

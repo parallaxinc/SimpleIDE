@@ -1966,7 +1966,8 @@ void MainSpinWindow::zipProject()
     projSrc = dstName+dstMainExt+"\n";
 
     for(int n = 0; n < newList.length(); n++) {
-        projSrc+=newList.at(n)+"\n";
+        if(newList.at(n).compare(dstName+dstMainExt) != 0)
+            projSrc+=newList.at(n)+"\n";
     }
 
     QFile dproj(dstProjFile);
@@ -2009,6 +2010,7 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
     // need to call gcc -M to find other includes.
 
     QStringList newList;
+    // start at 1 because main filename has already been copied
     for(int n = 1; n < projList.length(); n++) {
         QString item = projList.at(n);
 
@@ -2135,15 +2137,75 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
 QStringList MainSpinWindow::zipSPINproject(QStringList projList, QString srcPath, QString projFile, QString dstPath, QString dstProjFile)
 {
     QStringList newList;
-    QMessageBox::information(this, tr("Feature Not Ready."), tr("The SPIN zip/archive feature is not available yet."));
+    //QMessageBox::information(this, tr("Feature Not Ready."), tr("The SPIN zip/archive feature is not available yet."));
+    QString fileName = projList.at(0);
+    if(fileName.isEmpty())
+        return newList;
+    if(fileName.endsWith(".spin", Qt::CaseInsensitive) == false) {
+        QMessageBox::critical(this, tr("Not a SPIN project."), tr("The main file must be a SPIN file in a SPIN project."));
+        return newList;
+    }
+    QString spinlib;
+    spinlib = propDialog->getSpinLibraryStr();
+
+    newList = spinParser.spinFileTree(fileName, spinlib);
+    // start at 1 because main filename has already been copied
+    for(int n = 1; n < newList.count(); n ++) {
+        QString item = newList[n];
+        qDebug() << srcPath+item;
+
+        item = findFileNoCase(srcPath+item);
+        if(QFile::exists(item)) {
+            // ok, copy source
+            if(item.indexOf("/") > -1)
+                item = item.mid(item.lastIndexOf("/")+1);
+            QFile::copy(srcPath+item, dstPath+item);
+        }
+        else {
+            // find in spin library
+            item = findFileNoCase(spinlib+item);
+            if(QFile::exists(item)) {
+                if(item.indexOf("/") > -1)
+                    item = item.mid(item.lastIndexOf("/")+1);
+                QFile::copy(spinlib+item, dstPath+item);
+            }
+        }
+    }
+    newList.append(">compiler=spin");
     return newList;
+}
+
+/*
+ * spin causes case problems and other grief
+ */
+QString MainSpinWindow::findFileNoCase(QString file)
+{
+    QString fileret = file;
+    if(file.isEmpty())
+        return fileret;
+    if(QFile::exists(fileret))
+        return fileret;
+    if(file.lastIndexOf("/") == file.length())
+        file = file.mid(file.length()-1);
+    if(file.indexOf("/") < 0)
+        return fileret;
+    QString path = file.mid(0,file.lastIndexOf("/")+1);
+    QDir dir(path);
+    QStringList list = dir.entryList(QDir::AllEntries);
+    file = file.mid(file.lastIndexOf("/")+1);
+    foreach(QString item, list) {
+        if(file.compare(item, Qt::CaseInsensitive) == 0) {
+            return path+item;
+        }
+    }
+    return fileret; // no match, just return file
 }
 
 void MainSpinWindow::openRecentProject()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     QVariant qv = action->data();
-    if(qv == NULL) {
+    if(qv.isNull()) { // Was qv == NULL. Thanks David Betz.
         return;
     }
     if(qv.canConvert(QVariant::String) == false) {
