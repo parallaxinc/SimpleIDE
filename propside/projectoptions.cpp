@@ -240,6 +240,23 @@ QStringList ProjectOptions::getOptions()
     return args;
 }
 
+QStringList ProjectOptions::getMemModelList()
+{
+    QStringList list;
+    QString item;
+    QVariant sv;
+    int len = ui->comboBoxMemoryMode->count();
+
+    for(int n = 0; n < len; n++) {
+        sv = ui->comboBoxMemoryMode->itemData(n,Qt::DisplayRole);
+        if(sv.canConvert(QVariant::String)) {
+            item = sv.toString();
+            item = item.mid(0, item.indexOf(" "));
+            list.append(item);
+        }
+    }
+    return list;
+}
 
 QString  ProjectOptions::getCompiler()
 {
