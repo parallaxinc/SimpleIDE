@@ -1734,7 +1734,7 @@ void MainSpinWindow::recursiveRemoveDir(QString dir)
     }
 }
 
-void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir)
+void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir, QString notlist)
 {
     QDir spath(srcdir);
     QDir dpath(dstdir);
@@ -1747,6 +1747,10 @@ void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir)
         return;
     if(dstdir.length() < 1)
         return;
+
+    QStringList list;
+    if(notlist.isEmpty() == false)
+        list = notlist.split(" ", QString::SkipEmptyParts);
 
     if(srcdir.at(srcdir.length()-1) != QDir::separator())
         srcdir += QDir::separator();
@@ -1762,7 +1766,8 @@ void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir)
             break;
         if(file.compare("..") == 0)
             break;
-        QFile::copy(srcdir+file, dstdir+file);
+        if(isInFilterList(file,list) == false)
+            QFile::copy(srcdir+file, dstdir+file);
     }
     slist = spath.entryList(QDir::AllDirs, QDir::DirsLast);
     foreach(file, slist) {
@@ -1770,8 +1775,23 @@ void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir)
             continue;
         if(file.compare("..") == 0)
             continue;
-        recursiveCopyDir(srcdir+file, dstdir+file);
+        if(isInFilterList(file,list) == false)
+            recursiveCopyDir(srcdir+file, dstdir+file, notlist);
     }
+}
+
+bool MainSpinWindow::isInFilterList(QString file, QStringList list)
+{
+    if(list.isEmpty())
+        return false;
+
+    foreach(QString item, list) {
+        QRegExp reg(item);
+        reg.setPatternSyntax(QRegExp::Wildcard);
+        if(reg.exactMatch(file))
+            return true;
+    }
+    return false;
 }
 
 /*
@@ -1969,9 +1989,10 @@ void MainSpinWindow::zipIt(QString dir)
     QString zipProgram("zip");
     if(QDir::separator() == '\\')
         zipProgram += ".exe";
+    QFile::remove(dir+"/"+folder+".zip");
     QStringList args;
     args.append(folder);
-    args.append("-r9");
+    args.append("-r");
     args.append(folder);
     this->compileStatus->setPlainText("");
     builder->startProgram(zipProgram, dir, args, Build::DumpOff);
@@ -2060,7 +2081,7 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
                 QDir libd;
                 if(libd.exists(dstPath+zipLib) == false)
                     libd.mkdir(dstPath+zipLib);
-                recursiveCopyDir(srcPath+als, dstPath+zipLib+dls);
+                recursiveCopyDir(srcPath+als, dstPath+zipLib+dls, QString("*.o *.elf"));
                 als = als.mid(als.lastIndexOf("/")+1);
                 als = "./"+zipLib+als;
                 if(als.length() > 0)
@@ -2089,6 +2110,21 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
         // same destination, just copy item
         else {
             newList.append(item);
+        }
+    }
+
+    if(projectOptions->getMakeLibrary().isEmpty() == false) {
+        QDir dir(srcPath);
+        QStringList models = projectOptions->getMemModelList();
+        foreach(QString model, models) {
+            if(model.length() > 0) {
+                model = model.toLower();
+                if(dir.exists(srcPath+model)) {
+                    dir.mkdir(dstPath+model);
+                    this->recursiveCopyDir(srcPath+model,dstPath+model,QString("*.o *.elf"));
+                    //this->recursiveRemoveDir(dstPath+model);
+                }
+            }
         }
     }
 

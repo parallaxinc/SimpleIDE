@@ -44,6 +44,7 @@ public:
 
     void clearOptions();
 
+    QStringList getMemModelList();
     QString getCompiler();
     QString getMemModel();
     QString getOptimization();
