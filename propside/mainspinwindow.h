@@ -186,8 +186,9 @@ public slots:
     void showStatusPane(bool show);
     void splitterChanged();
 
+    void recursiveAddDir(QString dir, QStringList *files);
     void recursiveRemoveDir(QString dir);
-    void recursiveCopyDir(QString srcdir, QString dstdir, QString notlist = 0);
+    void recursiveCopyDir(QString srcdir, QString dstdir, QString notlist);
     bool isInFilterList(QString file, QStringList list);
 
     void zipIt(QString dir);

@@ -11,6 +11,10 @@ TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 DEFINES += SPINSIDE
 
+#include quazip
+INCLUDEPATH += ../quazip-0.5/quazip
+LIBS += -lquazip
+
 # Turn off SPIN features for EDU release
 # DEFINES += SPIN_AUTOCOMPLETE
 DEFINES += SPIN
@@ -125,3 +129,4 @@ win32 {
     DEFINES += WINVER=0x0501 # needed for mingw to pull in appropriate dbt business...probably a better way to do this
     LIBS += -lsetupapi
 }
+
