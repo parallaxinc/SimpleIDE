@@ -1701,6 +1701,40 @@ void MainSpinWindow::closeProject()
     projectFile.clear();
 }
 
+void MainSpinWindow::recursiveAddDir(QString dir, QStringList *files)
+{
+    QDir dpath(dir);
+    QString file;
+
+    QStringList dlist;
+    QStringList flist;
+
+    if(dir.length() < 1)
+        return;
+
+    if(dir.at(dir.length()-1) != QDir::separator())
+        dir += QDir::separator();
+
+    flist = dpath.entryList(QDir::AllEntries, QDir::DirsLast);
+    foreach(file, flist) {
+        if(file.compare(".") == 0)
+            continue;
+        if(file.compare("..") == 0)
+            continue;
+        files->append(dir+file);
+    }
+    dlist = dpath.entryList(QDir::AllDirs, QDir::DirsLast);
+    foreach(file, dlist) {
+        if(file.compare(".") == 0)
+            continue;
+        if(file.compare("..") == 0)
+            continue;
+        recursiveAddDir(dir+file, files);
+        files->append(dir+file);
+    }
+}
+
+
 void MainSpinWindow::recursiveRemoveDir(QString dir)
 {
     QDir dpath(dir);
@@ -1980,6 +2014,9 @@ void MainSpinWindow::zipProject()
     zipIt(dstPath);
 }
 
+#include "quazip.h"
+#include "quazipfile.h"
+
 void MainSpinWindow::zipIt(QString dir)
 {
     dir = QDir::fromNativeSeparators(dir);
@@ -1991,12 +2028,83 @@ void MainSpinWindow::zipIt(QString dir)
     if(QDir::separator() == '\\')
         zipProgram += ".exe";
     QFile::remove(dir+"/"+folder+".zip");
+    this->compileStatus->setPlainText(tr("Archiving Project: ")+dir+"/"+folder+".zip");
+
+#ifdef USE_ZIP_APP
+
     QStringList args;
     args.append(folder);
     args.append("-r");
     args.append(folder);
-    this->compileStatus->setPlainText("");
     builder->startProgram(zipProgram, dir, args, Build::DumpOff);
+
+#else
+
+    QuaZip zip(dir+"/"+folder+".zip");
+    if(!zip.open(QuaZip::mdCreate)) {
+        QMessageBox::critical(this,tr("Can't Save Zip"), tr("Can't open .zip file to write: ")+folder+".zip");
+        return;
+    }
+    QFile inFile;
+    QStringList fileList;
+    recursiveAddDir(dir+"/"+folder, &fileList);
+
+    QFileInfoList files;
+    foreach (QString fn, fileList)
+        files << QFileInfo(fn);
+
+    QuaZipFile outFile(&zip, this);
+
+    char c;
+    foreach(QFileInfo fileInfo, files) {
+
+        if (!fileInfo.isFile())
+            continue;
+
+        QString fileNameWithRelativePath = fileInfo.filePath();
+        fileNameWithRelativePath = fileNameWithRelativePath.mid(dir.length()+1);
+
+        compileStatus->appendPlainText(tr("Adding ") + fileNameWithRelativePath);
+        inFile.setFileName(fileInfo.filePath());
+
+        if (!inFile.open(QIODevice::ReadOnly)) {
+            QMessageBox::critical(this, tr("Zip Error"), QString("testCreate(): inFile.open(): %1").arg(inFile.errorString().toLocal8Bit().constData()));
+            return;
+        }
+
+        if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.filePath()))) {
+            QMessageBox::critical(this, tr("Zip Error"), QString("testCreate(): outFile.open(): %1").arg(outFile.getZipError()));
+            return;
+        }
+
+        while (inFile.getChar(&c) && outFile.putChar(c));
+
+        if (outFile.getZipError() != UNZ_OK) {
+            QMessageBox::critical(this, tr("Zip Error"), QString("testCreate(): outFile.putChar(): %1").arg(outFile.getZipError()));
+            return;
+        }
+
+        outFile.close();
+
+        if (outFile.getZipError() != UNZ_OK) {
+            QMessageBox::critical(this, tr("Zip Error"), QString("testCreate(): outFile.close(): %1").arg(outFile.getZipError()));
+            return;
+        }
+
+        inFile.close();
+    }
+
+    zip.close();
+
+
+    if (zip.getZipError() != 0) {
+        QMessageBox::critical(this, tr("Zip Error"), QString("testCreate(): zip.close(): %1").arg(zip.getZipError()));
+        return;
+    }
+
+#endif
+
+    compileStatus->appendPlainText(tr("Done."));
 }
 
 QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, QString projFile, QString dstPath, QString dstProjFile)
