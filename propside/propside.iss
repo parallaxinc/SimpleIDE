@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-3"
+#define MyAppVersion "0-9-8"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -13,7 +13,7 @@
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ---- IMPORTANT!!! ---- Set this to your QtPath
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#define MyQtPath "C:\Qt\2010.05"
+#define MyQtPath "C:\Qt\4.8.0" ; was #define MyQtPath "C:\Qt\2010.05"
 #define MyGccPath "C:\msys\opt\parallax"
 #define MyGccMingwPath "C:\mingw"
 #define MyTranslations "..\propside\translations"
@@ -56,7 +56,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Name: modifypath; Description: "&Add Propeller-GCC directory to your environment PATH";
 
 [Files]
-Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "..\propside-build-desktop\release\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "IDE_LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_2_1.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_EXCEPTION.txt"; DestDir: "{app}"; Flags: ignoreversion
@@ -67,8 +67,11 @@ Source: ..\icons\24x24-free-application-icons\readme.txt; DestDir: {app}; Flags:
 Source: "{#MyGccMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\libstdc++*"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyQtPath}\qt\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyQtPath}\qt\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyQtPath}\bin\QtCore4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyQtPath}\bin\QtGui4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyQtPath}\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyQtPath}\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyQtPath}\bin\quazip1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccPath}\*"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\propside-demos\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
