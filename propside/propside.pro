@@ -1,9 +1,10 @@
 # -------------------------------------------------
 # Project created by QtCreator 2011-11-19T08:29:49
 # -------------------------------------------------
-# add spin compiler
-# make builder handle complicated projects
-# hook terminal to loader
+#
+# Windows builds must use library 4.8.0 otherwise QuaZip fails.
+# Same goes for QuaZip build.
+#
 QT += core \
     gui
 TARGET = SimpleIDE
