@@ -13,7 +13,7 @@ DEFINES += SPINSIDE
 
 #include quazip
 INCLUDEPATH += ../quazip-0.5/quazip
-LIBS += -lquazip
+INCLUDEPATH += $$[QT_INSTALL_PREFIX]/src/3rdparty/zlib
 
 # Turn off SPIN features for EDU release
 # DEFINES += SPIN_AUTOCOMPLETE
@@ -28,7 +28,7 @@ DEFINES += SPIN
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=7
+DEFINES += FIXVERSION=8
 SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \
@@ -108,9 +108,12 @@ FORMS += hardware.ui \
     TermPrefs.ui \
     hintdialog.ui
 RESOURCES += resources.qrc
-unix:SOURCES += qextserialport_unix.cpp
-
-# dont use EVENT_DRIVEN for linux to be consistent with MAC. also causes output skips.
+# linux quazip doesn't need version, but windows does
+unix {
+    SOURCES += qextserialport_unix.cpp
+    LIBS += -lquazip
+}
+# dont use EVENT_DRIVEN for linux to be consistent with MAC.
 unix:!macx:SOURCES += qextserialenumerator_unix.cpp
 macx { 
     # dont use EVENT_DRIVEN for mac. must open terminal before load because mac would reset boards otherwise.
@@ -128,5 +131,6 @@ win32 {
     SOURCES += qextserialenumerator_win.cpp
     DEFINES += WINVER=0x0501 # needed for mingw to pull in appropriate dbt business...probably a better way to do this
     LIBS += -lsetupapi
+    LIBS += -lquazip1
 }
 

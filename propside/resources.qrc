@@ -72,5 +72,6 @@
         <file>images/zip2.png</file>
         <file>images/build2.png</file>
         <file>images/addlib.png</file>
+        <file>images/build3.png</file>
     </qresource>
 </RCC>

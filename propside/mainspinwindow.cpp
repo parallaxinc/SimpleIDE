@@ -5482,7 +5482,7 @@ void MainSpinWindow::setupFileMenu()
     menuBar()->addMenu(programMenu);
 
     programMenu->addAction(QIcon(":/images/runconsole.png"), tr("Run Console"), this, SLOT(programDebug()), Qt::Key_F8);
-    programMenu->addAction(QIcon(":/images/build2.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::Key_F9);
+    programMenu->addAction(QIcon(":/images/build3.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::Key_F9);
     programMenu->addAction(QIcon(":/images/run.png"), tr("Run Project"), this, SLOT(programRun()), Qt::Key_F10);
     programMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn Project"), this, SLOT(programBurnEE()), Qt::Key_F11);
 
@@ -5646,7 +5646,7 @@ void MainSpinWindow::setupToolBars()
     QToolButton *btnProgramBurnEEP = new QToolButton(this);
 
     addToolButton(programToolBar, btnProgramStopBuild, QString(":/images/Abort.png"));
-    addToolButton(programToolBar, btnProgramBuild, QString(":/images/build2.png"));
+    addToolButton(programToolBar, btnProgramBuild, QString(":/images/build3.png"));
     addToolButton(programToolBar, btnProgramBurnEEP, QString(":/images/burnee.png"));
     addToolButton(programToolBar, btnProgramRun, QString(":/images/run.png"));
     addToolButton(programToolBar, btnProgramDebugTerm, QString(":/images/runconsole.png"));
