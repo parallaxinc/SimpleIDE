@@ -73,5 +73,9 @@
         <file>images/build2.png</file>
         <file>images/addlib.png</file>
         <file>images/build3.png</file>
+        <file>images/BuildHide.png</file>
+        <file>images/BuildShow.png</file>
+        <file>images/ProjectHide.png</file>
+        <file>images/ProjectShow.png</file>
     </qresource>
 </RCC>
