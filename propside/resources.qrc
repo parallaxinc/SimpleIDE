@@ -78,5 +78,6 @@
         <file>images/ProjectHide.png</file>
         <file>images/ProjectShow.png</file>
         <file>images/SaveToSD.png</file>
+        <file>images/RunConsole2.png</file>
     </qresource>
 </RCC>

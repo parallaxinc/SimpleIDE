@@ -5459,8 +5459,7 @@ void MainSpinWindow::setupFileMenu()
     toolsMenu->addAction(viewstr,this,SLOT(toggleSimpleView()));
 
 #if defined(SD_TOOLS)
-    //toolsMenu->addAction(QIcon(":/images/flashdrive.png"), tr("Save .PEX to Local SD Card"), this, SLOT(savePexFile()));
-    toolsMenu->addAction(QIcon(":/images/download.png"), tr("File to SD Card"), this, SLOT(downloadSdCard()));
+    toolsMenu->addAction(QIcon(":/images/SaveToSD.png"), tr("File to SD Card"), this, SLOT(downloadSdCard()));
 #endif
 
     if(ctags->enabled()) {
@@ -5494,7 +5493,7 @@ void MainSpinWindow::setupFileMenu()
     QMenu *programMenu = new QMenu(tr("&Program"), this);
     menuBar()->addMenu(programMenu);
 
-    programMenu->addAction(QIcon(":/images/runconsole.png"), tr("Run Console"), this, SLOT(programDebug()), Qt::Key_F8);
+    programMenu->addAction(QIcon(":/images/RunConsole2.png"), tr("Run Console"), this, SLOT(programDebug()), Qt::Key_F8);
     programMenu->addAction(QIcon(":/images/build3.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::Key_F9);
     programMenu->addAction(QIcon(":/images/run.png"), tr("Run Project"), this, SLOT(programRun()), Qt::Key_F10);
     programMenu->addAction(QIcon(":/images/burnee.png"), tr("Burn Project"), this, SLOT(programBurnEE()), Qt::Key_F11);
@@ -5662,7 +5661,7 @@ void MainSpinWindow::setupToolBars()
     addToolButton(programToolBar, btnProgramBuild, QString(":/images/build3.png"));
     addToolButton(programToolBar, btnProgramBurnEEP, QString(":/images/burnee.png"));
     addToolButton(programToolBar, btnProgramRun, QString(":/images/run.png"));
-    addToolButton(programToolBar, btnProgramDebugTerm, QString(":/images/runconsole.png"));
+    addToolButton(programToolBar, btnProgramDebugTerm, QString(":/images/RunConsole2.png"));
 
     connect(btnProgramStopBuild,SIGNAL(clicked()),this,SLOT(programStopBuild()));
     connect(btnProgramBuild,SIGNAL(clicked()),this,SLOT(programBuild()));
