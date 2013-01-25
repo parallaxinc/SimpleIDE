@@ -62,7 +62,7 @@
 #define SaveAndCloseProject "Save and Close Project"
 #define SaveAsProject "Save As Project"
 #define CloneProject "Clone Project"
-#define ZipProject "Archive Project"
+#define ZipProject "Zip Project"
 
 #define ProjectView "Set Project View"
 #define SimpleView  "Set Simple View"
@@ -1766,6 +1766,7 @@ void MainSpinWindow::recursiveRemoveDir(QString dir)
         recursiveRemoveDir(dir+file);
         dpath.rmdir(dir+file);
     }
+    dpath.rmdir(dir);
 }
 
 void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir, QString notlist)
@@ -1859,7 +1860,7 @@ void MainSpinWindow::zipProject()
     if(projFile.length() == 0) {
         QMessageBox::critical(
                 this,tr("No Project"),
-                tr("Can't \"Archive Project\" from an empty project.")+"\n"+
+                tr("Can't \"Zip Project\" from an empty project.")+"\n"+
                 tr("Please create a new project or open an existing one."),
                 QMessageBox::Ok);
         return;
@@ -1872,7 +1873,7 @@ void MainSpinWindow::zipProject()
     if(spath.exists() == false) {
         QMessageBox::critical(
                 this,tr("Project Folder not Found."),
-                tr("Can't \"Archive Project\" from a non-existing folder."),
+                tr("Can't \"Zip Project\" from a non-existing folder."),
                 QMessageBox::Ok);
         return;
     }
@@ -1889,8 +1890,8 @@ void MainSpinWindow::zipProject()
     QFileDialog dialog;
     QString afilter("Zip File (*.zip)");
     QString lpath = lastPath;
-    //dstPath = dialog.getExistingDirectory(this, tr("Archive Project Folder"), lpath, QFileDialog::ShowDirsOnly);
-    dstPath = dialog.getSaveFileName(this, tr("Archive Project"), lpath+dstName+".zip", afilter);
+    //dstPath = dialog.getExistingDirectory(this, tr("Zip Project Folder"), lpath, QFileDialog::ShowDirsOnly);
+    dstPath = dialog.getSaveFileName(this, tr("Zip Project"), lpath+dstName+".zip", afilter);
 
     if(dstPath.length() < 1)
        return;
@@ -1905,7 +1906,7 @@ void MainSpinWindow::zipProject()
 
     /**
      * Get permission to overwrite folder
-     */
+     * We did this when asking to over-write zip.
     if(QFile::exists(dstPath+dstName)) {
         int rc =
         QMessageBox::question(this, tr("Archive Folder Already Exists"),
@@ -1916,11 +1917,12 @@ void MainSpinWindow::zipProject()
                 return;
         }
     }
+     */
 
     /*
      * 3. create a new archive project folder
      */
-    dstPath += dstName+QDir::separator();
+    dstPath += dstName+"/";
     QDir dpath(dstPath);
 
     if(dpath.exists()) {
@@ -1930,7 +1932,7 @@ void MainSpinWindow::zipProject()
 
     if(dpath.exists() == false) {
         QMessageBox::critical(
-                this,tr("Archive Project Error."),
+                this,tr("Zip Project Error."),
                 tr("System can not create project in ")+dstPath,
                 QMessageBox::Ok);
         return;
@@ -1953,7 +1955,7 @@ void MainSpinWindow::zipProject()
 
     if(projSrc.length() < 1) {
         QMessageBox::critical(
-                this,tr("Archive Project Error."),
+                this,tr("Zip Project Error."),
                 tr("The project is empty. ")+dstProjFile,
                 QMessageBox::Ok);
         return;
@@ -2010,8 +2012,10 @@ void MainSpinWindow::zipProject()
         dproj.close();
     }
 
-    //this->openProject(dstProjFile);
+    // zip folder
     zipIt(dstPath);
+    // and remove folder
+    recursiveRemoveDir(dstPath);
 }
 
 #include "quazip.h"
@@ -2129,7 +2133,7 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
             if(list.length() < 2) {
                 QMessageBox::information(
                         this,tr("Project File Error."),
-                        tr("Archive Project expected a link, but got:\n")+item+"\n\n"+
+                        tr("Zip Project expected a link, but got:\n")+item+"\n\n"+
                         tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
                         tr("After adding the correct link, remove the bad link."));
             }
@@ -2144,7 +2148,7 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
                 else
                     QMessageBox::information(
                             this,tr("Can't Fix Link"),
-                            tr("Archive Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Zip Project was not able to fix the link:\n")+item+"\n\n"+
                             tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
                             tr("After adding the correct link, remove the bad link."));
                 newList.append(item);
@@ -2155,21 +2159,25 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
             if(list.length() < 1) {
                 QMessageBox::information(
                         this,tr("Project File Error."),
-                        tr("Archive Project expected a -I link, but got:\n")+item+"\n\n"+
+                        tr("Zip Project expected a -I link, but got:\n")+item+"\n\n"+
                         tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
                         tr("After adding the correct link, remove the bad link."));
             }
             else {
                 QString als = list[0];
                 als = als.trimmed();
-                als = als.mid(als.lastIndexOf("/")+1);
-                als = "./"+zipLib+als;
+                als = QDir::fromNativeSeparators(als);
+                if(als.endsWith("/"))
+                    als = als.mid(0,als.length()-1);
+                QString dls = als.mid(als.lastIndexOf("/")+1);
+                als = "./"+zipLib+dls;
                 if(als.length() > 0)
                     item = "-I "+als;
+
                 else
                     QMessageBox::information(
                             this,tr("Can't Fix Link"),
-                            tr("Archive Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Zip Project was not able to fix the link:\n")+item+"\n\n"+
                             tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
                             tr("After adding the correct link, remove the bad link."));
                 newList.append(item);
@@ -2180,26 +2188,28 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
             if(list.length() < 1) {
                 QMessageBox::information(
                         this,tr("Project File Error."),
-                        tr("Archive Project expected a -L link, but got:\n")+item+"\n\n"+
+                        tr("Zip Project expected a -L link, but got:\n")+item+"\n\n"+
                         tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
                         tr("After adding the correct link, remove the bad link."));
             }
             else {
                 QString als = list[0];
                 als = als.trimmed();
+                als = QDir::fromNativeSeparators(als);
+                if(als.endsWith("/"))
+                    als = als.mid(0,als.length()-1);
                 QString dls = als.mid(als.lastIndexOf("/")+1);
                 QDir libd;
                 if(libd.exists(dstPath+zipLib) == false)
                     libd.mkdir(dstPath+zipLib);
-                recursiveCopyDir(srcPath+als, dstPath+zipLib+dls, QString("*.o *.elf"));
-                als = als.mid(als.lastIndexOf("/")+1);
-                als = "./"+zipLib+als;
+                recursiveCopyDir(als, dstPath+zipLib+dls, QString("*.o *.elf"));
+                als = "./"+zipLib+dls;
                 if(als.length() > 0)
                     item = "-L "+als;
                 else
                     QMessageBox::information(
                             this,tr("Can't Fix Link"),
-                            tr("Archive Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Zip Project was not able to fix the link:\n")+item+"\n\n"+
                             tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
                             tr("After adding the correct link, remove the bad link."));
                 newList.append(item);
@@ -5539,7 +5549,7 @@ void MainSpinWindow::setupToolBars()
     btnFileSave->setToolTip(tr("Save File"));
     btnFileSaveAs->setToolTip(tr("Save As File"));
     btnFilePrint->setToolTip(tr("Print"));
-    //btnFileZip->setToolTip(tr("Archive"));
+    //btnFileZip->setToolTip(tr("Zip"));
 
     /*
      * Add Tools Toobar ... add tab, add lib
@@ -5596,7 +5606,7 @@ void MainSpinWindow::setupToolBars()
     btnProjectSaveAs->setToolTip(tr("Save As Project"));
     btnProjectClose->setToolTip(tr(SaveAndCloseProject));
     btnProjectApp->setToolTip(tr("Set Project to Current File"));
-    btnProjectZip->setToolTip(tr("Archive Project"));
+    btnProjectZip->setToolTip(tr("Zip Project"));
 
     //propToolBar = addToolBar(tr("Properties"));
 /*
