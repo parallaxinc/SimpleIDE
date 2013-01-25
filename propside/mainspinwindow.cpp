@@ -5455,8 +5455,11 @@ void MainSpinWindow::setupFileMenu()
     toolsMenu = new QMenu(tr("&Tools"), this);
     menuBar()->addMenu(toolsMenu);
 
+    QIcon simpleViewIcon(":/images/ViewSimple.png");
+    QIcon projectViewIcon(":/images/ViewSimple.png");
+    QIcon viewicon = this->simpleViewType ? projectViewIcon : simpleViewIcon;
     QString viewstr = this->simpleViewType ? tr(ProjectView) : tr(SimpleView);
-    toolsMenu->addAction(viewstr,this,SLOT(toggleSimpleView()));
+    toolsMenu->addAction(viewicon, viewstr,this,SLOT(toggleSimpleView()));
 
 #if defined(SD_TOOLS)
     toolsMenu->addAction(QIcon(":/images/SaveToSD.png"), tr("File to SD Card"), this, SLOT(downloadSdCard()));
