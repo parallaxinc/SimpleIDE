@@ -77,5 +77,6 @@
         <file>images/BuildShow.png</file>
         <file>images/ProjectHide.png</file>
         <file>images/ProjectShow.png</file>
+        <file>images/SaveToSD.png</file>
     </qresource>
 </RCC>
