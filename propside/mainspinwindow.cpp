@@ -5645,7 +5645,7 @@ void MainSpinWindow::setupToolBars()
     //btnSaveToSdCard->setToolTip(tr("Save AUTOEXEC.PEX to Local SD Card."));
 
     btnDownloadSdCard = new QToolButton(this);
-    addToolButton(toolsToolBar, btnDownloadSdCard, QString(":/images/download.png"));
+    addToolButton(toolsToolBar, btnDownloadSdCard, QString(":/images/SaveToSD.png"));
     connect(btnDownloadSdCard, SIGNAL(clicked()),this,SLOT(downloadSdCard()));
     btnDownloadSdCard->setToolTip(tr("File to SD Card."));
 
