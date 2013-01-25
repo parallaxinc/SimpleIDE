@@ -274,6 +274,9 @@ private:
     QString         aSideDocPath;
     bool            simpleViewType;
 
+    QIcon           simpleViewIcon;
+    QIcon           projectViewIcon;
+
     QToolBar        *fileToolBar;
     QToolBar        *projToolBar;
     QToolBar        *propToolBar;
