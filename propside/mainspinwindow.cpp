@@ -3475,6 +3475,8 @@ void MainSpinWindow::setupHelpMenu()
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
     helpMenu->addAction(QIcon(":/images/helphint.png"), tr("&Credits"), this, SLOT(creditShow()));
     helpMenu->addAction(QIcon(":/images/UserHelp.png"), tr("&Help"), this, SLOT(userguideShow()));
+    helpMenu->addAction(QIcon(":/images/CTutorials.png"), tr("&Tutorials"), this, SLOT(tutorialShow()));
+    helpMenu->addAction(QIcon(":/images/Reference.png"), tr("&Reference"), this, SLOT(referenceShow()));
     //helpMenu->addAction(QIcon(":/images/Library.png"), tr("&Library"), this, SLOT(libraryShow()));
 
     /* new Help class */
@@ -3522,6 +3524,15 @@ void MainSpinWindow::libraryShow()
     findSymbolHelp("");
 }
 
+void MainSpinWindow::referenceShow()
+{
+
+}
+
+void MainSpinWindow::tutorialShow()
+{
+
+}
 
 void MainSpinWindow::userguideShow()
 {
