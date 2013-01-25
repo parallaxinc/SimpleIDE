@@ -41,7 +41,7 @@
 #define APPWINDOW_MIN_HEIGHT 480
 #define APPWINDOW_MIN_WIDTH 480
 #define EDITOR_MIN_WIDTH 500
-#define PROJECT_WIDTH 270
+#define PROJECT_WIDTH 300
 
 #define SOURCE_FILE_SAVE_TYPES "C (*.c);; C Header (*.h);; C++ (*.cpp);; COG C (*.cogc);; ECOG C (*.ecogc);; ESPIN (*.espin);; SPIN (*.spin);; Any (*)"
 #define SOURCE_FILE_TYPES "Source Files (*.c *.cogc *.cpp *.ecogc *.espin *.h *.spin);; Any (*)"
@@ -3926,12 +3926,14 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     /* project tree */
     QTabWidget *projectTab = new QTabWidget(this);
     projectTree = new ProjectTree(this);
-    projectTree->setMinimumWidth(PROJECT_WIDTH-1);
-    projectTree->setMaximumWidth(PROJECT_WIDTH-1);
+    projectTree->setMinimumWidth(PROJECT_WIDTH);
+    projectTree->setMaximumWidth(PROJECT_WIDTH);
     projectTree->setToolTip(tr("Current Project"));
     connect(projectTree,SIGNAL(clicked(QModelIndex)),this,SLOT(projectTreeClicked(QModelIndex)));
     connect(projectTree, SIGNAL(deleteProjectItem()),this,SLOT(deleteProjectFile()));
     projectTab->addTab(projectTree,tr("Project Manager"));
+    projectTab->setMaximumWidth(PROJECT_WIDTH);
+    projectTab->setMinimumWidth(PROJECT_WIDTH);
     leftSplit->addWidget(projectTab);
 
     // projectMenu is popup for projectTree
@@ -4033,20 +4035,21 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     progress->setMaximumSize(90,20);
     progress->hide();
 
-    btnShowProjectPane = new QPushButton(">");
+    btnShowProjectPane = new QPushButton(QIcon(":/images/ProjectShow.png"),"",this);
     btnShowProjectPane->setCheckable(true);
-    btnShowProjectPane->setMaximumWidth(20);
+    btnShowProjectPane->setMaximumWidth(32);
     btnShowProjectPane->setToolTip(tr("Show Project Manager"));
     connect(btnShowProjectPane,SIGNAL(clicked(bool)),this,SLOT(showProjectPane(bool)));
 
-    btnShowStatusPane = new QPushButton("^");
+    btnShowStatusPane = new QPushButton(QIcon(":/images/BuildShow.png"), "", this);
     btnShowStatusPane->setCheckable(true);
-    btnShowStatusPane->setMaximumWidth(20);
+    btnShowStatusPane->setMaximumWidth(32);
     btnShowStatusPane->setToolTip(tr("Show Build Status"));
     connect(btnShowStatusPane,SIGNAL(clicked(bool)),this,SLOT(showStatusPane(bool)));
 
     programSize = new QLabel();
-    programSize->setMinimumWidth(PROJECT_WIDTH+6);
+    programSize->setMaximumWidth(PROJECT_WIDTH);
+    programSize->setMinimumWidth(PROJECT_WIDTH);
 
     status = new QLabel();
 
@@ -4055,7 +4058,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     statusBar->addWidget(programSize);
     statusBar->addWidget(btnShowStatusPane);
     statusBar->addWidget(status);
-    statusBar->setMaximumHeight(22);
+    statusBar->setMaximumHeight(32);
 
     this->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
 
@@ -5755,21 +5758,31 @@ void MainSpinWindow::showSimpleView(bool simple)
     /* simple view */
     if(simple)
     {
-        leftSplit->hide();
-        statusTabs->hide();
+        int projwidth = PROJECT_WIDTH-btnShowStatusPane->width();
+
+        if(btnShowProjectPane->isChecked()) {
+            leftSplit->show();
+        }
+        else {
+            leftSplit->hide();
+        }
+
+        if(btnShowStatusPane->isChecked()) {
+            statusTabs->show();
+        }
+        else {
+            statusTabs->hide();
+        }
+
         fileToolBar->hide();
         propToolBar->hide();
         addToolsToolBar->hide();
         btnShowProjectPane->show();
         btnShowStatusPane->show();
-        programSize->setMinimumWidth(PROJECT_WIDTH-btnShowStatusPane->width());
-        programSize->setMaximumWidth(PROJECT_WIDTH-btnShowStatusPane->width());
+        programSize->setMinimumWidth(projwidth);
+        programSize->setMaximumWidth(projwidth);
         programSize->hide();
         programSize->show();
-        btnShowProjectPane->setChecked(false);
-        btnShowStatusPane->setChecked(false);
-        showProjectPane(false);
-        showStatusPane(false);
 
         foreach(QAction *fa, fileMenuList) {
             QString txt = fa->text();
@@ -5798,6 +5811,7 @@ void MainSpinWindow::showSimpleView(bool simple)
     /* project view */
     else
     {
+        int projwidth = PROJECT_WIDTH+6;
         leftSplit->show();
         statusTabs->show();
         fileToolBar->show();
@@ -5805,12 +5819,8 @@ void MainSpinWindow::showSimpleView(bool simple)
         addToolsToolBar->show();
         btnShowProjectPane->hide();
         btnShowStatusPane->hide();
-        btnShowProjectPane->setChecked(true);
-        btnShowStatusPane->setChecked(true);
-        showProjectPane(true);
-        showStatusPane(true);
-        programSize->setMinimumWidth(PROJECT_WIDTH+6);
-        programSize->setMaximumWidth(PROJECT_WIDTH+6);
+        programSize->setMinimumWidth(projwidth);
+        programSize->setMaximumWidth(projwidth);
 
         foreach(QAction *fa, fileMenuList) {
             QString txt = fa->text();
@@ -5843,13 +5853,23 @@ void MainSpinWindow::showSimpleView(bool simple)
 void MainSpinWindow::showProjectPane(bool show)
 {
     leftSplit->setVisible(show);
-    btnShowProjectPane->setText(show ? "<" : ">");
+    if(show) {
+        btnShowProjectPane->setIcon(QIcon(QIcon(":/images/ProjectHide.png")));
+    }
+    else {
+        btnShowProjectPane->setIcon(QIcon(QIcon(":/images/ProjectShow.png")));
+    }
 }
 
 void MainSpinWindow::showStatusPane(bool show)
 {
     statusTabs->setVisible(show);
-    btnShowStatusPane->setText(show ? "v" : "^");
+    if(show) {
+        btnShowStatusPane->setIcon(QIcon(QIcon(":/images/BuildHide.png")));
+    }
+    else {
+        btnShowStatusPane->setIcon(QIcon(QIcon(":/images/BuildShow.png")));
+    }
 }
 
 void MainSpinWindow::splitterChanged()

@@ -554,3 +554,15 @@ void ProjectOptions::setSpinCompOptions(QString s)
 {
     ui->lineEditSpinCompOptions->setText(s);
 }
+
+void ProjectOptions::setMaximumWidth(int width)
+{
+    QWidget::setMaximumWidth(width);
+    ui->tabWidget->setMaximumWidth(width);
+}
+
+void ProjectOptions::setMinimumWidth(int width)
+{
+    QWidget::setMinimumWidth(width);
+    ui->tabWidget->setMinimumWidth(width);
+}

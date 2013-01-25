@@ -95,6 +95,9 @@ public:
     QStringList getSpinOptions();
     void        setSpinOptions(QString s);
 
+    void        setMaximumWidth(int width);
+    void        setMinimumWidth(int width);
+
 public slots:
     void compilerChanged(QString comp);
 
