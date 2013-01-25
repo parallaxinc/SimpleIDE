@@ -5488,7 +5488,7 @@ void MainSpinWindow::setupFileMenu()
     toolsMenu->insertAction(last,bigger);
 
     toolsMenu->addSeparator();
-    toolsMenu->addAction(tr("Next Tab"),this,SLOT(changeTab(bool)),QKeySequence::NextChild);
+    toolsMenu->addAction(QIcon(":/images/NextTab.png"), tr("Next Tab"),this,SLOT(changeTab(bool)),QKeySequence::NextChild);
 
     QMenu *programMenu = new QMenu(tr("&Program"), this);
     menuBar()->addMenu(programMenu);
