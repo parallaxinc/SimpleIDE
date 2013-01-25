@@ -80,5 +80,7 @@
         <file>images/SaveToSD.png</file>
         <file>images/RunConsole2.png</file>
         <file>images/NextTab.png</file>
+        <file>images/ViewProject.png</file>
+        <file>images/ViewSimple.png</file>
     </qresource>
 </RCC>
