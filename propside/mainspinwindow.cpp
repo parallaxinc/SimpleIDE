@@ -5455,11 +5455,12 @@ void MainSpinWindow::setupFileMenu()
     toolsMenu = new QMenu(tr("&Tools"), this);
     menuBar()->addMenu(toolsMenu);
 
-    QIcon simpleViewIcon(":/images/ViewSimple.png");
-    QIcon projectViewIcon(":/images/ViewSimple.png");
-    QIcon viewicon = this->simpleViewType ? projectViewIcon : simpleViewIcon;
+    simpleViewIcon = QIcon(":/images/ViewSimple.png");
+    projectViewIcon = QIcon(":/images/ViewProject.png");
+
     QString viewstr = this->simpleViewType ? tr(ProjectView) : tr(SimpleView);
-    toolsMenu->addAction(viewicon, viewstr,this,SLOT(toggleSimpleView()));
+    toolsMenu->addAction(this->simpleViewType ? projectViewIcon : simpleViewIcon,
+                         viewstr,this,SLOT(toggleSimpleView()));
 
 #if defined(SD_TOOLS)
     toolsMenu->addAction(QIcon(":/images/SaveToSD.png"), tr("File to SD Card"), this, SLOT(downloadSdCard()));
@@ -5739,6 +5740,7 @@ void MainSpinWindow::toggleSimpleView()
      QList<QAction*> list = toolsMenu->actions();
      QAction *action = list.at(0);
      action->setText(this->simpleViewType ? tr(ProjectView) : tr(SimpleView));
+     action->setIcon(this->simpleViewType ? projectViewIcon : simpleViewIcon);
      showSimpleView(simpleViewType);
 }
 
@@ -5814,6 +5816,7 @@ void MainSpinWindow::showSimpleView(bool simple)
     else
     {
         int projwidth = PROJECT_WIDTH+6;
+
         leftSplit->show();
         statusTabs->show();
         fileToolBar->show();
