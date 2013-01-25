@@ -79,5 +79,6 @@
         <file>images/ProjectShow.png</file>
         <file>images/SaveToSD.png</file>
         <file>images/RunConsole2.png</file>
+        <file>images/NextTab.png</file>
     </qresource>
 </RCC>
