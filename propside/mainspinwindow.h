@@ -83,6 +83,8 @@ public slots:
     void creditShow();
     void helpShow();
     void libraryShow();
+    void referenceShow();
+    void tutorialShow();
     void userguideShow();
     void projectTreeClicked(QModelIndex index);
     void closeTab(int index = 0);

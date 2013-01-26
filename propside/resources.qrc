@@ -82,5 +82,8 @@
         <file>images/NextTab.png</file>
         <file>images/ViewProject.png</file>
         <file>images/ViewSimple.png</file>
+        <file>images/CTutorials.png</file>
+        <file>images/Reference.png</file>
+        <file>images/SimpleManual.png</file>
     </qresource>
 </RCC>
