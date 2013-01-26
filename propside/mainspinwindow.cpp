@@ -4274,8 +4274,8 @@ void MainSpinWindow::showCompileStatusError()
     edcur.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
     ed->setTextCursor(edcur);
 
-    // highlight error
-    emit highlightCurrentLine(QColor(255, 0, 0));
+    // highlight error ... Yellow per Andy's request
+    emit highlightCurrentLine(QColor(Qt::yellow));
 }
 
 void MainSpinWindow::compilerChanged()
