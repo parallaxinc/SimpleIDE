@@ -85,5 +85,6 @@
         <file>images/CTutorials.png</file>
         <file>images/Reference.png</file>
         <file>images/SimpleManual.png</file>
+        <file>images/Credits.png</file>
     </qresource>
 </RCC>

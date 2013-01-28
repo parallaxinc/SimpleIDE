@@ -269,9 +269,9 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 
     /* show hint for Simple/Project view settings */
     if(this->simpleViewType)
-        HintDialog::hint("SimpleProjectView", "Menu->Tools->Set Project View selects project mode.");
+        HintDialog::hint("SimpleProjectView", "Welcome to the new Simple View.  If you prefer Project View from previous versions, just click Tools and select Set Project View.");
     else
-        HintDialog::hint("SimpleProjectView", "Menu->Tools->Set Simple View selects simple mode.");
+        HintDialog::hint("SimpleProjectView", "This is the Project View.  If you prefer Simple View from previous versions, just click Tools and select Set Simple View.");
 
     /* show help dialog */
     QVariant helpStartup = settings->value(helpStartupKey,true);
@@ -3475,11 +3475,11 @@ void MainSpinWindow::setupHelpMenu()
     menuBar()->addMenu(helpMenu);
     aboutDialog = new AboutDialog(aboutLanding, this);
 
+    helpMenu->addAction(QIcon(":/images/SimpleManual.png"), tr("Simple Manual (PDF)"), this, SLOT(userguideShow()));
+    helpMenu->addAction(QIcon(":/images/CTutorials.png"), tr("Propeller C Tutorials (Online)"), this, SLOT(tutorialShow()));
+    helpMenu->addAction(QIcon(":/images/Reference.png"), tr("PropGCC &Reference (Online)"), this, SLOT(referenceShow()));
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
-    helpMenu->addAction(QIcon(":/images/helphint.png"), tr("&Credits"), this, SLOT(creditShow()));
-    helpMenu->addAction(QIcon(":/images/UserHelp.png"), tr("&Help"), this, SLOT(userguideShow()));
-    helpMenu->addAction(QIcon(":/images/CTutorials.png"), tr("&Tutorials"), this, SLOT(tutorialShow()));
-    helpMenu->addAction(QIcon(":/images/Reference.png"), tr("&Reference"), this, SLOT(referenceShow()));
+    helpMenu->addAction(QIcon(":/images/Credits.png"), tr("&Credits"), this, SLOT(creditShow()));
     //helpMenu->addAction(QIcon(":/images/Library.png"), tr("&Library"), this, SLOT(libraryShow()));
 
     /* new Help class */
@@ -3961,7 +3961,8 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     projectMenu->addAction(tr("Add File Copy"), this,SLOT(addProjectFile()));
     projectMenu->addAction(tr("Add File Link"), this,SLOT(addProjectLink()));
     projectMenu->addAction(tr("Add Include Path"), this,SLOT(addProjectIncPath()));
-    projectMenu->addAction(tr("Add Library File"), this,SLOT(addProjectLibFile()));
+    /* adding .a libraries are bad. Use add library path and -lname instead */
+    //projectMenu->addAction(tr("Add Library File"), this,SLOT(addProjectLibFile()));
     projectMenu->addAction(tr("Add Library Path"), this,SLOT(addProjectLibPath()));
     projectMenu->addAction(tr("Delete"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
@@ -5446,7 +5447,7 @@ void MainSpinWindow::setupFileMenu()
     projMenu->addAction(QIcon(":/images/saveproj.png"), tr("Save Project"), this, SLOT(saveProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_S);
     projMenu->addAction(QIcon(":/images/saveasproj.png"), tr(SaveAsProject), this, SLOT(saveAsProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_A);
     //projMenu->addAction(QIcon(":/images/cloneproj.png"), tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
-    projMenu->addAction(tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
+    //projMenu->addAction(tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
     projMenu->addAction(QIcon(":/images/closeproj.png"), tr(SaveAndCloseProject), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
     projMenu->addAction(QIcon(":/images/project.png"), tr(SetProject), this, SLOT(setProject()), Qt::Key_F4);
     //projMenu->addAction(QIcon(":/images/hardware.png"), tr("Load Board Types"), this, SLOT(hardware()), Qt::Key_F6);
@@ -5657,7 +5658,7 @@ void MainSpinWindow::setupToolBars()
     btnProjectSave->setToolTip(tr("Save Project"));
     btnProjectSaveAs->setToolTip(tr("Save As Project"));
     btnProjectClose->setToolTip(tr(SaveAndCloseProject));
-    btnProjectApp->setToolTip(tr("Set Project to Current File"));
+    btnProjectApp->setToolTip(tr("Set Project to Current Tab"));
     btnProjectZip->setToolTip(tr("Zip Project"));
 
     //propToolBar = addToolBar(tr("Properties"));
