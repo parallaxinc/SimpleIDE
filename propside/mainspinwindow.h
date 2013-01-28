@@ -95,6 +95,7 @@ public slots:
     void setCurrentBoard(int index);
     void setCurrentPort(int index);
     void connectButton();
+    void menuActionConnectButton();
     void portResetButton();
     void terminalClosed();
     void setProject();
@@ -240,6 +241,7 @@ private:
     void setupToolBars();
     void setupProjectTools(QSplitter *vsplit);
     void addToolButton(QToolBar *bar, QToolButton *btn, QString imgfile);
+    void addToolBarAction(QToolBar *bar, QAction *btn, QString imgfile);
     bool isOutputFile(QString file);
     void addProjectListFile(QString fileName);
 
@@ -287,6 +289,8 @@ private:
     QToolBar        *ctrlToolBar;
     QToolBar        *boardToolBar;
     QToolBar        *addToolsToolBar;
+    QToolBar        *sdCardToolBar;
+    QToolBar        *resetToolBar;
 
     QMenu           *fileMenu;
     QMenu           *projMenu;
@@ -295,6 +299,8 @@ private:
     QSplitter       *leftSplit;
     QSplitter       *rightSplit;
 
+    QAction         *btnBoardReset;
+    QAction         *btnProjectClose;
     QPushButton     *btnShowProjectPane;
     QPushButton     *btnShowStatusPane;
 
