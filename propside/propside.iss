@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-8"
+#define MyAppVersion "0-9-10-1"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -56,7 +56,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Name: modifypath; Description: "&Add Propeller-GCC directory to your environment PATH";
 
 [Files]
-Source: "..\propside-build-desktop\release\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "IDE_LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_2_1.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_EXCEPTION.txt"; DestDir: "{app}"; Flags: ignoreversion
