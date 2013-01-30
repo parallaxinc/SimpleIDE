@@ -53,3 +53,13 @@ void AboutDialog::show()
     }
     QDialog::show();
 }
+
+void AboutDialog::exec()
+{
+    QSettings settings(publisherKey, ASideGuiKey, this);
+    QVariant helpStartup = settings.value(helpStartupKey,true);
+    if(helpStartup.canConvert(QVariant::Bool)) {
+        showSplashStartCheckBox->setChecked(helpStartup.toBool());
+    }
+    QDialog::exec();
+}

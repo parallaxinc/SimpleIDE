@@ -267,18 +267,18 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     this->show(); // show gui before about for mac
     QApplication::processEvents();
 
+    /* show help dialog */
+    QVariant helpStartup = settings->value(helpStartupKey,true);
+    if(helpStartup.canConvert(QVariant::Bool)) {
+        if(helpStartup == true)
+            aboutDialog->exec();
+    }
+
     /* show hint for Simple/Project view settings */
     if(this->simpleViewType)
         HintDialog::hint("SimpleProjectView", "Welcome to the new Simple View.  If you prefer Project View from previous versions, just click Tools and select Set Project View.");
     else
         HintDialog::hint("SimpleProjectView", "This is the Project View.  If you prefer Simple View from previous versions, just click Tools and select Set Simple View.");
-
-    /* show help dialog */
-    QVariant helpStartup = settings->value(helpStartupKey,true);
-    if(helpStartup.canConvert(QVariant::Bool)) {
-        if(helpStartup == true)
-            aboutShow();
-    }
 
 }
 

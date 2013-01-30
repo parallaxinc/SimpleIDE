@@ -85,7 +85,21 @@ int ASideConfig::addBoards(QString filePath)
     dir.setSorting(QDir::Name);
     QStringList names = dir.entryList(filter);
 
+    QString boardfile(filePath+"boards.txt");
+    QString boardtxt("");
+    if(QFile::exists(boardfile)) {
+        QFile bd(boardfile);
+        if(bd.open(QFile::ReadOnly | QFile::Text)) {
+            boardtxt = bd.readAll();
+            bd.close();
+        }
+    }
+
     foreach(QString name, names) {
+        if(boardtxt.isEmpty() == false) {
+            if(boardtxt.contains(name, Qt::CaseInsensitive) == false)
+                continue;
+        }
         QFile fileReader(filePath+name);
         if (!fileReader.open(QIODevice::ReadOnly))
             return 0;
