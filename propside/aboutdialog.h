@@ -10,6 +10,7 @@ class AboutDialog : public QDialog
 public:
     explicit AboutDialog(QString landing, QWidget *parent = 0);
     void    show();
+    void    exec();
 
 private:
     QCheckBox *showSplashStartCheckBox;
