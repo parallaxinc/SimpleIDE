@@ -301,6 +301,7 @@ private:
 
     QAction         *btnBoardReset;
     QAction         *btnProjectClose;
+    QAction         *btnLoadBoards;
     QPushButton     *btnShowProjectPane;
     QPushButton     *btnShowStatusPane;
 

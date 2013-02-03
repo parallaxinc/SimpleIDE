@@ -5530,6 +5530,7 @@ void MainSpinWindow::setupFileMenu()
     toolsMenu->insertAction(last,bigger);
 
     toolsMenu->addSeparator();
+    toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(initBoardTypes()));
     toolsMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
 
     QMenu *programMenu = new QMenu(tr("&Program"), this);
@@ -5737,10 +5738,10 @@ void MainSpinWindow::setupToolBars()
     cbBoard->setToolTip(tr("Board Type Select"));
     cbBoard->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(cbBoard,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentBoard(int)));
-    QToolButton *btnLoadBoards = new QToolButton(this);
+    btnLoadBoards = new QAction(this);
     btnLoadBoards->setToolTip(tr("Reload Board List"));
     connect(btnLoadBoards,SIGNAL(clicked()),this,SLOT(initBoardTypes()));
-    addToolButton(boardToolBar, btnLoadBoards, QString(":/images/hardware.png"));
+    addToolBarAction(boardToolBar, btnLoadBoards, QString(":/images/hardware.png"));
     boardToolBar->addWidget(cbBoard);
     boardToolBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 #endif
@@ -5843,6 +5844,7 @@ void MainSpinWindow::showSimpleView(bool simple)
         addToolsToolBar->show();
         sdCardToolBar->hide();
         btnBoardReset->setVisible(false);
+        btnLoadBoards->setVisible(false);
         btnShowProjectPane->show();
         btnShowStatusPane->show();
         programSize->setMinimumWidth(projwidth);
@@ -5884,6 +5886,7 @@ void MainSpinWindow::showSimpleView(bool simple)
         addToolsToolBar->show();
         sdCardToolBar->hide();
         btnBoardReset->setVisible(true);
+        btnLoadBoards->setVisible(true);
         btnShowProjectPane->hide();
         btnShowStatusPane->hide();
         programSize->setMinimumWidth(projwidth);
