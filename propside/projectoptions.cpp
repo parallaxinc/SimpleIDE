@@ -428,6 +428,9 @@ void ProjectOptions::setMemModel(QString s)
     int n = ui->comboBoxMemoryMode->count();
     while(--n > -1) {
         QString op = ui->comboBoxMemoryMode->itemText(n);
+        if(s.length() < op.length() && op.mid(s.length(),1).at(0) == ' ') {
+            op = op.mid(0,s.length());
+        }
         if(op.compare(s, Qt::CaseInsensitive) == 0) {
             ui->comboBoxMemoryMode->setCurrentIndex(n);
             break;
