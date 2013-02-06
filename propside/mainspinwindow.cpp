@@ -5723,9 +5723,9 @@ void MainSpinWindow::setupToolBars()
 
     btnProgramStopBuild->setToolTip(tr("Stop Build or Loader"));
     btnProgramBuild->setToolTip(tr("Build Project"));
-    btnProgramBurnEEP->setToolTip(tr("Burn Project to EEPROM"));
+    btnProgramBurnEEP->setToolTip(tr("Load Project to EEPROM"));
     btnProgramRun->setToolTip(tr("Run Project"));
-    btnProgramDebugTerm->setToolTip(tr("Run Project with Console"));
+    btnProgramDebugTerm->setToolTip(tr("Run Project with Terminal"));
 
 #ifdef SIMPLE_BOARD_TOOLBAR
     /*
@@ -5760,7 +5760,7 @@ void MainSpinWindow::setupToolBars()
     connect(cbPort,SIGNAL(clicked()),this,SLOT(enumeratePorts()));
 
     btnConnected = new QToolButton(this);
-    btnConnected->setToolTip(tr("Serial Port Console"));
+    btnConnected->setToolTip(tr("SimpleIDE Terminal"));
     btnConnected->setCheckable(true);
     connect(btnConnected,SIGNAL(clicked()),this,SLOT(connectButton()));
 

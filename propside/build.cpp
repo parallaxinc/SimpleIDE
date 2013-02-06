@@ -400,12 +400,12 @@ void Build::statusNone()
 
 void Build::statusFailed()
 {
-    status->setStyleSheet("QLabel { background-color: \"red\"; }");
+    status->setStyleSheet("QLabel { background-color: rgb(255,0,0); }");
 }
 
 void Build::statusPassed()
 {
-    status->setStyleSheet("QLabel { background-color: \"lime\"; }");
+    status->setStyleSheet("QLabel { background-color: rgb(0,200,0); }");
 }
 
 void Build::compilerError(QProcess::ProcessError error)
