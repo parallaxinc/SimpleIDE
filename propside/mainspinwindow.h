@@ -329,7 +329,7 @@ private:
     QComboBox       *cbBoard;
     QComboBox       *cbPort;
     QStringList     friendlyPortName;
-    QToolButton     *btnConnected;
+    QAction         *btnConnected;
     QToolButton     *btnDownloadSdCard;
 
 #if defined(LOADER_TERMINAL)

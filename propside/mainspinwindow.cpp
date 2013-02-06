@@ -58,7 +58,7 @@
 #define SaveAsFile "Save &As"
 
 #define AddTab "Add &Tab to Project"
-#define AddLib "Add &Library to Project"
+#define AddLib "Add Simple &Library"
 #define SaveAndCloseProject "Save and Close Project"
 #define SaveAsProject "Save As Project"
 #define SetProject "Set Project"
@@ -3107,7 +3107,7 @@ void MainSpinWindow::findDeclarationInfo()
 {
 #if defined(Q_WS_MAC)
      QMessageBox::information(this,
-         tr("Browse Declaration"),
+         tr("Browse Code"),
          tr("Use \"Command+]\" to find a declaration.\n" \
             "Also \"Command+Left Click\" finds a declaration.\n" \
             "Use \"Command+[\" to go back.\n\n" \
@@ -3115,7 +3115,7 @@ void MainSpinWindow::findDeclarationInfo()
          QMessageBox::Ok);
 #else
     QMessageBox::information(this,
-        tr("Browse Declaration"),
+        tr("Browse Code"),
         tr("Use \"Alt+Right Arrow\" to find a declaration.\n" \
            "Also \"Ctrl+Left Click\" finds a declaration.\n" \
            "Use \"Alt+Left Arrow\" to go back.\n\n" \
@@ -3475,7 +3475,7 @@ void MainSpinWindow::setupHelpMenu()
     menuBar()->addMenu(helpMenu);
     aboutDialog = new AboutDialog(aboutLanding, this);
 
-    helpMenu->addAction(QIcon(":/images/SimpleManual.png"), tr("Simple Manual (PDF)"), this, SLOT(userguideShow()));
+    helpMenu->addAction(QIcon(":/images/SimpleManual.png"), tr("SimpleIDE Manual (PDF)"), this, SLOT(userguideShow()));
     helpMenu->addAction(QIcon(":/images/CTutorials.png"), tr("Propeller C Tutorials (Online)"), this, SLOT(tutorialShow()));
     helpMenu->addAction(QIcon(":/images/Reference.png"), tr("PropGCC &Reference (Online)"), this, SLOT(referenceShow()));
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
@@ -5448,10 +5448,11 @@ void MainSpinWindow::setupFileMenu()
     projMenu->addAction(QIcon(":/images/saveasproj.png"), tr(SaveAsProject), this, SLOT(saveAsProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_A);
     //projMenu->addAction(QIcon(":/images/cloneproj.png"), tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
     //projMenu->addAction(tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
+    projMenu->addAction(QIcon(":/images/zip2.png"), tr(ZipProject), this, SLOT(zipProject()), Qt::CTRL+Qt::Key_Z);
+    projMenu->addSeparator();
     projMenu->addAction(QIcon(":/images/closeproj.png"), tr(SaveAndCloseProject), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
     projMenu->addAction(QIcon(":/images/project.png"), tr(SetProject), this, SLOT(setProject()), Qt::Key_F4);
     //projMenu->addAction(QIcon(":/images/hardware.png"), tr("Load Board Types"), this, SLOT(hardware()), Qt::Key_F6);
-    projMenu->addAction(QIcon(":/images/zip2.png"), tr(ZipProject), this, SLOT(zipProject()), Qt::CTRL+Qt::Key_Z);
     projMenu->addAction(QIcon(":/images/addlib.png"), tr(AddLib), this, SLOT(addLib()), 0);
     projMenu->addAction(QIcon(":/images/addtab.png"), tr(AddTab), this, SLOT(addTab()), 0);
 
@@ -5538,12 +5539,12 @@ void MainSpinWindow::setupFileMenu()
 
     programMenu->addAction(QIcon(":/images/RunConsole2.png"), tr("Run with Terminal"), this, SLOT(programDebug()), Qt::Key_F8);
     programMenu->addAction(QIcon(":/images/build3.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::Key_F9);
-    programMenu->addAction(QIcon(":/images/run.png"), tr("Load RAM && RUN"), this, SLOT(programRun()), Qt::Key_F10);
-    programMenu->addAction(QIcon(":/images/burnee.png"), tr("Load EEPROM && RUN"), this, SLOT(programBurnEE()), Qt::Key_F11);
+    programMenu->addAction(QIcon(":/images/run.png"), tr("Load RAM && Run"), this, SLOT(programRun()), Qt::Key_F10);
+    programMenu->addAction(QIcon(":/images/burnee.png"), tr("Load EEPROM && Run"), this, SLOT(programBurnEE()), Qt::Key_F11);
+    programMenu->addAction(QIcon(":/images/Abort.png"), tr("Stop Build or Loader"), this, SLOT(programStopBuild()));
     programMenu->addSeparator();
     programMenu->addAction(QIcon(":/images/SaveToSD.png"), tr(FileToSDCard), this, SLOT(downloadSdCard()));
     programMenu->addAction(QIcon(":/images/console.png"), tr("Open Terminal"), this, SLOT(menuActionConnectButton()));
-    programMenu->addAction(QIcon(":/images/Abort.png"), tr("Stop Build or Loader"), this, SLOT(programStopBuild()));
     programMenu->addAction(QIcon(":/images/reset.png"), tr("Reset Port"), this, SLOT(portResetButton()));
 
 #if defined(GDBENABLE)
@@ -5625,7 +5626,7 @@ void MainSpinWindow::setupToolBars()
     /*
      * Add Tools Toobar ... add tab, add lib
      */
-    addToolsToolBar = addToolBar(tr("Add Tools"));
+    addToolsToolBar = addToolBar(tr("Add to Project"));
     // put add tools on a separate tool bar
     QToolButton *btnProjectAddTab = new QToolButton(this);
     QToolButton *btnProjectAddLib = new QToolButton(this);
@@ -5675,7 +5676,7 @@ void MainSpinWindow::setupToolBars()
     btnProjectProperties->setToolTip(tr("Properties"));
 
     if(ctags->enabled()) {
-        browseToolBar = addToolBar(tr("Browser"));
+        browseToolBar = addToolBar(tr("Browse Code"));
         btnBrowseBack = new QToolButton(this);
         addToolButton(browseToolBar, btnBrowseBack, QString(":/images/back.png"));
         connect(btnBrowseBack,SIGNAL(clicked()),this,SLOT(prevDeclaration()));
@@ -5689,7 +5690,7 @@ void MainSpinWindow::setupToolBars()
     }
 
 #if defined(SD_TOOLS)
-    sdCardToolBar = addToolBar(tr("Tools"));
+    sdCardToolBar = addToolBar(tr("SD Card"));
     //QToolButton *btnSaveToSdCard = new QToolButton(this);
     //addToolButton(sdCardToolBar, btnSaveToSdCard, QString(":/images/flashdrive.png"));
     //connect(btnSaveToSdCard, SIGNAL(clicked()),this,SLOT(savePexFile()));
@@ -5723,9 +5724,9 @@ void MainSpinWindow::setupToolBars()
 
     btnProgramStopBuild->setToolTip(tr("Stop Build or Loader"));
     btnProgramBuild->setToolTip(tr("Build Project"));
-    btnProgramBurnEEP->setToolTip(tr("Load Project to EEPROM"));
-    btnProgramRun->setToolTip(tr("Run Project"));
-    btnProgramDebugTerm->setToolTip(tr("Run Project with Terminal"));
+    btnProgramBurnEEP->setToolTip(tr("Load EEPROM & Run"));
+    btnProgramRun->setToolTip(tr("Load RAM & Run"));
+    btnProgramDebugTerm->setToolTip(tr("Run with Terminal"));
 
 #ifdef SIMPLE_BOARD_TOOLBAR
     /*
@@ -5759,7 +5760,7 @@ void MainSpinWindow::setupToolBars()
     connect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
     connect(cbPort,SIGNAL(clicked()),this,SLOT(enumeratePorts()));
 
-    btnConnected = new QToolButton(this);
+    btnConnected = new QAction(this);
     btnConnected->setToolTip(tr("SimpleIDE Terminal"));
     btnConnected->setCheckable(true);
     connect(btnConnected,SIGNAL(clicked()),this,SLOT(connectButton()));
@@ -5778,7 +5779,7 @@ void MainSpinWindow::setupToolBars()
     connect(btnBoardReset, SIGNAL(triggered()), this, SLOT(portResetButton()));
 
     //addToolButton(ctrlToolBar, btnBoardReset, QString(":/images/reset.png"));
-    addToolButton(ctrlToolBar, btnConnected, QString(":/images/console.png"));
+    addToolBarAction(ctrlToolBar, btnConnected, QString(":/images/console.png"));
 #ifdef BUTTON_PORT_SCAN
     addToolButton(ctrlToolBar, btnPortScan, QString(":/images/refresh.png"));
 #endif
@@ -5845,6 +5846,7 @@ void MainSpinWindow::showSimpleView(bool simple)
         sdCardToolBar->hide();
         btnBoardReset->setVisible(false);
         btnLoadBoards->setVisible(false);
+        btnConnected->setVisible(false);
         btnShowProjectPane->show();
         btnShowStatusPane->show();
         programSize->setMinimumWidth(projwidth);
@@ -5884,9 +5886,10 @@ void MainSpinWindow::showSimpleView(bool simple)
         propToolBar->show();
         btnProjectClose->setVisible(true);
         addToolsToolBar->show();
-        sdCardToolBar->hide();
+        sdCardToolBar->show();
         btnBoardReset->setVisible(true);
         btnLoadBoards->setVisible(true);
+        btnConnected->setVisible(true);
         btnShowProjectPane->hide();
         btnShowStatusPane->hide();
         programSize->setMinimumWidth(projwidth);
