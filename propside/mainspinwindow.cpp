@@ -965,7 +965,7 @@ void MainSpinWindow::newProject()
 
         if(ftype.endsWith(".c")) {
             QString main("/**\n" \
-              " * This is the main "+dstName+" program start point.\n" \
+              " * This is the main "+dstName+" program file.\n" \
               " */\n" \
               "#include \"simpletools.h\"\n\n" \
               "int main(void)\n" \
@@ -977,7 +977,7 @@ void MainSpinWindow::newProject()
         }
         else if(ftype.endsWith(".cpp")) {
             QString main("/**\n" \
-              " * This is the main "+dstName+" program start point.\n" \
+              " * This is the main "+dstName+" program file.\n" \
               " */\n" \
               "#include \"simpletools.h\"\n\n" \
               "int main(void)\n" \
@@ -1025,6 +1025,9 @@ void MainSpinWindow::newProject()
         projectOptions->setCompiler(comp);
         qDebug() << "Set Memory Model: CMM";
         projectOptions->setMemModel(projectOptions->memTypeCMM);
+        QString s = projectOptions->getCompOptions();
+        if(s.contains("-std=c99", Qt::CaseInsensitive) == false)
+            projectOptions->setCompOptions(s + "-std=c99");
         qDebug() << "Save Project File: " << projectFile;
         saveProjectOptions();
     }
@@ -1044,7 +1047,7 @@ void MainSpinWindow::newProjectAccepted()
 
     QString C_maintemplate("/**\n" \
          " * @file "+name+".c\n" \
-         " * This is the main "+name+" program start point.\n" \
+         " * This is the main "+name+" program file.\n" \
          " */\n" \
          "\n" \
          "/**\n" \
@@ -1058,7 +1061,7 @@ void MainSpinWindow::newProjectAccepted()
 
     QString Cpp_maintemplate("/**\n" \
          " * @file "+name+".cpp\n" \
-         " * This is the main "+name+" program start point.\n" \
+         " * This is the main "+name+" program file.\n" \
          " */\n" \
          "\n" \
          "/**\n" \
@@ -1072,7 +1075,7 @@ void MainSpinWindow::newProjectAccepted()
 #ifdef SPIN
     QString SPIN_maintemplate("{{\n" \
          " * @file "+name+".spin\n" \
-         " * This is the main "+name+" program start point.\n" \
+         " * This is the main "+name+" program file.\n" \
          "}} \n" \
          "\n" \
          "{{\n" \
@@ -2612,7 +2615,13 @@ void MainSpinWindow::downloadSdCard()
 
     // don't add fileName here since it can have spaces
     QStringList args = getLoaderParameters("");
-    builder->removeArg(args, "a.out");
+    QString s = projectOptions->getMemModel();
+    if(s.contains(" "))
+        s = s.mid(0,s.indexOf(" "));
+    s += "/"+this->shortFileName(projectFile);
+    s = s.mid(0,s.lastIndexOf(".side"));
+    s += ".elf";
+    builder->removeArg(args, s);
 
     //QString s = QDir::toNativeSeparators(fileName);
     args.append("-f");
@@ -3396,7 +3405,14 @@ void MainSpinWindow::debugCompileLoad()
             break;
         }
     }
-    gdb->load(gdbprog, sourcePath(projectFile), aSideCompilerPath+"gdbstub", "a.out", port);
+    QString s = projectOptions->getMemModel();
+    if(s.contains(" "))
+        s = s.mid(0,s.indexOf(" "));
+    s += "/"+this->shortFileName(projectFile);
+    s = s.mid(0,s.lastIndexOf(".side"));
+    s += ".elf";
+
+    gdb->load(gdbprog, sourcePath(projectFile), aSideCompilerPath+"gdbstub", s, port);
 }
 
 void MainSpinWindow::gdbShowLine()
@@ -3785,12 +3801,24 @@ int  MainSpinWindow::runLoader(QString copts)
     }
 
     if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
-        copts.append(" -z a.out");
+        QString s = projectOptions->getMemModel();
+        if(s.contains(" "))
+            s = s.mid(0,s.indexOf(" "));
+        s += "/"+this->shortFileName(projectFile);
+        s = s.mid(0,s.lastIndexOf(".side"));
+        s += ".elf";
+        copts.append(" -z " + s);
         qDebug() << loadtype << copts;
     }
     else
         if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
-        copts.append(" -l a.out");
+        QString s = projectOptions->getMemModel();
+        if(s.contains(" "))
+            s = s.mid(0,s.indexOf(" "));
+        s += "/"+this->shortFileName(projectFile);
+        s = s.mid(0,s.lastIndexOf(".side"));
+        s += ".elf";
+        copts.append(" -l " + s);
         qDebug() << loadtype << copts;
     }
 
@@ -3855,7 +3883,7 @@ void MainSpinWindow::closeTab(int tab)
     fileChangeDisable = false;
 }
 
-void MainSpinWindow::saveTab(int tab)
+void MainSpinWindow::saveTab(int tab, bool ask)
 {
     if(editors->count() < 1)
         return;
@@ -3872,10 +3900,15 @@ void MainSpinWindow::saveTab(int tab)
             saveAsFile(editors->at(tab)->toolTip());
         }
         else {
-            mbox.setInformativeText(tr("Save File? ") + tabName.mid(0,tabName.indexOf(" *")));
-            int ret = mbox.exec();
-            if(ret == QMessageBox::Save)
+            if(ask) {
+                mbox.setInformativeText(tr("Save File? ") + tabName.mid(0,tabName.indexOf(" *")));
+                int ret = mbox.exec();
+                if(ret == QMessageBox::Save)
+                    saveFileByTabIndex(tab);
+            }
+            else {
                 saveFileByTabIndex(tab);
+            }
         }
     }
 
@@ -4772,7 +4805,7 @@ void MainSpinWindow::saveProject()
                 continue;
             // save exact tab
             if(editorTabs->tabToolTip(tab).compare(s) == 0)
-                saveTab(tab);
+                saveTab(tab, false);
         }
     }
 }
@@ -5640,7 +5673,7 @@ void MainSpinWindow::setupToolBars()
     /*
      * Add Properties after add tools
      */
-    propToolBar = addToolBar(tr("Misc. Project"));
+    propToolBar = addToolBar(tr("Miscellaneous"));
     QToolButton *btnProjectApp = new QToolButton(this);
 
     addToolButton(propToolBar, btnProjectApp, QString(":/images/project.png"));
