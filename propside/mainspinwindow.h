@@ -75,6 +75,7 @@ public slots:
     void newProject();
     void newProjectAccepted();
     void openProject(const QString &path = QString());
+    void saveProject();
     void saveAsProject(const QString &path = QString());
     void cloneProject();
     void closeProject();
@@ -88,7 +89,7 @@ public slots:
     void userguideShow();
     void projectTreeClicked(QModelIndex index);
     void closeTab(int index = 0);
-    void saveTab(int index = 0);
+    void saveTab(int index = 0, bool ask = true);
     void editorTabMenu(QPoint);
     void changeTab(bool trig);
     void clearTabHighlight();
@@ -245,7 +246,6 @@ private:
     bool isOutputFile(QString file);
     void addProjectListFile(QString fileName);
 
-    void saveProject();
     void saveProjectOptions();
     void saveSpinProjectOptions();
     void saveManagedProjectOptions();
