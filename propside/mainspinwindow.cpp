@@ -63,7 +63,12 @@
 #define SaveAsProject "Save As Project"
 #define SetProject "Set Project"
 #define CloneProject "Clone Project"
-#define ZipProject "Zip Project"
+#define ZipProject "Zip"
+
+#define AddFileCopy "Add File Copy"
+#define AddFileLink "Add File Link"
+#define AddIncludePath "Add Include Path"
+#define AddLibraryPath "Add Library Path"
 
 #define ProjectView "Set Project View"
 #define SimpleView  "Set Simple View"
@@ -3991,12 +3996,11 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 
     // projectMenu is popup for projectTree
     projectMenu = new QMenu(QString("Project Menu"));
-    projectMenu->addAction(tr("Add File Copy"), this,SLOT(addProjectFile()));
-    projectMenu->addAction(tr("Add File Link"), this,SLOT(addProjectLink()));
-    projectMenu->addAction(tr("Add Include Path"), this,SLOT(addProjectIncPath()));
-    /* adding .a libraries are bad. Use add library path and -lname instead */
-    //projectMenu->addAction(tr("Add Library File"), this,SLOT(addProjectLibFile()));
-    projectMenu->addAction(tr("Add Library Path"), this,SLOT(addProjectLibPath()));
+    projectMenu->addAction(tr(AddFileCopy), this,SLOT(addProjectFile()));
+    projectMenu->addAction(tr(AddFileLink), this,SLOT(addProjectLink()));
+    projectMenu->addAction(tr(AddIncludePath), this,SLOT(addProjectIncPath()));
+    projectMenu->addAction(tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
+
     projectMenu->addAction(tr("Delete"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
     projectMenu->addAction(tr("Show Map File"), this,SLOT(showMapFile()));
@@ -4664,8 +4668,42 @@ void MainSpinWindow::deleteProjectFile()
                 continue;
             if(arg.at(0) == '>')
                 continue;
-            if(!n || fileName != arg)
+
+            /* if we don't have a match, include the name in the project.
+             * else ....
+             */
+            if(!n || fileName != arg) {
                 projstr += arg + "\n";
+            }
+            /* if we have a match, check if it's a library path "-L",
+             * and remove -lname from linker
+             */
+            else {
+                if(fileName.indexOf("-L") == 0) {
+                    QString s = projectOptions->getLinkOptions();
+                    // arg = arg.replace("/","\\"); // test of replace only
+                    /* get length of arg */
+                    int alen = arg.length();
+                    /* if arg has \ in it replace with / */
+                    if(arg.contains("\\"))
+                        arg = arg.replace("\\","/");
+                    /* remove trailing / */
+                    if(arg.at(alen-1) == '/')
+                        arg = arg.mid(0,alen-1);
+                    /* get last word in path */
+                    arg = arg.mid(arg.lastIndexOf("/")+1);
+                    /* if start with lib, remove lib */
+                    if(arg.indexOf("lib") == 0)
+                        arg = arg.mid(3);
+                    /* prepend -l */
+                    arg = "-l"+arg;
+                    /* if the link options has our -lname, remove it. set new link options. */
+                    if(s.contains(arg)) {
+                        s = s.remove(arg);
+                        projectOptions->setLinkOptions(s);
+                    }
+                }
+            }
         }
         list.clear();
 #ifdef SPIN
@@ -5475,13 +5513,17 @@ void MainSpinWindow::setupFileMenu()
     projMenu = new QMenu(tr("&Project"), this);
     menuBar()->addMenu(projMenu);
 
-    projMenu->addAction(QIcon(":/images/newproj.png"), tr("New Project"), this, SLOT(newProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_N);
-    projMenu->addAction(QIcon(":/images/openproj.png"), tr("Open Project"), this, SLOT(openProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_O);
-    projMenu->addAction(QIcon(":/images/saveproj.png"), tr("Save Project"), this, SLOT(saveProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_S);
+    projMenu->addAction(QIcon(":/images/newproj.png"), tr("New"), this, SLOT(newProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_N);
+    projMenu->addAction(QIcon(":/images/openproj.png"), tr("Open"), this, SLOT(openProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_O);
+    projMenu->addAction(QIcon(":/images/saveproj.png"), tr("Save"), this, SLOT(saveProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_S);
     projMenu->addAction(QIcon(":/images/saveasproj.png"), tr(SaveAsProject), this, SLOT(saveAsProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_A);
-    //projMenu->addAction(QIcon(":/images/cloneproj.png"), tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
-    //projMenu->addAction(tr(CloneProject), this, SLOT(cloneProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_C);
     projMenu->addAction(QIcon(":/images/zip2.png"), tr(ZipProject), this, SLOT(zipProject()), Qt::CTRL+Qt::Key_Z);
+
+    projMenu->addAction(tr(AddFileCopy), this, SLOT(addProjectFile()));
+    projMenu->addAction(tr(AddFileLink), this,SLOT(addProjectLink()));
+    projMenu->addAction(tr(AddIncludePath), this,SLOT(addProjectIncPath()));
+    projMenu->addAction(tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
+
     projMenu->addSeparator();
     projMenu->addAction(QIcon(":/images/closeproj.png"), tr(SaveAndCloseProject), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
     projMenu->addAction(QIcon(":/images/project.png"), tr(SetProject), this, SLOT(setProject()), Qt::Key_F4);
@@ -5894,14 +5936,18 @@ void MainSpinWindow::showSimpleView(bool simple)
                    txt.contains(OpenFile) ||
                    txt.contains(SaveFile) ||
                    txt.contains(SaveAsFile))
-                    fa->setVisible(false);
+                   fa->setVisible(false);
             }
         }
         foreach(QAction *pa, projMenuList) {
             QString txt = pa->text();
             if(txt != NULL) {
-                if(txt.contains(SetProject))
-                    pa->setVisible(false);
+                if(txt.contains(SetProject) ||
+                   txt.contains(AddFileCopy) ||
+                   txt.contains(AddFileLink) ||
+                   txt.contains(AddIncludePath) ||
+                   txt.contains(AddLibraryPath))
+                   pa->setVisible(false);
             }
         }
         if(ctags->enabled()) {
@@ -5935,14 +5981,18 @@ void MainSpinWindow::showSimpleView(bool simple)
                    txt.contains(OpenFile) ||
                    txt.contains(SaveFile) ||
                    txt.contains(SaveAsFile))
-                    fa->setVisible(true);
+                   fa->setVisible(true);
             }
         }
         foreach(QAction *pa, projMenuList) {
             QString txt = pa->text();
             if(txt != NULL) {
-                if(txt.contains(SetProject))
-                    pa->setVisible(true);
+                if(txt.contains(SetProject) ||
+                   txt.contains(AddFileCopy) ||
+                   txt.contains(AddFileLink) ||
+                   txt.contains(AddIncludePath) ||
+                   txt.contains(AddLibraryPath))
+                   pa->setVisible(true);
             }
         }
         if(ctags->enabled()) {
