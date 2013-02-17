@@ -38,7 +38,7 @@
 
 #define SIMPLE_BOARD_TOOLBAR
 #define SD_TOOLS
-#define APPWINDOW_START_HEIGHT 675
+#define APPWINDOW_START_HEIGHT 720
 #define APPWINDOW_START_WIDTH 675
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 300
@@ -116,7 +116,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
         editorFont = QFont(family);
     }
     else {
-        editorFont = QFont("Courier New", 10, QFont::Normal, false);
+        editorFont = QFont("Courier New", 12, QFont::Normal, false);
     }
 
     fontv = settings->value(fontSizeKey);
@@ -2940,7 +2940,7 @@ void MainSpinWindow::fontDialog()
         font = QFontDialog::getFont(&ok, edfont);
     }
     else {
-        font = QFontDialog::getFont(&ok, this->font());
+        font = QFontDialog::getFont(&ok, editorFont);
     }
 
     if(ok) {
@@ -3974,11 +3974,9 @@ void MainSpinWindow::addToolBarAction(QToolBar *bar, QAction *btn, QString imgfi
 
 void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 {
-    int adjust = 0;
-
     /* container for project, etc... */
     leftSplit = new QSplitter(this);
-    leftSplit->setMinimumHeight(APPWINDOW_START_HEIGHT-adjust);
+    leftSplit->setMinimumHeight(APPWINDOW_START_HEIGHT/2);
     leftSplit->setOrientation(Qt::Vertical);
     vsplit->addWidget(leftSplit);
 
@@ -4028,14 +4026,14 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     leftSplit->addWidget(projectOptions);
 
     QList<int> lsizes = leftSplit->sizes();
-    lsizes[0] = leftSplit->height()*76/100;
-    lsizes[1] = leftSplit->height()*24/100;
+    lsizes[0] = leftSplit->height()*50/100;
+    lsizes[1] = leftSplit->height()*50/100;
     leftSplit->setSizes(lsizes);
 
     leftSplit->adjustSize();
 
     rightSplit = new QSplitter(this);
-    rightSplit->setMinimumHeight(APPWINDOW_START_HEIGHT-adjust);
+    rightSplit->setMinimumHeight(APPWINDOW_START_HEIGHT/2);
     rightSplit->setOrientation(Qt::Vertical);
     vsplit->addWidget(rightSplit);
 
@@ -4078,8 +4076,8 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     rightSplit->addWidget(statusTabs);
 
     QList<int> rsizes = rightSplit->sizes();
-    rsizes[0] = rightSplit->height()*76/100;
-    rsizes[1] = rightSplit->height()*24/100;
+    rsizes[0] = rightSplit->height()*90/100;
+    rsizes[1] = rightSplit->height()*10/100;
     rightSplit->setSizes(rsizes);
 
     rightSplit->adjustSize();
