@@ -38,8 +38,8 @@
 
 #define SIMPLE_BOARD_TOOLBAR
 #define SD_TOOLS
-#define APPWINDOW_MIN_HEIGHT 720
-#define APPWINDOW_MIN_WIDTH 720
+#define APPWINDOW_START_HEIGHT 675
+#define APPWINDOW_START_WIDTH 675
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 300
 
@@ -88,10 +88,15 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     /* get last geometry. using x,y,w,h is unreliable.
      */
     QVariant geov = settings->value(ASideGuiGeometry);
-    // byte array convert is always possible
-    QByteArray geo = geov.toByteArray();
-    // restoreGeometry makes sure the array is valid
-    this->restoreGeometry(geo);
+    if(geov.canConvert(QVariant::ByteArray)) {
+        // byte array convert is always possible
+        QByteArray geo = geov.toByteArray();
+        // restoreGeometry makes sure the array is valid
+        this->restoreGeometry(geo);
+    }
+    else {
+        this->setGeometry(this->x(), this->y(), APPWINDOW_START_WIDTH, APPWINDOW_START_HEIGHT);
+    }
 
     /* setup properties dialog */
     propDialog = new Properties(this);
@@ -141,10 +146,6 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     setWindowTitle(ASideGuiKey);
     QSplitter *vsplit = new QSplitter(this);
     setCentralWidget(vsplit);
-
-    /* minimum window height */
-    this->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
-    this->setMinimumWidth(APPWINDOW_MIN_WIDTH);
 
     /* project tools */
     setupProjectTools(vsplit);
@@ -3973,11 +3974,11 @@ void MainSpinWindow::addToolBarAction(QToolBar *bar, QAction *btn, QString imgfi
 
 void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 {
-    int adjust = 100;
+    int adjust = 0;
 
     /* container for project, etc... */
     leftSplit = new QSplitter(this);
-    leftSplit->setMinimumHeight(APPWINDOW_MIN_HEIGHT-adjust);
+    leftSplit->setMinimumHeight(APPWINDOW_START_HEIGHT-adjust);
     leftSplit->setOrientation(Qt::Vertical);
     vsplit->addWidget(leftSplit);
 
@@ -4027,14 +4028,14 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     leftSplit->addWidget(projectOptions);
 
     QList<int> lsizes = leftSplit->sizes();
-    lsizes[0] = leftSplit->height()*60/100;
-    lsizes[1] = leftSplit->height()*40/100;
+    lsizes[0] = leftSplit->height()*76/100;
+    lsizes[1] = leftSplit->height()*24/100;
     leftSplit->setSizes(lsizes);
 
     leftSplit->adjustSize();
 
     rightSplit = new QSplitter(this);
-    rightSplit->setMinimumHeight(APPWINDOW_MIN_HEIGHT-adjust);
+    rightSplit->setMinimumHeight(APPWINDOW_START_HEIGHT-adjust);
     rightSplit->setOrientation(Qt::Vertical);
     vsplit->addWidget(rightSplit);
 
@@ -4077,8 +4078,8 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     rightSplit->addWidget(statusTabs);
 
     QList<int> rsizes = rightSplit->sizes();
-    rsizes[0] = rightSplit->height()*63/100;
-    rsizes[1] = rightSplit->height()*37/100;
+    rsizes[0] = rightSplit->height()*76/100;
+    rsizes[1] = rightSplit->height()*24/100;
     rightSplit->setSizes(rsizes);
 
     rightSplit->adjustSize();
@@ -4117,8 +4118,6 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     statusBar->addWidget(btnShowStatusPane);
     statusBar->addWidget(status);
     statusBar->setMaximumHeight(32);
-
-    this->setMinimumHeight(APPWINDOW_MIN_HEIGHT);
 
 }
 
