@@ -66,6 +66,7 @@ public slots:
     void saveFile();
     void saveEditor();
     void saveFileByTabIndex(int tab);
+    QString getSaveAsFile(const QString &path = QString());
     void saveAsFile(const QString &path = QString());
     void savePexFile();
     void downloadSdCard();
