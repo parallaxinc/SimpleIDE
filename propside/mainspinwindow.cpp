@@ -682,38 +682,56 @@ void MainSpinWindow::addLib()
 /*
  * The purpose of addTab is to create a new tab for the editor
  * with a user's filename and add it to the project manager.
+ * If a file already exists, we use it instead of creating a new one.
  */
 void MainSpinWindow::addTab()
 {
     // new file tab
     newFile();
-    saveAsFile();
+    QString filename = getSaveAsFile();
+    if(filename.isEmpty())
+        return;
 
     int tab = editors->count()-1;
 
     // change tab file name and save file
-    QString filename = editorTabs->tabText(tab);
+    QString tipname  = editorTabs->tabToolTip(tab);
+    filename = this->shortFileName(filename);
 
     // add to project
     addProjectListFile(filename);
 
     Editor *ed = editors->at(tab);
-    if(ed->toPlainText().length() == 0) {
+
+    QString data;
+    if(QFile::exists(tipname)) {
+        QFile file(tipname);
+        if(file.open(QFile::ReadOnly)) {
+            QTextStream in(&file);
+            if(this->isFileUTF16(&file))
+                in.setCodec("UTF-16");
+            else
+                in.setCodec("UTF-8");
+            data = in.readAll();
+            file.close();
+            //ed->setPlainText(data);
+            setEditorTab(tab, filename, tipname, data);
+        }
+    }
+    else if(ed->toPlainText().length() == 0) {
         QString comp = projectOptions->getCompiler();
         if(comp.compare(projectOptions->C_COMPILER) == 0) {
-            ed->insertPlainText("/**\n * @file " + filename);
-            ed->appendPlainText(" */\n");
+            data = "/**\n * @file " + filename + "\n */\n";
         }
         else if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
-            ed->insertPlainText("/**\n * @file " + filename);
-            ed->appendPlainText(" */\n");
+            data = "/**\n * @file " + filename + "\n */\n";
         }
 #ifdef SPIN
         else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
-            ed->insertPlainText("{{\n @file " + filename);
-            ed->appendPlainText("}}\n");
+            data = "{{\n * @file " + filename + "\n}}\n";
         }
 #endif
+        setEditorTab(tab, filename, tipname, data);
         saveFile();
     }
 }
@@ -2501,88 +2519,97 @@ void MainSpinWindow::saveFileByTabIndex(int tab)
         }
 }
 
+QString MainSpinWindow::getSaveAsFile(const QString &path)
+{
+    int n = this->editorTabs->currentIndex();
+    //QString data = editors->at(n)->toPlainText();
+    QString fileName = path;
+
+    if (fileName.isEmpty()) {
+
+        // simpleView version
+        if(this->simpleViewType) {
+            QFileDialog dialog(this,tr("Save As File"), lastPath, "");
+            QStringList filters;
+            filters << "C File (*.c)";
+            filters << "C++ File (*.cpp)";
+#ifdef SPIN
+            filters << "Spin File (*.spin)";
+#endif
+            filters << "C Header File (*.h)";
+            filters << "COG C File (*.cog)";
+            filters << "E-COG C File (*.ecog)";
+#ifdef SPIN
+            filters << "E-Spin File (*.espin)";
+#endif
+
+            QString comp = projectOptions->getCompiler();
+            if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
+                filters.removeAt(1);
+                filters.insert(0,"C++ Project (*.cpp)");
+            }
+    #ifdef SPIN
+            else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
+                filters.removeAt(2);
+                filters.insert(0,"Spin Project (*.spin)");
+            }
+    #endif
+
+            dialog.setNameFilters(filters);
+            if(dialog.exec() == QDialog::Rejected)
+                return QString("");
+            QStringList dstList = dialog.selectedFiles();
+            if(dstList.length() < 1)
+                return QString("");
+            QString dstPath = dstList.at(0);
+            if(dstPath.length() < 1)
+                return QString("");
+
+            QString ftype = dialog.selectedNameFilter();
+            QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
+            dstName = dstName.mid(0,dstName.lastIndexOf("."));
+            dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+            lastPath = dstPath;
+
+            ftype = ftype.mid(ftype.lastIndexOf("."));
+            ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+
+            fileName = dstPath + dstName + ftype;
+        }
+        else {
+            fileName = fileDialog.getSaveFileName(this,
+                          tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
+        }
+    }
+    if(fileName.length() > 0)
+        lastPath = sourcePath(fileName);
+
+    if (fileName.isEmpty())
+        return QString("");
+
+    this->editorTabs->setTabText(n,shortFileName(fileName));
+    editorTabs->setTabToolTip(n,fileName);
+
+    return fileName;
+}
+
 void MainSpinWindow::saveAsFile(const QString &path)
 {
-        int n = this->editorTabs->currentIndex();
-        QString data = editors->at(n)->toPlainText();
-        QString fileName = path;
+    QString fileName = getSaveAsFile(path);
+    int n = this->editorTabs->currentIndex();
+    QString data = editors->at(n)->toPlainText();
 
-        if (fileName.isEmpty()) {
-
-            // simpleView version
-            if(this->simpleViewType) {
-                QFileDialog dialog(this,tr("Save As File"), lastPath, "");
-                QStringList filters;
-                filters << "C File (*.c)";
-                filters << "C++ File (*.cpp)";
-#ifdef SPIN
-                filters << "Spin File (*.spin)";
-#endif
-                filters << "C Header File (*.h)";
-                filters << "COG C File (*.cog)";
-                filters << "E-COG C File (*.ecog)";
-#ifdef SPIN
-                filters << "E-Spin File (*.espin)";
-#endif
-
-                QString comp = projectOptions->getCompiler();
-                if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
-                    filters.removeAt(1);
-                    filters.insert(0,"C++ Project (*.cpp)");
-                }
-        #ifdef SPIN
-                else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
-                    filters.removeAt(2);
-                    filters.insert(0,"Spin Project (*.spin)");
-                }
-        #endif
-
-                dialog.setNameFilters(filters);
-                if(dialog.exec() == QDialog::Rejected)
-                    return;
-                QStringList dstList = dialog.selectedFiles();
-                if(dstList.length() < 1)
-                    return;
-                QString dstPath = dstList.at(0);
-                if(dstPath.length() < 1)
-                   return;
-
-                QString ftype = dialog.selectedNameFilter();
-                QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
-                dstName = dstName.mid(0,dstName.lastIndexOf("."));
-                dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
-                lastPath = dstPath;
-
-                ftype = ftype.mid(ftype.lastIndexOf("."));
-                ftype = ftype.mid(0,ftype.lastIndexOf(")"));
-
-                fileName = dstPath + dstName + ftype;
-            }
-            else {
-                fileName = fileDialog.getSaveFileName(this,
-                              tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
-            }
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (file.open(QFile::WriteOnly)) {
+            file.write(data.toUtf8());
+            file.close();
         }
-        if(fileName.length() > 0)
-            lastPath = sourcePath(fileName);
-
-        if (fileName.isEmpty())
-            return;
-
-        this->editorTabs->setTabText(n,shortFileName(fileName));
-        editorTabs->setTabToolTip(n,fileName);
-
-        if (!fileName.isEmpty()) {
-            QFile file(fileName);
-            if (file.open(QFile::WriteOnly)) {
-                file.write(data.toUtf8());
-                file.close();
-            }
-            // close and reopen to make sure syntax highlighting works.
-            this->closeTab(n);
-            this->openFileName(fileName);
-            setCurrentFile(fileName);
-        }
+        // close and reopen to make sure syntax highlighting works.
+        this->closeTab(n);
+        this->openFileName(fileName);
+        setCurrentFile(fileName);
+    }
 }
 
 void MainSpinWindow::savePexFile()
