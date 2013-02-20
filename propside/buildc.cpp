@@ -641,6 +641,44 @@ int  BuildC::runCompiler(QStringList copts)
     QString mainProjectFile = args.at(args.count()-1);
     args.removeLast();
 
+    /*
+     * move -I and -L entries to beginning of args list
+     * 1) make an ILlist and remove entries.
+     * 2) add entries back from ILlist.
+     */
+    QStringList ILlist;
+    foreach (QString s, args) {
+        if(inc) {
+            inc = 0;
+            args.removeOne(s);
+            ILlist.append(s);
+        }
+        else if(lib) {
+            lib = 0;
+            args.removeOne(s);
+            ILlist.append(s);
+        }
+        else if(s.indexOf("-I") == 0) {
+            inc++;
+            args.removeOne(s);
+            ILlist.append(s);
+        }
+        else if(s.indexOf("-L") == 0) {
+            lib++;
+            args.removeOne(s);
+            ILlist.append(s);
+        }
+    }
+
+    /* add back in reverse order */
+    for(int n = ILlist.length()-1; n >= 0; n--) {
+        QString s = ILlist.at(n);
+        args.insert(0,s);
+    }
+
+    inc = 0;
+    lib = 0;
+
     foreach (QString s, args) {
 
         if( s.contains(".spin",Qt::CaseInsensitive) ||
