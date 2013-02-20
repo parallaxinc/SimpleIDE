@@ -696,10 +696,17 @@ void MainSpinWindow::addTab()
 
     // change tab file name and save file
     QString tipname  = editorTabs->tabToolTip(tab);
-    filename = this->shortFileName(filename);
 
     // add to project
-    addProjectListFile(filename);
+    QString projFile = projectFile;
+    projFile = projFile.mid(0,projFile.lastIndexOf("/"));
+    QDir path(projFile);
+    QString relfile = tipname;
+    //relfile = relfile.mid(0,relfile.lastIndexOf("/"));
+    //relfile = relfile.mid(0,relfile.lastIndexOf("/"));
+    relfile = path.relativeFilePath(relfile);
+    filename = this->shortFileName(filename);
+    addProjectListFile(relfile);
 
     Editor *ed = editors->at(tab);
 
@@ -714,7 +721,6 @@ void MainSpinWindow::addTab()
                 in.setCodec("UTF-8");
             data = in.readAll();
             file.close();
-            //ed->setPlainText(data);
             setEditorTab(tab, filename, tipname, data);
         }
     }
