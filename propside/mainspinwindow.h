@@ -51,6 +51,7 @@ class MainSpinWindow : public QMainWindow
 public:
     MainSpinWindow(QWidget *parent = 0);
     Properties *propDialog;
+    QSize sizeHint() const;
 
     enum DumpType { DumpNormal, DumpReadSizes, DumpCat, DumpOff };
 

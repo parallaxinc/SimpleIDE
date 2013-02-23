@@ -38,7 +38,7 @@
 
 #define SIMPLE_BOARD_TOOLBAR
 #define SD_TOOLS
-#define APPWINDOW_START_HEIGHT 720
+#define APPWINDOW_START_HEIGHT 620
 #define APPWINDOW_START_WIDTH 720
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 300
@@ -93,9 +93,6 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
         QByteArray geo = geov.toByteArray();
         // restoreGeometry makes sure the array is valid
         this->restoreGeometry(geo);
-    }
-    else {
-        this->setGeometry(this->x(), this->y(), APPWINDOW_START_WIDTH, APPWINDOW_START_HEIGHT);
     }
 
     /* setup properties dialog */
@@ -4196,6 +4193,12 @@ void MainSpinWindow::addToolBarAction(QToolBar *bar, QAction *btn, QString imgfi
 {
     btn->setIcon(QIcon(QPixmap(imgfile.toAscii())));
     bar->addAction(btn);
+}
+
+QSize MainSpinWindow::sizeHint() const
+{
+    const QSize size(APPWINDOW_START_WIDTH, APPWINDOW_START_HEIGHT);
+    return size;
 }
 
 void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
