@@ -56,7 +56,7 @@ int CTags::runCtags(QString path)
             plist.removeAt(n);
             continue;
         }
-        if(s.at(0) == '-') {
+        if(false && s.at(0) == '-') {
             plist.removeAt(n);
             continue;
         }
@@ -64,6 +64,7 @@ int CTags::runCtags(QString path)
 
     projectPath = QDir::fromNativeSeparators(path);
     projectPath = projectPath.mid(0,projectPath.lastIndexOf("/")+1);
+    QDir projdir(projectPath);
 
     connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
@@ -73,6 +74,7 @@ int CTags::runCtags(QString path)
     process->setWorkingDirectory(projectPath);
 
     args.append("--format=1");
+    args.append("--recurse=yes");
 
     /* append project files */
     foreach(QString argstr, plist) {
@@ -81,12 +83,37 @@ int CTags::runCtags(QString path)
                 argstr = argstr.mid(argstr.indexOf(FILELINK)+QString(FILELINK).length());
                 args.append(argstr);
             }
+            else if(argstr.indexOf("-I ") == 0) {
+                argstr = argstr.mid(3);
+                argstr = projectPath+projdir.relativeFilePath(argstr);
+                QDir incs(argstr);
+                foreach(QString s, incs.entryList()) {
+                    if(s.endsWith(".h"))
+                        args.append(argstr+"/"+s);
+                }
+            }
+            else if(argstr.indexOf("-L ") == 0) {
+                argstr = argstr.mid(3);
+                argstr = projectPath+projdir.relativeFilePath(argstr);
+                QDir incs(argstr);
+                foreach(QString s, incs.entryList()) {
+                    if(s.endsWith(".c") || s.endsWith(".cpp"))
+                        args.append(argstr+"/"+s);
+                }
+            }
             else {
                 args.append(projectPath+argstr);
             }
         }
     }
+    args.removeDuplicates();
+
     procDone = false;
+    /*
+    qDebug() << ctagsProgram.toAscii();
+    for(int n = 0; n < args.count(); n++)
+        qDebug() << args.at(n);
+    */
     process->start(ctagsProgram,args);
 
     /* process Qt application events until procDone
@@ -211,6 +238,7 @@ int CTags::getLine(QString line)
             rspec = rspec.mid(rspec.indexOf('^')+1);
         if(rspec.lastIndexOf('$') > 0)
             rspec = rspec.mid(0,rspec.lastIndexOf('$'));
+        rspec = rspec.replace("\\","");
         QRegExp rx(rspec,Qt::CaseSensitive, QRegExp::RegExp);
         QRegExp rx2(rspec,Qt::CaseSensitive, QRegExp::RegExp2);
         QRegExp rxwc(rspec,Qt::CaseSensitive, QRegExp::Wildcard);
@@ -228,14 +256,16 @@ int CTags::getLine(QString line)
          * the function definition instead of a declaration.
          */
         for(int n = list.length()-1; n >= 0; n--) {
-            QString line = list.at(n)+"\n";
-            int pos = rx.indexIn(line);
-            pos &= rx2.indexIn(line);
-            pos &= rxwc.indexIn(line);
-            pos &= rxwcu.indexIn(line);
-            pos &= rxfs.indexIn(line);
-            pos &= rxw3.indexIn(line);
+            QString myline = list.at(n); //+"\n";
+            int pos = rx.indexIn(myline);
+            pos &= rx2.indexIn(myline);
+            pos &= rxwc.indexIn(myline);
+            pos &= rxwcu.indexIn(myline);
+            pos &= rxfs.indexIn(myline);
+            pos &= rxw3.indexIn(myline);
             if(pos > -1)
+                return n;
+            if(myline.contains(rspec))
                 return n;
         }
 #endif
