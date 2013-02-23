@@ -39,7 +39,7 @@
 #define SIMPLE_BOARD_TOOLBAR
 #define SD_TOOLS
 #define APPWINDOW_START_HEIGHT 720
-#define APPWINDOW_START_WIDTH 675
+#define APPWINDOW_START_WIDTH 720
 #define EDITOR_MIN_WIDTH 500
 #define PROJECT_WIDTH 300
 
@@ -2423,9 +2423,10 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
                 als = QDir::fromNativeSeparators(als);
                 if(als.endsWith("/"))
                     als = als.mid(0,als.length()-1);
-                if(als.indexOf("./") == 0)
+                if(als.indexOf("./") == 0) {
                     als = als.mid(2);
-                als = this->sourcePath(projectFile)+als;
+                    als = this->sourcePath(projectFile)+als;
+                }
                 QString dls = als.mid(als.lastIndexOf("/")+1);
                 QDir libd;
                 if(libd.exists(dstPath+zipLib) == false)
