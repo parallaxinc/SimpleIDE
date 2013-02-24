@@ -2424,6 +2424,9 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
                     als = als.mid(2);
                     als = this->sourcePath(projectFile)+als;
                 }
+                else if(als.indexOf("../") == 0) {
+                    als = this->sourcePath(projectFile)+als;
+                }
                 QString dls = als.mid(als.lastIndexOf("/")+1);
                 QDir libd;
                 if(libd.exists(dstPath+zipLib) == false)
