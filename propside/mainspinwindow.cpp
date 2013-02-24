@@ -1358,6 +1358,17 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     QDir dpath(dstPath);
 
     /**
+     * Don't Self-Save As
+     */
+    if(srcPath.compare(dstPath) == 0) {
+        QMessageBox::critical(this,
+            tr("Can't Save As Project"),
+            tr("Can't Save As the current project to itself.") + "\n"+
+            tr("Please try again with a new project name."));
+        return;
+    }
+
+    /**
      * Don't overwrite an existing sidefile without permission
      */
     if(dpath.exists()) {
