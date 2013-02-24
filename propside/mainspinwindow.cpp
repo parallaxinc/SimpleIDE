@@ -894,7 +894,7 @@ void MainSpinWindow::newProject()
     }
     else {
         // simpleView version
-        QFileDialog dialog(this,tr("New Project"), lastPath, "");
+        QFileDialog dialog(this,tr("New Project"), lastPath+"../"+"NewProject.side", "");
         QStringList filters;
         filters << "C Project (*.c)";
         filters << "C++ Project (*.cpp)";
@@ -928,24 +928,8 @@ void MainSpinWindow::newProject()
         QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
         dstName = dstName.mid(0,dstName.lastIndexOf("."));
         dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+        dstPath += dstName+"/";
         lastPath = dstPath;
-
-        QString dstProjFile= dstPath+dstName+SIDE_EXTENSION;
-        QFile sidefile(dstProjFile);
-        /**
-         * for now this code is unnecessary, but it may be useful pending clarifications.
-         *
-        bool isSide = dstPath.endsWith(".side",Qt::CaseInsensitive);
-        if(sidefile.exists() && isMain == false && isSide == false) {
-            int rc;
-            rc = QMessageBox::question(this,
-                        tr("Overwrite?"),
-                        tr("The .side file exists. Overwrite it?"),
-                        QMessageBox::Yes, QMessageBox::No);
-            if(rc == QMessageBox::No)
-                return;
-        }
-        */
 
         ftype = ftype.mid(ftype.lastIndexOf("."));
         ftype = ftype.mid(0,ftype.lastIndexOf(")"));
@@ -960,6 +944,41 @@ void MainSpinWindow::newProject()
             comp = projectOptions->SPIN_COMPILER;
         }
 #endif
+        else {
+            QMessageBox::critical(this,
+                tr("Unknown Project Type"),
+                tr("The New Project type is not recognized.")+"\n"+
+                tr("Please try again with a suggested type."));
+            return;
+        }
+
+        QString dstProjFile= dstPath+dstName+SIDE_EXTENSION;
+        QFile sidefile(dstProjFile);
+        QDir  sidedir(dstPath);
+
+        /**
+         * New Project creates a new folder. If the folder already exists, ask to use it.
+         */
+        if(sidedir.exists()) {
+            int rc;
+            rc = QMessageBox::question(this,
+                        tr("Overwrite?"),
+                        tr("The New Project folder and files already exist.")+"\n"+
+                        tr("Would you like to replace the project folder?"),
+                        QMessageBox::Yes, QMessageBox::No);
+            if(rc == QMessageBox::No)
+                return;
+            this->recursiveRemoveDir(dstPath);
+        }
+
+        /**
+         * By this point we know we can make a new project.
+         * Let's clean out the old one before proceeding.
+         */
+        closeProject();
+
+        sidedir.mkdir(dstPath);
+
         QString sidestr = dstName+ftype+"\n";
         if(sidefile.open(QFile::WriteOnly | QFile::Text)) {
             sidefile.write(sidestr.toAscii());
@@ -973,20 +992,6 @@ void MainSpinWindow::newProject()
 
         QString dstSourceFile = dstPath+dstName+ftype;
         QFile mainfile(dstSourceFile);
-
-        /**
-         * for now this code is unnecessary, but it may be useful pending clarifications.
-        bool isMain = dstPath.endsWith(".c",Qt::CaseInsensitive);
-         */
-        if(mainfile.exists()) { // && isSide == false && isMain == false) {
-            int rc;
-            rc = QMessageBox::question(this,
-                        tr("Overwrite?"),
-                        dstSourceFile + tr(" file exists. Overwrite it?"),
-                        QMessageBox::Yes, QMessageBox::No);
-            if(rc == QMessageBox::No)
-                return;
-        }
 
         QString mainstr = NULL;
 
@@ -1525,6 +1530,19 @@ void MainSpinWindow::closeProject()
         options.insert(0,files[n]);
     }
 
+    /*
+     * remove ">" from list so we can compare.
+     */
+    for(n = 0; n < list.count(); n++) {
+        QString s = list[n];
+        if(s.indexOf(">") == 0) {
+            list.replace(n,s.mid(1));
+        }
+    }
+
+    options.sort();
+    list.sort();
+
     n = list.count();
     int mismatch = 0;
     if(n != options.count()) {
@@ -1532,7 +1550,7 @@ void MainSpinWindow::closeProject()
     }
     else {
         while(--n >= 0) {
-            if(list[n].endsWith(options[n]))
+            if(list[n].compare(options[n]) == 0)
                 continue;
             mismatch++;
         }
