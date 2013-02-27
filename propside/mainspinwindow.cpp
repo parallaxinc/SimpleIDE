@@ -627,20 +627,34 @@ void MainSpinWindow::addLib()
     // find first error line
     QTextDocument *doc = ed->document();
 
+    /*
+     * look for a nice place to insert library.
+     * if nice place not found, just add to top of file.
+     */
     QString line;
     int len = doc->lineCount();
     int comment = 0;
     int candidate = 0;
+    int added = 0;
+
     for(int n = 0; n < len; n++) {
         QTextBlock block = doc->findBlockByLineNumber(n);
         line = block.text();
-        if(line.contains("/*")) {
+        if(line.contains("/*") && line.indexOf("*/") < line.indexOf("/*")) {
             comment++;
+            candidate = 0;
+        } else if(line.contains("//")) {
+            /* skip single line commented lines */
+            candidate = n+1;
         } else if(comment != 0 && line.contains("*/")) {
             comment = 0;
             candidate = n+1;
-        } else if(line.contains("#include")) {
-            if(line.contains("#include \""+libname+".h\"") == true) {
+        } else if(line.indexOf("#include") == 0) {
+            if( line.indexOf("\""+libname+".h\"") > line.indexOf("#include")) {
+                if(line.indexOf("//") > 0 && line.indexOf("#include") > line.indexOf("//"))
+                    break;
+                /* #include libname exists. don't add it */
+                added++; /* mark as added */
                 break;
             }
             else {
@@ -648,15 +662,25 @@ void MainSpinWindow::addLib()
             }
         }
         else if(candidate != 0) {
-            // insert here
+            /* insert here */
             cur.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
             cur.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor,candidate);
             cur.insertText("#include \""+libname+".h\"\n");
             ed->setTextCursor(cur);
             saveFile();
             openFileName(mainFile);
+            added++;
             break;
         }
+    }
+
+    if(added == 0) {
+        /* insert at beginning */
+        cur.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
+        cur.insertText("#include \""+libname+".h\"\n");
+        ed->setTextCursor(cur);
+        saveFile();
+        openFileName(mainFile);
     }
 
     // add -I and -L paths to project manager
