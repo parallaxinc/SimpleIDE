@@ -141,7 +141,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 
     /* main container */
     setWindowTitle(ASideGuiKey);
-    QSplitter *vsplit = new QSplitter(this);
+    vsplit = new QSplitter(this);
     setCentralWidget(vsplit);
 
     /* project tools */
@@ -3925,6 +3925,24 @@ QSize MainSpinWindow::sizeHint() const
     return size;
 }
 
+void MainSpinWindow::resetRightSplitSize()
+{
+    QList<int> rsizes = rightSplit->sizes();
+    rsizes[0] = rightSplit->height()*80/100;
+    rsizes[1] = rightSplit->height()*20/100;
+    rightSplit->setSizes(rsizes);
+    rightSplit->adjustSize();
+}
+
+void MainSpinWindow::resetVerticalSplitSize()
+{
+    QList<int> sizes = vsplit->sizes();
+    sizes[0] = vsplit->width()*20/100;
+    sizes[1] = vsplit->width()*80/100;
+    vsplit->setSizes(sizes);
+    vsplit->adjustSize();
+}
+
 void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 {
     /* container for project, etc... */
@@ -3982,13 +4000,14 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     lsizes[0] = leftSplit->height()*50/100;
     lsizes[1] = leftSplit->height()*50/100;
     leftSplit->setSizes(lsizes);
-
     leftSplit->adjustSize();
 
     rightSplit = new QSplitter(this);
     rightSplit->setMinimumHeight(APPWINDOW_START_HEIGHT/2);
     rightSplit->setOrientation(Qt::Vertical);
     vsplit->addWidget(rightSplit);
+
+    resetVerticalSplitSize();
 
     /* project editors */
     editors = new QVector<Editor*>();
@@ -4028,12 +4047,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 
     rightSplit->addWidget(statusTabs);
 
-    QList<int> rsizes = rightSplit->sizes();
-    rsizes[0] = rightSplit->height()*90/100;
-    rsizes[1] = rightSplit->height()*10/100;
-    rightSplit->setSizes(rsizes);
-
-    rightSplit->adjustSize();
+    resetRightSplitSize();
 
     connect(vsplit,SIGNAL(splitterMoved(int,int)),this,SLOT(splitterChanged()));
     connect(rightSplit,SIGNAL(splitterMoved(int,int)),this,SLOT(splitterChanged()));
@@ -5864,6 +5878,9 @@ void MainSpinWindow::showSimpleView(bool simple)
             statusTabs->hide();
         }
 
+        showProjectPane(btnShowProjectPane->isChecked());
+        showStatusPane(btnShowStatusPane->isChecked());
+
         fileToolBar->hide();
         propToolBar->hide();
         btnProjectClose->setVisible(false);
@@ -5921,6 +5938,8 @@ void MainSpinWindow::showSimpleView(bool simple)
         btnConnected->setVisible(true);
         btnShowProjectPane->hide();
         btnShowStatusPane->hide();
+        showProjectPane(true);
+        showStatusPane(true);
         programSize->setMinimumWidth(projwidth);
         programSize->setMaximumWidth(projwidth);
 
@@ -5960,6 +5979,9 @@ void MainSpinWindow::showProjectPane(bool show)
     leftSplit->setVisible(show);
     if(show) {
         btnShowProjectPane->setIcon(QIcon(QIcon(":/images/ProjectHide.png")));
+        if(leftSplit->width() < 20 && this->simpleViewType) {
+            resetVerticalSplitSize();
+        }
     }
     else {
         btnShowProjectPane->setIcon(QIcon(QIcon(":/images/ProjectShow.png")));
@@ -5971,6 +5993,9 @@ void MainSpinWindow::showStatusPane(bool show)
     statusTabs->setVisible(show);
     if(show) {
         btnShowStatusPane->setIcon(QIcon(QIcon(":/images/BuildHide.png")));
+        if(statusTabs->height() < 20 && this->simpleViewType) {
+            resetRightSplitSize();
+        }
     }
     else {
         btnShowStatusPane->setIcon(QIcon(QIcon(":/images/BuildShow.png")));
