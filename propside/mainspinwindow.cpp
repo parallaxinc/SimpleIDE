@@ -1829,7 +1829,7 @@ void MainSpinWindow::zipProject()
 
     QString ftype = dialog.selectedNameFilter();
     //dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
-    dstName = this->shortFileName(projFile);
+    dstName = this->shortFileName(dstPath);
     dstName = dstName.mid(0,dstName.lastIndexOf("."));
     dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
 
@@ -1854,6 +1854,18 @@ void MainSpinWindow::zipProject()
      * 3. create a new archive project folder
      */
     dstPath += dstName+"/";
+
+    /*
+     * Don't allow users to zip to the source
+     * because it would destroy the source.
+     */
+    if(dstPath.compare(srcPath) == 0) {
+        QMessageBox::critical(this, tr("Bad Zip Name"),
+            tr("Can't use the source name as the Zip name.")+"\n"+
+            tr("Please choose a different name."));
+        return;
+    }
+
     QDir dpath(dstPath);
 
     if(dpath.exists()) {
