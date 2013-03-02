@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>271</width>
+    <width>290</width>
     <height>160</height>
    </rect>
   </property>
@@ -24,12 +24,12 @@
     <rect>
      <x>1</x>
      <y>0</y>
-     <width>271</width>
+     <width>291</width>
      <height>159</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="ProjectControl">
     <attribute name="title">
@@ -38,9 +38,9 @@
     <widget class="QComboBox" name="comboBoxCompiler">
      <property name="geometry">
       <rect>
-       <x>124</x>
+       <x>104</x>
        <y>39</y>
-       <width>131</width>
+       <width>171</width>
        <height>21</height>
       </rect>
      </property>
@@ -51,9 +51,9 @@
     <widget class="QComboBox" name="comboBoxOptimization">
      <property name="geometry">
       <rect>
-       <x>124</x>
+       <x>104</x>
        <y>99</y>
-       <width>131</width>
+       <width>171</width>
        <height>21</height>
       </rect>
      </property>
@@ -77,9 +77,9 @@
     <widget class="QComboBox" name="comboBoxMemoryMode">
      <property name="geometry">
       <rect>
-       <x>124</x>
+       <x>104</x>
        <y>69</y>
-       <width>131</width>
+       <width>171</width>
        <height>21</height>
       </rect>
      </property>
@@ -129,9 +129,9 @@
     <widget class="QToolButton" name="hardwareToolButton">
      <property name="geometry">
       <rect>
-       <x>96</x>
+       <x>106</x>
        <y>9</y>
-       <width>24</width>
+       <width>21</width>
        <height>24</height>
       </rect>
      </property>
@@ -139,7 +139,7 @@
       <string>Reload Board Configurations</string>
      </property>
      <property name="icon">
-      <iconset>
+      <iconset resource="resources.qrc">
        <normaloff>:/images/hardware.png</normaloff>:/images/hardware.png</iconset>
      </property>
      <property name="iconSize">
@@ -152,9 +152,9 @@
     <widget class="QComboBox" name="hardwareComboBox">
      <property name="geometry">
       <rect>
-       <x>124</x>
+       <x>134</x>
        <y>10</y>
-       <width>131</width>
+       <width>141</width>
        <height>22</height>
       </rect>
      </property>
@@ -169,7 +169,7 @@
       <rect>
        <x>10</x>
        <y>90</y>
-       <width>245</width>
+       <width>261</width>
        <height>21</height>
       </rect>
      </property>
@@ -315,7 +315,7 @@
       <rect>
        <x>10</x>
        <y>90</y>
-       <width>245</width>
+       <width>261</width>
        <height>21</height>
       </rect>
      </property>
@@ -404,7 +404,7 @@
       <rect>
        <x>10</x>
        <y>90</y>
-       <width>245</width>
+       <width>261</width>
        <height>21</height>
       </rect>
      </property>
@@ -418,6 +418,8 @@
    </widget>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
