@@ -263,6 +263,9 @@ private:
     void cStatusClicked(QString line);
     void spinStatusClicked(QString line);
 
+    void resetVerticalSplitSize();
+    void resetRightSplitSize();
+
     void showSimpleView(bool simple);
 
     AboutDialog     *aboutDialog;
@@ -298,6 +301,7 @@ private:
     QMenu           *projMenu;
     QMenu           *toolsMenu;
 
+    QSplitter       *vsplit;
     QSplitter       *leftSplit;
     QSplitter       *rightSplit;
 
