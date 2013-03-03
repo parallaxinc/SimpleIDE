@@ -4115,11 +4115,11 @@ void MainSpinWindow::cStatusClicked(QString line)
 
     /* open file in tab if not there already */
     for(n = 0; n < editorTabs->count();n++) {
-        if(editorTabs->tabText(n).contains(file)) {
+        if(editorTabs->tabText(n).indexOf(file) == 0) {
             editorTabs->setCurrentIndex(n);
             break;
         }
-        if(editors->at(n)->toolTip().contains(file)) {
+        if(editors->at(n)->toolTip().endsWith(file)) {
             editorTabs->setCurrentIndex(n);
             break;
         }
@@ -4132,8 +4132,8 @@ void MainSpinWindow::cStatusClicked(QString line)
         }
         else
         if(QFile::exists(sourcePath(projectFile))) {
-            file = sourcePath(projectFile)+fileList[0];
-            openFileName(file);
+            file = fileList[0];
+            openFileName(sourcePath(projectFile)+file);
         }
         else {
             return;
@@ -4290,6 +4290,9 @@ void MainSpinWindow::showCompileStatusError()
     }
 
     if(line.contains("error: no propeller", Qt::CaseInsensitive))
+        return;
+
+    if(line.contains("error: opening", Qt::CaseInsensitive))
         return;
 
     // open file and set line
