@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-10-1"
+#define MyAppVersion "0-9-11"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -13,13 +13,14 @@
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ---- IMPORTANT!!! ---- Set this to your QtPath
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#define MyQtPath "C:\Qt\4.8.0" ; was #define MyQtPath "C:\Qt\2010.05"
+#define MyQtPath "C:\Qt\4.8.0"
 #define MyGccPath "C:\msys\opt\parallax"
 #define MyGccMingwPath "C:\mingw"
 #define MyTranslations "..\propside\translations"
 #define MyUserGuide "..\propside\userguide"
 #define MySpinPath "..\spin"
 #define MyAppBin "{app}\bin"
+#define MyBoardFilter "..\boards.txt"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -29,7 +30,6 @@
 AppID={{CE380BA3-F51E-4DCB-A068-216961358E89}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -53,7 +53,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
-Name: modifypath; Description: "&Add Propeller-GCC directory to your environment PATH";
+Name: "modifypath"; Description: "&Add Propeller-GCC directory to your environment PATH"; Flags: checkedonce; 
 
 [Files]
 Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -63,6 +63,8 @@ Source: "LGPL_EXCEPTION.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: ..\ctags58\README; DestDir: {app}; Flags: ignoreversion; DestName: ctags-readme.txt; 
 Source: ..\ctags58\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: ctags-license.txt; 
 Source: ..\icons\24x24-free-application-icons\readme.txt; DestDir: {app}; Flags: ignoreversion; DestName: aha-soft-license.txt; 
+Source: "{#MySpinPath}\*"; DestDir: "{code:GetCompilerDir}\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyBoardFilter}"; DestDir: "{code:GetCompilerDir}\propeller-load\"; Flags: ignoreversion
 
 Source: "{#MyGccMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -78,7 +80,6 @@ Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ign
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyTranslations}\*"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
 ;Source: "{#MyUserGuide}\*"; DestDir: {app}/userguide/; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
-Source: "{#MySpinPath}\*"; DestDir: "{code:GetCompilerDir}\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -100,6 +101,7 @@ Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; V
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinCompiler; ValueData: {code:GetCompilerDir}\bin\bstc.exe; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinLibrary; ValueData: {code:GetCompilerDir}\spin\; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinWorkspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata};{code:GetCompilerDir}\bin;"; Check: NeedsAddPropGccBinPath();
 
 [Code]
 var
@@ -150,6 +152,31 @@ begin
   Result := CompilerPage.Values[0];
 end;
 
+function NeedsAddPath(Param: string): boolean;
+var
+  OrigPath: string;
+begin
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE,'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
+  then begin
+    Result := True;
+    exit;
+  end;
+  // look for the path with leading and trailing semicolon
+  // Pos() returns 0 if not found
+  Result := Pos(';' + UpperCase(Param) + ';', ';' + UpperCase(OrigPath) + ';') = 0;  
+  if Result = True then
+     Result := Pos(';' + UpperCase(Param) + '\;', ';' + UpperCase(OrigPath) + ';') = 0; 
+end;
+
+function NeedsAddPropGccBinPath(): boolean;
+var
+  str: string;
+begin
+  str := CompilerPage.Values[0]+'\bin';
+  Result := NeedsAddPath(str);
+end;
+
+{
 const
     ModPathName = 'modifypath';
     ModPathType = 'user';
@@ -159,5 +186,5 @@ begin
     setArrayLength(Result, 1);
     Result[0] := ExpandConstant('{#compiler}\bin');
 end;
-#include "modpath.iss"
-
+include "modpath.iss"
+}
