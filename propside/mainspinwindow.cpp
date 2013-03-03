@@ -36,7 +36,13 @@
 #include "build.h"
 #include "buildstatus.h"
 
+/*
+ * SIMPBLE_BOARD_TOOLBAR puts Board Combo on the buttons toolbar.
+ * We decided since simple users will rarely use the Board Combo
+ * there isn't much point in having it visible at all times.
 #define SIMPLE_BOARD_TOOLBAR
+ */
+
 #define SD_TOOLS
 #define APPWINDOW_START_HEIGHT 620
 #define APPWINDOW_START_WIDTH 720
@@ -1213,7 +1219,7 @@ void MainSpinWindow::openProject(const QString &path)
 #endif
 
     if (fileName.isNull()) {
-        fileName = fileDialog.getOpenFileName(this, tr("Open Project"), lastPath, "Project Files (*.side)");
+        fileName = fileDialog.getOpenFileName(this, tr("Open Project"), this->sourcePath(projectFile)+"../", "Project Files (*.side)");
         if(fileName.length() > 0)
             lastPath = sourcePath(fileName);
     }
@@ -1379,7 +1385,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
     dstName = dstName.mid(0,dstName.lastIndexOf("."));
     dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1)+dstName+"/";
-    lastPath = dstPath;
+    //lastPath = dstPath;
 
     /*
      * creates new project folder
@@ -1818,11 +1824,15 @@ void MainSpinWindow::zipProject()
 
     dstName = projFile.mid(0,projFile.lastIndexOf("."));
 
+    /* ProjectName-YYMMDD-HHMMSS.zip */
+
+    QDateTime time = QDateTime::currentDateTime();
+    QString times = time.toLocalTime().toString("-yyMMdd-hhmmss");
     QFileDialog dialog;
     QString afilter("Zip File (*.zip)");
-    QString lpath = lastPath;
+    QString lpath = this->sourcePath(projectFile)+"../";
     //dstPath = dialog.getExistingDirectory(this, tr("Zip Project Folder"), lpath, QFileDialog::ShowDirsOnly);
-    dstPath = dialog.getSaveFileName(this, tr("Zip Project"), lpath+dstName+".zip", afilter);
+    dstPath = dialog.getSaveFileName(this, tr("Zip Project"), lpath+dstName+times+".zip", afilter);
 
     if(dstPath.length() < 1)
        return;
@@ -1833,7 +1843,7 @@ void MainSpinWindow::zipProject()
     dstName = dstName.mid(0,dstName.lastIndexOf("."));
     dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
 
-    lastPath = dstPath;
+    //lastPath = dstPath;
 
     /**
      * Get permission to overwrite folder
@@ -5887,7 +5897,9 @@ void MainSpinWindow::showSimpleView(bool simple)
         addToolsToolBar->show();
         sdCardToolBar->hide();
         btnBoardReset->setVisible(false);
+#ifdef SIMPLE_BOARD_TOOLBAR
         btnLoadBoards->setVisible(false);
+#endif
         btnConnected->setVisible(false);
         btnShowProjectPane->show();
         btnShowStatusPane->show();
@@ -5934,7 +5946,9 @@ void MainSpinWindow::showSimpleView(bool simple)
         addToolsToolBar->show();
         sdCardToolBar->show();
         btnBoardReset->setVisible(true);
+#ifdef SIMPLE_BOARD_TOOLBAR
         btnLoadBoards->setVisible(true);
+#endif
         btnConnected->setVisible(true);
         btnShowProjectPane->hide();
         btnShowStatusPane->hide();
