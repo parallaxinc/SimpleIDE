@@ -2472,6 +2472,7 @@ QString MainSpinWindow::getSaveAsFile(const QString &path)
 #ifdef SPIN
             filters << "E-Spin File (*.espin)";
 #endif
+            filters << "Any File (*)";
 
             QString comp = projectOptions->getCompiler();
             if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
@@ -3199,18 +3200,20 @@ void MainSpinWindow::setProject()
             tr("Would you like to save this file and set a project using it?"),
             QMessageBox::Yes, QMessageBox::No);
         if(rc == QMessageBox::Yes) {
-            saveAsFile();
+            fileName = getSaveAsFile();
+            saveFile();
             updateProjectTree(fileName);
             setCurrentProject(projectFile);
+            this->openProject(projectFile); // for syntax highlighting
         }
     }
     fileName = editorTabs->tabToolTip(index);
     if(fileName.length() > 0)
     {
-        if(fileName.indexOf(SPIN_EXTENSION)) {
-#ifdef SPIN
+        if(fileName.endsWith(SPIN_EXTENSION)) {
+    #ifdef SPIN
             projectOptions->setCompiler(SPIN_TEXT);
-#else
+    #else
             if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
                 QMessageBox::critical(
                         this,tr("SPIN Not Supported"),
@@ -3218,9 +3221,12 @@ void MainSpinWindow::setProject()
                         QMessageBox::Ok);
                 return;
             }
-#endif
+    #endif
         }
-        else {
+        else if(fileName.endsWith(".cpp")) {
+            projectOptions->setCompiler("C++");
+        }
+        else if(fileName.endsWith(".c")) {
             projectOptions->setCompiler("C");
         }
         updateProjectTree(fileName);
