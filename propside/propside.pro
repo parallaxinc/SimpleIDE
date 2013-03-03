@@ -29,7 +29,7 @@ DEFINES += SPIN
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=13
+DEFINES += FIXVERSION=14
 SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \
