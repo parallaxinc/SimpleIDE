@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>290</width>
+    <width>299</width>
     <height>160</height>
    </rect>
   </property>
@@ -24,12 +24,12 @@
     <rect>
      <x>1</x>
      <y>0</y>
-     <width>291</width>
+     <width>301</width>
      <height>159</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="ProjectControl">
     <attribute name="title">
@@ -38,7 +38,7 @@
     <widget class="QComboBox" name="comboBoxCompiler">
      <property name="geometry">
       <rect>
-       <x>104</x>
+       <x>114</x>
        <y>39</y>
        <width>171</width>
        <height>21</height>
@@ -51,7 +51,7 @@
     <widget class="QComboBox" name="comboBoxOptimization">
      <property name="geometry">
       <rect>
-       <x>104</x>
+       <x>114</x>
        <y>99</y>
        <width>171</width>
        <height>21</height>
@@ -77,7 +77,7 @@
     <widget class="QComboBox" name="comboBoxMemoryMode">
      <property name="geometry">
       <rect>
-       <x>104</x>
+       <x>114</x>
        <y>69</y>
        <width>171</width>
        <height>21</height>
@@ -129,7 +129,7 @@
     <widget class="QToolButton" name="hardwareToolButton">
      <property name="geometry">
       <rect>
-       <x>106</x>
+       <x>116</x>
        <y>9</y>
        <width>21</width>
        <height>24</height>
@@ -152,7 +152,7 @@
     <widget class="QComboBox" name="hardwareComboBox">
      <property name="geometry">
       <rect>
-       <x>134</x>
+       <x>144</x>
        <y>10</y>
        <width>141</width>
        <height>22</height>
@@ -169,7 +169,7 @@
       <rect>
        <x>10</x>
        <y>90</y>
-       <width>261</width>
+       <width>271</width>
        <height>21</height>
       </rect>
      </property>
@@ -315,7 +315,7 @@
       <rect>
        <x>10</x>
        <y>90</y>
-       <width>261</width>
+       <width>271</width>
        <height>21</height>
       </rect>
      </property>
@@ -404,7 +404,7 @@
       <rect>
        <x>10</x>
        <y>90</y>
-       <width>261</width>
+       <width>271</width>
        <height>21</height>
       </rect>
      </property>
