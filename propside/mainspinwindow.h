@@ -133,6 +133,7 @@ public slots:
     void keyHandler(QKeyEvent* event);
     void sendPortMessage(QString s);
     void enumeratePorts();
+    void reloadBoardTypes();
     void initBoardTypes();
 
     void addProjectFile();

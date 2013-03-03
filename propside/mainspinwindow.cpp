@@ -1087,11 +1087,22 @@ void MainSpinWindow::newProject()
         projectOptions->setCompiler(comp);
         qDebug() << "Set Memory Model: CMM";
         projectOptions->setMemModel(projectOptions->memTypeCMM);
+
+        // board type GENERIC for simpleview
+        for(int n = 0; n < cbBoard->count(); n++) {
+            QString board = cbBoard->itemText(n);
+            if(board.compare("GENERIC",Qt::CaseInsensitive) == 0) {
+                cbBoard->setCurrentIndex(n);
+                break;
+            }
+        }
+
         QString s = projectOptions->getCompOptions();
         if(s.contains("-std=c99", Qt::CaseInsensitive) == false)
             projectOptions->setCompOptions(s + "-std=c99");
         qDebug() << "Save Project File: " << projectFile;
         saveProjectOptions();
+
     }
 }
 
@@ -3236,7 +3247,7 @@ void MainSpinWindow::setProject()
     QString extension = fileName.mid(fileName.lastIndexOf(".")+1);
     if(extension.compare(SPIN_TEXT,Qt::CaseInsensitive) == 0) {
         projectOptions->setCompiler(SPIN_TEXT);
-        //projectOptions->setBoardType("HUB"); // HUB is only option for SPIN
+        //projectOptions->setBoardType("HUB"); // NONE is only option for SPIN
         this->closeFile(); // do this so spin highlighter works.
         this->openFileName(fileName);
         btnDownloadSdCard->setEnabled(false);
@@ -4007,7 +4018,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     cbBoard->setToolTip(tr("Board Type Select"));
     connect(cbBoard,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentBoard(int)));
     QToolButton *hardwareButton = projectOptions->getHardwareButton();
-    connect(hardwareButton,SIGNAL(clicked()),this,SLOT(initBoardTypes()));
+    connect(hardwareButton,SIGNAL(clicked()),this,SLOT(reloadBoardTypes()));
 #endif
 
     leftSplit->addWidget(projectOptions);
@@ -5391,6 +5402,44 @@ QString MainSpinWindow::shortFileName(QString fileName)
     return rets;
 }
 
+/*
+ * same as initBoardTypes except saves last used cbBoard text
+ * and restores after load. initBoardTypes restores board from registry
+ */
+void MainSpinWindow::reloadBoardTypes()
+{
+    QString boardName = cbBoard->currentText();
+
+    cbBoard->clear();
+
+    QFile file;
+    if(file.exists(aSideCfgFile))
+    {
+        /* load boards in case there were changes */
+        aSideConfig->loadBoards(aSideCfgFile);
+    }
+
+    /* get board types */
+    QStringList boards = aSideConfig->getBoardNames();
+    boards.sort();
+    for(int n = 0; n < boards.count(); n++)
+        cbBoard->addItem(boards.at(n));
+
+    /* setup the first board displayed in the combo box */
+    if(cbBoard->count() > 0) {
+        int ndx = 0;
+        if(boardName.length() != 0) {
+            for(int n = cbBoard->count()-1; n > -1; n--) {
+                if(cbBoard->itemText(n) == boardName) {
+                    ndx = n;
+                    break;
+                }
+            }
+        }
+        setCurrentBoard(ndx);
+    }
+}
+
 void MainSpinWindow::initBoardTypes()
 {
     cbBoard->clear();
@@ -5589,7 +5638,7 @@ void MainSpinWindow::setupFileMenu()
     toolsMenu->insertAction(last,bigger);
 
     toolsMenu->addSeparator();
-    toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(initBoardTypes()));
+    toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(reloadBoardTypes()));
     toolsMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
 
     QMenu *programMenu = new QMenu(tr("&Program"), this);
@@ -5799,7 +5848,7 @@ void MainSpinWindow::setupToolBars()
     connect(cbBoard,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentBoard(int)));
     btnLoadBoards = new QAction(this);
     btnLoadBoards->setToolTip(tr("Reload Board List"));
-    connect(btnLoadBoards,SIGNAL(clicked()),this,SLOT(initBoardTypes()));
+    connect(btnLoadBoards,SIGNAL(clicked()),this,SLOT(reloadBoardTypes()));
     addToolBarAction(boardToolBar, btnLoadBoards, QString(":/images/hardware.png"));
     boardToolBar->addWidget(cbBoard);
     boardToolBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
