@@ -644,6 +644,9 @@ void MainSpinWindow::addLib()
         if(line.contains("/*") && line.indexOf("*/") < line.indexOf("/*")) {
             comment++;
             candidate = 0;
+        } else if(line.indexOf("#include \""+libname+".h\"") == 0) {
+                added++; /* mark as added */
+                break;
         } else if(line.contains("//")) {
             /* skip single line commented lines */
             candidate = n+1;
@@ -1225,7 +1228,7 @@ void MainSpinWindow::openProject(const QString &path)
 #endif
 
     if (fileName.isNull()) {
-        fileName = fileDialog.getOpenFileName(this, tr("Open Project"), this->sourcePath(projectFile)+"../", "Project Files (*.side)");
+        fileName = fileDialog.getOpenFileName(this, tr("Open Project"), this->sourcePath(projectFile), "Project Files (*.side)");
         if(fileName.length() > 0)
             lastPath = sourcePath(fileName);
     }
@@ -1320,6 +1323,347 @@ QString MainSpinWindow::saveAsProjectLinkFix(QString srcPath, QString dstPath, Q
     return fix;
 }
 
+#ifndef USE_ZIP_SAVEAS
+/*
+ * Save As project: saves a copy of the project in another path
+ *
+ * 1. function assumes an empty projectFolder parameter means to copy existing project
+ * 2. asks user for destination project name and folder (folder and name can be different)
+ *    (this is done differently for projectview and simpleview).
+ * 3. creates new project folder if necessary (project can be in original folder)
+ * 4. copy project file from source to destination as new project name
+ * 5. copies the project main file from source to destination as new project main file
+ *    fixes up any links in project file and writes file
+ *
+ */
+void MainSpinWindow::saveAsProject(const QString &inputProjFile)
+{
+    QString projFolder(sourcePath(inputProjFile));
+    QString projFile = inputProjFile;
+
+    /*
+     * 1. function assumes an empty projectFolder parameter means to copy existing project.
+     * if projectFolder is empty saveAs from existing project.
+     */
+    if(projFolder.length() == 0) {
+        projFolder = sourcePath(projectFile);
+    }
+    if(projFile.length() == 0) {
+        projFile = projectFile;
+    }
+
+    if(projFile.length() == 0) {
+        QMessageBox::critical(
+                this,tr("No Project"),
+                tr("Can't \"Save As Project\" from an empty project.")+"\n"+
+                tr("Please create a new project or open an existing one."),
+                QMessageBox::Ok);
+        return;
+    }
+
+    QString dstName;
+    QString srcPath  = projFolder;
+    QDir spath(srcPath);
+
+    if(spath.exists() == false) {
+        QMessageBox::critical(
+                this,tr("Project Folder not Found."),
+                tr("Can't \"Save As Project\" from a non-existing folder."),
+                QMessageBox::Ok);
+        return;
+    }
+
+
+    /*
+     * 2. asks user for destination project name and folder (folder and name can be different)
+     * get project name
+     */
+    QString dstPath;
+    QString dstProjFile;
+
+#ifdef SAVE_AS_PROJECT_VIEW
+    if(this->simpleViewType == false) {
+
+        dstName = QInputDialog::getText(this, tr("New Project Name"), tr("Enter new project name."), QLineEdit::Normal, "project", &ok) ;
+        if(ok == false)
+            return;
+
+        /*
+         * get project folder
+         */
+        dstPath = QFileDialog::getExistingDirectory(this,tr("Destination Project Folder"), lastPath, QFileDialog::ShowDirsOnly);
+        if(dstPath.length() < 1)
+            return;
+        lastPath = dstPath;
+
+        dstPath = dstPath+"/";    // make sure we have a trailing / for file copy
+
+        dstProjFile= dstPath+dstName+SIDE_EXTENSION;
+        int rc = QMessageBox::question(this,
+                     tr("Confirm Save As Project"),
+                     tr("Save As Project ?")+"\n"+dstProjFile,
+                     QMessageBox::Yes, QMessageBox::No);
+        if(rc == QMessageBox::No) {
+            return;
+        }
+
+    }
+    else
+#endif
+    {
+        // simpleView version
+        QFileDialog dialog(this, tr("Save Project As"), lastPath, "");
+        QStringList filters;
+
+        QString comp = projectOptions->getCompiler();
+        if(comp.compare(projectOptions->C_COMPILER) == 0) {
+            filters << "C Project (*.c)";
+        }
+        else if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
+            filters << "C++ Project (*.cpp)";
+        }
+    #ifdef SPIN
+        else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
+            filters << "Spin Project (*.spin)";
+        }
+    #endif
+
+        dialog.setNameFilters(filters);
+        if(dialog.exec() == QDialog::Rejected)
+            return;
+        QStringList dstList = dialog.selectedFiles();
+        if(dstList.length() < 1)
+            return;
+        dstPath = dstList.at(0);
+        if(dstPath.length() < 1)
+           return;
+
+        QString ftype = dialog.selectedNameFilter();
+        dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
+        dstName = dstName.mid(0,dstName.lastIndexOf("."));
+        dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+        lastPath = dstPath;
+
+        dstProjFile = dstPath+dstName+SIDE_EXTENSION;
+        QFile sidefile(dstProjFile);
+        /**
+         * Don't overwrite an existing sidefile without permission
+         */
+        if(sidefile.exists()) {
+            int rc;
+            rc = QMessageBox::question(this,
+                        tr("Overwrite?"),
+                        tr("The .side file exists. Overwrite it?"),
+                        QMessageBox::Yes, QMessageBox::No);
+            if(rc == QMessageBox::No)
+                return;
+        }
+
+        ftype = ftype.mid(ftype.lastIndexOf("."));
+        ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+
+        QString sidestr = dstName+ftype+"\n";
+        if(sidefile.open(QFile::WriteOnly | QFile::Text)) {
+            sidefile.write(sidestr.toAscii());
+            sidefile.close();
+        }
+        else {
+            QString trs = tr("Can't save file: ")+dstProjFile;
+            QMessageBox::critical(this,tr("Save Failed"), trs);
+            return;
+        }
+
+        QString dstSourceFile = dstPath+dstName+ftype;
+        QFile mainfile(dstSourceFile);
+
+        /**
+         * don't overwrite existing main file without permission
+         */
+        if(mainfile.exists()) {
+            int rc;
+            rc = QMessageBox::question(this,
+                        tr("Overwrite?"),
+                        dstSourceFile + tr(" file exists. Overwrite it?"),
+                        QMessageBox::Yes, QMessageBox::No);
+            if(rc == QMessageBox::No)
+                return;
+        }
+
+    }
+
+    /*
+     * 3. creates new project folder if necessary (project can be in original folder)
+     */
+    QDir dpath(dstPath);
+
+    if(dpath.exists() == false)
+        dpath.mkdir(dstPath);
+
+    if(dpath.exists() == false) {
+        QMessageBox::critical(
+                this,tr("Save As Project Error."),
+                tr("System can not create project in ")+dstPath,
+                QMessageBox::Ok);
+        return;
+    }
+
+    /*
+     * 4. copy project file from source to destination as new project name
+     */
+
+    // find .side file
+    // remove new file before copy or copy will fail
+    if(QFile::exists(dstProjFile))
+        QFile::remove(dstProjFile);
+
+    // copy project file
+    QFile::copy(projFile,dstProjFile);
+
+    QString projSrc;
+    QFile sproj(projFile);
+    if(sproj.open(QFile::ReadOnly | QFile::Text)) {
+        projSrc = sproj.readAll();
+        sproj.close();
+    }
+
+    /*
+     * 5. copies the project main file from source to destination as new project main file
+     */
+    QStringList projList = projSrc.split("\n", QString::SkipEmptyParts);
+    QString srcMainFile = sourcePath(projFile)+projList.at(0);
+    QString dstMainFile = projList.at(0);
+    dstMainFile = dstMainFile.trimmed();
+    QString dstMainExt = dstMainFile.mid(dstMainFile.lastIndexOf("."));
+    dstMainFile = dstPath+dstName+dstMainExt;
+
+    // remove new file before copy or copy will fail
+    if(QFile::exists(dstMainFile))
+        QFile::remove(dstMainFile);
+    // copy project main file
+    QFile::copy(srcMainFile,dstMainFile);
+
+    /*
+     * Make a new project list. preprend project main file after this.
+     * fixes up any links in project file and writes file
+     */
+    QStringList newList;
+    for(int n = 1; n < projList.length(); n++) {
+        QString item = projList.at(n);
+
+        // special handling
+        // TODO - fix -I and -L too
+        if(item.indexOf(FILELINK) > 0) {
+            QStringList list = item.split(FILELINK,QString::SkipEmptyParts);
+            if(list.length() < 2) {
+                QMessageBox::information(
+                        this,tr("Project File Error."),
+                        tr("Save As Project expected a link, but got:\n")+item+"\n\n"+
+                        tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
+                        tr("After adding the correct link, remove the bad link."));
+            }
+            else {
+                QString als = list[1];
+                als = als.trimmed();
+                als = QDir::fromNativeSeparators(als);
+                als = saveAsProjectLinkFix(projFolder, dstPath, als);
+                if(als.length() > 0)
+                    item = list[0]+FILELINK+als;
+                else
+                    QMessageBox::information(
+                            this,tr("Can't Fix Link"),
+                            tr("Save As Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
+                            tr("After adding the correct link, remove the bad link."));
+                newList.append(item);
+            }
+        }
+        else if(item.indexOf("-I") == 0) {
+            QStringList list = item.split("-I",QString::SkipEmptyParts);
+            if(list.length() < 1) {
+                QMessageBox::information(
+                        this,tr("Project File Error."),
+                        tr("Save As Project expected a -I link, but got:\n")+item+"\n\n"+
+                        tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
+                        tr("After adding the correct link, remove the bad link."));
+            }
+            else {
+                QString als = list[0];
+                als = als.trimmed();
+                als = QDir::fromNativeSeparators(als);
+                als = saveAsProjectLinkFix(projFolder, dstPath, als);
+                if(als.length() > 0)
+                    item = "-I "+als;
+                else
+                    QMessageBox::information(
+                            this,tr("Can't Fix Link"),
+                            tr("Save As Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
+                            tr("After adding the correct link, remove the bad link."));
+                newList.append(item);
+            }
+        }
+        else if(item.indexOf("-L") == 0) {
+            QStringList list = item.split("-L",QString::SkipEmptyParts);
+            if(list.length() < 1) {
+                QMessageBox::information(
+                        this,tr("Project File Error."),
+                        tr("Save As Project expected a -L link, but got:\n")+item+"\n\n"+
+                        tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
+                        tr("After adding the correct link, remove the bad link."));
+            }
+            else {
+                QString als = list[0];
+                als = QDir::fromNativeSeparators(als);
+                als = als.trimmed();
+                als = saveAsProjectLinkFix(projFolder, dstPath, als);
+                if(als.length() > 0)
+                    item = "-L "+als;
+                else
+                    QMessageBox::information(
+                            this,tr("Can't Fix Link"),
+                            tr("Save As Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
+                            tr("After adding the correct link, remove the bad link."));
+                newList.append(item);
+            }
+        }
+        // project options
+        else if(item[0] == '>') {
+            newList.append(item);
+        }
+        // different destination
+        else if(sourcePath(projFile) != sourcePath(dstProjFile)) {
+            newList.append(item);
+            QString dst = sourcePath(dstProjFile)+item;
+            if(QFile::exists(dst))
+                QFile::remove(dst);
+            QFile::copy(sourcePath(projFile)+item, dst);
+        }
+        // same destination, just copy item
+        else {
+            newList.append(item);
+        }
+    }
+
+    newList.sort();
+
+    projSrc = dstName+dstMainExt+"\n";
+
+    for(int n = 0; n < newList.length(); n++) {
+        projSrc+=newList.at(n)+"\n";
+    }
+
+    QFile dproj(dstProjFile);
+    if(dproj.open(QFile::WriteOnly | QFile::Text)) {
+        dproj.write(projSrc.toAscii());
+        dproj.close();
+    }
+
+    this->openProject(dstProjFile);
+}
+
+#else
+
 /*
  * Save As project: saves a copy of the project in another path
  *
@@ -1329,7 +1673,6 @@ QString MainSpinWindow::saveAsProjectLinkFix(QString srcPath, QString dstPath, Q
  * 4. copy project file from source to destination as new project name
  * 5. copies the project main file from source to destination as new project main file
  *    fixes up any links in project file and writes file
- *
  */
 void MainSpinWindow::saveAsProject(const QString &inputProjFile)
 {
@@ -1507,6 +1850,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
 
     this->openProject(dstProjFile);
 }
+#endif
 
 /*
  * clone project copies a project from a source to destination path for education.
@@ -1830,20 +2174,25 @@ void MainSpinWindow::zipProject()
 
     dstName = projFile.mid(0,projFile.lastIndexOf("."));
 
-    /* ProjectName-YYMMDD-HHMMSS.zip */
-
-    QDateTime time = QDateTime::currentDateTime();
-    QString times = time.toLocalTime().toString("-yyMMdd-hhmmss");
     QFileDialog dialog;
     QString afilter("Zip File (*.zip)");
     QString lpath = this->sourcePath(projectFile)+"../";
+
+    int num = 0;
+    QString serial("");
+    if(QFile::exists(dstName+serial+".zip")) {
+        do {
+            num++;
+            serial = QString("(%1)").arg(num);
+        } while(QFile::exists(dstName+serial+".zip"));
+    }
+
     //dstPath = dialog.getExistingDirectory(this, tr("Zip Project Folder"), lpath, QFileDialog::ShowDirsOnly);
-    dstPath = dialog.getSaveFileName(this, tr("Zip Project"), lpath+dstName+times+".zip", afilter);
+    dstPath = dialog.getSaveFileName(this, tr("Zip Project"), dstName+serial+".zip", afilter);
 
     if(dstPath.length() < 1)
        return;
 
-    QString ftype = dialog.selectedNameFilter();
     //dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
     dstName = this->shortFileName(dstPath);
     dstName = dstName.mid(0,dstName.lastIndexOf("."));
@@ -4495,6 +4844,8 @@ void MainSpinWindow::addProjectLink()
         if(fileName.contains('*'))
             return;
 
+        QDir path(projectFile.mid(0,projectFile.lastIndexOf("/")));
+        fileName = path.relativeFilePath(fileName);
         lastPath = sourcePath(fileName);
 
         if(isOutputFile(fileName) == false) {
@@ -4527,6 +4878,8 @@ void MainSpinWindow::addProjectLibFile()
         if(fileName.contains('*'))
             return;
 
+        QDir path;
+        fileName = path.relativeFilePath(fileName);
         lastPath = sourcePath(fileName);
 
         if(isOutputFile(fileName) == false) {
@@ -4568,6 +4921,8 @@ void MainSpinWindow::addProjectIncPath(const QString &inpath)
     if(fileName.contains('*'))
         return;
 
+    QDir path(projectFile.mid(0,projectFile.lastIndexOf("/")));
+    fileName = path.relativeFilePath(fileName);
     lastPath = sourcePath(fileName);
 
     QString s = QDir::fromNativeSeparators(fileName);
@@ -4577,13 +4932,13 @@ void MainSpinWindow::addProjectIncPath(const QString &inpath)
         if(s.mid(s.length()-1) != "/")
             s += "/";
     }
-    fileName = QDir::convertSeparators(s);
+    //fileName = QDir::convertSeparators(s);
 
     if(isOutputFile(fileName) == false) {
-        if(fileName.indexOf(".") < 0)  {
+        //if(fileName.indexOf(".") < 0)  {
             fileName = "-I " + fileName;
             addProjectListFile(fileName);
-        }
+        //}
     }
 }
 
@@ -4606,6 +4961,8 @@ void MainSpinWindow::addProjectLibPath(const QString &inpath)
     if(fileName.contains('*'))
         return;
 
+    QDir path(projectFile.mid(0,projectFile.lastIndexOf("/")));
+    fileName = path.relativeFilePath(fileName);
     lastPath = sourcePath(fileName);
 
     QString s = QDir::fromNativeSeparators(fileName);
@@ -4615,13 +4972,13 @@ void MainSpinWindow::addProjectLibPath(const QString &inpath)
         if(s.mid(s.length()-1) != "/")
             s += "/";
     }
-    fileName = QDir::convertSeparators(s);
+    //fileName = QDir::convertSeparators(s);
 
     if(isOutputFile(fileName) == false) {
-        if(fileName.indexOf(".") < 0)  {
+        //if(fileName.indexOf(".") < 0)  {
             fileName = "-L "+fileName;
             addProjectListFile(fileName);
-        }
+        //}
     }
 }
 
