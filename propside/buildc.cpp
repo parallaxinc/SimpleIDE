@@ -187,6 +187,12 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
             if(proj.toLower().lastIndexOf(".o") < 0)
                 clist.append(outputPath+name.mid(0,name.lastIndexOf(".s"))+".o");
         }
+        else if(suffix.compare(".S") == 0) {
+            if(runGAS(name))
+                rc = -1;
+            if(proj.toLower().lastIndexOf(".o") < 0)
+                clist.append(outputPath+name.mid(0,name.lastIndexOf(".S"))+".o");
+        }
         /* .cogc also does COG specific objcopy */
         else if(suffix.compare(".cogc") == 0) {
             if(runCOGC(name,".cog"))
