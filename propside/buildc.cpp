@@ -1019,10 +1019,36 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
             for(m = 1; m < sp.length()-1; m++)
                 join += sp.at(m) + " ";
             join += sp.at(m);
+
+            QString jpath = join;
+
             // add the memory model subdirectory for library paths
             if (sp[0] == "-L")
                 join += separator + model + separator;
             args->append(join);
+
+            // add includes for library paths ... can remove duplicates later
+            // project listings are sorted so -I should come before -L
+            if (sp[0] == "-L") {
+                bool gotit = false;
+                for(int m = 0; m < args->count(); m++) {
+                    QString arg(args->at(m));
+                    if(arg.compare("-I") == 0) {
+                        if(m+1 < args->count()) {
+                            QString arg2(args->at(m+1));
+                            if(arg2.compare(jpath) == 0) {
+                                gotit = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(gotit == false) {
+                    args->append("-I");
+                    args->append(jpath);
+                }
+            }
+
         }
         else if (parm.indexOf(".cfg",0, Qt::CaseInsensitive) > -1){
             // don't append .cfg parameter
