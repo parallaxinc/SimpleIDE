@@ -101,7 +101,7 @@ void NewProject::nameChanged()
 QString NewProject::getCurrentPath()
 {
     QSettings settings(publisherKey, ASideGuiKey, this);
-    QVariant  lastfile = settings.value(workspaceKey);
+    QVariant  lastfile = settings.value(gccWorkspaceKey);
     QString userpath("");
     if(lastfile.canConvert(QVariant::String)) {
         userpath = lastfile.toString();
@@ -147,7 +147,7 @@ void NewProject::browsePath()
     }
     path->setText(mypath+name->text());
     QSettings settings(publisherKey, ASideGuiKey, this);
-    settings.setValue(workspaceKey,mypath);
+    settings.setValue(gccWorkspaceKey,mypath);
     int fontSize = path->fontInfo().pixelSize();
     setMinimumWidth(mypath.length()*fontSize+100);
     qDebug() << "New Project Folder " << mypath << name->text();

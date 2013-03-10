@@ -67,7 +67,7 @@ int ASideConfig::loadBoards(QString filePath)
     }
     boards->clear();
     boardNames.clear();
-    boardNames.append("NONE");
+    boardNames.append(GENERIC_BOARD);
 
     addBoards(filePath);
 }

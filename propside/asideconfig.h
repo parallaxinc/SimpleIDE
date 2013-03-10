@@ -4,6 +4,8 @@
 #include <QtGui>
 #include "asideboard.h"
 
+#define GENERIC_BOARD "GENERIC"
+
 class ASideConfig
 {
 public:

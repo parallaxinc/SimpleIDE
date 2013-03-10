@@ -41,12 +41,13 @@
 #define oldViewBoxKey       "SimpleIDE_OldViewBoxReminder"
 #define ASideGuiGeometry    "SimpleIDE_WindowGeometry"
 #define helpStartupKey      "SimpleIDE_ShowHelpStart"
-#define compilerKey         "SimpleIDE_Compiler"
-#define includesKey         "SimpleIDE_Includes"
-#define workspaceKey        "SimpleIDE_Workspace"
+#define gccCompilerKey      "SimpleIDE_Compiler"
+#define gccLibraryKey       "SimpleIDE_Library"
+#define gccWorkspaceKey     "SimpleIDE_Workspace"
 #define spinCompilerKey     "SimpleIDE_SpinCompiler"
 #define spinLibraryKey      "SimpleIDE_SpinLibrary"
 #define spinWorkspaceKey    "SimpleIDE_SpinWorkspace"
+#define propLoaderKey       "SimpleIDE_Loader"
 #define cloneSrcKey         "SimpleIDE_CloneSrc"
 #define cloneDestKey        "SimpleIDE_CloneDest"
 #define separatorKey        "SimpleIDE_PathSeparator"
@@ -105,13 +106,12 @@ public:
     enum Reset { DTR=0, RTS, CFG, AUTO };
     Reset getResetType();
 
-signals:
-
 public slots:
+
     void cleanSettings();
-    void browseCompiler();
-    void browseIncludes();
-    void browseWorkspace();
+    void browseGccCompiler();
+    void browseGccLibrary();
+    void browseGccWorkspace();
 
     void accept();
     void reject();
@@ -120,12 +120,15 @@ public slots:
     void browseSpinLibrary();
     void browseSpinWorkspace();
 
-    QString getCompilerStr() { return leditCompiler->text(); }
-    QString getIncludesStr() { return leditIncludes->text(); }
-    QString getWorkspaceStr() { return leditWorkspace->text(); }
-    QString getSpinCompilerStr() { return leditSpinCompiler->text(); }
-    QString getSpinLibraryStr()  { return leditSpinLibrary->text(); }
-    QString getSpinWorkspaceStr() { return leditSpinWorkspace->text(); }
+    void browseLoader();
+
+    QString getGccCompilerStr()     { return leditGccCompiler->text(); }
+    QString getGccLibraryStr()      { return leditGccLibrary->text(); }
+    QString getGccWorkspaceStr()    { return leditGccWorkspace->text(); }
+    QString getSpinCompilerStr()    { return leditSpinCompiler->text(); }
+    QString getSpinLibraryStr()     { return leditSpinLibrary->text(); }
+    QString getSpinWorkspaceStr()   { return leditSpinWorkspace->text(); }
+    QString getLoaderStr()          { return leditLoader->text(); }
 
 private:
 
@@ -141,12 +144,13 @@ private:
     QTabWidget  tabWidget;
     QString     mypath;
 
-    QString     compilerstr;
-    QString     includesstr;
-    QString     workspacestr;
+    QString     gccCompilerStr;
+    QString     gccLibraryStr;
+    QString     gccWorkspaceStr;
     QString     spinCompilerStr;
     QString     spinLibraryStr;
     QString     spinWorkspaceStr;
+    QString     loaderStr;
     
     QString     tabSpacesStr;
     QString     loadDelayStr;
@@ -174,13 +178,15 @@ private:
     bool         hlBlockComWeightBool;
     int          hlBlockComColorIndex;
 
-    QLineEdit   *leditCompiler;
-    QLineEdit   *leditIncludes;
-    QLineEdit   *leditWorkspace;
+    QLineEdit   *leditGccCompiler;
+    QLineEdit   *leditGccLibrary;
+    QLineEdit   *leditGccWorkspace;
 
     QLineEdit   *leditSpinCompiler;
     QLineEdit   *leditSpinLibrary;
     QLineEdit   *leditSpinWorkspace;
+
+    QLineEdit   *leditLoader;
 
     QLineEdit   tabSpaces;
     QLineEdit   loadDelay;

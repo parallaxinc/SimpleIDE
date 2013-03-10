@@ -61,7 +61,7 @@ int Loader::reload(QString port)
 
     if(this->program.length() == 0) {
         QSettings settings(publisherKey, ASideGuiKey,this);
-        QVariant incv = settings.value(includesKey);
+        QVariant incv = settings.value(propLoaderKey);
         if(incv.canConvert(QVariant::String)) {
             QString s = incv.toString();
             s = QDir::fromNativeSeparators(s);
