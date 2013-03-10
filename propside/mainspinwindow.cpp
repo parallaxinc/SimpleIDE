@@ -355,7 +355,7 @@ void MainSpinWindow::terminalEditorTextChanged()
 void MainSpinWindow::getApplicationSettings()
 {
     QFile file;
-    QVariant compv = settings->value(compilerKey);
+    QVariant compv = settings->value(gccCompilerKey);
 
     if(compv.canConvert(QVariant::String))
         aSideCompiler = compv.toString();
@@ -389,7 +389,7 @@ void MainSpinWindow::getApplicationSettings()
 #endif
 
     /* get the include path and config file set by user */
-    QVariant incv = settings->value(includesKey);
+    QVariant incv = settings->value(gccLibraryKey);
     QVariant cfgv = settings->value(configFileKey);
 
     /* convert registry values to strings */
@@ -416,11 +416,6 @@ void MainSpinWindow::getApplicationSettings()
     {
         /* load boards in case there were changes */
         aSideConfig->loadBoards(aSideCfgFile);
-    }
-
-    QVariant wrkv = settings->value(workspaceKey);
-    if(wrkv.canConvert(QVariant::String) == false) {
-        propDialog->showProperties();
     }
 }
 
@@ -538,7 +533,7 @@ void MainSpinWindow::addLib()
 {
     // find library to add
     QString workspace = "";
-    QVariant wrkv = settings->value(workspaceKey);
+    QVariant wrkv = settings->value(gccLibraryKey);
     if(wrkv.canConvert(QVariant::String)) {
         workspace = wrkv.toString();
     }
@@ -1091,7 +1086,7 @@ void MainSpinWindow::newProject()
         // board type GENERIC for simpleview
         for(int n = 0; n < cbBoard->count(); n++) {
             QString board = cbBoard->itemText(n);
-            if(board.compare("GENERIC",Qt::CaseInsensitive) == 0) {
+            if(board.compare(GENERIC_BOARD,Qt::CaseInsensitive) == 0) {
                 cbBoard->setCurrentIndex(n);
                 break;
             }
@@ -3247,7 +3242,6 @@ void MainSpinWindow::setProject()
     QString extension = fileName.mid(fileName.lastIndexOf(".")+1);
     if(extension.compare(SPIN_TEXT,Qt::CaseInsensitive) == 0) {
         projectOptions->setCompiler(SPIN_TEXT);
-        //projectOptions->setBoardType("HUB"); // NONE is only option for SPIN
         this->closeFile(); // do this so spin highlighter works.
         this->openFileName(fileName);
         btnDownloadSdCard->setEnabled(false);
@@ -3703,7 +3697,8 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     }
 
     portName = cbPort->itemText(cbPort->currentIndex());
-    boardName = cbBoard->itemText(cbBoard->currentIndex());
+    QString bname = this->cbBoard->currentText();
+    boardName = bname;
     QString sdrun = ASideConfig::UserDelimiter+ASideConfig::SdRun;
     QString sdload = ASideConfig::UserDelimiter+ASideConfig::SdLoad;
 
@@ -3719,7 +3714,6 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     if(this->propDialog->getLoadDelay() > 0) {
         args.append(QString("-S%1").arg(this->propDialog->getLoadDelay()));
     }
-    QString bname = this->cbBoard->currentText();
     ASideBoard* board = aSideConfig->getBoardData(bname);
     QString reset("DTR");
     if(board != NULL)
@@ -3744,8 +3738,10 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     if(compileType == ProjectOptions::TAB_C_COMP) {
         args.append("-I");
         args.append(aSideIncludes);
-        args.append("-b");
-        args.append(boardName);
+        if(bname.compare(GENERIC_BOARD) != 0) {
+            args.append("-b");
+            args.append(boardName);
+        }
     }
     args.append("-p");
     args.append(portName);
@@ -3814,7 +3810,7 @@ int  MainSpinWindow::runLoader(QString copts)
     connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
 
     process->setProcessChannelMode(QProcess::MergedChannels);
-    process->setWorkingDirectory(sourcePath(projectFile));
+    process->setWorkingDirectory(this->sourcePath(projectFile));
 
     procMutex.lock();
     procDone = false;
@@ -4340,7 +4336,7 @@ void MainSpinWindow::compilerChanged()
     else if(isSpinProject()) {
         projectMenu->setEnabled(false);
         cbBoard->setEnabled(false);
-        int n = cbBoard->findText("NONE");
+        int n = cbBoard->findText(GENERIC_BOARD);
         if(n > -1) cbBoard->setCurrentIndex(n);
     }
 #endif
@@ -5348,21 +5344,28 @@ void MainSpinWindow::portResetButton()
     if(this->propDialog->getResetType() == Properties::CFG) {
         QString bname = this->cbBoard->currentText();
         ASideBoard* board = aSideConfig->getBoardData(bname);
-        if(board == NULL) {
-            QMessageBox::critical(this,tr("Can't Reset"),tr("Can't reset by CFG with an empty board type."),QMessageBox::Ok);
-            return;
+        if(board != NULL) {
+            QString reset = board->get(ASideBoard::reset);
+            if(reset.length() == 0)
+                rts = false;
+            else
+            if(reset.contains("RTS",Qt::CaseInsensitive))
+                rts = true;
+            else
+            if(reset.contains("DTR",Qt::CaseInsensitive))
+                rts = false;
+            else
+                rts = false;
         }
-        QString reset = board->get(ASideBoard::reset);
-        if(reset.length() == 0)
-            rts = false;
-        else
-        if(reset.contains("RTS",Qt::CaseInsensitive))
-            rts = true;
-        else
-        if(reset.contains("DTR",Qt::CaseInsensitive))
-            rts = false;
-        else
-            rts = false;
+        else {
+            if(projectOptions->getCompiler().compare(SPIN_TEXT) == 0) {
+                rts = false;
+            }
+            else{
+                QMessageBox::critical(this,tr("Can't Reset"),tr("Can't reset by CFG with an empty board type."),QMessageBox::Ok);
+                return;
+            }
+        }
     }
     else
     if(this->propDialog->getResetType() == Properties::RTS) {
@@ -5757,7 +5760,7 @@ void MainSpinWindow::setupToolBars()
     connect(btnProjectSave,SIGNAL(clicked()),this,SLOT(saveProject()));
     connect(btnProjectSaveAs,SIGNAL(clicked()),this,SLOT(saveAsProject()));
     //connect(btnProjectClone,SIGNAL(clicked()),this,SLOT(cloneProject()));
-    connect(btnProjectClose,SIGNAL(clicked()),this,SLOT(closeProject()));
+    connect(btnProjectClose,SIGNAL(triggered()),this,SLOT(closeProject()));
     connect(btnProjectApp,SIGNAL(clicked()),this,SLOT(setProject()));
     connect(btnProjectZip,SIGNAL(clicked()),this,SLOT(zipProject()));
 
@@ -5870,7 +5873,7 @@ void MainSpinWindow::setupToolBars()
     btnConnected = new QAction(this);
     btnConnected->setToolTip(tr("SimpleIDE Terminal"));
     btnConnected->setCheckable(true);
-    connect(btnConnected,SIGNAL(clicked()),this,SLOT(connectButton()));
+    connect(btnConnected,SIGNAL(triggered()),this,SLOT(connectButton()));
 
 #ifdef BUTTON_PORT_SCAN
     QToolButton *btnPortScan = new QToolButton(this);
@@ -5880,7 +5883,7 @@ void MainSpinWindow::setupToolBars()
 
     btnBoardReset = new QAction(this);
     btnBoardReset->setToolTip(tr("Reset Port"));
-    connect(btnBoardReset,SIGNAL(clicked()),this,SLOT(portResetButton()));
+    connect(btnBoardReset,SIGNAL(triggered()),this,SLOT(portResetButton()));
     /* can't hide a QToolButton. Use QAction instead */
     addToolBarAction(ctrlToolBar, btnBoardReset, QString(":/images/reset.png"));
     connect(btnBoardReset, SIGNAL(triggered()), this, SLOT(portResetButton()));

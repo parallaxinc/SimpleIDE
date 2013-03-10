@@ -25,7 +25,7 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
     layout->addWidget(buttonBox);
 
     setWindowFlags(Qt::Tool);
-    resize(600,260);
+    resize(500,260);
 }
 
 void Properties::cleanSettings()
@@ -53,40 +53,53 @@ void Properties::setupFolders()
     tabWidget.addTab(box," GCC Folders ");
 
     QGroupBox *gbCompiler = new QGroupBox(tr("GCC Compiler"), this);
-    QGroupBox *gbIncludes = new QGroupBox(tr("Loader Folder"), this);
+    QGroupBox *gbLibrary = new QGroupBox(tr("Library Folder"), this);
     QGroupBox *gbWorkspace = new QGroupBox(tr("Workspace Folder"), this);
 
     QPushButton *btnCompilerBrowse = new QPushButton(tr("Browse"), this);
-    leditCompiler = new QLineEdit(this);
+    leditGccCompiler = new QLineEdit(this);
     QHBoxLayout *clayout = new QHBoxLayout();
-    clayout->addWidget(leditCompiler);
+    clayout->addWidget(leditGccCompiler);
     clayout->addWidget(btnCompilerBrowse);
 
-    QPushButton *btnIncludesBrowse = new QPushButton(tr("Browse"), this);
-    leditIncludes = new QLineEdit(this);
+    QPushButton *btnLibraryBrowse = new QPushButton(tr("Browse"), this);
+    leditGccLibrary = new QLineEdit(this);
     QHBoxLayout *ilayout = new QHBoxLayout();
-    ilayout->addWidget(leditIncludes);
-    ilayout->addWidget(btnIncludesBrowse);
+    ilayout->addWidget(leditGccLibrary);
+    ilayout->addWidget(btnLibraryBrowse);
 
     QPushButton *btnWorkspaceBrowse = new QPushButton(tr("Browse"), this);
-    leditWorkspace = new QLineEdit(this);
+    leditGccWorkspace = new QLineEdit(this);
     QHBoxLayout *wlayout = new QHBoxLayout();
-    wlayout->addWidget(leditWorkspace);
+    wlayout->addWidget(leditGccWorkspace);
     wlayout->addWidget(btnWorkspaceBrowse);
 
-    connect(btnCompilerBrowse,  SIGNAL(clicked()), this, SLOT(browseCompiler()));
-    connect(btnIncludesBrowse,  SIGNAL(clicked()), this, SLOT(browseIncludes()));
-    connect(btnWorkspaceBrowse, SIGNAL(clicked()), this, SLOT(browseWorkspace()));
+    connect(btnCompilerBrowse,  SIGNAL(clicked()), this, SLOT(browseGccCompiler()));
+    connect(btnLibraryBrowse,  SIGNAL(clicked()), this, SLOT(browseGccLibrary()));
+    connect(btnWorkspaceBrowse, SIGNAL(clicked()), this, SLOT(browseGccWorkspace()));
 
     gbCompiler->setLayout(clayout);
-    gbIncludes->setLayout(ilayout);
+    gbLibrary->setLayout(ilayout);
     gbWorkspace->setLayout(wlayout);
 
     layout->addWidget(gbCompiler);
-    layout->addWidget(gbIncludes);
+    layout->addWidget(gbLibrary);
     layout->addWidget(gbWorkspace);
 
     QSettings settings(publisherKey, ASideGuiKey);
+
+    QString mywrk = QDir::homePath()+"/";
+    if(QFile::exists(mywrk+"Documents")) {
+        mywrk = mywrk +"Documents/";
+    }
+    else if(QFile::exists(mywrk+"My Documents")) {
+        mywrk = mywrk +"My Documents/";
+    }
+
+    QString mylib;
+    if(QFile::exists(mywrk+"SimpleIDE/Learn/Simple Libraries")) {
+        mylib = mywrk+"SimpleIDE/Learn/Simple Libraries";
+    }
 
 #if defined(Q_WS_WIN32)
     mypath = "C:/propgcc/";
@@ -106,29 +119,21 @@ void Properties::setupFolders()
         mygcc = mypath+"bin/propeller-elf-gcc";
     }
 #endif
-    QString myinc = mypath+"propeller-load/";
 
     if(QFile::exists(mygcc))
         qDebug() << "Found Default Compiler.";
-    if(QFile::exists(myinc))
-        qDebug() << "Found Default Loader Path.";
 
-    QVariant compv = settings.value(compilerKey,mygcc);
-    QVariant incv = settings.value(includesKey,myinc);
-    QVariant wrkv = settings.value(workspaceKey);
+    QVariant compv = settings.value(gccCompilerKey,mygcc);
+    QVariant libv  = settings.value(gccLibraryKey, mylib);
+    QVariant wrkv  = settings.value(gccWorkspaceKey, mywrk);
 
-    fileStringProperty(&compv, leditCompiler, compilerKey, &mygcc);
-    fileStringProperty(&incv,  leditIncludes, includesKey, &myinc);
+    fileStringProperty(&compv, leditGccCompiler,  gccCompilerKey,  &mygcc);
+    fileStringProperty(&wrkv,  leditGccWorkspace, gccWorkspaceKey, &mywrk);
+    fileStringProperty(&libv,  leditGccLibrary,   gccLibraryKey,   &mylib);
 
-    if(wrkv.canConvert(QVariant::String)) {
-        QString s = wrkv.toString();
-        s = QDir::fromNativeSeparators(s);
-        leditWorkspace->setText(s);
-    }
-    settings.setValue(compilerKey,mygcc);
-    settings.setValue(includesKey,myinc);
-    settings.setValue(workspaceKey,leditWorkspace->text());
-
+    settings.setValue(gccCompilerKey,mygcc);
+    settings.setValue(gccLibraryKey,leditGccLibrary->text());
+    settings.setValue(gccWorkspaceKey,leditGccWorkspace->text());
 }
 
 void Properties::setupSpinFolders()
@@ -148,11 +153,11 @@ void Properties::setupSpinFolders()
     clayout->addWidget(leditSpinCompiler);
     clayout->addWidget(btnCompilerBrowse);
 
-    QPushButton *btnIncludesBrowse = new QPushButton(tr("Browse"), this);
+    QPushButton *btnLibraryBrowse = new QPushButton(tr("Browse"), this);
     leditSpinLibrary = new QLineEdit(this);
     QHBoxLayout *ilayout = new QHBoxLayout();
     ilayout->addWidget(leditSpinLibrary);
-    ilayout->addWidget(btnIncludesBrowse);
+    ilayout->addWidget(btnLibraryBrowse);
 
     QPushButton *btnWorkspaceBrowse = new QPushButton(tr("Browse"), this);
     leditSpinWorkspace = new QLineEdit(this);
@@ -161,7 +166,7 @@ void Properties::setupSpinFolders()
     wlayout->addWidget(btnWorkspaceBrowse);
 
     connect(btnCompilerBrowse, SIGNAL(clicked()), this, SLOT(browseSpinCompiler()));
-    connect(btnIncludesBrowse, SIGNAL(clicked()), this, SLOT(browseSpinLibrary()));
+    connect(btnLibraryBrowse, SIGNAL(clicked()), this, SLOT(browseSpinLibrary()));
     connect(btnWorkspaceBrowse, SIGNAL(clicked()), this, SLOT(browseSpinWorkspace()));
 
     gbCompiler->setLayout(clayout);
@@ -174,7 +179,7 @@ void Properties::setupSpinFolders()
 
     QSettings settings(publisherKey, ASideGuiKey,this);
 
-    QVariant gv = settings.value(compilerKey,"");
+    QVariant gv = settings.value(gccCompilerKey,"");
     QString mygcc;
 
     if(gv.canConvert(QVariant::String)) {
@@ -221,16 +226,21 @@ void Properties::setupSpinFolders()
     fileStringProperty(&compv, leditSpinCompiler, spinCompilerKey, &myspin);
     fileStringProperty(&incv,  leditSpinLibrary,  spinLibraryKey,  &mylib);
 
+    QString mywrk;
     if(wrkv.canConvert(QVariant::String)) {
-        QString s = wrkv.toString();
-        s = QDir::fromNativeSeparators(s);
-        leditSpinWorkspace->setText(s);
+        mywrk = wrkv.toString();
+        mywrk = QDir::fromNativeSeparators(mywrk);
+    }
+
+    fileStringProperty(&wrkv,  leditSpinWorkspace, spinWorkspaceKey, &mywrk);
+
+    if(mywrk.length() == 0) {
+        leditSpinWorkspace->setText(this->leditGccWorkspace->text());
     }
 
     this->spinCompilerStr = leditSpinCompiler->text();
     this->spinLibraryStr = leditSpinLibrary->text();
     this->spinWorkspaceStr = leditSpinWorkspace->text();
-
 }
 
 void Properties::fileStringProperty(QVariant *var, QLineEdit *ledit, const char *key, QString *value)
@@ -267,8 +277,36 @@ void Properties::setupGeneral()
     QSettings settings(publisherKey, ASideGuiKey,this);
     QVariant var;
 
+    QGroupBox *gbLoader = new QGroupBox(tr("Loader Folder"), tbox);
+
+    QPushButton *btnLoaderBrowse = new QPushButton(tr("Browse"), this);
+    leditLoader = new QLineEdit(this);
+    QHBoxLayout *clayout = new QHBoxLayout();
+    clayout->addWidget(leditLoader);
+    clayout->addWidget(btnLoaderBrowse);
+
+    QHBoxLayout *ilayout = new QHBoxLayout();
+    ilayout->addWidget(leditLoader);
+    ilayout->addWidget(btnLoaderBrowse);
+
+    connect(btnLoaderBrowse,  SIGNAL(clicked()), this, SLOT(browseLoader()));
+
+    QString myloader = mypath+"propeller-load/";
+    if(QFile::exists(myloader))
+        qDebug() << "Found Default Loader Path.";
+
+    QVariant loadv = settings.value(propLoaderKey, myloader);
+
+    fileStringProperty(&loadv, leditLoader, propLoaderKey, &myloader);
+
+    settings.setValue(propLoaderKey, myloader);
+
+    gbLoader->setLayout(ilayout);
+
+
     QGroupBox *gbGeneral = new QGroupBox(tr("General Settings"),tbox);
     QGridLayout *tlayout = new QGridLayout();
+
 
     QLabel *ltabs = new QLabel(tr("Editor Tab Space Count"),tbox);
     tlayout->addWidget(ltabs,row,0);
@@ -318,6 +356,7 @@ void Properties::setupGeneral()
     tlayout->addWidget(clearSettings,row,1);
 
     gbGeneral->setLayout(tlayout);
+    glayout->addWidget(gbLoader);
     glayout->addWidget(gbGeneral);
 }
 
@@ -717,9 +756,9 @@ int  Properties::setComboIndexByValue(QComboBox *combo, QString value)
     return -1;
 }
 
-void Properties::browseCompiler()
+void Properties::browseGccCompiler()
 {
-    QString compiler = leditCompiler->text();
+    QString compiler = leditGccCompiler->text();
     if(compiler.length() < 1)
         compiler = mypath;
 
@@ -730,48 +769,48 @@ void Properties::browseCompiler()
 #endif
 
     QString s = QDir::fromNativeSeparators(fileName);
-    compilerstr = leditCompiler->text();
+    gccCompilerStr = leditGccCompiler->text();
     if(s.length() > 0) {
         mypath = s;
-        leditCompiler->setText(s);
+        leditGccCompiler->setText(s);
         if(s.lastIndexOf("/bin/") > 0) {
             s = s.mid(0,s.lastIndexOf("/bin/"))+"/propeller-load/";
             mypath = s;
-            leditIncludes->setText(mypath);
+            leditLoader->setText(mypath);
         }
     }
-    qDebug() << "browseCompiler" << s;
+    qDebug() << "browseGccCompiler" << s;
 }
 
-void Properties::browseIncludes()
+void Properties::browseGccLibrary()
 {
     QString pathName;
     QString path = mypath;
 
 #if defined(Q_WS_WIN32)
-    pathName = QFileDialog::getExistingDirectory(this,tr("Select Propeller Loader Folder"), path, QFileDialog::ShowDirsOnly);
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select GCC Library Folder"), path, QFileDialog::ShowDirsOnly);
 #else
-    pathName = QFileDialog::getExistingDirectory(this,tr("Select Propeller Loader Folder"), path, QFileDialog::ShowDirsOnly);
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select GCC Library Folder"), path, QFileDialog::ShowDirsOnly);
 #endif
 
     QString s = QDir::fromNativeSeparators(pathName);
-    includesstr = leditIncludes->text();
+    gccLibraryStr = leditGccLibrary->text();
     if(s.length() == 0)
         return;
     if(s.indexOf('/') > -1) {
         if(s.mid(s.length()-1) != "/")
             s += "/";
     }
-    leditIncludes->setText(s);
+    leditGccLibrary->setText(s);
     mypath = path;
 
-    qDebug() << "browseIncludes" << s;
+    qDebug() << "browseGccLibrary" << s;
 }
 
-void Properties::browseWorkspace()
+void Properties::browseGccWorkspace()
 {
     QSettings settings(publisherKey, ASideGuiKey);
-    QVariant vpath = settings.value(workspaceKey,QVariant("~/."));
+    QVariant vpath = settings.value(gccWorkspaceKey,QVariant("~/."));
     QString path = "";
     if(vpath.canConvert(QVariant::String)) {
         path = vpath.toString();
@@ -789,10 +828,10 @@ void Properties::browseWorkspace()
     if(path.length() < 1)
         path = mypath;
 
-    pathName = QFileDialog::getExistingDirectory(this,tr("Select Project Workspace Folder"), path, QFileDialog::ShowDirsOnly);
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select GCC Project Workspace Folder"), path, QFileDialog::ShowDirsOnly);
 
     QString s = QDir::fromNativeSeparators(pathName);
-    workspacestr = leditWorkspace->text();
+    gccWorkspaceStr = leditGccWorkspace->text();
     if(s.length() == 0)
         return;
     if(s.indexOf('/') > -1) {
@@ -800,8 +839,8 @@ void Properties::browseWorkspace()
             s += "/";
     }
 
-    leditWorkspace->setText(s);
-    settings.setValue(workspaceKey, s);
+    leditGccWorkspace->setText(s);
+    settings.setValue(gccWorkspaceKey, s);
 }
 
 void Properties::browseSpinCompiler()
@@ -868,7 +907,7 @@ void Properties::browseSpinWorkspace()
     if(path.length() < 1)
         path = mypath;
 
-    pathName = QFileDialog::getExistingDirectory(this,tr("Select Project Workspace Folder"), path, QFileDialog::ShowDirsOnly);
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select Spin Project Workspace Folder"), path, QFileDialog::ShowDirsOnly);
 
     QString s = QDir::fromNativeSeparators(pathName);
     spinWorkspaceStr = leditSpinWorkspace->text();
@@ -882,17 +921,36 @@ void Properties::browseSpinWorkspace()
     settings.setValue(spinWorkspaceKey, s);
 }
 
+void Properties::browseLoader()
+{
+    QString pathName;
+    QString path = mypath + "propeller-load";
+
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select Propeller Loader Folder"), path, QFileDialog::ShowDirsOnly);
+
+    QString s = QDir::fromNativeSeparators(pathName);
+    loaderStr = leditLoader->text();
+    if(s.length() == 0)
+        return;
+    if(s.indexOf('/') > -1) {
+        if(s.mid(s.length()-1) != "/")
+            s += "/";
+    }
+    leditLoader->setText(s);
+
+    qDebug() << "browseLoader" << s;
+}
+
 void Properties::accept()
 {
     QSettings settings(publisherKey, ASideGuiKey);
-    //QString s = leditSpinLibrary->text();
-    settings.setValue(compilerKey,leditCompiler->text());
-    settings.setValue(includesKey,leditIncludes->text());
-    settings.setValue(workspaceKey,leditWorkspace->text());
+    settings.setValue(gccCompilerKey,leditGccCompiler->text());
+    settings.setValue(gccLibraryKey,leditGccLibrary->text());
+    settings.setValue(gccWorkspaceKey,leditGccWorkspace->text());
     settings.setValue(spinCompilerKey,leditSpinCompiler->text());
     settings.setValue(spinLibraryKey,leditSpinLibrary->text());
     settings.setValue(spinWorkspaceKey,leditSpinWorkspace->text());
-    settings.setValue(configFileKey,leditIncludes->text());
+    settings.setValue(configFileKey,leditLoader->text());
 
     settings.setValue(tabSpacesKey,tabSpaces.text());
     settings.setValue(loadDelayKey,loadDelay.text());
@@ -925,13 +983,13 @@ void Properties::accept()
 
 void Properties::reject()
 {
-    // TODO: restore everything to settings values.
-    leditCompiler->setText(compilerstr);
-    leditIncludes->setText(includesstr);
-    leditWorkspace->setText(workspacestr);
+    leditGccCompiler->setText(gccCompilerStr);
+    leditGccLibrary->setText(gccLibraryStr);
+    leditGccWorkspace->setText(gccWorkspaceStr);
     leditSpinCompiler->setText(spinCompilerStr);
     leditSpinLibrary->setText(spinLibraryStr);
     leditSpinWorkspace->setText(spinWorkspaceStr);
+    leditLoader->setText(loaderStr);
 
     tabSpaces.setText(tabSpacesStr);
     loadDelay.setText(loadDelayStr);
@@ -963,9 +1021,14 @@ void Properties::reject()
 
 void Properties::showProperties()
 {
-    compilerstr = leditCompiler->text();
-    includesstr = leditIncludes->text();
-    workspacestr = leditWorkspace->text();
+    gccCompilerStr = leditGccCompiler->text();
+    gccLibraryStr = leditGccLibrary->text();
+    gccWorkspaceStr = leditGccWorkspace->text();
+    spinCompilerStr = leditSpinCompiler->text();
+    spinLibraryStr = leditSpinLibrary->text();
+    spinWorkspaceStr = leditSpinWorkspace->text();
+    loaderStr = leditLoader->text();
+
     tabSpacesStr = tabSpaces.text();
     loadDelayStr = loadDelay.text();
     resetTypeEnum = (Reset)resetType.currentIndex();
