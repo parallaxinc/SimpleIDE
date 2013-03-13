@@ -1410,85 +1410,93 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     }
     else
 #endif
-    {
-        // simpleView version
-        QFileDialog dialog(this, tr("Save Project As"), lastPath, "");
-        QStringList filters;
 
-        QString comp = projectOptions->getCompiler();
-        if(comp.compare(projectOptions->C_COMPILER) == 0) {
-            filters << "C Project (*.c)";
+    /*
+     * Serialize a new filename for user.
+     */
+    dstName = projFile.mid(0,projFile.lastIndexOf("."));
+    QRegExp reg("(\\d+)");
+    if(dstName.indexOf(reg)) {
+        if(dstName.lastIndexOf(")") == dstName.length()-1) {
+            if(dstName.lastIndexOf(reg) > -1) {
+                dstName = dstName.mid(0,dstName.lastIndexOf("("));
+            }
         }
-        else if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
-            filters << "C++ Project (*.cpp)";
-        }
-    #ifdef SPIN
-        else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
-            filters << "Spin Project (*.spin)";
-        }
-    #endif
+    }
 
-        dialog.setNameFilters(filters);
-        if(dialog.exec() == QDialog::Rejected)
-            return;
-        QStringList dstList = dialog.selectedFiles();
-        if(dstList.length() < 1)
-            return;
-        dstPath = dstList.at(0);
-        if(dstPath.length() < 1)
-           return;
+    /*
+     * Enumerate until it's unique.
+     */
+    int num = 0;
+    QString serial("");
+    if(QFile::exists(dstName+serial+".side")) {
+        do {
+            num++;
+            serial = QString("(%1)").arg(num);
+        } while(QFile::exists(dstName+serial+".side"));
+    }
 
-        QString ftype = dialog.selectedNameFilter();
-        dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
-        dstName = dstName.mid(0,dstName.lastIndexOf("."));
-        dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
-        lastPath = dstPath;
+    // simpleView version
+    QFileDialog dialog(this, tr("Save Project As"), dstName+serial+".side", "");
+    QStringList filters;
+    filters << "SimpleIDE Project (*.side)";
 
-        dstProjFile = dstPath+dstName+SIDE_EXTENSION;
-        QFile sidefile(dstProjFile);
-        /**
-         * Don't overwrite an existing sidefile without permission
-         */
-        if(sidefile.exists()) {
-            int rc;
-            rc = QMessageBox::question(this,
-                        tr("Overwrite?"),
-                        tr("The .side file exists. Overwrite it?"),
-                        QMessageBox::Yes, QMessageBox::No);
-            if(rc == QMessageBox::No)
-                return;
-        }
+    dialog.setNameFilters(filters);
+    if(dialog.exec() == QDialog::Rejected)
+        return;
+    QStringList dstList = dialog.selectedFiles();
+    if(dstList.length() < 1)
+        return;
+    dstPath = dstList.at(0);
+    if(dstPath.length() < 1)
+       return;
 
-        ftype = ftype.mid(ftype.lastIndexOf("."));
-        ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+    dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
+    dstName = dstName.mid(0,dstName.lastIndexOf("."));
+    dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+    lastPath = dstPath;
 
-        QString sidestr = dstName+ftype+"\n";
-        if(sidefile.open(QFile::WriteOnly | QFile::Text)) {
-            sidefile.write(sidestr.toAscii());
-            sidefile.close();
-        }
-        else {
-            QString trs = tr("Can't save file: ")+dstProjFile;
-            QMessageBox::critical(this,tr("Save Failed"), trs);
-            return;
-        }
+    dstProjFile = dstPath+dstName+SIDE_EXTENSION;
+    QFile sidefile(dstProjFile);
 
-        QString dstSourceFile = dstPath+dstName+ftype;
-        QFile mainfile(dstSourceFile);
+    /**
+     * Don't overwrite an existing sidefile at all
+     */
+    if(sidefile.exists()) {
+        QMessageBox::critical(this,
+            tr("Can't Save As"),
+            tr("Can't Save As to an existing project.")+"\n"+
+            tr("Please try again using a different filename."));
+        return;
+    }
 
-        /**
-         * don't overwrite existing main file without permission
-         */
-        if(mainfile.exists()) {
-            int rc;
-            rc = QMessageBox::question(this,
-                        tr("Overwrite?"),
-                        dstSourceFile + tr(" file exists. Overwrite it?"),
-                        QMessageBox::Yes, QMessageBox::No);
-            if(rc == QMessageBox::No)
-                return;
-        }
+    QString ftype;
+    QFile proj(projFile);
+    if(proj.open(QFile::ReadOnly | QFile::Text)) {
+        ftype = proj.readLine();
+        proj.close();
+    }
+    else {
+        QString trs = tr("Can't find file: ")+projFile;
+        QMessageBox::critical(this,tr("Source Project not found!"), trs);
+        return;
+    }
 
+    ftype = ftype.trimmed();
+    ftype = ftype.mid(ftype.lastIndexOf("."));
+
+    QString dstSourceFile = dstPath+dstName+ftype;
+    QFile mainfile(dstSourceFile);
+
+    /**
+     * don't overwrite existing main file without permission
+     */
+    if(mainfile.exists()) {
+        QMessageBox::critical(this,
+            tr("Can't Save As"),
+            tr("Can't Save As to an existing project.")+"\n"+
+            tr("Please try again using a different filename."));
+        return;
     }
 
     /*
@@ -1663,6 +1671,11 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
 }
 
 #else
+
+/*
+ * This function uses the saveAsProjectZip methodology.
+ * Saving just in case someone changes thei mind :innocent:
+ */
 
 /*
  * Save As project: saves a copy of the project in another path
