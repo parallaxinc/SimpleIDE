@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-11"
+#define MyAppVersion "0-9-16-1"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -19,8 +19,10 @@
 #define MyTranslations "..\propside\translations"
 #define MyUserGuide "..\propside\userguide"
 #define MySpinPath "..\spin"
+#define MyEduLibPath "..\edulib"
 #define MyAppBin "{app}\bin"
 #define MyBoardFilter "..\boards.txt"
+#define MyFont "Parallax.ttf"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -45,15 +47,20 @@ UserInfoPage=false
 UsePreviousUserInfo=false
 ChangesEnvironment=true
 LicenseFile=.\IDE_LICENSE.txt
-WizardImageFile=images\SimpleIDE-Install-Splash2.bmp
+WizardImageFile=images\SimpleIDE-Install-Splash3.bmp
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
-Name: "modifypath"; Description: "&Add Propeller-GCC directory to your environment PATH"; Flags: checkedonce; 
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; Flags: checkedonce;
+;  GroupDescription: "{cm:AdditionalIcons}";
+Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; Flags: checkedonce; OnlyBelowVersion: 0,6.1
+; GroupDescription: "{cm:AdditionalIcons}"; 
+; Name: "association"; Description: "Associate *.side Files with SimpleIDE"; Flags: checkedonce;
+; GroupDescription: "File Association:"; 
+Name: "modifypath"; Description: "&Add Propeller-GCC directory to your environment PATH"; Flags: checkedonce;
+; GroupDescription: "Propeller-GCC Path:"
 
 [Files]
 Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -63,19 +70,25 @@ Source: "LGPL_EXCEPTION.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: ..\ctags58\README; DestDir: {app}; Flags: ignoreversion; DestName: ctags-readme.txt; 
 Source: ..\ctags58\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: ctags-license.txt; 
 Source: ..\icons\24x24-free-application-icons\readme.txt; DestDir: {app}; Flags: ignoreversion; DestName: aha-soft-license.txt; 
-Source: "{#MySpinPath}\*"; DestDir: "{code:GetCompilerDir}\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyBoardFilter}"; DestDir: "{code:GetCompilerDir}\propeller-load\"; Flags: ignoreversion
+Source: "{#MyFont}"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MySpinPath}\*"; DestDir: "{code:GetCompilerDir}\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyEduLibPath}\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
+;Source: "..\propside-demos\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 Source: "{#MyGccMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\libstdc++*"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyQtPath}\bin\QtCore4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyQtPath}\bin\QtGui4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyQtPath}\bin\quazip1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+
+; remove temporarily for faster testing
+;
+;Source: "{#MyQtPath}\bin\QtCore4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+;Source: "{#MyQtPath}\bin\QtGui4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyQtPath}\bin\quazip1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccPath}\*"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\propside-demos\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
 Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyTranslations}\*"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
@@ -92,16 +105,26 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 ;Filename: {app}\{#MyAppExeName}; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: skipifsilent NoWait PostInstall; 
 
 [Registry]
-Root: HKCU; SubKey: Software\{#MyAppPublisher}; Flags: UninsDeleteKey; 
+Root: HKCU; SubKey: "Software\{#MyAppPublisher}"; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Compiler; ValueData: {code:GetCompilerDir}\bin\propeller-elf-gcc.exe; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Includes; ValueData: {code:GetCompilerDir}\propeller-load\; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Workspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
+Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Library; ValueData: "{code:GetDataDir}\Learn\Simple Libraries\"; Flags: UninsDeleteKey;
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinCompiler; ValueData: {code:GetCompilerDir}\bin\bstc.exe; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinLibrary; ValueData: {code:GetCompilerDir}\spin\; Flags: UninsDeleteKey; 
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinWorkspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata};{code:GetCompilerDir}\bin;"; Check: NeedsAddPropGccBinPath();
+
+; File Association
+; Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: SimpleIDE; Flags: UninsDeleteValue; Tasks: association; 
+; Root: HKCR; SubKey: SimpleIDE; ValueType: string; ValueData: SimpleIDE Application; Flags: UninsDeleteKey; Tasks: association
+; Root: HKCR; SubKey: SimpleIDE\command; ValueType: string; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1"""; Tasks: association
+; Root: HKCR; SubKey: SimpleIDE\DefaultIcon; ValueType: string; ValueData: {app}\bin\SimpleIDE.exe,0; Tasks: association
+
+; Startup File
+; Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
+Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: "{code:GetDataDir}\My Projects\Welcome.c"; Flags: UninsDeleteKey; 
 
 [Code]
 var
