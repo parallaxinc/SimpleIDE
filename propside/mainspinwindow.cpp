@@ -119,7 +119,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
         editorFont = QFont(family);
     }
     else {
-        editorFont = QFont("Courier New", 12, QFont::Normal, false);
+        editorFont = QFont("Courier", 12, QFont::Normal, false);
     }
 
     fontv = settings->value(fontSizeKey);
