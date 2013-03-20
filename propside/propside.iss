@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-16-1"
+#define MyAppVersion "0-9-17"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -47,7 +47,7 @@ UserInfoPage=false
 UsePreviousUserInfo=false
 ChangesEnvironment=true
 LicenseFile=.\IDE_LICENSE.txt
-WizardImageFile=images\SimpleIDE-Install-Splash3.bmp
+WizardImageFile=images\SimpleIDE-Install-Splash2.bmp
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -82,9 +82,7 @@ Source: "{#MyGccMingwPath}\bin\libstdc++*"; DestDir: "{app}\bin"; Flags: ignorev
 Source: "{#MyQtPath}\bin\quazip1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 
 ; remove temporarily for faster testing
-;
-;Source: "{#MyQtPath}\bin\QtCore4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-;Source: "{#MyQtPath}\bin\QtGui4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+; putback for package
 Source: "{#MyQtPath}\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccPath}\*"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -116,7 +114,7 @@ Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; V
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinWorkspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata};{code:GetCompilerDir}\bin;"; Check: NeedsAddPropGccBinPath();
 
-; File Association
+; File Association ?? Doesn't work
 ; Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: SimpleIDE; Flags: UninsDeleteValue; Tasks: association; 
 ; Root: HKCR; SubKey: SimpleIDE; ValueType: string; ValueData: SimpleIDE Application; Flags: UninsDeleteKey; Tasks: association
 ; Root: HKCR; SubKey: SimpleIDE\command; ValueType: string; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1"""; Tasks: association

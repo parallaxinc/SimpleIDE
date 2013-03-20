@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Parallax, Inc.
+ * Copyright (c) 2012-2013 Parallax Inc.
  * Initial Code by John Steven Denson
  *
  * All Rights for this file are MIT Licensed.
@@ -66,7 +66,7 @@
 #define AddTab "Add &Tab to Project"
 #define AddLib "Add Simple &Library"
 #define SaveAndCloseProject "Save and Close Project"
-#define SaveAsProject "Save As Project"
+#define SaveAsProject "Save Project As"
 #define SetProject "Set Project"
 #define CloneProject "Clone Project"
 #define ZipProject "Zip"
@@ -1312,11 +1312,14 @@ QString MainSpinWindow::saveAsProjectLinkFix(QString srcPath, QString dstPath, Q
         fs = path.relativeFilePath(fs);
         fix = fs;
     }
-    else {
-        if(QFile::exists(link) != true) {
-            return fix;
-        }
+    else if(QFile::exists(link)) {
         fs = link;
+        fs = path.relativeFilePath(fs);
+        fix = fs;
+    }
+    else {
+        QFile file(srcPath+link);
+        fs = file.fileName();
         fs = path.relativeFilePath(fs);
         fix = fs;
     }
@@ -1338,6 +1341,7 @@ QString MainSpinWindow::saveAsProjectLinkFix(QString srcPath, QString dstPath, Q
  */
 void MainSpinWindow::saveAsProject(const QString &inputProjFile)
 {
+    int rc = 0;
     QString projFolder(sourcePath(inputProjFile));
     QString projFile = inputProjFile;
 
@@ -1355,7 +1359,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     if(projFile.length() == 0) {
         QMessageBox::critical(
                 this,tr("No Project"),
-                tr("Can't \"Save As Project\" from an empty project.")+"\n"+
+                tr("Can't \"Save Project As\" from an empty project.")+"\n"+
                 tr("Please create a new project or open an existing one."),
                 QMessageBox::Ok);
         return;
@@ -1368,7 +1372,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     if(spath.exists() == false) {
         QMessageBox::critical(
                 this,tr("Project Folder not Found."),
-                tr("Can't \"Save As Project\" from a non-existing folder."),
+                tr("Can't \"Save Project As\" from a non-existing folder."),
                 QMessageBox::Ok);
         return;
     }
@@ -1400,8 +1404,8 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
 
         dstProjFile= dstPath+dstName+SIDE_EXTENSION;
         int rc = QMessageBox::question(this,
-                     tr("Confirm Save As Project"),
-                     tr("Save As Project ?")+"\n"+dstProjFile,
+                     tr("Confirm Save Project As"),
+                     tr("Save Project As ?")+"\n"+dstProjFile,
                      QMessageBox::Yes, QMessageBox::No);
         if(rc == QMessageBox::No) {
             return;
@@ -1442,7 +1446,9 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     filters << "SimpleIDE Project (*.side)";
 
     dialog.setNameFilters(filters);
-    if(dialog.exec() == QDialog::Rejected)
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    rc = dialog.exec();
+    if(rc == QDialog::Rejected)
         return;
     QStringList dstList = dialog.selectedFiles();
     if(dstList.length() < 1)
@@ -1451,12 +1457,27 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     if(dstPath.length() < 1)
        return;
 
+    if(projectFile.compare(dstPath) == 0) {
+        QMessageBox::critical(this,
+            tr("Can't Save Project As"),
+            tr("Can't Save Project As to the origin project.")+"\n"+
+            tr("Use Save Project instead or use a new project destination."));
+        return;
+    }
+
     dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
     dstName = dstName.mid(0,dstName.lastIndexOf("."));
     dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
     lastPath = dstPath;
 
+
     dstProjFile = dstPath+dstName+SIDE_EXTENSION;
+
+#if 0
+    /*
+     * Keep this in case someone decides that overwriting a project
+     * except the original is a bad idea.
+     */
     QFile sidefile(dstProjFile);
 
     /**
@@ -1469,6 +1490,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
             tr("Please try again using a different filename."));
         return;
     }
+#endif
 
     QString ftype;
     QFile proj(projFile);
@@ -1485,6 +1507,11 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     ftype = ftype.trimmed();
     ftype = ftype.mid(ftype.lastIndexOf("."));
 
+#if 0
+    /*
+     * Keep this in case someone decides that overwriting a project
+     * except the original is a bad idea.
+     */
     QString dstSourceFile = dstPath+dstName+ftype;
     QFile mainfile(dstSourceFile);
 
@@ -1498,6 +1525,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
             tr("Please try again using a different filename."));
         return;
     }
+#endif
 
     /*
      * 3. creates new project folder if necessary (project can be in original folder)
@@ -1509,7 +1537,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
 
     if(dpath.exists() == false) {
         QMessageBox::critical(
-                this,tr("Save As Project Error."),
+                this,tr("Save Project As Error."),
                 tr("System can not create project in ")+dstPath,
                 QMessageBox::Ok);
         return;
@@ -1565,7 +1593,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
             if(list.length() < 2) {
                 QMessageBox::information(
                         this,tr("Project File Error."),
-                        tr("Save As Project expected a link, but got:\n")+item+"\n\n"+
+                        tr("Save Project As expected a link, but got:\n")+item+"\n\n"+
                         tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
                         tr("After adding the correct link, remove the bad link."));
             }
@@ -1579,7 +1607,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
                 else
                     QMessageBox::information(
                             this,tr("Can't Fix Link"),
-                            tr("Save As Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Save Project As was not able to fix the link:\n")+item+"\n\n"+
                             tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
                             tr("After adding the correct link, remove the bad link."));
                 newList.append(item);
@@ -1590,7 +1618,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
             if(list.length() < 1) {
                 QMessageBox::information(
                         this,tr("Project File Error."),
-                        tr("Save As Project expected a -I link, but got:\n")+item+"\n\n"+
+                        tr("Save Project As expected a -I link, but got:\n")+item+"\n\n"+
                         tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
                         tr("After adding the correct link, remove the bad link."));
             }
@@ -1604,7 +1632,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
                 else
                     QMessageBox::information(
                             this,tr("Can't Fix Link"),
-                            tr("Save As Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Save Project As was not able to fix the link:\n")+item+"\n\n"+
                             tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
                             tr("After adding the correct link, remove the bad link."));
                 newList.append(item);
@@ -1615,7 +1643,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
             if(list.length() < 1) {
                 QMessageBox::information(
                         this,tr("Project File Error."),
-                        tr("Save As Project expected a -L link, but got:\n")+item+"\n\n"+
+                        tr("Save Project As expected a -L link, but got:\n")+item+"\n\n"+
                         tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
                         tr("After adding the correct link, remove the bad link."));
             }
@@ -1629,7 +1657,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
                 else
                     QMessageBox::information(
                             this,tr("Can't Fix Link"),
-                            tr("Save As Project was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Save Project As was not able to fix the link:\n")+item+"\n\n"+
                             tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
                             tr("After adding the correct link, remove the bad link."));
                 newList.append(item);
@@ -1706,7 +1734,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     if(projFile.length() == 0) {
         QMessageBox::critical(
                 this,tr("No Project"),
-                tr("Can't \"Save As Project\" from an empty project.")+"\n"+
+                tr("Can't \"Save Project As\" from an empty project.")+"\n"+
                 tr("Please create a new project or open an existing one."),
                 QMessageBox::Ok);
         return;
@@ -1719,7 +1747,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     if(spath.exists() == false) {
         QMessageBox::critical(
                 this,tr("Project Folder not Found."),
-                tr("Can't \"Save As Project\" from a non-existing folder."),
+                tr("Can't \"Save Project As\" from a non-existing folder."),
                 QMessageBox::Ok);
         return;
     }
@@ -1759,7 +1787,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
      */
     if(srcPath.compare(dstPath) == 0) {
         QMessageBox::critical(this,
-            tr("Can't Save As Project"),
+            tr("Can't Save Project As"),
             tr("Can't Save As the current project to itself.") + "\n"+
             tr("Please try again with a new project name."));
         return;
@@ -1783,7 +1811,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
 
     if(dpath.exists() == false) {
         QMessageBox::critical(
-                this,tr("Save As Project Error."),
+                this,tr("Save Project As Error."),
                 tr("System can not create project in ")+dstPath,
                 QMessageBox::Ok);
         return;
@@ -3845,7 +3873,7 @@ void MainSpinWindow::aboutShow()
 
 void MainSpinWindow::creditShow()
 {
-    QString license(ASideGuiKey+tr(" is an MIT Licensed Open Source IDE. It was developed with Open Source QT and uses QT shared libraries under LGPLv2.1.<br/><br/>"));
+    QString license(ASideGuiKey+tr(" was developed by Steve Denson for Parallax Inc.<br/><br/>")+ASideGuiKey+tr(" is an MIT Licensed Open Source IDE developed with Qt (Qt License) and Qt shared libraries (LGPLv2.1).<br/><br/>"));
     QString propgcc(ASideGuiKey+tr(" uses <a href=\"http://propgcc.googlecode.com\">Propeller GCC tool chain</a> based on GCC 4.6.1 under GPLv3. ")+"<p>");
     QString ctags(tr("It uses the <a href=\"http://ctags.sourceforge.net\">ctags</a> binary program built from sources under GPLv2 for source browsing. ")+"<p>");
     QString icons(tr("Most icons used are from <a href=\"http://www.small-icons.com/packs/24x24-free-application-icons.htm\">www.aha-soft.com 24x24 Free Application Icons</a> " \
@@ -6138,7 +6166,7 @@ void MainSpinWindow::setupToolBars()
     btnProjectOpen->setToolTip(tr("Open Project"));
     //btnProjectClone->setToolTip(tr("Clone Project"));
     btnProjectSave->setToolTip(tr("Save Project"));
-    btnProjectSaveAs->setToolTip(tr("Save As Project"));
+    btnProjectSaveAs->setToolTip(tr("Save Project As"));
     btnProjectClose->setToolTip(tr(SaveAndCloseProject));
     btnProjectApp->setToolTip(tr("Set Project to Current Tab"));
     btnProjectZip->setToolTip(tr("Zip Project"));
