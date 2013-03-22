@@ -79,7 +79,7 @@ void Terminal::init()
     setLayout(termLayout);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     setWindowIcon(QIcon(":/images/console.png"));
-    resize(800,400);
+    //resize(400,300); // just use default size
 }
 
 Console *Terminal::getEditor()
