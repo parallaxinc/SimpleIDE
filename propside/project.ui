@@ -28,6 +28,9 @@
      <height>159</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Project Options</string>
+   </property>
    <property name="currentIndex">
     <number>0</number>
    </property>
@@ -84,7 +87,7 @@
       </rect>
      </property>
      <property name="toolTip">
-      <string>Select where the code will run. Use XMMC for read-only devices like EEPROM, Flash, or SD Card.</string>
+      <string>Select where the code will run. CMM/LMM run from HUB RAM. Use XMMC for read-only devices like EEPROM, Flash, or SD Card.</string>
      </property>
     </widget>
     <widget class="QLabel" name="labelOptimization">
@@ -135,6 +138,9 @@
        <height>24</height>
       </rect>
      </property>
+     <property name="toolTip">
+      <string>Reload Board List</string>
+     </property>
      <property name="text">
       <string>Reload Board Configurations</string>
      </property>
@@ -157,6 +163,9 @@
        <width>141</width>
        <height>22</height>
       </rect>
+     </property>
+     <property name="toolTip">
+      <string>Board Type</string>
      </property>
     </widget>
    </widget>
