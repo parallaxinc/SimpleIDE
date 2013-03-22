@@ -3640,7 +3640,7 @@ void MainSpinWindow::setProject()
     else
 #endif
     {
-        btnDownloadSdCard->setEnabled(true);
+        sdCardDownloadEnable();
     }
 }
 
@@ -3924,10 +3924,30 @@ void MainSpinWindow::userguideShow()
     QDesktopServices::openUrl(QUrl(address));
 }
 
+void MainSpinWindow::sdCardDownloadEnable()
+{
+    QString name = cbBoard->currentText();
+    ASideBoard* board = aSideConfig->getBoardData(name);
+    if(board != NULL) {
+        QString sddriver = board->get("sd-driver");
+        if(sddriver.isEmpty() == false) {
+            btnDownloadSdCard->setEnabled(true);
+        }
+        else {
+            btnDownloadSdCard->setEnabled(false);
+        }
+    }
+    else {
+        btnDownloadSdCard->setEnabled(false);
+    }
+    QApplication::processEvents();
+}
+
 void MainSpinWindow::setCurrentBoard(int index)
 {
     boardName = cbBoard->itemText(index);
     cbBoard->setCurrentIndex(index);
+    sdCardDownloadEnable();
 }
 
 void MainSpinWindow::setCurrentPort(int index)
@@ -4033,7 +4053,7 @@ bool MainSpinWindow::isSpinProject()
         return true;
     }
 #endif
-    btnDownloadSdCard->setEnabled(true);
+    sdCardDownloadEnable();
     return false;
 }
 
@@ -4041,14 +4061,15 @@ bool MainSpinWindow::isCProject()
 {
     QString compiler = projectOptions->getCompiler();
     if(compiler.compare("C", Qt::CaseInsensitive) == 0) {
-        btnDownloadSdCard->setEnabled(true);
+        sdCardDownloadEnable();
         return true;
     }
     else if(compiler.compare("C++", Qt::CaseInsensitive) == 0) {
-        btnDownloadSdCard->setEnabled(true);
+        sdCardDownloadEnable();
         return true;
     }
     btnDownloadSdCard->setEnabled(false);
+
     return false;
 }
 
