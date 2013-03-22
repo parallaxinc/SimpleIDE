@@ -647,6 +647,7 @@ int  BuildC::runCompiler(QStringList copts)
     QString mainProjectFile = args.at(args.count()-1);
     args.removeLast();
 
+#if 1
     /*
      * move -I and -L entries to beginning of args list
      * 1) make an ILlist and remove entries.
@@ -681,6 +682,7 @@ int  BuildC::runCompiler(QStringList copts)
         QString s = ILlist.at(n);
         args.insert(0,s);
     }
+#endif
 
     inc = 0;
     lib = 0;
