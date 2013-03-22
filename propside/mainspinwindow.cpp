@@ -389,7 +389,7 @@ void MainSpinWindow::getApplicationSettings()
 #endif
 
     /* get the include path and config file set by user */
-    QVariant incv = settings->value(gccLibraryKey);
+    QVariant incv = settings->value(propLoaderKey);
     QVariant cfgv = settings->value(configFileKey);
 
     /* convert registry values to strings */
@@ -2981,6 +2981,7 @@ void MainSpinWindow::downloadSdCard()
     s += "/"+this->shortFileName(projectFile);
     s = s.mid(0,s.lastIndexOf(".side"));
     s += ".elf";
+    s = QDir::toNativeSeparators(s);
     builder->removeArg(args, s);
 
     //QString s = QDir::toNativeSeparators(fileName);
