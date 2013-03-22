@@ -597,6 +597,7 @@ void TermPrefs::hexDump(bool hex)
 void TermPrefs::showDialog()
 {
     readSettings();
+    this->setModal(true);
     this->show();
 }
 
