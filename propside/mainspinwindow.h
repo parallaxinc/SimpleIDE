@@ -95,6 +95,7 @@ public slots:
     void editorTabMenu(QPoint);
     void changeTab(bool trig);
     void clearTabHighlight();
+    void sdCardDownloadEnable();
     void setCurrentBoard(int index);
     void setCurrentPort(int index);
     void connectButton();
