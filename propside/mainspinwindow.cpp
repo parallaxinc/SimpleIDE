@@ -58,6 +58,7 @@
 #define SPIN_TEXT      "SPIN"
 #define SPIN_EXTENSION ".spin"
 
+#define CloseFile "Close"
 #define NewFile "&New"
 #define OpenFile "&Open"
 #define SaveFile "&Save"
@@ -4181,6 +4182,10 @@ void MainSpinWindow::selectBuilder()
 
 int  MainSpinWindow::runBuild(QString option)
 {
+    if(projectModel == NULL || projectFile.isEmpty()) {
+        QMessageBox::critical(this, tr("Can't Build"), tr("A project must be loaded to build programs."));
+        return 1;
+    }
     checkAndSaveFiles();
     selectBuilder();
     return builder->runBuild(option, projectFile, aSideCompiler);
@@ -6051,7 +6056,7 @@ void MainSpinWindow::setupFileMenu()
     fileMenu->addAction(QIcon(":/images/savefile.png"), tr(SaveFile), this, SLOT(saveFile()), QKeySequence::Save);
     fileMenu->addAction(QIcon(":/images/saveasfile2.png"), tr(SaveAsFile), this, SLOT(saveAsFile()),QKeySequence::SaveAs);
 
-    fileMenu->addAction(QIcon(":/images/Delete.png"),tr("Close"), this, SLOT(closeFile()));
+    fileMenu->addAction(QIcon(":/images/Delete.png"),tr(CloseFile), this, SLOT(closeFile()));
     fileMenu->addAction(tr("Close All"), this, SLOT(closeAll()));
     fileMenu->addAction(QIcon(":/images/print.png"), tr("Print"), this, SLOT(printFile()), QKeySequence::Print);
 
@@ -6237,7 +6242,7 @@ void MainSpinWindow::setupToolBars()
     btnFileOpen->setToolTip(tr("Open File"));
     btnFileSave->setToolTip(tr("Save File"));
     btnFileSaveAs->setToolTip(tr("Save As File"));
-    btnFilePrint->setToolTip(tr("Print"));
+    btnFilePrint->setToolTip(tr("Print File"));
     //btnFileZip->setToolTip(tr("Zip"));
 
     /*
@@ -6496,10 +6501,11 @@ void MainSpinWindow::showSimpleView(bool simple)
         foreach(QAction *fa, fileMenuList) {
             QString txt = fa->text();
             if(txt != NULL) {
-                if(txt.contains(NewFile) ||
-                   txt.contains(OpenFile) ||
-                   txt.contains(SaveFile) ||
-                   txt.contains(SaveAsFile))
+                if(txt.endsWith(CloseFile) ||
+                   txt.endsWith(NewFile) ||
+                   txt.endsWith(OpenFile) ||
+                   txt.endsWith(SaveFile) ||
+                   txt.endsWith(SaveAsFile))
                    fa->setVisible(false);
             }
         }
@@ -6545,10 +6551,11 @@ void MainSpinWindow::showSimpleView(bool simple)
         foreach(QAction *fa, fileMenuList) {
             QString txt = fa->text();
             if(txt != NULL) {
-                if(txt.contains(NewFile) ||
-                   txt.contains(OpenFile) ||
-                   txt.contains(SaveFile) ||
-                   txt.contains(SaveAsFile))
+                if(txt.endsWith(CloseFile) ||
+                   txt.endsWith(NewFile) ||
+                   txt.endsWith(OpenFile) ||
+                   txt.endsWith(SaveFile) ||
+                   txt.endsWith(SaveAsFile))
                    fa->setVisible(true);
             }
         }
