@@ -905,31 +905,66 @@ void MainSpinWindow::closeAll()
  */
 void MainSpinWindow::newProject()
 {
-    if(this->simpleViewType == false) {
-        // projectView version
-        newProjDialog->showDialog();
+    // simpleView version
+    if(this->simpleViewType) {
+
+        QString workspace = "";
+
+        QVariant wrkv = settings->value(gccWorkspaceKey);
+        if(wrkv.canConvert(QVariant::String)) {
+            workspace = wrkv.toString();
+        }
+        if(workspace.isEmpty()){
+            QMessageBox::critical(this, tr("No Workspace"),
+                tr("A workspace is not defined in properties for Blank Simple Project.")+"\n"+
+                tr("Can not continue."));
+            return;
+        }
+        workspace = workspace + "SimpleIDE/My Projects/Blank Simple Project.side";
+        if(QFile::exists(workspace)) {
+            this->openProject(workspace);
+            this->saveAsProject();
+        }
+        else {
+            QMessageBox::critical(this, tr("Project Not Found"),
+                tr("Blank Simple Project was not found."));
+        }
     }
+    // new projectView version
     else {
-        // simpleView version
-        QFileDialog dialog(this,tr("New Project"), lastPath+"../"+"NewProject.side", "");
+
+        QString workspace;
+        QVariant wrkv = settings->value(gccWorkspaceKey);
+        if(wrkv.canConvert(QVariant::String)) {
+            workspace = wrkv.toString();
+        }
+        if(workspace.isEmpty()){
+            QMessageBox::warning(this, tr("No Workspace"),
+                tr("A workspace is not defined in properties.")+"\n"+
+                tr("Using last file path."));
+            workspace = lastPath;
+        }
+
+        QFileDialog dialog(this,tr("New Project"), workspace, "");
+
         QStringList filters;
         filters << "C Project (*.c)";
         filters << "C++ Project (*.cpp)";
-#ifdef SPIN
+    #ifdef SPIN
         filters << "Spin Project (*.spin)";
-#endif
+    #endif
 
         QString comp = projectOptions->getCompiler();
         if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
             filters.removeAt(1);
             filters.insert(0,"C++ Project (*.cpp)");
         }
-#ifdef SPIN
+    #ifdef SPIN
         else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
             filters.removeAt(2);
             filters.insert(0,"Spin Project (*.spin)");
         }
-#endif
+    #endif
 
         dialog.setNameFilters(filters);
         if(dialog.exec() == QDialog::Rejected)
@@ -956,11 +991,11 @@ void MainSpinWindow::newProject()
         else if(ftype.endsWith(".cpp", Qt::CaseInsensitive)) {
             comp = projectOptions->CPP_COMPILER;
         }
-#ifdef SPIN
+    #ifdef SPIN
         else if(ftype.endsWith(".spin", Qt::CaseInsensitive)) {
             comp = projectOptions->SPIN_COMPILER;
         }
-#endif
+    #endif
         else {
             QMessageBox::critical(this,
                 tr("Unknown Project Type"),
@@ -1016,7 +1051,6 @@ void MainSpinWindow::newProject()
             QString main("/**\n" \
               " * This is the main "+dstName+" program file.\n" \
               " */\n" \
-              "#include \"simpletools.h\"\n\n" \
               "int main(void)\n" \
               "{\n" \
               "    return 0;\n" \
@@ -1028,7 +1062,6 @@ void MainSpinWindow::newProject()
             QString main("/**\n" \
               " * This is the main "+dstName+" program file.\n" \
               " */\n" \
-              "#include \"simpletools.h\"\n\n" \
               "int main(void)\n" \
               "{\n" \
               "    return 0;\n" \
@@ -1089,7 +1122,6 @@ void MainSpinWindow::newProject()
             projectOptions->setCompOptions(s + "-std=c99");
         qDebug() << "Save Project File: " << projectFile;
         saveProjectOptions();
-
     }
 }
 
