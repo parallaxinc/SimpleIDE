@@ -68,6 +68,7 @@ public slots:
     void saveEditor();
     void saveFileByTabIndex(int tab);
     QStringList getAsFilters();
+    QString filterAsFilename(QString name, QString filter);
     QString getSaveAsFile(const QString &path = QString());
     void saveAsFile(const QString &path = QString());
     QString getOpenAsFile(const QString &path = QString());
