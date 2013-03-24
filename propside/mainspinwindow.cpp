@@ -906,6 +906,8 @@ void MainSpinWindow::closeAll()
  */
 void MainSpinWindow::newProject()
 {
+    this->compileStatus->setPlainText("");
+
     // simpleView version
     if(this->simpleViewType) {
 
@@ -1239,6 +1241,8 @@ void MainSpinWindow::openProject(const QString &path)
 {
     QString fileName = path;
 
+    this->compileStatus->setPlainText("");
+
 #ifndef SPIN
         if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
             QMessageBox::critical(
@@ -1366,6 +1370,8 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     int rc = 0;
     QString projFolder(sourcePath(inputProjFile));
     QString projFile = inputProjFile;
+
+    this->compileStatus->setPlainText("");
 
     /*
      * 1. function assumes an empty projectFolder parameter means to copy existing project.
