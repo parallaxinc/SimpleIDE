@@ -2875,6 +2875,33 @@ QStringList MainSpinWindow::getAsFilters()
     return filters;
 }
 
+QString MainSpinWindow::filterAsFilename(QString name, QString filter)
+{
+    QString filtype = filter;
+    filtype = filtype.mid(filtype.lastIndexOf("(")+1);
+    filtype = filtype.mid(0,filtype.lastIndexOf(")"));
+    filtype = filtype.trimmed();
+    if(filtype[0] == '*') filtype = filtype.mid(1);
+
+    if(name.endsWith(filtype) != true && name.indexOf(".") > -1)
+        return name;
+
+    QString dstName = name.mid(name.lastIndexOf("/")+1);
+    dstName = dstName.mid(0,dstName.lastIndexOf("."));
+    QString dstPath = name.mid(0,name.lastIndexOf("/")+1);
+
+    if(filter.indexOf(".") > -1) {
+        filter = filter.mid(filter.lastIndexOf("."));
+        filter = filter.mid(0,filter.lastIndexOf(")"));
+    }
+    else {
+        filter = "";
+    }
+
+    name = dstPath + dstName + filter;
+    return name;
+}
+
 QString MainSpinWindow::getSaveAsFile(const QString &path)
 {
     int n = this->editorTabs->currentIndex();
@@ -2889,6 +2916,7 @@ QString MainSpinWindow::getSaveAsFile(const QString &path)
             QStringList filters = getAsFilters();
 
             dialog.setNameFilters(filters);
+            dialog.setAcceptMode(QFileDialog::AcceptSave);
             if(dialog.exec() == QDialog::Rejected)
                 return QString("");
             QStringList dstList = dialog.selectedFiles();
@@ -2899,20 +2927,10 @@ QString MainSpinWindow::getSaveAsFile(const QString &path)
                 return QString("");
 
             QString ftype = dialog.selectedNameFilter();
-            QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
-            dstName = dstName.mid(0,dstName.lastIndexOf("."));
+            fileName = filterAsFilename(dstPath, ftype);
+
             dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
             lastPath = dstPath;
-
-            if(ftype.lastIndexOf(".") > -1) {
-                ftype = ftype.mid(ftype.lastIndexOf("."));
-                ftype = ftype.mid(0,ftype.lastIndexOf(")"));
-            }
-            else {
-                ftype = "";
-            }
-
-            fileName = dstPath + dstName + ftype;
         }
         else {
             fileName = fileDialog.getSaveFileName(this,
@@ -2975,20 +2993,10 @@ QString MainSpinWindow::getOpenAsFile(const QString &path)
             return QString("");
 
         QString ftype = dialog.selectedNameFilter();
-        QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
-        dstName = dstName.mid(0,dstName.lastIndexOf("."));
+        fileName = filterAsFilename(dstPath, ftype);
+
         dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
         lastPath = dstPath;
-
-        if(ftype.lastIndexOf(".") > -1) {
-            ftype = ftype.mid(ftype.lastIndexOf("."));
-            ftype = ftype.mid(0,ftype.lastIndexOf(")"));
-        }
-        else {
-            ftype = "";
-        }
-
-        fileName = dstPath + dstName + ftype;
     }
 
     if(fileName.length() > 0)
