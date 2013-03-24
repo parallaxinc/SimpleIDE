@@ -713,27 +713,27 @@ void MainSpinWindow::addTab()
 {
     // new file tab
     newFile();
-    QString filename = getSaveAsFile();
-    if(filename.isEmpty())
-        return;
+    int tab = editorTabs->count()-1;
 
-    int tab = editors->count()-1;
+    QString filename = getOpenAsFile();
+    if(filename.isEmpty()) {
+        editorTabs->removeTab(tab);
+        return;
+    }
+    // chose editor
+    Editor *ed = editors->at(tab);
 
     // change tab file name and save file
-    QString tipname  = editorTabs->tabToolTip(tab);
+    QString tipname  = filename;
 
     // add to project
     QString projFile = projectFile;
     projFile = projFile.mid(0,projFile.lastIndexOf("/"));
     QDir path(projFile);
     QString relfile = tipname;
-    //relfile = relfile.mid(0,relfile.lastIndexOf("/"));
-    //relfile = relfile.mid(0,relfile.lastIndexOf("/"));
     relfile = path.relativeFilePath(relfile);
     filename = this->shortFileName(filename);
     addProjectListFile(relfile);
-
-    Editor *ed = editors->at(tab);
 
     QString data;
     if(QFile::exists(tipname)) {
@@ -750,18 +750,7 @@ void MainSpinWindow::addTab()
         }
     }
     else if(ed->toPlainText().length() == 0) {
-        QString comp = projectOptions->getCompiler();
-        if(comp.compare(projectOptions->C_COMPILER) == 0) {
-            data = "/**\n * @file " + filename + "\n */\n";
-        }
-        else if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
-            data = "/**\n * @file " + filename + "\n */\n";
-        }
-#ifdef SPIN
-        else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
-            data = "{{\n * @file " + filename + "\n}}\n";
-        }
-#endif
+        data = "\n";
         setEditorTab(tab, filename, tipname, data);
         saveFile();
     }
@@ -2845,6 +2834,47 @@ void MainSpinWindow::saveFileByTabIndex(int tab)
         }
 }
 
+QStringList MainSpinWindow::getAsFilters()
+{
+    QStringList filters;
+
+    filters << "C File (*.c)";
+    filters << "C++ File (*.cpp)";
+#ifdef SPIN
+    filters << "Spin File (*.spin)";
+#endif
+    filters << "C Header File (*.h)";
+    filters << "COG C File (*.cogc)";
+
+    if(this->simpleViewType == false) {
+        filters << "E-COG C File (*.ecogc)";
+#ifdef SPIN
+        filters << "E-Spin File (*.espin)";
+#endif
+    }
+
+    QString comp = projectOptions->getCompiler();
+    if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
+        filters.removeAt(1);
+        filters.insert(0,"C++ Project (*.cpp)");
+    }
+#ifdef SPIN
+    else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
+        filters.removeAt(2);
+        filters.insert(0,"Spin Project (*.spin)");
+    }
+#endif
+
+    if(this->simpleViewType == false) {
+        filters.insert(0, "Any File (*)");
+    }
+    else {
+        filters << "Any File (*)";
+    }
+
+    return filters;
+}
+
 QString MainSpinWindow::getSaveAsFile(const QString &path)
 {
     int n = this->editorTabs->currentIndex();
@@ -2856,31 +2886,7 @@ QString MainSpinWindow::getSaveAsFile(const QString &path)
         // simpleView version
         if(this->simpleViewType) {
             QFileDialog dialog(this,tr("Save As File"), lastPath, "");
-            QStringList filters;
-            filters << "C File (*.c)";
-            filters << "C++ File (*.cpp)";
-#ifdef SPIN
-            filters << "Spin File (*.spin)";
-#endif
-            filters << "C Header File (*.h)";
-            filters << "COG C File (*.cog)";
-            filters << "E-COG C File (*.ecog)";
-#ifdef SPIN
-            filters << "E-Spin File (*.espin)";
-#endif
-            filters << "Any File (*)";
-
-            QString comp = projectOptions->getCompiler();
-            if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
-                filters.removeAt(1);
-                filters.insert(0,"C++ Project (*.cpp)");
-            }
-    #ifdef SPIN
-            else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
-                filters.removeAt(2);
-                filters.insert(0,"Spin Project (*.spin)");
-            }
-    #endif
+            QStringList filters = getAsFilters();
 
             dialog.setNameFilters(filters);
             if(dialog.exec() == QDialog::Rejected)
@@ -2898,8 +2904,13 @@ QString MainSpinWindow::getSaveAsFile(const QString &path)
             dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
             lastPath = dstPath;
 
-            ftype = ftype.mid(ftype.lastIndexOf("."));
-            ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+            if(ftype.lastIndexOf(".") > -1) {
+                ftype = ftype.mid(ftype.lastIndexOf("."));
+                ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+            }
+            else {
+                ftype = "";
+            }
 
             fileName = dstPath + dstName + ftype;
         }
@@ -2939,9 +2950,54 @@ void MainSpinWindow::saveAsFile(const QString &path)
     }
 }
 
-void MainSpinWindow::savePexFile()
-{
 
+QString MainSpinWindow::getOpenAsFile(const QString &path)
+{
+    QString fileName = path;
+
+    if (fileName.isEmpty()) {
+
+        QFileDialog dialog(this,tr("Open As File"), lastPath, "");
+        dialog.setConfirmOverwrite(false);
+        dialog.setAcceptMode(QFileDialog::AcceptOpen);
+
+        QStringList filters = getAsFilters();
+
+        dialog.setNameFilters(filters);
+        if(dialog.exec() == QDialog::Rejected)
+            return QString("");
+
+        QStringList dstList = dialog.selectedFiles();
+        if(dstList.length() < 1)
+            return QString("");
+        QString dstPath = dstList.at(0);
+        if(dstPath.length() < 1)
+            return QString("");
+
+        QString ftype = dialog.selectedNameFilter();
+        QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
+        dstName = dstName.mid(0,dstName.lastIndexOf("."));
+        dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+        lastPath = dstPath;
+
+        if(ftype.lastIndexOf(".") > -1) {
+            ftype = ftype.mid(ftype.lastIndexOf("."));
+            ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+        }
+        else {
+            ftype = "";
+        }
+
+        fileName = dstPath + dstName + ftype;
+    }
+
+    if(fileName.length() > 0)
+        lastPath = sourcePath(fileName);
+
+    if (fileName.isEmpty())
+        return QString("");
+
+    return fileName;
 }
 
 void MainSpinWindow::downloadSdCard()
@@ -5133,6 +5189,18 @@ void MainSpinWindow::deleteProjectFile()
         }
     }
     updateProjectTree(sourcePath(projectFile)+mainFile);
+
+    for(int n = editorTabs->count(); n >= 0; n--) {
+        QString s = editorTabs->tabText(n);
+        if(s.endsWith("*")) {
+            s = s.remove("*");
+            s = s.trimmed();
+        }
+        if(s.compare(fileName) == 0) {
+            editorTabs->removeTab(n);
+            break;
+        }
+    }
 }
 
 void MainSpinWindow::showProjectFile()
@@ -6221,10 +6289,6 @@ void MainSpinWindow::setupToolBars()
 
 #if defined(SD_TOOLS)
     sdCardToolBar = addToolBar(tr("SD Card"));
-    //QToolButton *btnSaveToSdCard = new QToolButton(this);
-    //addToolButton(sdCardToolBar, btnSaveToSdCard, QString(":/images/flashdrive.png"));
-    //connect(btnSaveToSdCard, SIGNAL(clicked()),this,SLOT(savePexFile()));
-    //btnSaveToSdCard->setToolTip(tr("Save AUTOEXEC.PEX to Local SD Card."));
 
     btnDownloadSdCard = new QToolButton(this);
     addToolButton(sdCardToolBar, btnDownloadSdCard, QString(":/images/SaveToSD.png"));
