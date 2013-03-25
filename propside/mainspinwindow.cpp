@@ -262,6 +262,14 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
             }
         }
     }
+    else {
+        QVariant wrkv = settings->value(gccWorkspaceKey);
+        if(wrkv.canConvert(QVariant::String)) {
+            QString workspace = wrkv.toString();
+            openProject(workspace+"My Projects/Welcome.side");
+        }
+    }
+
 
     // old hardware dialog configuration feature
     //  hardwareDialog = new Hardware(this);
@@ -4033,18 +4041,17 @@ void MainSpinWindow::libraryShow()
 
 void MainSpinWindow::referenceShow()
 {
-
+    QDesktopServices::openUrl(QUrl("http://www.parallax.com/propellergcc", QUrl::TolerantMode));
 }
 
 void MainSpinWindow::tutorialShow()
 {
-
+    QDesktopServices::openUrl(QUrl("http://learn.parallax.com/propeller-c-tutorials", QUrl::TolerantMode));
 }
 
 void MainSpinWindow::userguideShow()
 {
-    QString address = "http://www.parallax.com/propellergcc";
-    QDesktopServices::openUrl(QUrl(address));
+    // QDesktopServices::openUrl(QUrl("http://www.parallax.com/propellergcc"), QUrl::TolerantMode);
 }
 
 void MainSpinWindow::sdCardDownloadEnable()
