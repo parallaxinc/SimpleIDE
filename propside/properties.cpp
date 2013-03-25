@@ -95,10 +95,11 @@ void Properties::setupFolders()
     else if(QFile::exists(mywrk+"My Documents")) {
         mywrk = mywrk +"My Documents/";
     }
+    mywrk += "SimpleIDE/";
 
     QString mylib;
-    if(QFile::exists(mywrk+"SimpleIDE/Learn/Simple Libraries")) {
-        mylib = mywrk+"SimpleIDE/Learn/Simple Libraries";
+    if(QFile::exists(mywrk+"Learn/Simple Libraries")) {
+        mylib = mywrk+"Learn/Simple Libraries";
     }
 
 #if defined(Q_WS_WIN32)
@@ -134,6 +135,7 @@ void Properties::setupFolders()
     settings.setValue(gccCompilerKey,mygcc);
     settings.setValue(gccLibraryKey,leditGccLibrary->text());
     settings.setValue(gccWorkspaceKey,leditGccWorkspace->text());
+
 }
 
 void Properties::setupSpinFolders()
