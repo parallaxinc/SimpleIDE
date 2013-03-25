@@ -923,7 +923,7 @@ void MainSpinWindow::newProject()
                 tr("Can not continue."));
             return;
         }
-        workspace = workspace + "SimpleIDE/My Projects/Blank Simple Project.side";
+        workspace = workspace + "My Projects/Blank Simple Project.side";
         if(QFile::exists(workspace)) {
             this->openProject(workspace);
             this->saveAsProject();
@@ -1284,6 +1284,19 @@ void MainSpinWindow::openProject(const QString &path)
         updateProjectTree(fileName);
     }
     openFileName(fileName);
+
+    if(ctags->enabled()) {
+#ifndef ENABLE_SPIN_BROWSING
+        if(this->isSpinProject()) {
+            btnBrowseBack->setEnabled(false);
+            btnFindDef->setEnabled(false);
+        }
+        else {
+            btnFindDef->setEnabled(true);
+        }
+#endif
+    }
+
     /* for old project manager method only
     if(projectFile.length() == 0) {
         setProject();
@@ -3487,6 +3500,13 @@ void MainSpinWindow::findDeclaration()
 
 void MainSpinWindow::findDeclaration(QTextCursor cur)
 {
+#ifndef ENABLE_SPIN_BROWSING
+    if(this->isSpinProject()) {
+        QMessageBox::warning(this, tr("Can't Browse Spin"), tr("Spin source browsing is not available yet."));
+        return;
+    }
+#endif
+
     Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor) {
         /* find word */
