@@ -931,6 +931,9 @@ void MainSpinWindow::newProject()
                 tr("Can not continue."));
             return;
         }
+        if(workspace.endsWith("/") == false)
+            workspace += "/";
+
         workspace = workspace + "My Projects/Blank Simple Project.side";
         if(QFile::exists(workspace)) {
             this->openProject(workspace);
