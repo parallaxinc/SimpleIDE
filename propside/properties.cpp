@@ -121,10 +121,21 @@ void Properties::setupFolders()
     }
 #endif
 
-    if(QFile::exists(mygcc))
-        qDebug() << "Found Default Compiler.";
+    QVariant compv = settings.value(gccCompilerKey);
 
-    QVariant compv = settings.value(gccCompilerKey,mygcc);
+    if(QFile::exists(mygcc)) {
+        qDebug() << "Found Default Compiler.";
+    }
+    else {
+        if(compv.canConvert(QVariant::String)) {
+            QString s = compv.toString();
+            if(s.length() > 0) {
+                mygcc = QDir::fromNativeSeparators(s);
+                mypath = mygcc.mid(0,mygcc.lastIndexOf("/bin")+1);
+            }
+        }
+    }
+
     QVariant libv  = settings.value(gccLibraryKey, mylib);
     QVariant wrkv  = settings.value(gccWorkspaceKey, mywrk);
 
