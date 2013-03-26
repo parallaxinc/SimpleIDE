@@ -4539,7 +4539,9 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     // projectMenu is popup for projectTree
     projectMenu = new QMenu(QString("Project Menu"));
     projectMenu->addAction(tr(AddFileCopy), this,SLOT(addProjectFile()));
+#ifdef ENABLE_ADD_LINK
     projectMenu->addAction(tr(AddFileLink), this,SLOT(addProjectLink()));
+#endif
     projectMenu->addAction(tr(AddIncludePath), this,SLOT(addProjectIncPath()));
     projectMenu->addAction(tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
 
@@ -6124,7 +6126,9 @@ void MainSpinWindow::setupFileMenu()
     projMenu->addAction(QIcon(":/images/zip2.png"), tr(ZipProject), this, SLOT(zipProject()), Qt::CTRL+Qt::Key_Z);
 
     projMenu->addAction(tr(AddFileCopy), this, SLOT(addProjectFile()));
+#ifdef ENABLE_ADD_LINK
     projMenu->addAction(tr(AddFileLink), this,SLOT(addProjectLink()));
+#endif
     projMenu->addAction(tr(AddIncludePath), this,SLOT(addProjectIncPath()));
     projMenu->addAction(tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
 
