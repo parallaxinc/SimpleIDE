@@ -798,16 +798,17 @@ void Properties::browseGccCompiler()
 void Properties::browseGccLibrary()
 {
     QString pathName;
-    QString path = mypath;
+    gccLibraryStr = leditGccLibrary->text();
+    if(gccLibraryStr.length() < 1)
+        gccLibraryStr = mypath;
 
 #if defined(Q_WS_WIN32)
-    pathName = QFileDialog::getExistingDirectory(this,tr("Select GCC Library Folder"), path, QFileDialog::ShowDirsOnly);
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select GCC Library Folder"), gccLibraryStr, QFileDialog::ShowDirsOnly);
 #else
-    pathName = QFileDialog::getExistingDirectory(this,tr("Select GCC Library Folder"), path, QFileDialog::ShowDirsOnly);
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select GCC Library Folder"), gccLibraryStr, QFileDialog::ShowDirsOnly);
 #endif
 
     QString s = QDir::fromNativeSeparators(pathName);
-    gccLibraryStr = leditGccLibrary->text();
     if(s.length() == 0)
         return;
     if(s.indexOf('/') > -1) {
@@ -815,7 +816,7 @@ void Properties::browseGccLibrary()
             s += "/";
     }
     leditGccLibrary->setText(s);
-    mypath = path;
+    mypath = pathName;
 
     qDebug() << "browseGccLibrary" << s;
 }
@@ -881,11 +882,14 @@ void Properties::browseSpinLibrary()
 {
     QString pathName;
     QString path = mypath;
+    spinLibraryStr = leditSpinLibrary->text();
+    if(spinLibraryStr.length() < 1)
+        spinLibraryStr = mypath;
 
-    pathName = QFileDialog::getExistingDirectory(this,tr("Select Spin Library Folder"), path, QFileDialog::ShowDirsOnly);
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select Spin Library Folder"), spinLibraryStr, QFileDialog::ShowDirsOnly);
 
     QString s = QDir::fromNativeSeparators(pathName);
-    spinLibraryStr = leditSpinLibrary->text();
+
     if(s.length() == 0)
         return;
     if(s.indexOf('/') > -1) {
@@ -893,7 +897,7 @@ void Properties::browseSpinLibrary()
             s += "/";
     }
     leditSpinLibrary->setText(s);
-    mypath = path;
+    mypath = pathName;
 
     qDebug() << "browseSpinLibrary" << s;
 }
@@ -938,8 +942,11 @@ void Properties::browseLoader()
 {
     QString pathName;
     QString path = mypath + "propeller-load";
+    loaderStr = leditLoader->text();
+    if(loaderStr.length() < 1)
+        loaderStr = path;
 
-    pathName = QFileDialog::getExistingDirectory(this,tr("Select Propeller Loader Folder"), path, QFileDialog::ShowDirsOnly);
+    pathName = QFileDialog::getExistingDirectory(this,tr("Select Propeller Loader Folder"), loaderStr, QFileDialog::ShowDirsOnly);
 
     QString s = QDir::fromNativeSeparators(pathName);
     loaderStr = leditLoader->text();
