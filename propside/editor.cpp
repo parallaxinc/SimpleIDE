@@ -107,7 +107,8 @@ void Editor::keyPressEvent (QKeyEvent *e)
 
 
     if((key == Qt::Key_Enter) || (key == Qt::Key_Return)) {
-#ifdef Q_WS_WIN32
+        // temporarily remove auto indent for all platforms
+#ifdef ENABLE_AUTO_ENTER
         if(autoEnterColumn() == 0)
             QPlainTextEdit::keyPressEvent(e);
 #else
