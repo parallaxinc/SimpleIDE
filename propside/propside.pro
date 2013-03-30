@@ -13,6 +13,7 @@ DEFINES += QEXTSERIALPORT_LIB
 DEFINES += SPINSIDE
 
 #include quazip
+SUBDIRS += ../quazip-0.5/quazip
 INCLUDEPATH += ../quazip-0.5/quazip
 INCLUDEPATH += $$[QT_INSTALL_PREFIX]/src/3rdparty/zlib
 
@@ -112,14 +113,18 @@ RESOURCES += resources.qrc
 # linux quazip doesn't need version, but windows does
 unix {
     SOURCES += qextserialport_unix.cpp
-    LIBS += -lquazip
+    LIBS += -lquazip -lz
 }
 # dont use EVENT_DRIVEN for linux to be consistent with MAC.
-unix:!macx:SOURCES += qextserialenumerator_unix.cpp
+unix:!macx {
+    SOURCES += qextserialenumerator_unix.cpp
+}
+
 macx { 
     # dont use EVENT_DRIVEN for mac. must open terminal before load because mac would reset boards otherwise.
     SOURCES += qextserialenumerator_osx.cpp
-    LIBS += -framework \
+    LIBS += \
+        -framework \
         IOKit \
         -framework \
         CoreFoundation
