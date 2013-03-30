@@ -6062,6 +6062,7 @@ void MainSpinWindow::setupEditor()
     connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
     connect(editor, SIGNAL(saveEditorFile()), this, SLOT(saveEditor()));
     editors->append(editor);
+    QApplication::processEvents();
 }
 
 void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, QString text)
