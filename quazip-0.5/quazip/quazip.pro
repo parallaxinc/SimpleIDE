@@ -35,6 +35,7 @@ unix:!symbian {
     headers.files=$$HEADERS
     target.path=$$PREFIX/lib
     INSTALLS += headers target
+    LIBS += -lz
 
 	OBJECTS_DIR=.obj
 	MOC_DIR=.moc
