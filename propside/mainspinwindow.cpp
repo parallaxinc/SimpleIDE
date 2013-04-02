@@ -1471,11 +1471,13 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
      * Serialize a new filename for user.
      */
     dstName = projFile.mid(0,projFile.lastIndexOf("."));
+    dstName = dstName.trimmed();
     QRegExp reg("(\\d+)");
     if(dstName.indexOf(reg)) {
         if(dstName.lastIndexOf(")") == dstName.length()-1) {
             if(dstName.lastIndexOf(reg) > -1) {
                 dstName = dstName.mid(0,dstName.lastIndexOf("("));
+                dstName = dstName.trimmed();
             }
         }
     }
@@ -1488,7 +1490,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     if(QFile::exists(dstName+serial+".side")) {
         do {
             num++;
-            serial = QString("(%1)").arg(num);
+            serial = QString(" (%1)").arg(num);
         } while(QFile::exists(dstName+serial+".side"));
     }
 
