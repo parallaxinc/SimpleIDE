@@ -979,7 +979,7 @@ void MainSpinWindow::newProject()
             filters.insert(0,"Spin Project (*.spin)");
         }
     #endif
-
+        dialog.setAcceptMode(QFileDialog::AcceptSave);
         dialog.setNameFilters(filters);
         if(dialog.exec() == QDialog::Rejected)
             return;
