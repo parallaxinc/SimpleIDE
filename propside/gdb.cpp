@@ -45,7 +45,7 @@ void GDB::load(QString program, QString workpath, QString target, QString image,
 
     sendCommand("set listsize 1");
     sendCommand("target remote | " + target + " -p " + port); // + " -v -l gdblog.txt");
-    sendCommand("load");
+    //sendCommand("load");
     sendCommand("break main");
     sendCommand("continue");
 }
