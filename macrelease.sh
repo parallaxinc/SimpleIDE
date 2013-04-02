@@ -61,9 +61,30 @@ fi
 #   exit 1
 #fi
 
-cp -r ../propside-demos/ demos
+#cp -r ../propside-demos/ demos
+#if test $? != 0; then
+#   echo "copy propside-demos failed."
+#   exit 1
+#fi
+
+#
+# Temporarily copy files to package Learn, My\ Projects, etc....
+#
+cp -r ../propsideworkspace/Learn .
 if test $? != 0; then
-   echo "copy propside-demos failed."
+   echo "copy propsideworspace failed."
+   exit 1
+fi
+
+cp -r ../propsideworkspace/My\ Projects .
+if test $? != 0; then
+   echo "copy propsideworspace failed."
+   exit 1
+fi
+
+cp -r ../propsideworkspace/Propeller\ GCC\ Demos .
+if test $? != 0; then
+   echo "copy propsideworspace failed."
    exit 1
 fi
 

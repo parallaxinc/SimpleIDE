@@ -88,7 +88,33 @@ void Properties::setupFolders()
 
     QSettings settings(publisherKey, ASideGuiKey);
 
-    QString mywrk = QDir::homePath()+"/";
+    QString mywrk;
+
+#if defined(Q_WS_MAC)
+// TODO REMOVE LATER
+// this is temporary until we can have a reasonable MAC install
+#define MAC_HACK_WORKSPACE
+#endif
+
+#ifdef MAC_HACK_WORKSPACE
+#if defined(Q_WS_WIN32)
+    mywrk = QDir::homePath()+"/";
+#else
+    mywrk = "../../../";
+#endif
+    if(QFile::exists(mywrk+"Documents")) {
+        mywrk = mywrk +"Documents/";
+    }
+    else if(QFile::exists(mywrk+"My Documents")) {
+        mywrk = mywrk +"My Documents/";
+    }
+#if !defined(Q_WS_MAC)
+    // don't add SimpleIDE for Mac
+    mywrk += "SimpleIDE/";
+#endif
+#else
+    mywrk = QDir::homePath()+"/";
+
     if(QFile::exists(mywrk+"Documents")) {
         mywrk = mywrk +"Documents/";
     }
@@ -96,7 +122,7 @@ void Properties::setupFolders()
         mywrk = mywrk +"My Documents/";
     }
     mywrk += "SimpleIDE/";
-
+#endif
     QString mylib;
     if(QFile::exists(mywrk+"Learn/Simple Libraries")) {
         mylib = mywrk+"Learn/Simple Libraries";

@@ -3894,6 +3894,10 @@ void MainSpinWindow::debugCompileLoad()
     if(runBuild("-g"))
         return;
 
+    /* compile for debug */
+    if(runLoader("-g -r"))
+        return;
+
     /* start debugger */
     QString port = cbPort->currentText();
 
@@ -4224,6 +4228,11 @@ int  MainSpinWindow::runBuild(QString option)
     }
     checkAndSaveFiles();
     selectBuilder();
+
+#if defined(GDBENABLE)
+    /* stop debugger */
+    gdb->stop();
+#endif
     return builder->runBuild(option, projectFile, aSideCompiler);
 }
 

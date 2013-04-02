@@ -26,11 +26,6 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     exeName = projName.mid(0, projName.lastIndexOf(".")) + ".elf";
     exePath = outputPath + exeName;
 
-#if defined(GDBENABLE)
-    /* stop debugger */
-    gdb->stop();
-#endif
-
     QStringList clist;
     QFile file(projectFile);
     QString proj = "";
