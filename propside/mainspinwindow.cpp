@@ -1408,7 +1408,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
         projFile = projectFile;
     }
 
-    if(projFile.length() == 0) {
+    if(projFile.length() == 0 || projectModel == NULL) {
         QMessageBox::critical(
                 this,tr("No Project"),
                 tr("Can't \"Save Project As\" from an empty project.")+"\n"+
@@ -2218,7 +2218,7 @@ bool MainSpinWindow::isInFilterList(QString file, QStringList list)
  */
 void MainSpinWindow::zipProject()
 {
-    if(projectFile.isEmpty()) {
+    if(projectFile.isEmpty() || projectModel == NULL) {
         QMessageBox::critical(this, tr("Empty Project"),
             tr("Can't archive an empty project.")+"\n"+
             tr("Please open a project and try again."));
@@ -5389,8 +5389,14 @@ void MainSpinWindow::showProjectFile()
  */
 void MainSpinWindow::saveProject()
 {
-    if(projectModel == NULL)
+    if(projectFile.length() == 0 || projectModel == NULL) {
+        QMessageBox::critical(
+                this,tr("No Project"),
+                tr("Can't \"Save Project\" from an empty project.")+"\n"+
+                tr("Please create a new project or open an existing one."),
+                QMessageBox::Ok);
         return;
+    }
 
     /* go through project file list and save files
      */
