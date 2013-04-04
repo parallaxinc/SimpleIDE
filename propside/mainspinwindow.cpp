@@ -5291,7 +5291,7 @@ void MainSpinWindow::deleteProjectFile()
             s = s.trimmed();
         }
         if(s.compare(fileName) == 0) {
-            editorTabs->removeTab(n);
+            closeTab(n);
             break;
         }
     }
@@ -6079,7 +6079,8 @@ void MainSpinWindow::setupEditor()
     connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
     connect(editor, SIGNAL(saveEditorFile()), this, SLOT(saveEditor()));
     editors->append(editor);
-    QApplication::processEvents();
+    qDebug() << "setEditor" << editors->count();
+
 }
 
 void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, QString text)
@@ -6096,6 +6097,7 @@ void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, 
     editorTabs->setTabText(num,shortName);
     editorTabs->setTabToolTip(num,fileName);
     editorTabs->setCurrentIndex(num);
+    qDebug() << "setEditorTab" << fileName << num;
 }
 
 /*
