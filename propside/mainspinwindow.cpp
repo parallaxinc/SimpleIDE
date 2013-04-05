@@ -3103,7 +3103,7 @@ void MainSpinWindow::downloadSdCard()
     getApplicationSettings();
 
     // don't add fileName here since it can have spaces
-    QStringList args = getLoaderParameters("");
+    QStringList args = getLoaderParameters("", "");
     QString s = projectOptions->getMemModel();
     if(s.contains(" "))
         s = s.mid(0,s.indexOf(" "));
@@ -4236,7 +4236,7 @@ int  MainSpinWindow::runBuild(QString option)
     return builder->runBuild(option, projectFile, aSideCompiler);
 }
 
-QStringList MainSpinWindow::getLoaderParameters(QString copts)
+QStringList MainSpinWindow::getLoaderParameters(QString copts, QString file)
 {
     // use the projectFile instead of the current tab file
     // QString srcpath = sourcePath(projectFile);
@@ -4304,7 +4304,7 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts)
     args.append("-p");
     args.append(portName);
 
-    builder->appendLoaderParameters(copts, projectFile, &args);
+    builder->appendLoaderParameters(copts, file, &args);
 
     //qDebug() << args;
     return args;
@@ -4328,6 +4328,7 @@ int  MainSpinWindow::runLoader(QString copts)
         copts = copts.mid(0,copts.indexOf(" -t"));
     }
 
+    QString file;
     QString loadtype = cbBoard->currentText();
     if(loadtype.isEmpty() || loadtype.length() == 0) {
         QMessageBox::critical(this,tr("Can't Load"),tr("Can't load an empty board type."),QMessageBox::Ok);
@@ -4341,7 +4342,8 @@ int  MainSpinWindow::runLoader(QString copts)
         s += "/"+this->shortFileName(projectFile);
         s = s.mid(0,s.lastIndexOf(".side"));
         s += ".elf";
-        copts.append(" -z " + s);
+        file = s;
+        copts.append(" -z ");
         qDebug() << loadtype << copts;
     }
     else
@@ -4352,11 +4354,12 @@ int  MainSpinWindow::runLoader(QString copts)
         s += "/"+this->shortFileName(projectFile);
         s = s.mid(0,s.lastIndexOf(".side"));
         s += ".elf";
-        copts.append(" -l " + s);
+        file = s;
+        copts.append(" -l ");
         qDebug() << loadtype << copts;
     }
 
-    QStringList args = getLoaderParameters(copts);
+    QStringList args = getLoaderParameters(copts, file);
 
     builder->showBuildStart(aSideLoader,args);
 

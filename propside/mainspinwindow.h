@@ -229,7 +229,7 @@ private:
     int  getCompilerParameters(QStringList copts, QStringList *args);
     int  runCompiler(QStringList options);
 #endif
-    QStringList getLoaderParameters(QString options);
+    QStringList getLoaderParameters(QString options, QString file);
     int  runLoader(QString options);
 #ifdef KEEP_CTOOLS
     int  startProgram(QString program, QString workpath, QStringList args, DumpType dump = DumpOff);

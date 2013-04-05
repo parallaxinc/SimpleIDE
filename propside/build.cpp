@@ -17,11 +17,7 @@ Build::Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, Q
     connect(blinker, SIGNAL(statusNone()), this, SLOT(statusNone()));
     connect(blinker, SIGNAL(statusFailed()), this, SLOT(statusFailed()));
 
-#ifdef Q_WS_WIN32
-    separator = "\\";
-#else
     separator = "/";
-#endif
 }
 
 
