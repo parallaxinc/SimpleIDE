@@ -3795,8 +3795,6 @@ void MainSpinWindow::properties()
 void MainSpinWindow::propertiesAccepted()
 {
     getApplicationSettings();
-    initBoardTypes();
-    //Editor *ed = editors->at(editorTabs->currentIndex());
     for(int n = 0; n < editorTabs->count(); n++) {
         Editor *e = editors->at(n);
         e->setTabStopWidth(propDialog->getTabSpaces()*10);
