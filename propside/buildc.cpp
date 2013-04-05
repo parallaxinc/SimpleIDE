@@ -1123,15 +1123,19 @@ int BuildC::ensureOutputDirectory()
     return rc;
 }
 
-void BuildC::appendLoaderParameters(QString copts, QString projfile, QStringList *args)
+void BuildC::appendLoaderParameters(QString copts, QString file, QStringList *args)
 {
     /* if propeller-load parameters -l or -z in copts, don't append a.out */
     if((copts.indexOf("-l") > 0 || copts.indexOf("-z") > 0) == false)
         args->append(exePath);
 
     QStringList olist = copts.split(" ",QString::SkipEmptyParts);
-    for (int n = 0; n < olist.length(); n++)
+
+    for (int n = 0; n < olist.length(); n++) {
         args->append(olist[n]);
+    }
+    if(file.isEmpty() == false)
+        args->append(file);
 
     //qDebug() << args;
 }
