@@ -2031,7 +2031,7 @@ void MainSpinWindow::closeProject()
         }
     }
 
-    if(mismatch) {
+    if(mismatch && isSpinProject() == false) {
         rc = QMessageBox::question(this,
                 tr("Save Project?"),
                 tr("Save project manager settings before close?"),

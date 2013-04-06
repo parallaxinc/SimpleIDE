@@ -391,12 +391,12 @@ int  Build::buildResult(int exitStatus, int exitCode, QString progName, QString 
 
 void Build::statusNone()
 {
-    status->setStyleSheet("QLabel { background-color: palette(window);");
+    status->setStyleSheet("QLabel { background-color: palette(window) }");
 }
 
 void Build::statusFailed()
 {
-    status->setStyleSheet("QLabel { background-color: rgb(255,0,0); }");
+    status->setStyleSheet("QLabel { background-color: rgb(255,0,0) }");
 }
 
 void Build::statusPassed()
