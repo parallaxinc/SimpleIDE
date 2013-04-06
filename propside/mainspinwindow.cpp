@@ -5821,7 +5821,8 @@ void MainSpinWindow::showMapFile()
 {
     QString outputPath = builder->sourcePath(projectFile)+builder->getOutputPath(projectFile);
     QString fileName;
-    QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
+    QModelIndex index = projectModel->index(0,0);
+    QVariant vs = projectModel->data(index, Qt::DisplayRole);
     if(vs.canConvert(QVariant::String))
         fileName = vs.toString();
 
