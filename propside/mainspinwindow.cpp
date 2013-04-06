@@ -4346,8 +4346,7 @@ int  MainSpinWindow::runLoader(QString copts)
         copts.append(" -z ");
         qDebug() << loadtype << copts;
     }
-    else
-        if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
+    else if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
         QString s = projectOptions->getMemModel();
         if(s.contains(" "))
             s = s.mid(0,s.indexOf(" "));
@@ -4356,6 +4355,12 @@ int  MainSpinWindow::runLoader(QString copts)
         s += ".elf";
         file = s;
         copts.append(" -l ");
+        qDebug() << loadtype << copts;
+    }
+    else if(this->isSpinProject()) {
+        QString s = this->shortFileName(projectFile);
+        s = s.mid(0,s.lastIndexOf(".side"));
+        file = s;
         qDebug() << loadtype << copts;
     }
 
