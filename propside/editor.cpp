@@ -563,7 +563,7 @@ int Editor::tabBlockShift()
         shift = true;
 
     /* if a block is selected */
-    if(cur.selectedText().length() > 0) {
+    if(cur.selectedText().length() > 0 && cur.selectedText().contains(QChar::ParagraphSeparator) == true) {
 
         QStringList mylist;
 
