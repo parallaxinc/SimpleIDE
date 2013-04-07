@@ -113,6 +113,7 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     /* Run through file list and compile according to extension.
      * Add main file after going through the list. i.e start at list[1]
      */
+    QStringList inclist;
     for(int n = 1; rc == 0 && n < list.length(); n++) {
         progress->setValue(100*n/maxprogress);
         QString name = list[n];
@@ -124,6 +125,14 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
         if(name.contains(FILELINK)) {
             name = name.mid(name.indexOf(FILELINK)+QString(FILELINK).length());
             base = name.mid(0,name.lastIndexOf("."));
+            QString inc = base.mid(0,base.lastIndexOf("/"));
+            if(inclist.count() > 0) {
+                if(inclist.contains(inc,Qt::CaseInsensitive) == false)
+                    inclist.append(inc);
+            }
+            else {
+                inclist.append(inc);
+            }
         }
 
         QString suffix = name.mid(name.lastIndexOf("."));
@@ -208,6 +217,13 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
             clist.append(name);
         }
 
+    }
+
+    /* add inclist if it exists
+     */
+    for(int n = 0; n < inclist.length(); n++) {
+        clist.append("-I");
+        clist.append(inclist.at(n));
     }
 
     /* add main file */
@@ -375,7 +391,9 @@ int  BuildC::runBstc(QString spinfile)
 
     QDir libdir;
 
-    QString binaryfile = outputPath+spinfile.mid(0,spinfile.lastIndexOf("."));
+    QString binaryfile = spinfile.mid(0,spinfile.lastIndexOf("."));
+    binaryfile = binaryfile.mid(binaryfile.lastIndexOf("/")+1);
+    binaryfile = outputPath+binaryfile;
 
     if((comp.compare("spin",Qt::CaseInsensitive) == 0) ||
        (comp.compare("spin.exe",Qt::CaseInsensitive) == 0)) {
@@ -679,6 +697,8 @@ int  BuildC::runCompiler(QStringList copts)
     }
 #endif
 
+    // just use inc for this next round.
+    // we must be concerned with multiple field args like -I -L -D
     inc = 0;
     lib = 0;
 
@@ -706,16 +726,15 @@ int  BuildC::runCompiler(QStringList copts)
             inc = 0;
             tlist.append(s);
         }
-        else if(lib) {
-            lib = 0;
-            tlist.append(s);
-        }
-        else if(s.indexOf("-I") == 0) {
+        else if((s.indexOf("-D") == 0) ||
+                (s.indexOf("-I") == 0) ||
+                (s.indexOf("-L") == 0) ||
+                (s.indexOf("-B") == 0) ||
+                (s.indexOf("-b") == 0) ||
+                (s.indexOf("-V") == 0) ||
+                (s.indexOf("-x") == 0) ||
+                (s.indexOf("-X") == 0)) { // any -X
             inc++;
-            tlist.append(s);
-        }
-        else if(s.indexOf("-L") == 0) {
-            lib++;
             tlist.append(s);
         }
         else if(s.indexOf("-") == 0) {
