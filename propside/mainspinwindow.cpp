@@ -36,8 +36,10 @@
 #include "build.h"
 #include "buildstatus.h"
 
+#define ENABLE_ADD_LINK
+
 /*
- * SIMPBLE_BOARD_TOOLBAR puts Board Combo on the buttons toolbar.
+ * SIMPLE_BOARD_TOOLBAR puts Board Combo on the buttons toolbar.
  * We decided since simple users will rarely use the Board Combo
  * there isn't much point in having it visible at all times.
 #define SIMPLE_BOARD_TOOLBAR
@@ -1723,11 +1725,19 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
         }
         // different destination
         else if(sourcePath(projFile) != sourcePath(dstProjFile)) {
+            QString myitem = this->shortFileName(item);
+            item = QDir::fromNativeSeparators(sourcePath(projFile)+item);
+            item = saveAsProjectLinkFix(sourcePath(projFile), sourcePath(dstProjFile), item);
+            item = myitem + FILELINK + item;
             newList.append(item);
+
+// no more file copy for save project as
+#if 0
             QString dst = sourcePath(dstProjFile)+item;
             if(QFile::exists(dst))
                 QFile::remove(dst);
             QFile::copy(sourcePath(projFile)+item, dst);
+#endif
         }
         // same destination, just copy item
         else {
@@ -5340,6 +5350,8 @@ void MainSpinWindow::showProjectFile()
          */
         if(fileName.contains(FILELINK)) {
             fileName = fileName.mid(fileName.indexOf(FILELINK)+QString(FILELINK).length());
+            if(fileName.indexOf("../") == 0)
+                fileName = sourcePath(projectFile)+fileName;
             openFileName(fileName);
             projectTree->setFocus();
         }
