@@ -738,6 +738,12 @@ void MainSpinWindow::addTab()
         return;
     }
 
+    if(sourcePath(projectFile).compare(sourcePath(filename),Qt::CaseInsensitive)) {
+        editorTabs->removeTab(tab);
+        QMessageBox::critical(this,tr("Can't Add Tab"), tr("Can't add tab to a folder outside of the existing project."));
+        return;
+    }
+
     QString ftype = selectedFilter;
     filename = filterAsFilename(filename, ftype);
 
