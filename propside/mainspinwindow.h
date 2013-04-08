@@ -62,6 +62,7 @@ public slots:
     void terminalEditorTextChanged();
     void addLib();
     void addTab();
+    void openTab();
     void newFile();
     void openFile(const QString &path = QString());
     void saveFile();
