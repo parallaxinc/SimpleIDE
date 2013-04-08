@@ -737,8 +737,11 @@ void MainSpinWindow::addTab()
     QString selectedFilter = 0;
     QString filter;
     QStringList filtList = this->getAsFilters();
-    for(int n = 0; n < filtList.count(); n++) {
-        filter += filtList[n] + ";; ";
+    int filtListCount = filtList.count();
+    for(int n = 0; n < filtListCount; n++) {
+        filter += filtList[n];
+        if(n < filtListCount-1)
+            filter += ";; ";
     }
     QString filename = QFileDialog::getSaveFileName(this,tr("Add Tab"), sourcePath(projectFile)+"New File", filter, &selectedFilter);
     if(filename.isEmpty()) {
