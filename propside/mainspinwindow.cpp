@@ -6010,6 +6010,7 @@ void MainSpinWindow::portResetButton()
         QMessageBox::information(this, tr("Port Required"), tr("Please select a port"), QMessageBox::Ok);
         return;
     }
+    Properties::Reset res = this->propDialog->getResetType();
 
     if(this->propDialog->getResetType() == Properties::CFG) {
         QString bname = this->cbBoard->currentText();
@@ -6028,13 +6029,7 @@ void MainSpinWindow::portResetButton()
                 rts = false;
         }
         else {
-            if(projectOptions->getCompiler().compare(SPIN_TEXT) == 0) {
-                rts = false;
-            }
-            else{
-                QMessageBox::critical(this,tr("Can't Reset"),tr("Can't reset by CFG with an empty board type."),QMessageBox::Ok);
-                return;
-            }
+            rts = false;
         }
     }
     else
