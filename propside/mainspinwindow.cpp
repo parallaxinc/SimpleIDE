@@ -543,6 +543,10 @@ void MainSpinWindow::quitProgram()
  */
 void MainSpinWindow::addLib()
 {
+    if(projectFile.isEmpty() || projectModel == NULL) {
+        return;
+    }
+
     // find library to add
     QString workspace = "";
     QVariant wrkv = settings->value(gccLibraryKey);
@@ -722,17 +726,21 @@ void MainSpinWindow::addLib()
  */
 void MainSpinWindow::addTab()
 {
+    if(projectFile.isEmpty() || projectModel == NULL) {
+        return;
+    }
+
     // new file tab
     newFile();
     int tab = editorTabs->count()-1;
 
     QString selectedFilter = 0;
+    QString filter;
     QStringList filtList = this->getAsFilters();
-    foreach(QString s, filtList) {
-        selectedFilter += s + ";; ";
+    for(int n = 0; n < filtList.count(); n++) {
+        filter += filtList[n] + ";; ";
     }
-
-    QString filename = QFileDialog::getSaveFileName(this,tr("Add Tab"), sourcePath(projectFile)+"New File", selectedFilter, &selectedFilter);
+    QString filename = QFileDialog::getSaveFileName(this,tr("Add Tab"), sourcePath(projectFile)+"New File", filter, &selectedFilter);
     if(filename.isEmpty()) {
         editorTabs->removeTab(tab);
         return;
@@ -789,6 +797,9 @@ void MainSpinWindow::addTab()
  */
 void MainSpinWindow::openTab()
 {
+    if(projectFile.isEmpty() || projectModel == NULL) {
+        return;
+    }
     // new file tab
     newFile();
     int tab = editorTabs->count()-1;
@@ -967,6 +978,7 @@ void MainSpinWindow::closeAll()
     }
     for(int tab = editorTabs->count()-1; tab > -1; tab--)
         closeTab(tab);
+    projectFile = "";
 }
 
 /*
@@ -3003,12 +3015,7 @@ QStringList MainSpinWindow::getAsFilters()
     }
 #endif
 
-    if(this->simpleViewType == false) {
-        filters.insert(0, "Any File (*)");
-    }
-    else {
-        filters << "Any File (*)";
-    }
+    filters << "Any File (*)";
 
     return filters;
 }
@@ -5081,6 +5088,10 @@ void MainSpinWindow::addProjectListFile(QString fileName)
  */
 void MainSpinWindow::addProjectFile()
 {
+    if(projectFile.isEmpty() || projectModel == NULL) {
+        return;
+    }
+
     fileDialog.setDirectory(sourcePath(projectFile));
 
     // this is on the wish list and not finished yet
@@ -5117,6 +5128,10 @@ void MainSpinWindow::addProjectFile()
  */
 void MainSpinWindow::addProjectLink()
 {
+    if(projectFile.isEmpty() || projectModel == NULL) {
+        return;
+    }
+
     fileDialog.setDirectory(sourcePath(projectFile));
 
     // this is on the wish list and not finished yet
