@@ -1,4 +1,8 @@
-#!/bin/sh -x
+#!/bin/sh
+
+echo "This script is being deprecated. Use top level linrelease.sh instead"
+exit 0
+
 #
 # to use this release script, QtSDK Desktop qmake must be in your PATH
 #
