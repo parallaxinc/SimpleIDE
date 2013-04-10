@@ -3231,6 +3231,12 @@ void MainSpinWindow::downloadSdCard()
     while(procDone == false)
         QApplication::processEvents();
 
+    if(process->state() == QProcess::Running) {
+        process->kill();
+        Sleeper::ms(500);
+        compileStatus->appendPlainText(tr("File to SD Card killed by user."));
+        status->setText(status->text() + tr(" Done."));
+    }
 }
 
 void MainSpinWindow::procError(QProcess::ProcessError error)
@@ -3898,9 +3904,8 @@ void MainSpinWindow::programStopBuild()
         this->procMutex.lock();
         this->procDone = true;
         this->procMutex.unlock();
-        qDebug() << "procDone set";
         QApplication::processEvents();
-        process->kill();
+        //process->kill(); // don't kill here. let the user process that is waiting kill it.
     }
 }
 
@@ -4476,12 +4481,21 @@ int  MainSpinWindow::runLoader(QString copts)
     while(procDone == false)
         QApplication::processEvents();
 
+    int killed = 0;
+    if(process->state() == QProcess::Running) {
+        process->kill();
+        Sleeper::ms(500);
+        compileStatus->appendPlainText(tr("Loader killed by user."));
+        status->setText(status->text() + tr(" Done."));
+        killed = -1;
+    }
+
     QTextCursor cur = compileStatus->textCursor();
     cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
     compileStatus->setTextCursor(cur);
 
     progress->hide();
-    return process->exitCode();
+    return process->exitCode() | killed;
 }
 
 void MainSpinWindow::compilerError(QProcess::ProcessError error)
