@@ -52,7 +52,7 @@ void Build::abortProcess()
         procDone = true;
         procMutex.unlock();
         QApplication::processEvents();
-        process->kill();
+        //process->kill(); // don't kill here. let the user process that is waiting kill it.
     }
 }
 
@@ -95,13 +95,22 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
     while(procDone == false)
         QApplication::processEvents();
 
+    int killed = 0;
+    if(process->state() == QProcess::Running) {
+        process->kill();
+        Sleeper::ms(500);
+        compileStatus->appendPlainText(tr("Program killed by user."));
+        status->setText(status->text() + tr(" Done."));
+        killed = -1;
+    }
+
     disconnect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyReadSizes()));
 
     progress->hide();
 
     if(procResultError)
         return 1;
-    return process->exitCode();
+    return process->exitCode() | killed;
 }
 
 void Build::procError(QProcess::ProcessError error)
