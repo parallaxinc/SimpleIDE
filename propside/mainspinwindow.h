@@ -81,7 +81,7 @@ public slots:
     void newProjectAccepted();
     void openProject(const QString &path = QString());
     void saveProject();
-    void saveAsProject(const QString &path = QString());
+    int  saveAsProject(const QString &path = QString());
     void cloneProject();
     void closeProject();
     void zipProject();

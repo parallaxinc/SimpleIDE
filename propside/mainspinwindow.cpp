@@ -1016,7 +1016,9 @@ void MainSpinWindow::newProject()
         workspace = workspace + "My Projects/Blank Simple Project.side";
         if(QFile::exists(workspace)) {
             this->openProject(workspace);
-            this->saveAsProject();
+            if(this->saveAsProject() < 0) {
+                closeAll();
+            }
         }
         else {
             QMessageBox::critical(this, tr("Project Not Found"),
@@ -1468,7 +1470,7 @@ QString MainSpinWindow::saveAsProjectLinkFix(QString srcPath, QString dstPath, Q
  *    fixes up any links in project file and writes file
  *
  */
-void MainSpinWindow::saveAsProject(const QString &inputProjFile)
+int MainSpinWindow::saveAsProject(const QString &inputProjFile)
 {
     int rc = 0;
     QString projFolder(sourcePath(inputProjFile));
@@ -1493,7 +1495,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
                 tr("Can't \"Save Project As\" from an empty project.")+"\n"+
                 tr("Please create a new project or open an existing one."),
                 QMessageBox::Ok);
-        return;
+        return -1;
     }
 
     QString dstName;
@@ -1505,7 +1507,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
                 this,tr("Project Folder not Found."),
                 tr("Can't \"Save Project As\" from a non-existing folder."),
                 QMessageBox::Ok);
-        return;
+        return -1;
     }
 
 
@@ -1528,7 +1530,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
          */
         dstPath = QFileDialog::getExistingDirectory(this,tr("Destination Project Folder"), lastPath, QFileDialog::ShowDirsOnly);
         if(dstPath.length() < 1)
-            return;
+            return -1;
         lastPath = dstPath;
 
         dstPath = dstPath+"/";    // make sure we have a trailing / for file copy
@@ -1539,7 +1541,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
                      tr("Save Project As ?")+"\n"+dstProjFile,
                      QMessageBox::Yes, QMessageBox::No);
         if(rc == QMessageBox::No) {
-            return;
+            return -1;
         }
 
     }
@@ -1582,20 +1584,20 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     rc = dialog.exec();
     if(rc == QDialog::Rejected)
-        return;
+        return -1;
     QStringList dstList = dialog.selectedFiles();
     if(dstList.length() < 1)
-        return;
+        return -1;
     dstPath = dstList.at(0);
     if(dstPath.length() < 1)
-       return;
+       return -1;
 
     if(projectFile.compare(dstPath) == 0) {
         QMessageBox::critical(this,
             tr("Can't Save Project As"),
             tr("Can't Save Project As to the origin project.")+"\n"+
             tr("Use Save Project instead or use a new project destination."));
-        return;
+        return -1;
     }
 
     dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
@@ -1634,7 +1636,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     else {
         QString trs = tr("Can't find file: ")+projFile;
         QMessageBox::critical(this,tr("Source Project not found!"), trs);
-        return;
+        return -1;
     }
 
     ftype = ftype.trimmed();
@@ -1656,7 +1658,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
             tr("Can't Save As"),
             tr("Can't Save As to an existing project.")+"\n"+
             tr("Please try again using a different filename."));
-        return;
+        return -1;
     }
 #endif
 
@@ -1673,7 +1675,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
                 this,tr("Save Project As Error."),
                 tr("System can not create project in ")+dstPath,
                 QMessageBox::Ok);
-        return;
+        return -1;
     }
 
     /*
@@ -1837,6 +1839,8 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
     }
 
     this->openProject(dstProjFile);
+
+    return 0;
 }
 
 #else
