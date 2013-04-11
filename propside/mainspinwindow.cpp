@@ -6353,7 +6353,8 @@ void MainSpinWindow::setupFileMenu()
     toolsMenu->insertAction(last,bigger);
 
     toolsMenu->addSeparator();
-    toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(reloadBoardTypes()));
+    // added for simple view, not necessary anymore
+    //toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(reloadBoardTypes()));
     toolsMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
 
     QMenu *programMenu = new QMenu(tr("&Program"), this);
