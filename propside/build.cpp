@@ -92,8 +92,10 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
 
     /* process Qt application events until procDone
      */
-    while(procDone == false)
+    while(procDone == false) {
         QApplication::processEvents();
+        Sleeper::ms(5);
+    }
 
     int killed = 0;
     if(process->state() == QProcess::Running) {
