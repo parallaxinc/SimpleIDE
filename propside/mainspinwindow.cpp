@@ -4478,8 +4478,10 @@ int  MainSpinWindow::runLoader(QString copts)
 
     status->setText(status->text()+tr(" Loading ... "));
 
-    while(procDone == false)
+    while(procDone == false) {
         QApplication::processEvents();
+        Sleeper::ms(33);
+    }
 
     int killed = 0;
     if(process->state() == QProcess::Running) {
@@ -6076,6 +6078,9 @@ void MainSpinWindow::portResetButton()
     if(this->propDialog->getResetType() == Properties::DTR) {
         rts = false;
     }
+
+    // We need to reopen this sucker for reset if we have 2+ ports.
+    // portListener->init(port, BAUD115200);  // signals get hooked up internally
 
     bool isopen = portListener->isOpen();
     if(isopen == false)
