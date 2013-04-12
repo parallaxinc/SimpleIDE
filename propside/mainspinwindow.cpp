@@ -4763,6 +4763,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     resetRightSplitSize();
 
     connect(vsplit,SIGNAL(splitterMoved(int,int)),this,SLOT(splitterChanged()));
+    connect(leftSplit,SIGNAL(splitterMoved(int,int)),this,SLOT(splitterChanged()));
     connect(rightSplit,SIGNAL(splitterMoved(int,int)),this,SLOT(splitterChanged()));
 
     /* status bar for progressbar */
@@ -6817,6 +6818,14 @@ void MainSpinWindow::showProjectPane(bool show)
         btnShowProjectPane->setIcon(QIcon(QIcon(":/images/ProjectHide.png")));
         if(leftSplit->width() < 20 && this->simpleViewType) {
             resetVerticalSplitSize();
+        }
+        if(this->simpleViewType) {
+            // force splitter to always show project options
+            QList<int> lsizes = leftSplit->sizes();
+            lsizes[0] = leftSplit->height()*50/100;
+            lsizes[1] = leftSplit->height()*50/100;
+            leftSplit->setSizes(lsizes);
+            leftSplit->adjustSize();
         }
     }
     else {
