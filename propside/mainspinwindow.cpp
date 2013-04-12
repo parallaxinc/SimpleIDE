@@ -3968,6 +3968,7 @@ void MainSpinWindow::programDebug()
     btnConnected->setChecked(true);
     term->getEditor()->setPlainText("");
     term->getEditor()->setPortEnable(true);
+    term->setPortName(cbPort->currentText());
     term->activateWindow();
     term->show();
     term->getEditor()->setFocus();
@@ -4658,12 +4659,12 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 
     // projectMenu is popup for projectTree
     projectMenu = new QMenu(QString("Project Menu"));
-    projectMenu->addAction(tr(AddFileCopy), this,SLOT(addProjectFile()));
+    projectMenu->addAction(QIcon(":/images/AddFileCopy.png"), tr(AddFileCopy), this,SLOT(addProjectFile()));
 #ifdef ENABLE_ADD_LINK
-    projectMenu->addAction(tr(AddFileLink), this,SLOT(addProjectLink()));
+    projectMenu->addAction(QIcon(":/images/AddFileLink.png"), tr(AddFileLink), this,SLOT(addProjectLink()));
 #endif
-    projectMenu->addAction(tr(AddIncludePath), this,SLOT(addProjectIncPath()));
-    projectMenu->addAction(tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
+    projectMenu->addAction(QIcon(":/images/AddProjectPath.png"), tr(AddIncludePath), this,SLOT(addProjectIncPath()));
+    projectMenu->addAction(QIcon(":/images/AddLibraryPath.png"), tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
 
     projectMenu->addAction(tr("Delete"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
@@ -6012,6 +6013,7 @@ void MainSpinWindow::connectButton()
         term->getEditor()->setPortEnable(true);
         term->show();
         term->setPortEnabled(true);
+        term->setPortName(cbPort->currentText());
         term->activateWindow();
         term->getEditor()->setFocus();
         portListener->open();
@@ -6028,6 +6030,7 @@ void MainSpinWindow::menuActionConnectButton()
         term->getEditor()->setPortEnable(true);
         term->show();
         term->setPortEnabled(true);
+        term->setPortName(cbPort->currentText());
         term->activateWindow();
         term->getEditor()->setFocus();
         portListener->open();
@@ -6263,12 +6266,12 @@ void MainSpinWindow::setupFileMenu()
     projMenu->addAction(QIcon(":/images/saveasproj.png"), tr(SaveAsProject), this, SLOT(saveAsProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_A);
     projMenu->addAction(QIcon(":/images/zip2.png"), tr(ZipProject), this, SLOT(zipProject()), Qt::CTRL+Qt::Key_Z);
 
-    projMenu->addAction(tr(AddFileCopy), this, SLOT(addProjectFile()));
+    projMenu->addAction(QIcon(":/images/AddFileCopy.png"), tr(AddFileCopy), this, SLOT(addProjectFile()));
 #ifdef ENABLE_ADD_LINK
-    projMenu->addAction(tr(AddFileLink), this,SLOT(addProjectLink()));
+    projMenu->addAction(QIcon(":/images/AddFileLink.png"), tr(AddFileLink), this,SLOT(addProjectLink()));
 #endif
-    projMenu->addAction(tr(AddIncludePath), this,SLOT(addProjectIncPath()));
-    projMenu->addAction(tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
+    projMenu->addAction(QIcon(":/images/AddProjectPath.png"), tr(AddIncludePath), this,SLOT(addProjectIncPath()));
+    projMenu->addAction(QIcon(":/images/AddLibraryPath.png"), tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
 
     projMenu->addSeparator();
     projMenu->addAction(QIcon(":/images/closeproj.png"), tr(SaveAndCloseProject), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
@@ -6331,10 +6334,10 @@ void MainSpinWindow::setupFileMenu()
         toolsMenu->addAction(QIcon(":/images/forward.png"),tr("Browse Declaration"), this, SLOT(findDeclaration()), QKeySequence::Forward);
     }
 
-    toolsMenu->addAction(QIcon(":/images/NextTab.png"), tr("Next Tab"), this, SLOT(changeTab(bool)),QKeySequence::NextChild);
+    toolsMenu->addAction(QIcon(":/images/NextTab2.png"), tr("Next Tab"), this, SLOT(changeTab(bool)),QKeySequence::NextChild);
 
     toolsMenu->addSeparator();
-    toolsMenu->addAction(QIcon(":/images/Brush.png"), tr("Font"), this, SLOT(fontDialog()));
+    toolsMenu->addAction(QIcon(":/images/FontTT.png"), tr("Font"), this, SLOT(fontDialog()));
     //toolsMenu->addAction(QIcon(":/images/resize-plus.png"), tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence::ZoomIn);
     //toolsMenu->addAction(QIcon(":/images/resize-plus.png"), tr("Bigger Font"), this, SLOT(fontBigger()), QKeySequence(Qt::CTRL+Qt::Key_Equal));
     toolsMenu->addAction(QIcon(":/images/resize-minus.png"), tr("Smaller Font"), this, SLOT(fontSmaller()), QKeySequence::ZoomOut);

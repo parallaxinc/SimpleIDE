@@ -15,6 +15,7 @@ class Terminal : public QDialog
 public:
     explicit Terminal(QWidget *parent);
     void setPortListener(PortListener *listener);
+    void setPortName(QString name);
     void setPosition(int x, int y);
     void accept();
     void reject();
@@ -43,6 +44,7 @@ private:
     TermPrefs   *options;
     QComboBox   *comboBoxBaud;
     QCheckBox   *cbEchoOn;
+    QLabel      portLabel;
 
 private:
     QPushButton     *buttonEnable;
