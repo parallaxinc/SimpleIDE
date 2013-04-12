@@ -25,6 +25,7 @@ public:
     virtual void run();
 
     QString getPortName();
+    BaudRateType getBaudRate();
 
 private:
 

@@ -190,12 +190,14 @@ void Terminal::toggleEnable()
         portListener->open();
         portLabel.setText(portListener->getPortName());
         termEditor->setFocus(Qt::OtherFocusReason);
+        emit disablePortCombo();
     }
     else {
         buttonEnable->setText("Enable");
         termEditor->setPortEnable(false);
         portLabel.setText("");
         portListener->close();
+        emit enablePortCombo();
     }
     QApplication::processEvents();
 #endif
