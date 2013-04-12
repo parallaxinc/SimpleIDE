@@ -74,6 +74,8 @@ void Terminal::init()
     butLayout->addWidget(buttonEnable);
 #endif
     butLayout->addWidget(comboBoxBaud);
+    butLayout->addWidget(&portLabel);
+    portLabel.setFont(QFont("System", 14));
     butLayout->addWidget(cbEchoOn);
     butLayout->addWidget(buttonBox);
     setLayout(termLayout);
@@ -90,6 +92,15 @@ Console *Terminal::getEditor()
 void Terminal::setPortListener(PortListener *listener)
 {
     portListener = listener;
+    if(listener->getPortName().isEmpty() == false)
+        portLabel.setText(listener->getPortName());
+    else
+        portLabel.setText("");
+}
+
+void Terminal::setPortName(QString name)
+{
+    portLabel.setText(name);
 }
 
 void Terminal::setPosition(int x, int y)
@@ -146,7 +157,7 @@ void Terminal::accept()
     QSettings *settings = new QSettings(publisherKey, ASideGuiKey, this);
     QByteArray geo = this->saveGeometry();
     settings->setValue(termGeometryKey,geo);
-
+    portLabel.setText("");
     termEditor->setPortEnable(false);
     done(QDialog::Accepted);
 }
@@ -160,7 +171,7 @@ void Terminal::reject()
     QSettings *settings = new QSettings(publisherKey, ASideGuiKey, this);
     QByteArray geo = this->saveGeometry();
     settings->setValue(termGeometryKey,geo);
-
+    portLabel.setText("");
     termEditor->setPortEnable(false);
     done(QDialog::Rejected);
 }
@@ -177,11 +188,13 @@ void Terminal::toggleEnable()
         buttonEnable->setText("Disable");
         termEditor->setPortEnable(true);
         portListener->open();
+        portLabel.setText(portListener->getPortName());
         termEditor->setFocus(Qt::OtherFocusReason);
     }
     else {
         buttonEnable->setText("Enable");
         termEditor->setPortEnable(false);
+        portLabel.setText("");
         portListener->close();
     }
     QApplication::processEvents();

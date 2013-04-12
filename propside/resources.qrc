@@ -88,5 +88,11 @@
         <file>images/Credits.png</file>
         <file>images/SimpleIDE-Splash3.png</file>
         <file>images/opentab.png</file>
+        <file>images/FontTT.png</file>
+        <file>images/NextTab2.png</file>
+        <file>images/AddProjectPath.png</file>
+        <file>images/AddFileLink.png</file>
+        <file>images/AddLibraryPath.png</file>
+        <file>images/AddFileCopy.png</file>
     </qresource>
 </RCC>
