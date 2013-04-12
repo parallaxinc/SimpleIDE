@@ -157,8 +157,8 @@ void Terminal::accept()
     QSettings *settings = new QSettings(publisherKey, ASideGuiKey, this);
     QByteArray geo = this->saveGeometry();
     settings->setValue(termGeometryKey,geo);
-    portLabel.setText("");
     termEditor->setPortEnable(false);
+    portLabel.setEnabled(false);
     done(QDialog::Accepted);
 }
 
@@ -171,8 +171,8 @@ void Terminal::reject()
     QSettings *settings = new QSettings(publisherKey, ASideGuiKey, this);
     QByteArray geo = this->saveGeometry();
     settings->setValue(termGeometryKey,geo);
-    portLabel.setText("");
     termEditor->setPortEnable(false);
+    portLabel.setEnabled(false);
     done(QDialog::Rejected);
 }
 
@@ -189,13 +189,15 @@ void Terminal::toggleEnable()
         termEditor->setPortEnable(true);
         portListener->open();
         portLabel.setText(portListener->getPortName());
+        portLabel.setEnabled(true);
         termEditor->setFocus(Qt::OtherFocusReason);
         emit disablePortCombo();
     }
     else {
         buttonEnable->setText("Enable");
         termEditor->setPortEnable(false);
-        portLabel.setText("");
+        //portLabel.setText("");
+        portLabel.setEnabled(false);
         portListener->close();
         emit enablePortCombo();
     }
@@ -210,12 +212,14 @@ void Terminal::setPortEnabled(bool value)
         buttonEnable->setText("Disable");
 #endif
         termEditor->setPortEnable(true);
+        portLabel.setEnabled(true);
     }
     else {
 #ifdef TERM_ENABLE_BUTTON
         buttonEnable->setText("Enable");
 #endif
         termEditor->setPortEnable(false);
+        portLabel.setEnabled(false);
     }
     QApplication::processEvents();
 }
