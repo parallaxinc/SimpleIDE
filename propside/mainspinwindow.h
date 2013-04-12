@@ -104,7 +104,10 @@ public slots:
     void connectButton();
     void menuActionConnectButton();
     void portResetButton();
+    void resetPort(bool rts);
     void terminalClosed();
+    void disablePortCombo();
+    void enablePortCombo();
     void setProject();
     void hardware();
     void properties();

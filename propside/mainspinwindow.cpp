@@ -199,6 +199,9 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     /* setup loader and port listener */
     /* setup the terminal dialog box */
     term = new Terminal(this);
+    connect(term, SIGNAL(enablePortCombo()),this,SLOT(enablePortCombo()));
+    connect(term, SIGNAL(disablePortCombo()),this,SLOT(disablePortCombo()));
+
     termEditor = term->getEditor();
 
     QVariant gv = settings->value(termGeometryKey);
@@ -3181,7 +3184,9 @@ void MainSpinWindow::downloadSdCard()
 
     btnConnected->setChecked(false);
     portListener->close(); // disconnect uart before use
-    term->hide();
+    //term->hide();
+    term->setPortEnabled(false);
+    cbPort->setEnabled(true);
 
     progress->show();
     progress->setValue(0);
@@ -3197,6 +3202,7 @@ void MainSpinWindow::downloadSdCard()
     s += "/"+this->shortFileName(projectFile);
     s = s.mid(0,s.lastIndexOf(".side"));
     s += ".elf";
+    builder->removeArg(args, s);
     s = QDir::toNativeSeparators(s);
     builder->removeArg(args, s);
 
@@ -3972,6 +3978,7 @@ void MainSpinWindow::programDebug()
     term->activateWindow();
     term->show();
     term->getEditor()->setFocus();
+    cbPort->setEnabled(false);
 }
 
 void MainSpinWindow::debugCompileLoad()
@@ -4071,6 +4078,17 @@ void MainSpinWindow::terminalClosed()
 {
     portListener->close();
     btnConnected->setChecked(false);
+    cbPort->setEnabled(true);
+}
+
+void MainSpinWindow::disablePortCombo()
+{
+    cbPort->setEnabled(false);
+}
+
+void MainSpinWindow::enablePortCombo()
+{
+    cbPort->setEnabled(true);
 }
 
 void MainSpinWindow::setupHelpMenu()
@@ -6017,10 +6035,12 @@ void MainSpinWindow::connectButton()
         term->activateWindow();
         term->getEditor()->setFocus();
         portListener->open();
+        cbPort->setEnabled(false);
     }
     else {
         portListener->close();
         term->hide();
+        cbPort->setEnabled(true);
     }
 }
 
@@ -6035,11 +6055,13 @@ void MainSpinWindow::menuActionConnectButton()
         term->getEditor()->setFocus();
         portListener->open();
         btnConnected->setChecked(true);
+        cbPort->setEnabled(false);
     }
     else {
         portListener->close();
         term->hide();
         btnConnected->setChecked(false);
+        cbPort->setEnabled(true);
     }
 }
 
@@ -6085,9 +6107,32 @@ void MainSpinWindow::portResetButton()
     // We need to reopen this sucker for reset if we have 2+ ports.
     // portListener->init(port, BAUD115200);  // signals get hooked up internally
 
+    QString savePortName = portListener->getPortName();
+    QString cbPortName = cbPort->currentText();
+
     bool isopen = portListener->isOpen();
     if(isopen == false)
+    {
+        if(savePortName.compare(cbPortName) != 0) {
+            portListener->init(cbPortName, portListener->getBaudRate());
+        }
+
         portListener->open();
+        resetPort(rts);
+        portListener->close();
+
+        if(savePortName.compare(cbPortName) != 0) {
+            portListener->init(savePortName, portListener->getBaudRate());
+        }
+    }
+    else {
+        resetPort(rts);
+    }
+
+}
+
+void MainSpinWindow::resetPort(bool rts)
+{
     if(rts) {
         portListener->setRts(true);
         Sleeper::ms(50);
@@ -6098,8 +6143,6 @@ void MainSpinWindow::portResetButton()
         Sleeper::ms(50);
         portListener->setDtr(false);
     }
-    if(isopen == false)
-        portListener->close();
 }
 
 QString MainSpinWindow::shortFileName(QString fileName)

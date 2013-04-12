@@ -35,6 +35,11 @@ QString PortListener::getPortName()
     return port->portName();
 }
 
+BaudRateType PortListener::getBaudRate()
+{
+    return port->baudRate();
+}
+
 void PortListener::setDtr(bool enable)
 {
     this->port->setDtr(enable);

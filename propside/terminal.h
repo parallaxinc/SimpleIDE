@@ -23,6 +23,10 @@ public:
     bool setBaudRate(int baud);
     void setEchoOn(bool echoOn);
 
+signals:
+    void enablePortCombo();
+    void disablePortCombo();
+
 private:
     void init();
 
