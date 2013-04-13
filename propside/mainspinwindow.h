@@ -213,6 +213,8 @@ public slots:
 private:
     QString pathDiff(QString s2, QString s1);
     QString saveAsProjectLinkFix(QString srcPath, QString dstPath, QString link);
+    int tabIndexByShortName(QString filename);
+    int tabIndexByFileName(QString filename);
     void exitSave();
     void getApplicationSettings();
     int  checkCompilerInfo();
@@ -246,7 +248,7 @@ private:
     bool isFileUTF16(QFile *file);
     void openFileName(QString fileName);
     void checkAndSaveFiles();
-    void setupEditor();
+    int  setupEditor();
     void setupFileMenu();
     void setupHelpMenu();
     void setupToolBars();
@@ -312,6 +314,10 @@ private:
     QSplitter       *vsplit;
     QSplitter       *leftSplit;
     QSplitter       *rightSplit;
+
+    QAction         *btnProjectAddTab;
+    QAction         *btnProjectAddLib;
+    QAction         *btnProjectOpenTab;
 
     QAction         *btnBoardReset;
     QAction         *btnProjectClose;

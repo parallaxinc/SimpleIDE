@@ -31,7 +31,6 @@
         <file>images/burnee.png</file>
         <file>images/run.png</file>
         <file>images/debug.png</file>
-        <file>images/closeproj.png</file>
         <file>images/treeproject.png</file>
         <file>images/back.png</file>
         <file>images/forward.png</file>
@@ -42,7 +41,6 @@
         <file>images/runconsole.png</file>
         <file>images/SimpleIDE5.png</file>
         <file>images/CovertBeanie32.png</file>
-        <file>images/Delete.png</file>
         <file>images/SimpleIDE6.png</file>
         <file>images/reset.png</file>
         <file>images/project.png</file>
@@ -94,5 +92,8 @@
         <file>images/AddFileLink.png</file>
         <file>images/AddLibraryPath.png</file>
         <file>images/AddFileCopy.png</file>
+        <file>images/closeproj.png</file>
+        <file>images/DeleteAll.png</file>
+        <file>images/Delete.png</file>
     </qresource>
 </RCC>
