@@ -69,7 +69,7 @@
 #define AddTab "Add Tab to Project"
 #define OpenTab "Open Tab to Project"
 #define AddLib "Add Simple &Library"
-#define SaveAndCloseProject "Save and Close Project"
+#define CloseProject "Close Project"
 #define SaveAsProject "Save Project As"
 #define SetProject "Set Project"
 #define CloneProject "Clone Project"
@@ -723,6 +723,38 @@ void MainSpinWindow::addLib()
     }
 }
 
+int MainSpinWindow::tabIndexByShortName(QString shortname)
+{
+    for(int n = editorTabs->count()-1; n > -1; n--) {
+        QString s = editorTabs->tabText(n);
+        if(s.endsWith("*")) {
+            s = s.mid(0,s.lastIndexOf("*"));
+            s = s.trimmed();
+        }
+        if(shortname.compare(s) == 0) {
+           return n;
+        }
+    }
+    return -1;
+}
+
+int MainSpinWindow::tabIndexByFileName(QString filename)
+{
+    for(int n = editorTabs->count()-1; n > -1; n--) {
+        QString s = editorTabs->tabText(n);
+        QString t = editorTabs->tabToolTip(n);
+        if(s.endsWith("*")) {
+            s = s.mid(0,s.lastIndexOf("*"));
+            s = s.trimmed();
+        }
+        if(shortFileName(filename).compare(s) == 0 &&
+           filename.compare(t) == 0) {
+           return n;
+        }
+    }
+    return -1;
+}
+
 /*
  * The purpose of addTab is to create a new tab for the editor
  * with a user's new filename and add it to the project manager.
@@ -735,7 +767,6 @@ void MainSpinWindow::addTab()
 
     // new file tab
     newFile();
-    int tab = editorTabs->count()-1;
 
     QString selectedFilter = 0;
     QString filter;
@@ -744,17 +775,18 @@ void MainSpinWindow::addTab()
     for(int n = 0; n < filtListCount; n++) {
         filter += filtList[n];
         if(n < filtListCount-1)
-            filter += ";; ";
+            filter += ";;";
     }
+
     QString filename = QFileDialog::getSaveFileName(this,tr("Add Tab"), sourcePath(projectFile)+"New File", filter, &selectedFilter);
     if(filename.isEmpty()) {
-        editorTabs->removeTab(tab);
+        editorTabs->removeTab(tabIndexByShortName(untitledstr));
         return;
     }
 
     if(sourcePath(projectFile).compare(sourcePath(filename),Qt::CaseInsensitive)) {
-        editorTabs->removeTab(tab);
-        QMessageBox::critical(this,tr("Can't Add Tab"), tr("Can't add tab to a folder outside of the existing project."));
+        editorTabs->removeTab(tabIndexByShortName(untitledstr));
+        QMessageBox::critical(this,tr("Can't Add Tab"), tr("Can't Add Tab to a project from outside of the current project folder."));
         return;
     }
 
@@ -762,6 +794,7 @@ void MainSpinWindow::addTab()
     filename = filterAsFilename(filename, ftype);
 
     // chose editor
+    int tab = tabIndexByShortName(untitledstr);
     Editor *ed = editors->at(tab);
 
     // change tab file name and save file
@@ -808,15 +841,24 @@ void MainSpinWindow::openTab()
     }
     // new file tab
     newFile();
-    int tab = editorTabs->count()-1;
 
-    QString filename = getOpenAsFile();
+    QString filename = getOpenAsFile(this->sourcePath(projectFile));
     if(filename.isEmpty()) {
-        editorTabs->removeTab(tab);
+        editorTabs->removeTab(tabIndexByShortName(untitledstr));
         return;
     }
+    if(sourcePath(projectFile).compare(sourcePath(filename),Qt::CaseInsensitive)) {
+        QMessageBox::information(this, tr("Can't Open Tab"), tr("Can't Open Tab to project from outside the current project folder."));
+        return;
+    }
+
+    while(tabIndexByFileName(filename) > -1) {
+        int index = tabIndexByFileName(filename);
+        editorTabs->removeTab(index);
+    }
+
     // chose editor
-    Editor *ed = editors->at(tab);
+    int tab = tabIndexByShortName(untitledstr);
 
     // change tab file name and save file
     QString tipname  = filename;
@@ -849,8 +891,7 @@ void MainSpinWindow::openTab()
 void MainSpinWindow::newFile()
 {
     fileChangeDisable = true;
-    setupEditor();
-    int tab = editors->count()-1;
+    int tab = setupEditor();
     editorTabs->addTab(editors->at(tab),(const QString&)untitledstr);
     editorTabs->setCurrentIndex(tab);
     Editor *ed = editors->at(tab);
@@ -954,7 +995,7 @@ void MainSpinWindow::openFileName(QString fileName)
                 return;
             }
             newFile();
-            setEditorTab(editorTabs->count()-1, sname, fileName, data);
+            setEditorTab(tabIndexByShortName(untitledstr), sname, fileName, data);
         }
     }
 }
@@ -3126,33 +3167,30 @@ void MainSpinWindow::saveAsFile(const QString &path)
 
 QString MainSpinWindow::getOpenAsFile(const QString &path)
 {
-    QString fileName = path;
+    QString fileName;
 
-    if (fileName.isEmpty()) {
+    QFileDialog dialog(this,tr("Open File"), path, "");
+    dialog.setConfirmOverwrite(false);
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
 
-        QFileDialog dialog(this,tr("Open File"), lastPath, "");
-        dialog.setConfirmOverwrite(false);
-        dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    QStringList filters = getAsFilters();
 
-        QStringList filters = getAsFilters();
+    dialog.setNameFilters(filters);
+    if(dialog.exec() == QDialog::Rejected)
+        return QString("");
 
-        dialog.setNameFilters(filters);
-        if(dialog.exec() == QDialog::Rejected)
-            return QString("");
+    QStringList dstList = dialog.selectedFiles();
+    if(dstList.length() < 1)
+        return QString("");
+    QString dstPath = dstList.at(0);
+    if(dstPath.length() < 1)
+        return QString("");
 
-        QStringList dstList = dialog.selectedFiles();
-        if(dstList.length() < 1)
-            return QString("");
-        QString dstPath = dstList.at(0);
-        if(dstPath.length() < 1)
-            return QString("");
+    QString ftype = dialog.selectedNameFilter();
+    fileName = filterAsFilename(dstPath, ftype);
 
-        QString ftype = dialog.selectedNameFilter();
-        fileName = filterAsFilename(dstPath, ftype);
-
-        dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
-        lastPath = dstPath;
-    }
+    dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+    lastPath = dstPath;
 
     if(fileName.length() > 0)
         lastPath = sourcePath(fileName);
@@ -4611,6 +4649,7 @@ void MainSpinWindow::changeTab(bool checked)
 
 void MainSpinWindow::clearTabHighlight()
 {
+    qDebug() << "clearTabHighlight" << "Total Tabs" << editorTabs->count() << "Total Editors" << editors->count() << "Current" << editorTabs->currentIndex();
     emit highlightCurrentLine(QColor(255, 255, 255));
 }
 
@@ -4677,12 +4716,12 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 
     // projectMenu is popup for projectTree
     projectMenu = new QMenu(QString("Project Menu"));
-    projectMenu->addAction(QIcon(":/images/AddFileCopy.png"), tr(AddFileCopy), this,SLOT(addProjectFile()));
+    projectMenu->addAction(tr(AddFileCopy), this,SLOT(addProjectFile()));
 #ifdef ENABLE_ADD_LINK
-    projectMenu->addAction(QIcon(":/images/AddFileLink.png"), tr(AddFileLink), this,SLOT(addProjectLink()));
+    projectMenu->addAction(tr(AddFileLink), this,SLOT(addProjectLink()));
 #endif
-    projectMenu->addAction(QIcon(":/images/AddProjectPath.png"), tr(AddIncludePath), this,SLOT(addProjectIncPath()));
-    projectMenu->addAction(QIcon(":/images/AddLibraryPath.png"), tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
+    projectMenu->addAction(tr(AddIncludePath), this,SLOT(addProjectIncPath()));
+    projectMenu->addAction(tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
 
     projectMenu->addAction(tr("Delete"), this,SLOT(deleteProjectFile()));
     projectMenu->addAction(tr("Show Assembly"), this,SLOT(showAssemblyFile()));
@@ -5437,6 +5476,7 @@ void MainSpinWindow::deleteProjectFile()
 void MainSpinWindow::showProjectFile()
 {
     QString fileName;
+    qDebug() << "showProjectFile" << "Total Tabs" << editorTabs->count() << "Total Editors" << editors->count();
 
     QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
     if(vs.canConvert(QVariant::String))
@@ -5447,7 +5487,7 @@ void MainSpinWindow::showProjectFile()
         /* .a libraries are allowed in project list, but not .o, etc...
          */
         if(fileName.contains(".a"))
-            return;
+            goto showProjectFile_exit;
 
         /*
          * if tab is already opened, just display it
@@ -5462,7 +5502,7 @@ void MainSpinWindow::showProjectFile()
             if(tab.compare(this->shortFileName(fileName)) == 0) {
                 editorTabs->setCurrentIndex(n);
                 projectTree->setFocus();
-                return;
+                goto showProjectFile_exit;
             }
         }
 
@@ -5503,7 +5543,7 @@ void MainSpinWindow::showProjectFile()
                         if(s.contains(shortfile,Qt::CaseInsensitive)) {
                             openFileName(sourcePath(projectFile)+s);
                             projectTree->setFocus();
-                            return;
+                            goto showProjectFile_exit;
                         }
                     }
                     dir.setPath(lib);
@@ -5512,7 +5552,7 @@ void MainSpinWindow::showProjectFile()
                         if(s.contains(shortfile,Qt::CaseInsensitive)) {
                             openFileName(lib+s);
                             projectTree->setFocus();
-                            return;
+                            goto showProjectFile_exit;
                         }
                     }
                 }
@@ -5521,6 +5561,8 @@ void MainSpinWindow::showProjectFile()
 #endif
         }
     }
+    showProjectFile_exit:
+    qDebug() << "showProjectFile_exit" << "Total Tabs" << editorTabs->count() << "Total Editors" << editors->count();
 }
 
 /*
@@ -6233,7 +6275,7 @@ void MainSpinWindow::initBoardTypes()
     }
 }
 
-void MainSpinWindow::setupEditor()
+int MainSpinWindow::setupEditor()
 {
     Editor *editor = new Editor(gdb, &spinParser, this);
     editor->setTabStopWidth(propDialog->getTabSpaces()*10);
@@ -6245,7 +6287,7 @@ void MainSpinWindow::setupEditor()
     connect(editor, SIGNAL(saveEditorFile()), this, SLOT(saveEditor()));
     editors->append(editor);
     qDebug() << "setEditor" << editors->count();
-
+    return editors->count()-1;
 }
 
 void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, QString text)
@@ -6262,7 +6304,7 @@ void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, 
     editorTabs->setTabText(num,shortName);
     editorTabs->setTabToolTip(num,fileName);
     editorTabs->setCurrentIndex(num);
-    qDebug() << "setEditorTab" << fileName << num;
+    qDebug() << "setEditorTab" << fileName << num << "Total Tabs" << editorTabs->count() << "Total Editors" << editors->count();
 }
 
 /*
@@ -6280,7 +6322,7 @@ void MainSpinWindow::setupFileMenu()
     fileMenu->addAction(QIcon(":/images/saveasfile2.png"), tr(SaveAsFile), this, SLOT(saveAsFile()),QKeySequence::SaveAs);
 
     fileMenu->addAction(QIcon(":/images/Delete.png"),tr(CloseFile), this, SLOT(closeFile()));
-    fileMenu->addAction(tr("Close All"), this, SLOT(closeAll()));
+    fileMenu->addAction(QIcon(":/images/DeleteAll.png"),tr("Close All"), this, SLOT(closeAll()));
     fileMenu->addAction(QIcon(":/images/print.png"), tr("Print"), this, SLOT(printFile()), QKeySequence::Print);
 
     // recent file actions
@@ -6318,7 +6360,7 @@ void MainSpinWindow::setupFileMenu()
     projMenu->addAction(QIcon(":/images/AddLibraryPath.png"), tr(AddLibraryPath), this,SLOT(addProjectLibPath()));
 
     projMenu->addSeparator();
-    projMenu->addAction(QIcon(":/images/closeproj.png"), tr(SaveAndCloseProject), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
+    projMenu->addAction(QIcon(":/images/closeproj.png"), tr(CloseProject), this, SLOT(closeProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_X);
     projMenu->addAction(QIcon(":/images/project.png"), tr(SetProject), this, SLOT(setProject()), Qt::Key_F4);
     //projMenu->addAction(QIcon(":/images/hardware.png"), tr("Load Board Types"), this, SLOT(hardware()), Qt::Key_F6);
     projMenu->addAction(QIcon(":/images/addlib.png"), tr(AddLib), this, SLOT(addLib()), 0);
@@ -6494,22 +6536,26 @@ void MainSpinWindow::setupToolBars()
     addToolButton(projToolBar, btnProjectZip, QString(":/images/zip2.png"));
 
     /*
+     * Add the AddLib button to project
+     */
+    btnProjectAddLib = new QAction(this);
+    addToolBarAction(projToolBar, btnProjectAddLib, QString(":/images/addlib.png"));
+    btnProjectAddLib->setToolTip(tr("Add Simple Library"));
+    connect(btnProjectAddLib,SIGNAL(triggered()),this,SLOT(addLib()));
+
+    /*
      * Add Tools Toobar ... add tab, add lib
      */
-    addToolsToolBar = addToolBar(tr("Add to Project"));
+    addToolsToolBar = addToolBar(tr("Add Tools"));
     // put add tools on a separate tool bar
-    QToolButton *btnProjectAddTab = new QToolButton(this);
-    QToolButton *btnProjectAddLib = new QToolButton(this);
-    QToolButton *btnProjectOpenTab = new QToolButton(this);
-    addToolButton(addToolsToolBar, btnProjectAddLib, QString(":/images/addlib.png"));
-    btnProjectAddLib->setToolTip(tr("Add Simple Library"));
-    addToolButton(addToolsToolBar, btnProjectAddTab, QString(":/images/addtab.png"));
+    btnProjectAddTab = new QAction(this);
+    btnProjectOpenTab = new QAction(this);
+    addToolBarAction(addToolsToolBar, btnProjectAddTab, QString(":/images/addtab.png"));
     btnProjectAddTab->setToolTip(tr(AddTab));
-    addToolButton(addToolsToolBar, btnProjectOpenTab, QString(":/images/opentab.png"));
+    addToolBarAction(addToolsToolBar, btnProjectOpenTab, QString(":/images/opentab.png"));
     btnProjectOpenTab->setToolTip(tr(OpenTab));
-    connect(btnProjectAddTab,SIGNAL(clicked()),this,SLOT(addTab()));
-    connect(btnProjectAddLib,SIGNAL(clicked()),this,SLOT(addLib()));
-    connect(btnProjectOpenTab,SIGNAL(clicked()),this,SLOT(openTab()));
+    connect(btnProjectAddTab,SIGNAL(triggered()),this,SLOT(addTab()));
+    connect(btnProjectOpenTab,SIGNAL(triggered()),this,SLOT(openTab()));
 
     /*
      * Add Properties after add tools
@@ -6533,7 +6579,7 @@ void MainSpinWindow::setupToolBars()
     //btnProjectClone->setToolTip(tr("Clone Project"));
     btnProjectSave->setToolTip(tr("Save Project"));
     btnProjectSaveAs->setToolTip(tr("Save Project As"));
-    btnProjectClose->setToolTip(tr(SaveAndCloseProject));
+    btnProjectClose->setToolTip(tr(CloseProject));
     btnProjectApp->setToolTip(tr("Set Project to Current Tab"));
     btnProjectZip->setToolTip(tr("Zip Project"));
 
@@ -6715,7 +6761,7 @@ void MainSpinWindow::showSimpleView(bool simple)
         fileToolBar->hide();
         propToolBar->hide();
         btnProjectClose->setVisible(false);
-        addToolsToolBar->show();
+        addToolsToolBar->hide();
         sdCardToolBar->hide();
         btnBoardReset->setVisible(false);
 #ifdef SIMPLE_BOARD_TOOLBAR
