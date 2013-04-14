@@ -387,12 +387,20 @@ void Properties::setupGeneral()
         resetType.setCurrentIndex(var.toInt());
     }
 
+#ifdef ENABLE_CLEAR_AND_EXIT
     QLabel *lclear = new QLabel(tr("Clear options for next startup."),tbox);
     tlayout->addWidget(lclear,row,0);
     QPushButton *clearSettings = new QPushButton(tr("Clear and Exit"),this);
     clearSettings->setToolTip(tr("Exit Program"));
     connect(clearSettings,SIGNAL(clicked()),this,SLOT(cleanSettings()));
     tlayout->addWidget(clearSettings,row,1);
+#endif
+
+#ifdef ENABLE_KEEP_ZIP_FOLDER
+    keepZipFolder.setText(tr("Keep Zip Folder"));
+    keepZipFolder.setChecked(false);
+    tlayout->addWidget(&keepZipFolder, row++, 0);
+#endif
 
     gbGeneral->setLayout(tlayout);
     glayout->addWidget(gbLoader);
@@ -1118,4 +1126,9 @@ int Properties::getLoadDelay()
 Properties::Reset Properties::getResetType()
 {
     return (Reset) resetType.currentIndex();
+}
+
+bool Properties::getKeepZipFolder()
+{
+    return this->keepZipFolder.isChecked();
 }
