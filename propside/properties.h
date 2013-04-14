@@ -108,6 +108,9 @@ public:
 
     bool getKeepZipFolder();
 
+signals:
+
+    void clearAndExit();
 
 public slots:
 
