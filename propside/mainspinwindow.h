@@ -134,6 +134,7 @@ public slots:
     void compilerError(QProcess::ProcessError error);
     void compilerFinished(int exitCode, QProcess::ExitStatus status);
     void closeEvent(QCloseEvent *event);
+    void clearAndExit();
     void quitProgram();
 
     void fileChanged();

@@ -1,5 +1,6 @@
 #include "properties.h"
 
+#define ENABLE_CLEAR_AND_EXIT
 /*
  * get propeller-elf-gcc path, propeller-load directory path, and user workspace path.
  */
@@ -42,7 +43,6 @@ void Properties::cleanSettings()
     settings.remove(publisherComKey);
     settings.remove(publisherKey);
 
-    qApp->exit(0);
 }
 
 void Properties::setupFolders()
@@ -388,10 +388,10 @@ void Properties::setupGeneral()
     }
 
 #ifdef ENABLE_CLEAR_AND_EXIT
-    QLabel *lclear = new QLabel(tr("Clear options for next startup."),tbox);
+    QLabel *lclear = new QLabel(tr("Clear program settings for exit."),tbox);
     tlayout->addWidget(lclear,row,0);
-    QPushButton *clearSettings = new QPushButton(tr("Clear and Exit"),this);
-    clearSettings->setToolTip(tr("Exit Program"));
+    QPushButton *clearSettings = new QPushButton(tr("Clear Settings"),this);
+    clearSettings->setToolTip(tr("Clear settings for exit."));
     connect(clearSettings,SIGNAL(clicked()),this,SLOT(cleanSettings()));
     tlayout->addWidget(clearSettings,row,1);
 #endif

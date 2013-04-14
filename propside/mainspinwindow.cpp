@@ -110,6 +110,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     /* setup properties dialog */
     propDialog = new Properties(this);
     connect(propDialog,SIGNAL(accepted()),this,SLOT(propertiesAccepted()));
+    connect(propDialog,SIGNAL(clearAndExit()),this,SLOT(clearAndExit()));
 
     /* detect user's startup view */
     simpleViewType = true;
@@ -487,6 +488,22 @@ void MainSpinWindow::closeEvent(QCloseEvent *event)
     quitProgram();
 }
 
+void MainSpinWindow::clearAndExit()
+{
+    QSettings settings(publisherKey, ASideGuiKey);
+    QStringList list = settings.allKeys();
+
+    foreach(QString key, list) {
+        if(key.indexOf(ASideGuiKey) == 0) {
+            settings.remove(key);
+        }
+    }
+
+    settings.remove(publisherComKey);
+    settings.remove(publisherKey);
+
+}
+
 void MainSpinWindow::quitProgram()
 {
     /* never leave port open */
@@ -498,37 +515,41 @@ void MainSpinWindow::quitProgram()
     exitSave(); // find
     QString fileName = "";
 
-    if(projectFile.isEmpty()) {
-        fileName = editorTabs->tabToolTip(editorTabs->currentIndex());
-        if(!fileName.isEmpty())
-            settings->setValue(lastFileNameKey,fileName);
-    }
-    else {
-        QFile proj(projectFile);
-        if(proj.open(QFile::ReadOnly | QFile::Text)) {
-            fileName = sourcePath(projectFile)+proj.readLine();
-            fileName = fileName.trimmed();
-            proj.close();
+    QStringList list = settings->allKeys();
+
+    if(list.count() != 0) {
+        if(projectFile.isEmpty()) {
+            fileName = editorTabs->tabToolTip(editorTabs->currentIndex());
+            if(!fileName.isEmpty())
+                settings->setValue(lastFileNameKey,fileName);
         }
-        settings->setValue(lastFileNameKey,fileName);
-        saveProjectOptions();
+        else {
+            QFile proj(projectFile);
+            if(proj.open(QFile::ReadOnly | QFile::Text)) {
+                fileName = sourcePath(projectFile)+proj.readLine();
+                fileName = fileName.trimmed();
+                proj.close();
+            }
+            settings->setValue(lastFileNameKey,fileName);
+            saveProjectOptions();
+        }
+
+        QString boardstr = cbBoard->itemText(cbBoard->currentIndex());
+        QString portstr = cbPort->itemText(cbPort->currentIndex());
+
+        settings->setValue(lastBoardNameKey,boardstr);
+        settings->setValue(lastPortNameKey,portstr);
+
+        QString fontstr = editorFont.toString();
+        settings->setValue(editorFontKey,fontstr);
+
+        int fontsize = editorFont.pointSize();
+        settings->setValue(fontSizeKey,fontsize);
+
+        // save user's width/height
+        QByteArray geo = this->saveGeometry();
+        settings->setValue(ASideGuiGeometry,geo);
     }
-
-    QString boardstr = cbBoard->itemText(cbBoard->currentIndex());
-    QString portstr = cbPort->itemText(cbPort->currentIndex());
-
-    settings->setValue(lastBoardNameKey,boardstr);
-    settings->setValue(lastPortNameKey,portstr);
-
-    QString fontstr = editorFont.toString();
-    settings->setValue(editorFontKey,fontstr);
-
-    int fontsize = editorFont.pointSize();
-    settings->setValue(fontSizeKey,fontsize);
-
-    // save user's width/height
-    QByteArray geo = this->saveGeometry();
-    settings->setValue(ASideGuiGeometry,geo);
 
     delete replaceDialog;
     delete propDialog;
