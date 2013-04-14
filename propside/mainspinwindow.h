@@ -416,6 +416,7 @@ private:
     BuildC          *buildC;
     BuildSpin       *buildSpin;
     SpinParser      spinParser;
+
 };
 
 //! [0]

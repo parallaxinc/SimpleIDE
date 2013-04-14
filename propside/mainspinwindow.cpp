@@ -35,6 +35,8 @@
 #include "hintdialog.h"
 #include "build.h"
 #include "buildstatus.h"
+#include "quazip.h"
+#include "quazipfile.h"
 
 #define ENABLE_ADD_LINK
 
@@ -225,6 +227,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 
     /* get available ports at startup */
     enumeratePorts();
+    // QDeviceWatcher may be useful for doing USB event handling
 
     /* these are read once per app startup */
     QVariant lastportv  = settings->value(lastPortNameKey);
@@ -2350,6 +2353,7 @@ bool MainSpinWindow::isInFilterList(QString file, QStringList list)
  * Zip project saves any referenced non-standard libraries into a single library folder in the existing project.
  * It then creates an archive project such as name_zip.side or name_archive.side having adjusted path names.
  * If project options "Create Project Library" is checked, we save mem-model/\*.a and \*.elf, else no mem-model folders are archived.
+ * If leave zip folder option is checked, don't remove the intermediate zip folder.
  */
 void MainSpinWindow::zipProject()
 {
@@ -2406,7 +2410,7 @@ void MainSpinWindow::zipProject()
 
     QFileDialog dialog;
     QString afilter("Zip File (*.zip)");
-    QString lpath = this->sourcePath(projectFile)+"../";
+    //QString lpath = this->sourcePath(projectFile)+"../";
 
     int num = 0;
     QString serial("");
@@ -2552,12 +2556,20 @@ void MainSpinWindow::zipProject()
 
     // zip folder
     zipIt(dstPath);
+
+#ifdef ENABLE_KEEP_ZIP_FOLDER
+    // and remove folder if save zip folder is not checked
+    if(propDialog->getKeepZipFolder() == false) {
+        QDir dst;
+        if(dst.exists(dstPath))
+            recursiveRemoveDir(dstPath);
+    }
+#else
     // and remove folder
     recursiveRemoveDir(dstPath);
+#endif
 }
 
-#include "quazip.h"
-#include "quazipfile.h"
 
 void MainSpinWindow::zipIt(QString dir)
 {
@@ -2742,6 +2754,9 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
                     als = this->sourcePath(projectFile)+als;
                 }
                 else if(als.indexOf("../") == 0) {
+                    als = this->sourcePath(projectFile)+als;
+                }
+                else {
                     als = this->sourcePath(projectFile)+als;
                 }
                 QString dls = als.mid(als.lastIndexOf("/")+1);

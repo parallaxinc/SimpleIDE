@@ -106,6 +106,9 @@ public:
     enum Reset { DTR=0, RTS, CFG, AUTO };
     Reset getResetType();
 
+    bool getKeepZipFolder();
+
+
 public slots:
 
     void cleanSettings();
@@ -191,6 +194,7 @@ private:
     QLineEdit   tabSpaces;
     QLineEdit   loadDelay;
     QComboBox   resetType;
+    QCheckBox   keepZipFolder;
 
     QLineEdit   leditAltTerminal;
 
