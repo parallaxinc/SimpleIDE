@@ -77,10 +77,13 @@ public slots:
     void printFile();
     void closeFile();
     void closeAll();
+    QString getNewProjectDialog(QString workspace, QStringList filters);
     void newProject();
     void newProjectAccepted();
     void openProject(const QString &path = QString());
     void saveProject();
+    QStringList saveAsProjectNewList(QStringList projList, QString projFolder, QString projFile, QString dstPath, QString dstProjFile);
+    int  copyProjectAs(QString srcProjFile, QString dstProjFile, QString mainFile);
     int  saveAsProject(const QString &path = QString());
     void cloneProject();
     void closeProject();

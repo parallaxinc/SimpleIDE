@@ -1052,12 +1052,71 @@ void MainSpinWindow::closeAll()
     projectFile = "";
 }
 
+QString MainSpinWindow::getNewProjectDialog(QString workspace, QStringList filters)
+{
+    QFileDialog dialog(this,tr("New Project"), workspace+"Project Name", "");
+
+    QString comp = projectOptions->getCompiler();
+    if(comp.compare(projectOptions->CPP_COMPILER) == 0) {
+        filters.removeAt(1);
+        filters.insert(0,"C++ Project (*.cpp)");
+    }
+#ifdef SPIN
+    else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
+        filters.removeAt(2);
+        filters.insert(0,"Spin Project (*.spin)");
+    }
+#endif
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setNameFilters(filters);
+    if(dialog.exec() == QDialog::Rejected)
+        return "";
+    QStringList dstList = dialog.selectedFiles();
+    if(dstList.length() < 1)
+        return "";
+    QString dstPath = dstList.at(0);
+    if(dstPath.length() < 1)
+       return "";
+
+    QString ftype = dialog.selectedNameFilter();
+    QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
+    dstName = dstName.mid(0,dstName.lastIndexOf("."));
+    dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
+    dstPath += dstName;
+
+    ftype = ftype.mid(ftype.lastIndexOf("."));
+    ftype = ftype.mid(0,ftype.lastIndexOf(")"));
+    if(ftype.endsWith(".c", Qt::CaseInsensitive)) {
+        dstPath += ".c";
+        //comp = projectOptions->C_COMPILER;
+    }
+    else if(ftype.endsWith(".cpp", Qt::CaseInsensitive)) {
+        dstPath += ".cpp";
+        //comp = projectOptions->CPP_COMPILER;
+    }
+#ifdef SPIN
+    else if(ftype.endsWith(".spin", Qt::CaseInsensitive)) {
+        dstPath += ".spin";
+        //comp = projectOptions->SPIN_COMPILER;
+    }
+#endif
+    else {
+        QMessageBox::critical(this,
+            tr("Unknown Project Type"),
+            tr("The New Project type is not recognized.")+"\n"+
+            tr("Please try again with a suggested type."));
+        return "";
+    }
+
+    return dstPath;
+}
+
 /*
- * New project should start a project wizard.
- * First generation wizard should just ask for
- * project name and project folder (workspace?).
- * Wizard should always create a project.c
- * file that will contain main.
+ * New project should start a new project by some means. Method has evolved ....
+ * First generation wizard asked for project name and project folder (workspace?).
+ * Second generation has Project View and Simple View.
+ * Project View allows user to set project name and type using a Save QFileDialog.
+ * Simple View should allow user to select the type of Blank Simple Project C/C++ (or SPIN?)
  */
 void MainSpinWindow::newProject()
 {
@@ -1081,12 +1140,36 @@ void MainSpinWindow::newProject()
         if(workspace.endsWith("/") == false)
             workspace += "/";
 
-        workspace = workspace + "My Projects/Blank Simple Project.side";
+        QStringList filters;
+        filters << "C Project (*.c)";
+        filters << "C++ Project (*.cpp)";
+        #ifdef SPIN
+        //filters << "Spin Project (*.spin)";
+        #endif
+
+        QString dstName = getNewProjectDialog(workspace, filters);
+        if(dstName.isEmpty())
+            return;
+
+        QString comp;
+        QString dstProj = dstName;
+        dstProj = dstProj.mid(0, dstProj.lastIndexOf("."))+".side";
+        if(dstName.endsWith(".c")) {
+            comp = projectOptions->C_COMPILER;
+            workspace = workspace + "My Projects/Blank Simple Project.side";
+        }
+        else if(dstName.endsWith(".cpp")) {
+            comp = projectOptions->CPP_COMPILER;
+            workspace = workspace + "My Projects/Blank Simple C++ Project.side";
+        }
+        else if(dstName.endsWith(".spin")) {
+            comp = projectOptions->SPIN_COMPILER;
+            workspace = workspace + "My Projects/Blank Simple SPIN Project.side";
+        }
+
         if(QFile::exists(workspace)) {
-            this->openProject(workspace);
-            if(this->saveAsProject() < 0) {
-                closeAll();
-            }
+            copyProjectAs(workspace, dstProj, dstName);
+            this->openProject(dstProj);
         }
         else {
             QMessageBox::critical(this, tr("Project Not Found"),
@@ -1525,6 +1608,218 @@ QString MainSpinWindow::saveAsProjectLinkFix(QString srcPath, QString dstPath, Q
     return fix;
 }
 
+QStringList MainSpinWindow::saveAsProjectNewList(QStringList projList, QString projFolder, QString projFile, QString dstPath, QString dstProjFile)
+{
+    /*
+     * Make a new project list. preprend project main file after this.
+     * fixes up any links in project file and writes file
+     */
+    QStringList newList;
+    for(int n = 1; n < projList.length(); n++) {
+        QString item = projList.at(n);
+
+        // special handling
+        // TODO - fix -I and -L too
+        if(item.indexOf(FILELINK) > 0) {
+            QStringList list = item.split(FILELINK,QString::SkipEmptyParts);
+            if(list.length() < 2) {
+                QMessageBox::information(
+                        this,tr("Project File Error."),
+                        tr("Save Project As expected a link, but got:\n")+item+"\n\n"+
+                        tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
+                        tr("After adding the correct link, remove the bad link."));
+            }
+            else {
+                QString als = list[1];
+                als = als.trimmed();
+                als = QDir::fromNativeSeparators(als);
+                als = saveAsProjectLinkFix(projFolder, dstPath, als);
+                if(als.length() > 0)
+                    item = list[0]+FILELINK+als;
+                else
+                    QMessageBox::information(
+                            this,tr("Can't Fix Link"),
+                            tr("Save Project As was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
+                            tr("After adding the correct link, remove the bad link."));
+                newList.append(item);
+            }
+        }
+        else if(item.indexOf("-I") == 0) {
+            QStringList list = item.split("-I",QString::SkipEmptyParts);
+            if(list.length() < 1) {
+                QMessageBox::information(
+                        this,tr("Project File Error."),
+                        tr("Save Project As expected a -I link, but got:\n")+item+"\n\n"+
+                        tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
+                        tr("After adding the correct link, remove the bad link."));
+            }
+            else {
+                QString als = list[0];
+                als = als.trimmed();
+                als = QDir::fromNativeSeparators(als);
+                als = saveAsProjectLinkFix(projFolder, dstPath, als);
+                if(als.length() > 0)
+                    item = "-I "+als;
+                else
+                    QMessageBox::information(
+                            this,tr("Can't Fix Link"),
+                            tr("Save Project As was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
+                            tr("After adding the correct link, remove the bad link."));
+                newList.append(item);
+            }
+        }
+        else if(item.indexOf("-L") == 0) {
+            QStringList list = item.split("-L",QString::SkipEmptyParts);
+            if(list.length() < 1) {
+                QMessageBox::information(
+                        this,tr("Project File Error."),
+                        tr("Save Project As expected a -L link, but got:\n")+item+"\n\n"+
+                        tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
+                        tr("After adding the correct link, remove the bad link."));
+            }
+            else {
+                QString als = list[0];
+                als = QDir::fromNativeSeparators(als);
+                als = als.trimmed();
+                als = saveAsProjectLinkFix(projFolder, dstPath, als);
+                if(als.length() > 0)
+                    item = "-L "+als;
+                else
+                    QMessageBox::information(
+                            this,tr("Can't Fix Link"),
+                            tr("Save Project As was not able to fix the link:\n")+item+"\n\n"+
+                            tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
+                            tr("After adding the correct link, remove the bad link."));
+                newList.append(item);
+            }
+        }
+        // project options
+        else if(item[0] == '>') {
+            newList.append(item);
+        }
+        // different destination
+        else if(sourcePath(projFile) != sourcePath(dstProjFile)) {
+            QString myitem = this->shortFileName(item);
+            item = QDir::fromNativeSeparators(sourcePath(projFile)+item);
+            item = saveAsProjectLinkFix(sourcePath(projFile), sourcePath(dstProjFile), item);
+            item = myitem + FILELINK + item;
+            newList.append(item);
+
+// no more file copy for save project as
+#if 0
+            QString dst = sourcePath(dstProjFile)+item;
+            if(QFile::exists(dst))
+                QFile::remove(dst);
+            QFile::copy(sourcePath(projFile)+item, dst);
+#endif
+        }
+        // same destination, just copy item
+        else {
+            newList.append(item);
+        }
+    }
+
+    newList.sort();
+
+    return newList;
+}
+
+int MainSpinWindow::copyProjectAs(QString srcProjFile, QString dstProjFile, QString mainFile)
+{
+    QString projFile = srcProjFile;
+    QString projFolder = sourcePath(srcProjFile);
+    QString dstPath = sourcePath(dstProjFile);
+
+    QString ftype;
+    QFile proj(projFile);
+    if(proj.open(QFile::ReadOnly | QFile::Text)) {
+        ftype = proj.readLine();
+        proj.close();
+    }
+    else {
+        QString trs = tr("Can't find file: ")+projFile;
+        QMessageBox::critical(this,tr("Source Project not found!"), trs);
+        return -1;
+    }
+
+    ftype = ftype.trimmed();
+    ftype = ftype.mid(ftype.lastIndexOf("."));
+
+    if(mainFile.endsWith(ftype) == false) {
+        QString trs = tr("Incompatible Source Project Type ")+ftype+tr(" inside ")+projFile;
+        QMessageBox::critical(this,tr("Simple New Project Failed"), trs);
+        return -1;
+    }
+
+    /*
+     * 3. creates new project folder if necessary (project can be in original folder)
+     */
+    QDir dpath(dstPath);
+
+    if(dpath.exists() == false)
+        dpath.mkdir(dstPath);
+
+    if(dpath.exists() == false) {
+        QMessageBox::critical(
+                this,tr("Save Project As Error."),
+                tr("System can not create project in ")+dstPath,
+                QMessageBox::Ok);
+        return -1;
+    }
+
+    /*
+     * 4. copy project file from source to destination as new project name
+     */
+
+    // find .side file
+    // remove new file before copy or copy will fail
+    if(QFile::exists(dstProjFile))
+        QFile::remove(dstProjFile);
+
+    // copy project file
+    QFile::copy(projFile,dstProjFile);
+
+    QString projSrc;
+    QFile sproj(projFile);
+    if(sproj.open(QFile::ReadOnly | QFile::Text)) {
+        projSrc = sproj.readAll();
+        sproj.close();
+    }
+
+    /*
+     * 5. copies the project main file from source to destination as new project main file
+     */
+    QStringList projList = projSrc.split("\n", QString::SkipEmptyParts);
+    QString srcMainFile = sourcePath(projFile)+projList.at(0);
+    QString dstMainFile = mainFile;
+
+    // remove new file before copy or copy will fail
+    if(QFile::exists(dstMainFile))
+        QFile::remove(dstMainFile);
+    // copy project main file
+    QFile::copy(srcMainFile,dstMainFile);
+
+    QStringList newList = saveAsProjectNewList(projList, projFolder, projFile, dstPath, dstProjFile);
+
+    projSrc = dstMainFile.mid(dstMainFile.lastIndexOf("/")+1)+"\n";
+
+    for(int n = 0; n < newList.length(); n++) {
+        projSrc+=newList.at(n)+"\n";
+    }
+
+    QFile dproj(dstProjFile);
+    if(dproj.open(QFile::WriteOnly | QFile::Text)) {
+        dproj.write(projSrc.toAscii());
+        dproj.close();
+    }
+
+    this->openProject(dstProjFile);
+
+    return 0;
+}
+
 #ifndef USE_ZIP_SAVEAS
 /*
  * Save As project: saves a copy of the project in another path
@@ -1557,7 +1852,7 @@ int MainSpinWindow::saveAsProject(const QString &inputProjFile)
         projFile = projectFile;
     }
 
-    if(projFile.length() == 0 || projectModel == NULL) {
+    if(projFile.length() == 0) {
         QMessageBox::critical(
                 this,tr("No Project"),
                 tr("Can't \"Save Project As\" from an empty project.")+"\n"+
