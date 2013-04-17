@@ -177,12 +177,6 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     /* show gui */
     QApplication::processEvents();
 
-    /* get user's last open path */
-    QVariant  lastfile = settings->value(lastFileNameKey);
-    if(lastfile.canConvert(QVariant::String)) {
-        lastPath = sourcePath(lastfile.toString());
-    }
-
     initBoardTypes();
 
     /* start a process object for the loader to use */
@@ -252,31 +246,53 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     this->show();
     QApplication::processEvents();
 
+    QString workspace;
+
     /* load the last file into the editor to make user happy */
     QVariant lastfilev = settings->value(lastFileNameKey);
     if(!lastfilev.isNull()) {
         if(lastfilev.canConvert(QVariant::String)) {
-            QString fileName = lastfilev.toString();
-            if(fileName.length() > 0 && QFile::exists(fileName)) {
-#ifndef SPIN
-                if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
-                    QMessageBox::critical(
-                            this,tr("SPIN Not Supported"),
-                            tr("Spin projects are not supported with this version."),
-                            QMessageBox::Ok);
-                    return;
+            if(lastfilev.toString().isEmpty()) {
+                QVariant wrkv = settings->value(gccWorkspaceKey);
+                if(wrkv.canConvert(QVariant::String)) {
+                    workspace = wrkv.toString();
+                    openProject(workspace+"My Projects/Welcome.side");
                 }
-#endif
-                openFileName(fileName);
-                setProject(); // last file is always first project
+            }
+            else {
+                QString fileName = lastfilev.toString();
+                if(fileName.length() > 0 && QFile::exists(fileName)) {
+    #ifndef SPIN
+                    if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
+                        QMessageBox::critical(
+                                this,tr("SPIN Not Supported"),
+                                tr("Spin projects are not supported with this version."),
+                                QMessageBox::Ok);
+                        return;
+                    }
+    #endif
+                    openFileName(fileName);
+                    setProject(); // last file is always first project
+                }
             }
         }
     }
     else {
         QVariant wrkv = settings->value(gccWorkspaceKey);
         if(wrkv.canConvert(QVariant::String)) {
-            QString workspace = wrkv.toString();
+            workspace = wrkv.toString();
             openProject(workspace+"My Projects/Welcome.side");
+        }
+    }
+
+    /* get user's last open path */
+    QVariant  lastfile = settings->value(lastFileNameKey);
+    if(lastfile.canConvert(QVariant::String)) {
+        if(lastfile.toString().isEmpty()) {
+            lastPath = workspace;
+        }
+        else {
+            lastPath = sourcePath(lastfile.toString());
         }
     }
 
@@ -804,11 +820,13 @@ void MainSpinWindow::addTab()
 
     QString filename = QFileDialog::getSaveFileName(this,tr("Add Tab"), sourcePath(projectFile)+"New File", filter, &selectedFilter);
     if(filename.isEmpty()) {
+        editors->remove(tabIndexByShortName(untitledstr));
         editorTabs->removeTab(tabIndexByShortName(untitledstr));
         return;
     }
 
     if(sourcePath(projectFile).compare(sourcePath(filename),Qt::CaseInsensitive)) {
+        editors->remove(tabIndexByShortName(untitledstr));
         editorTabs->removeTab(tabIndexByShortName(untitledstr));
         QMessageBox::critical(this,tr("Can't Add Tab"), tr("Can't Add Tab to a project from outside of the current project folder."));
         return;
@@ -868,16 +886,20 @@ void MainSpinWindow::openTab()
 
     QString filename = getOpenAsFile(this->sourcePath(projectFile));
     if(filename.isEmpty()) {
+        editors->remove(tabIndexByShortName(untitledstr));
         editorTabs->removeTab(tabIndexByShortName(untitledstr));
         return;
     }
     if(sourcePath(projectFile).compare(sourcePath(filename),Qt::CaseInsensitive)) {
+        editors->remove(tabIndexByShortName(untitledstr));
+        editorTabs->removeTab(tabIndexByShortName(untitledstr));
         QMessageBox::information(this, tr("Can't Open Tab"), tr("Can't Open Tab to project from outside the current project folder."));
         return;
     }
 
     while(tabIndexByFileName(filename) > -1) {
         int index = tabIndexByFileName(filename);
+        editors->remove(index);
         editorTabs->removeTab(index);
     }
 
@@ -4263,6 +4285,7 @@ void MainSpinWindow::properties()
 void MainSpinWindow::propertiesAccepted()
 {
     getApplicationSettings();
+    initBoardTypes();
     for(int n = 0; n < editorTabs->count(); n++) {
         Editor *e = editors->at(n);
         e->setTabStopWidth(propDialog->getTabSpaces()*10);
@@ -6571,6 +6594,7 @@ void MainSpinWindow::reloadBoardTypes()
 
 void MainSpinWindow::initBoardTypes()
 {
+    int boardIndex = cbBoard->currentIndex();
     cbBoard->clear();
 
     QFile file;
@@ -6588,6 +6612,12 @@ void MainSpinWindow::initBoardTypes()
 
     QVariant lastboardv = settings->value(lastBoardNameKey);
     /* read last board/port to make user happy */
+#if 1
+    if (boardIndex > -1) {
+        boardName = cbBoard->itemText(boardIndex);
+    }
+    else
+#endif
     if(lastboardv.canConvert(QVariant::String))
         boardName = lastboardv.toString();
 

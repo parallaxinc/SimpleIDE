@@ -42,7 +42,6 @@ void Properties::cleanSettings()
 
     settings.remove(publisherComKey);
     settings.remove(publisherKey);
-
 }
 
 void Properties::setupFolders()
@@ -998,6 +997,11 @@ void Properties::browseLoader()
 void Properties::accept()
 {
     QSettings settings(publisherKey, ASideGuiKey);
+    if(settings.allKeys().count() == 0) {
+        done(QDialog::Accepted);
+        return;
+    }
+
     settings.setValue(gccCompilerKey,leditGccCompiler->text());
     settings.setValue(gccLibraryKey,leditGccLibrary->text());
     settings.setValue(gccWorkspaceKey,leditGccWorkspace->text());
@@ -1037,6 +1041,12 @@ void Properties::accept()
 
 void Properties::reject()
 {
+    QSettings settings(publisherKey, ASideGuiKey);
+    if(settings.allKeys().count() == 0) {
+        done(QDialog::Rejected);
+        return;
+    }
+
     leditGccCompiler->setText(gccCompilerStr);
     leditGccLibrary->setText(gccLibraryStr);
     leditGccWorkspace->setText(gccWorkspaceStr);
