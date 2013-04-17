@@ -4224,10 +4224,12 @@ void MainSpinWindow::setProject()
             QMessageBox::Yes, QMessageBox::No);
         if(rc == QMessageBox::Yes) {
             fileName = getSaveAsFile();
-            saveFile();
-            updateProjectTree(fileName);
-            setCurrentProject(projectFile);
-            this->openProject(projectFile); // for syntax highlighting
+            if(fileName.isEmpty() == false) {
+                saveFile();
+                updateProjectTree(fileName);
+                setCurrentProject(projectFile);
+                this->openProject(projectFile); // for syntax highlighting
+            }
         }
     }
     fileName = editorTabs->tabToolTip(index);
@@ -4254,6 +4256,7 @@ void MainSpinWindow::setProject()
         }
         updateProjectTree(fileName);
         setCurrentProject(projectFile);
+        sdCardDownloadEnable();
     }
 #ifdef SPIN
     QString extension = fileName.mid(fileName.lastIndexOf(".")+1);
@@ -4263,11 +4266,7 @@ void MainSpinWindow::setProject()
         this->openFileName(fileName);
         btnDownloadSdCard->setEnabled(false);
     }
-    else
 #endif
-    {
-        sdCardDownloadEnable();
-    }
 }
 
 void MainSpinWindow::hardware()
