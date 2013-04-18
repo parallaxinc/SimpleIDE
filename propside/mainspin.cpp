@@ -13,6 +13,12 @@ void myMessageOutput(QtMsgType type, const char *msg)
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    MainSpinWindow w;
+
+#if defined(IDEDEBUG)
+    status = w.getDebugEditor();
+    qInstallMsgHandler(myMessageOutput);
+#endif
 
     a.setWindowIcon(QIcon(":/images/SimpleIDE6.png"));
 
@@ -41,20 +47,24 @@ int main(int argc, char *argv[])
         a.installTranslator(&qtTranslator);
     }
 
-    MainSpinWindow w;
+    qDebug() << "temp directory" << QDir::toNativeSeparators(QDir::tempPath());
 
     if(argc > 1) {
         QString s = QString(argv[1]);
-        s = s.mid(s.lastIndexOf("."));
-        if(s.contains(".side",Qt::CaseInsensitive))
-            w.closeTab(0);
-        w.openFile(QString(argv[1]));
+        if(s.contains(QDir::toNativeSeparators(QDir::tempPath())) &&
+           s.contains(".zip",Qt::CaseInsensitive)) {
+            QMessageBox::critical(&w, w.tr("Cannot Open from Zip"),
+                w.tr("The file is in a zipped archive. Unzip to")+"\n"+
+                w.tr("a folder first, and open from there instead."));
+        }
+        else {
+            s = s.mid(s.lastIndexOf("."));
+            if(s.contains(".side",Qt::CaseInsensitive))
+                w.closeTab(0);
+            w.openFile(QString(argv[1]));
+        }
     }
 
-#if defined(IDEDEBUG)
-    status = w.getDebugEditor();
-    qInstallMsgHandler(myMessageOutput);
-#endif
     w.show();
 
     return a.exec();
