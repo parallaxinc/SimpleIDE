@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-22"
+#define MyAppVersion "0-9-23x"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -46,6 +46,7 @@ AlwaysShowDirOnReadyPage=true
 UserInfoPage=false
 UsePreviousUserInfo=false
 ChangesEnvironment=true
+ChangesAssociations=yes
 LicenseFile=.\IDE_LICENSE.txt
 WizardImageFile=images\SimpleIDE-Install-Splash3.bmp
 
@@ -57,7 +58,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; Flags: checkedonce;
 ;  GroupDescription: "{cm:AdditionalIcons}";
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; Flags: checkedonce; OnlyBelowVersion: 0,6.1
 ; GroupDescription: "{cm:AdditionalIcons}"; 
-; Name: "association"; Description: "Associate *.side Files with SimpleIDE"; Flags: checkedonce;
+Name: "association"; Description: "Associate *.side Files with SimpleIDE"; Flags: checkedonce;
 ; GroupDescription: "File Association:"; 
 Name: "modifypath"; Description: "&Add Propeller-GCC directory to your environment PATH"; Flags: checkedonce;
 ; GroupDescription: "Propeller-GCC Path:"
@@ -74,6 +75,7 @@ Source: "{#MyBoardFilter}"; DestDir: "{code:GetCompilerDir}\propeller-load\"; Fl
 Source: "{#MyFont}"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MySpinPath}\*"; DestDir: "{code:GetCompilerDir}\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyEduLibPath}\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyEduLibPath}\My Projects\*"; DestDir: "{app}\templates"; Flags: ignoreversion recursesubdirs createallsubdirs
 ;Source: "..\propside-demos\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 Source: "{#MyGccMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -114,11 +116,11 @@ Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; V
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinWorkspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata};{code:GetCompilerDir}\bin;"; Check: NeedsAddPropGccBinPath();
 
-; File Association ?? Doesn't work
-; Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: SimpleIDE; Flags: UninsDeleteValue; Tasks: association; 
-; Root: HKCR; SubKey: SimpleIDE; ValueType: string; ValueData: SimpleIDE Application; Flags: UninsDeleteKey; Tasks: association
-; Root: HKCR; SubKey: SimpleIDE\command; ValueType: string; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1"""; Tasks: association
-; Root: HKCR; SubKey: SimpleIDE\DefaultIcon; ValueType: string; ValueData: {app}\bin\SimpleIDE.exe,0; Tasks: association
+; File Association. Doesn't work without ChangesAssociations=yes
+Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteValue; Tasks: association; 
+Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: UninsDeleteKey; Tasks: association
+Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\MYPROG.EXE"" ""%1"""
+Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: {app}\bin\SimpleIDE.exe,0; Tasks: association
 
 ; Startup File
 ; Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
