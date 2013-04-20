@@ -5864,8 +5864,13 @@ void MainSpinWindow::showProjectFile()
          */
         if(fileName.contains(FILELINK)) {
             fileName = fileName.mid(fileName.indexOf(FILELINK)+QString(FILELINK).length());
-            if(fileName.indexOf("../") == 0)
+            QString relpath = sourcePath(projectFile);
+            if(fileName.contains(relpath) == false) {
                 fileName = sourcePath(projectFile)+fileName;
+            }
+            else if(fileName.indexOf("../") == 0) {
+                fileName = sourcePath(projectFile)+fileName;
+            }
             openFileName(fileName);
             projectTree->setFocus();
         }
