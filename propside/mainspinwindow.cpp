@@ -39,6 +39,7 @@
 #include "quazipfile.h"
 
 #define ENABLE_ADD_LINK
+#define APP_FOLDER_TEMPLATES
 
 /*
  * SIMPLE_BOARD_TOOLBAR puts Board Combo on the buttons toolbar.
@@ -1178,19 +1179,39 @@ void MainSpinWindow::newProject()
         dstProj = dstProj.mid(0, dstProj.lastIndexOf("."))+".side";
         if(dstName.endsWith(".c")) {
             comp = projectOptions->C_COMPILER;
-            workspace = workspace + "My Projects/Blank Simple Project.side";
         }
         else if(dstName.endsWith(".cpp")) {
             comp = projectOptions->CPP_COMPILER;
-            workspace = workspace + "My Projects/Blank Simple C++ Project.side";
         }
         else if(dstName.endsWith(".spin")) {
             comp = projectOptions->SPIN_COMPILER;
+        }
+#ifndef APP_FOLDER_TEMPLATES
+        if(dstName.endsWith(".c")) {
+            workspace = workspace + "My Projects/Blank Simple Project.side";
+        }
+        else if(dstName.endsWith(".cpp")) {
+            workspace = workspace + "My Projects/Blank Simple C++ Project.side";
+        }
+        else if(dstName.endsWith(".spin")) {
             workspace = workspace + "My Projects/Blank Simple SPIN Project.side";
         }
-
+#else
+        workspace = QApplication::applicationDirPath();
+        workspace += "/../templates/";
+        if(dstName.endsWith(".c")) {
+            workspace = workspace + "Blank Simple Project.side";
+        }
+        else if(dstName.endsWith(".cpp")) {
+            workspace = workspace + "Blank Simple C++ Project.side";
+        }
+        else if(dstName.endsWith(".spin")) {
+            workspace = workspace + "Blank Simple SPIN Project.side";
+        }
+#endif
         if(QFile::exists(workspace)) {
-            copyProjectAs(workspace, dstProj, dstName);
+            if(copyProjectAs(workspace, dstProj, dstName) < 0)
+                return; // error, don't open bad project
             this->openProject(dstProj);
         }
         else {
@@ -1600,12 +1621,42 @@ QString MainSpinWindow::saveAsProjectLinkFix(QString srcPath, QString dstPath, Q
     dstPath = dstPath.replace("\\","/");
 
     /*
-     * Two important cases:
-     * 1. link is relative ../
-     * 2. link is absolute /
+     * Important cases:
+     * 1. source of project is application path.
+     * 2. link is relative ../
+     * 3. link is absolute /
      */
     QString fs;
     QDir path(dstPath);
+
+    /*
+     * If we are using the application path to reference templates,
+     * we must use the Library path for links.
+     */
+#ifdef APP_FOLDER_TEMPLATES
+    QString appPath = QApplication::applicationDirPath();
+    if(srcPath.startsWith(appPath)) {
+        QString library = "";
+        QVariant libv = settings->value(gccLibraryKey);
+        if(libv.canConvert(QVariant::String)) {
+            library = libv.toString();
+        }
+        if(library.isEmpty()){
+            QMessageBox::critical(this, tr("No GCC Library"), tr("A GCC Library must be defined in properties."));
+            return fix;
+        }
+        if(library.endsWith("/") == false)
+            library += "/";
+        if(link.left(3) == "../") {
+            fs = path.relativeFilePath(library+"../"+link);
+        }
+        else {
+            return fix;
+        }
+        fix = fs;
+        return fix;
+    }
+#endif
 
     if(link.left(3) == "../") {
         if(QFile::exists(srcPath+link) != true) {
@@ -1637,6 +1688,7 @@ QStringList MainSpinWindow::saveAsProjectNewList(QStringList projList, QString p
      * fixes up any links in project file and writes file
      */
     QStringList newList;
+    QStringList emptyList;
     for(int n = 1; n < projList.length(); n++) {
         QString item = projList.at(n);
 
@@ -1650,6 +1702,7 @@ QStringList MainSpinWindow::saveAsProjectNewList(QStringList projList, QString p
                         tr("Save Project As expected a link, but got:\n")+item+"\n\n"+
                         tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
                         tr("After adding the correct link, remove the bad link."));
+                return emptyList;
             }
             else {
                 QString als = list[1];
@@ -1658,12 +1711,14 @@ QStringList MainSpinWindow::saveAsProjectNewList(QStringList projList, QString p
                 als = saveAsProjectLinkFix(projFolder, dstPath, als);
                 if(als.length() > 0)
                     item = list[0]+FILELINK+als;
-                else
+                else {
                     QMessageBox::information(
                             this,tr("Can't Fix Link"),
                             tr("Save Project As was not able to fix the link:\n")+item+"\n\n"+
                             tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
                             tr("After adding the correct link, remove the bad link."));
+                    return emptyList;
+                }
                 newList.append(item);
             }
         }
@@ -1675,6 +1730,7 @@ QStringList MainSpinWindow::saveAsProjectNewList(QStringList projList, QString p
                         tr("Save Project As expected a -I link, but got:\n")+item+"\n\n"+
                         tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
                         tr("After adding the correct link, remove the bad link."));
+                return emptyList;
             }
             else {
                 QString als = list[0];
@@ -1683,12 +1739,14 @@ QStringList MainSpinWindow::saveAsProjectNewList(QStringList projList, QString p
                 als = saveAsProjectLinkFix(projFolder, dstPath, als);
                 if(als.length() > 0)
                     item = "-I "+als;
-                else
+                else {
                     QMessageBox::information(
                             this,tr("Can't Fix Link"),
                             tr("Save Project As was not able to fix the link:\n")+item+"\n\n"+
                             tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
                             tr("After adding the correct link, remove the bad link."));
+                    return emptyList;
+                }
                 newList.append(item);
             }
         }
@@ -1700,6 +1758,7 @@ QStringList MainSpinWindow::saveAsProjectNewList(QStringList projList, QString p
                         tr("Save Project As expected a -L link, but got:\n")+item+"\n\n"+
                         tr("Please manually adjust it by adding a correct link in the Project Manager list.")+" "+
                         tr("After adding the correct link, remove the bad link."));
+                return emptyList;
             }
             else {
                 QString als = list[0];
@@ -1708,12 +1767,14 @@ QStringList MainSpinWindow::saveAsProjectNewList(QStringList projList, QString p
                 als = saveAsProjectLinkFix(projFolder, dstPath, als);
                 if(als.length() > 0)
                     item = "-L "+als;
-                else
+                else {
                     QMessageBox::information(
                             this,tr("Can't Fix Link"),
                             tr("Save Project As was not able to fix the link:\n")+item+"\n\n"+
                             tr("Please manually adjust it by adding the correct link in the Project Manager list.")+" "+
                             tr("After adding the correct link, remove the bad link."));
+                    return emptyList;
+                }
                 newList.append(item);
             }
         }
@@ -1824,6 +1885,9 @@ int MainSpinWindow::copyProjectAs(QString srcProjFile, QString dstProjFile, QStr
     QFile::copy(srcMainFile,dstMainFile);
 
     QStringList newList = saveAsProjectNewList(projList, projFolder, projFile, dstPath, dstProjFile);
+    if(newList.isEmpty()) {
+        return -1;
+    }
 
     projSrc = dstMainFile.mid(dstMainFile.lastIndexOf("/")+1)+"\n";
 
