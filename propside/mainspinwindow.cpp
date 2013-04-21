@@ -698,53 +698,56 @@ void MainSpinWindow::addLib()
     int candidate = 0;
     int added = 0;
 
-    for(int n = 0; n < len; n++) {
-        QTextBlock block = doc->findBlockByLineNumber(n);
-        line = block.text();
-        if(line.contains("/*") && line.indexOf("*/") < line.indexOf("/*")) {
-            comment++;
-            candidate = 0;
-        } else if(line.indexOf("#include \""+libname+".h\"") == 0) {
-                added++; /* mark as added */
-                break;
-        } else if(line.contains("//")) {
-            /* skip single line commented lines */
-            candidate = n+1;
-        } else if(comment != 0 && line.contains("*/")) {
-            comment = 0;
-            candidate = n+1;
-        } else if(line.indexOf("#include") == 0) {
-            if( line.indexOf("\""+libname+".h\"") > line.indexOf("#include")) {
-                if(line.indexOf("//") > 0 && line.indexOf("#include") > line.indexOf("//"))
+    if(QFile::exists(libname+".h"))
+    {
+        for(int n = 0; n < len; n++) {
+            QTextBlock block = doc->findBlockByLineNumber(n);
+            line = block.text();
+            if(line.contains("/*") && line.indexOf("*/") < line.indexOf("/*")) {
+                comment++;
+                candidate = 0;
+            } else if(line.indexOf("#include \""+libname+".h\"") == 0) {
+                    added++; /* mark as added */
                     break;
-                /* #include libname exists. don't add it */
-                added++; /* mark as added */
-                break;
-            }
-            else {
+            } else if(line.contains("//")) {
+                /* skip single line commented lines */
                 candidate = n+1;
+            } else if(comment != 0 && line.contains("*/")) {
+                comment = 0;
+                candidate = n+1;
+            } else if(line.indexOf("#include") == 0) {
+                if( line.indexOf("\""+libname+".h\"") > line.indexOf("#include")) {
+                    if(line.indexOf("//") > 0 && line.indexOf("#include") > line.indexOf("//"))
+                        break;
+                    /* #include libname exists. don't add it */
+                    added++; /* mark as added */
+                    break;
+                }
+                else {
+                    candidate = n+1;
+                }
+            }
+            else if(candidate != 0) {
+                /* insert here */
+                cur.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
+                cur.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor,candidate);
+                cur.insertText("#include \""+libname+".h\"\n");
+                ed->setTextCursor(cur);
+                saveFile();
+                openFileName(mainFile);
+                added++;
+                break;
             }
         }
-        else if(candidate != 0) {
-            /* insert here */
+
+        if(added == 0) {
+            /* insert at beginning */
             cur.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
-            cur.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor,candidate);
             cur.insertText("#include \""+libname+".h\"\n");
             ed->setTextCursor(cur);
             saveFile();
             openFileName(mainFile);
-            added++;
-            break;
         }
-    }
-
-    if(added == 0) {
-        /* insert at beginning */
-        cur.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
-        cur.insertText("#include \""+libname+".h\"\n");
-        ed->setTextCursor(cur);
-        saveFile();
-        openFileName(mainFile);
     }
 
     // add -I and -L paths to project manager
