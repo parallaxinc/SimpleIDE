@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-23x"
+#define MyAppVersion "0-9-23"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -73,9 +73,6 @@ Source: ..\ctags58\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: ctag
 Source: ..\icons\24x24-free-application-icons\readme.txt; DestDir: {app}; Flags: ignoreversion; DestName: aha-soft-license.txt; 
 Source: "{#MyBoardFilter}"; DestDir: "{code:GetCompilerDir}\propeller-load\"; Flags: ignoreversion
 Source: "{#MyFont}"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MySpinPath}\*"; DestDir: "{code:GetCompilerDir}\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#MyEduLibPath}\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#MyEduLibPath}\My Projects\*"; DestDir: "{app}\templates"; Flags: ignoreversion recursesubdirs createallsubdirs
 ;Source: "..\propside-demos\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 Source: "{#MyGccMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -88,6 +85,9 @@ Source: "{#MyQtPath}\bin\quazip1.dll"; DestDir: "{app}\bin"; Flags: ignoreversio
 Source: "{#MyQtPath}\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccPath}\*"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MySpinPath}\*"; DestDir: "{code:GetCompilerDir}\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyEduLibPath}\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyEduLibPath}\My Projects\*"; DestDir: "{app}\templates"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
@@ -119,7 +119,7 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 ; File Association. Doesn't work without ChangesAssociations=yes
 Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteValue; Tasks: association; 
 Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: UninsDeleteKey; Tasks: association
-Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\MYPROG.EXE"" ""%1"""
+Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1"""
 Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: {app}\bin\SimpleIDE.exe,0; Tasks: association
 
 ; Startup File
