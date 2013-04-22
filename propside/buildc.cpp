@@ -726,8 +726,10 @@ int  BuildC::runCompiler(QStringList copts)
             inc = 0;
             tlist.append(s);
         }
-        else if((s.indexOf("-D") == 0) ||
-                (s.indexOf("-I") == 0) ||
+        else if((s.indexOf("-D") == 0)) {
+            tlist.append(s);
+        }
+        else if((s.indexOf("-I") == 0) ||
                 (s.indexOf("-L") == 0) ||
                 (s.indexOf("-B") == 0) ||
                 (s.indexOf("-b") == 0) ||
