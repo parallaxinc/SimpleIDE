@@ -698,7 +698,7 @@ void MainSpinWindow::addLib()
     int candidate = 0;
     int added = 0;
 
-    if(QFile::exists(libname+".h"))
+    if(QFile::exists(path+"/"+libname+".h"))
     {
         for(int n = 0; n < len; n++) {
             QTextBlock block = doc->findBlockByLineNumber(n);
