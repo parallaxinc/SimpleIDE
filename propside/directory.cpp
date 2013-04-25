@@ -46,6 +46,8 @@ void Directory::recursiveCopyDir(QString srcdir, QString dstdir, QString notlist
         return;
     if(dpath.exists() == false)
         dpath.mkdir(dstdir);
+    if(dpath.exists() == false)
+        return;
 
     flist = spath.entryList(QDir::AllEntries, QDir::DirsLast);
     foreach(file, flist) {
