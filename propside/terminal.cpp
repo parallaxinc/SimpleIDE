@@ -155,8 +155,10 @@ void Terminal::accept()
 #endif
     // save terminal geometry
     QSettings *settings = new QSettings(publisherKey, ASideGuiKey, this);
-    QByteArray geo = this->saveGeometry();
-    settings->setValue(termGeometryKey,geo);
+    if(settings->allKeys().count() != 0) {
+        QByteArray geo = this->saveGeometry();
+        settings->setValue(termGeometryKey,geo);
+    }
     termEditor->setPortEnable(false);
     portLabel.setEnabled(false);
     done(QDialog::Accepted);

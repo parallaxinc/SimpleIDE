@@ -1,4 +1,5 @@
 #include "properties.h"
+#include "directory.h"
 
 #define ENABLE_CLEAR_AND_EXIT
 /*
@@ -85,47 +86,82 @@ void Properties::setupFolders()
     layout->addWidget(gbLibrary);
     layout->addWidget(gbWorkspace);
 
+    setupPropGccWorkspace();
+    setupPropGccCompiler();
+}
+
+/*
+ * get the pre-packaged read-only application workspace.
+ */
+QString Properties::getApplicationWorkspace()
+{
     QSettings settings(publisherKey, ASideGuiKey);
 
-    QString mywrk;
-
+    /*
+     * By convention in Windows we keep a SimpleIDE workspace in
+     *   "Program Files\SimpleIDE\Workspace"
+     * In Mac it's in the same level as SimpleIDE.app.
+     * For development it can be set to another value.
+     */
+    QString pkwrk = QApplication::applicationDirPath()+"/";
 #if defined(Q_WS_MAC)
-// TODO REMOVE LATER
-// this is temporary until we can have a reasonable MAC install
-#define MAC_HACK_WORKSPACE
+    pkwrk += "../../"
 #endif
+    pkwrk += "../Workspace/";
 
-#ifdef MAC_HACK_WORKSPACE
-#if defined(Q_WS_WIN32)
-    mywrk = QDir::homePath()+"/";
-#else
-    mywrk = "../../../";
-#endif
+    QVariant pkgv  = settings.value(packageKey, pkwrk);
+    if(pkgv.canConvert(QVariant::String)) {
+        QString s = pkgv.toString();
+        if(s.length() > 0)
+            settings.setValue(packageKey, s);
+    }
+    else {
+        settings.setValue(packageKey,pkwrk);
+    }
+    return pkwrk;
+}
+
+void Properties::setupPropGccWorkspace()
+{
+    QSettings settings(publisherKey, ASideGuiKey);
+
+    QString pkwrk = this->getApplicationWorkspace();
+
+    QString mywrk = QDir::homePath()+"/";
+
     if(QFile::exists(mywrk+"Documents")) {
         mywrk = mywrk +"Documents/";
     }
     else if(QFile::exists(mywrk+"My Documents")) {
         mywrk = mywrk +"My Documents/";
     }
-#if !defined(Q_WS_MAC)
-    // don't add SimpleIDE for Mac
-    mywrk += "SimpleIDE/";
-#endif
-#else
-    mywrk = QDir::homePath()+"/";
 
-    if(QFile::exists(mywrk+"Documents")) {
-        mywrk = mywrk +"Documents/";
-    }
-    else if(QFile::exists(mywrk+"My Documents")) {
-        mywrk = mywrk +"My Documents/";
-    }
     mywrk += "SimpleIDE/";
-#endif
+
+    QDir wrkd(mywrk);
+    if(wrkd.exists(mywrk) == false) {
+        wrkd.mkdir(mywrk);
+        Directory::recursiveCopyDir(pkwrk, mywrk);
+    }
+
     QString mylib;
     if(QFile::exists(mywrk+"Learn/Simple Libraries")) {
         mylib = mywrk+"Learn/Simple Libraries";
     }
+
+    QVariant libv  = settings.value(gccLibraryKey, mylib);
+    QVariant wrkv  = settings.value(gccWorkspaceKey, mywrk);
+
+    fileStringProperty(&wrkv,  leditGccWorkspace, gccWorkspaceKey, &mywrk);
+    fileStringProperty(&libv,  leditGccLibrary,   gccLibraryKey,   &mylib);
+
+    settings.setValue(gccLibraryKey,leditGccLibrary->text());
+    settings.setValue(gccWorkspaceKey,leditGccWorkspace->text());
+}
+
+void Properties::setupPropGccCompiler()
+{
+    QSettings settings(publisherKey, ASideGuiKey);
 
 #if defined(Q_WS_WIN32)
     mypath = "C:/propgcc/";
@@ -160,18 +196,8 @@ void Properties::setupFolders()
             }
         }
     }
-
-    QVariant libv  = settings.value(gccLibraryKey, mylib);
-    QVariant wrkv  = settings.value(gccWorkspaceKey, mywrk);
-
     fileStringProperty(&compv, leditGccCompiler,  gccCompilerKey,  &mygcc);
-    fileStringProperty(&wrkv,  leditGccWorkspace, gccWorkspaceKey, &mywrk);
-    fileStringProperty(&libv,  leditGccLibrary,   gccLibraryKey,   &mylib);
-
     settings.setValue(gccCompilerKey,mygcc);
-    settings.setValue(gccLibraryKey,leditGccLibrary->text());
-    settings.setValue(gccWorkspaceKey,leditGccWorkspace->text());
-
 }
 
 void Properties::setupSpinFolders()

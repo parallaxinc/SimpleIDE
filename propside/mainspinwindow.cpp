@@ -1189,7 +1189,9 @@ void MainSpinWindow::newProject()
         else if(dstName.endsWith(".spin")) {
             comp = projectOptions->SPIN_COMPILER;
         }
-#ifndef APP_FOLDER_TEMPLATES
+
+        workspace = propDialog->getApplicationWorkspace();
+
         if(dstName.endsWith(".c")) {
             workspace = workspace + "My Projects/Blank Simple Project.side";
         }
@@ -1199,19 +1201,7 @@ void MainSpinWindow::newProject()
         else if(dstName.endsWith(".spin")) {
             workspace = workspace + "My Projects/Blank Simple SPIN Project.side";
         }
-#else
-        workspace = QApplication::applicationDirPath();
-        workspace += "/../templates/";
-        if(dstName.endsWith(".c")) {
-            workspace = workspace + "Blank Simple Project.side";
-        }
-        else if(dstName.endsWith(".cpp")) {
-            workspace = workspace + "Blank Simple C++ Project.side";
-        }
-        else if(dstName.endsWith(".spin")) {
-            workspace = workspace + "Blank Simple SPIN Project.side";
-        }
-#endif
+
         if(QFile::exists(workspace)) {
             if(copyProjectAs(workspace, dstProj, dstName) < 0)
                 return; // error, don't open bad project

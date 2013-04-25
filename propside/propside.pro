@@ -32,7 +32,7 @@ DEFINES += SPIN
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=23
+DEFINES += FIXVERSION=24
 SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \
@@ -68,7 +68,8 @@ SOURCES += mainspin.cpp \
     hintdialog.cpp \
     blinker.cpp \
     buildstatus.cpp \
-    highlightbuild.cpp
+    highlightbuild.cpp \
+    directory.cpp
 HEADERS += mainspinwindow.h \
     editor.h \
     ctags.h \
@@ -106,7 +107,8 @@ HEADERS += mainspinwindow.h \
     hintdialog.h \
     blinker.h \
     buildstatus.h \
-    highlightbuild.h
+    highlightbuild.h \
+    directory.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \
@@ -141,4 +143,3 @@ win32 {
     LIBS += -lsetupapi
     LIBS += -lquazip1
 }
-
