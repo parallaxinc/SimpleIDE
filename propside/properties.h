@@ -37,6 +37,7 @@
 #define publisherComKey     "Parallax.com"
 #define ASideGuiKey         "SimpleIDE"
 
+#define packageKey          "SimpleIDE_Package"
 #define simpleViewKey       "SimpleIDE_SimpleViewType"
 #define oldViewBoxKey       "SimpleIDE_OldViewBoxReminder"
 #define ASideGuiGeometry    "SimpleIDE_WindowGeometry"
@@ -97,6 +98,8 @@ class Properties : public QDialog
 public:
     explicit Properties(QWidget *parent = 0);
 
+    QString getApplicationWorkspace();
+
     int getTabSpaces();
     int getLoadDelay();
     int setComboIndexByValue(QComboBox *combo, QString value);
@@ -139,6 +142,9 @@ public slots:
 private:
 
     void setupFolders();
+    void setupPropGccCompiler();
+    void setupPropGccWorkspace();
+
     void setupSpinFolders();
     void setupGeneral();
     void setupOptional();
