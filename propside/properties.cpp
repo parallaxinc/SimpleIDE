@@ -105,7 +105,7 @@ QString Properties::getApplicationWorkspace()
      */
     QString pkwrk = QApplication::applicationDirPath()+"/";
 #if defined(Q_WS_MAC)
-    pkwrk += "../../"
+    pkwrk += "../../";
 #endif
     pkwrk += "../Workspace/";
 
@@ -140,7 +140,7 @@ void Properties::setupPropGccWorkspace()
 
     QDir wrkd(mywrk);
     if(wrkd.exists(mywrk) == false) {
-        wrkd.mkdir(mywrk);
+        //wrkd.mkdir(mywrk); recursive copy does it
         Directory::recursiveCopyDir(pkwrk, mywrk);
     }
 
