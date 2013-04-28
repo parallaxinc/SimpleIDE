@@ -1958,36 +1958,6 @@ int MainSpinWindow::saveAsProject(const QString &inputProjFile)
     QString dstPath;
     QString dstProjFile;
 
-#ifdef SAVE_AS_PROJECT_VIEW
-    if(this->simpleViewType == false) {
-
-        dstName = QInputDialog::getText(this, tr("New Project Name"), tr("Enter new project name."), QLineEdit::Normal, "project", &ok) ;
-        if(ok == false)
-            return;
-
-        /*
-         * get project folder
-         */
-        dstPath = QFileDialog::getExistingDirectory(this,tr("Destination Project Folder"), lastPath, QFileDialog::ShowDirsOnly);
-        if(dstPath.length() < 1)
-            return -1;
-        lastPath = dstPath;
-
-        dstPath = dstPath+"/";    // make sure we have a trailing / for file copy
-
-        dstProjFile= dstPath+dstName+SIDE_EXTENSION;
-        int rc = QMessageBox::question(this,
-                     tr("Confirm Save Project As"),
-                     tr("Save Project As ?")+"\n"+dstProjFile,
-                     QMessageBox::Yes, QMessageBox::No);
-        if(rc == QMessageBox::No) {
-            return -1;
-        }
-
-    }
-    else
-#endif
-
     /*
      * Serialize a new filename for user.
      */
@@ -2141,7 +2111,7 @@ int MainSpinWindow::saveAsProject(const QString &inputProjFile)
      * 5. copies the project main file from source to destination as new project main file
      */
     QStringList projList = projSrc.split("\n", QString::SkipEmptyParts);
-    QString srcMainFile = sourcePath(projFile)+projList.at(0);
+    //QString srcMainFile = sourcePath(projFile)+projList.at(0);
     QString dstMainFile = projList.at(0);
     dstMainFile = dstMainFile.trimmed();
     QString dstMainExt = dstMainFile.mid(dstMainFile.lastIndexOf("."));
@@ -2151,7 +2121,22 @@ int MainSpinWindow::saveAsProject(const QString &inputProjFile)
     if(QFile::exists(dstMainFile))
         QFile::remove(dstMainFile);
     // copy project main file
-    QFile::copy(srcMainFile,dstMainFile);
+    //QFile::copy(srcMainFile,dstMainFile);
+
+    int tab = editorTabs->currentIndex();
+    QString fileName = dstMainFile;
+    QString data = editors->at(tab)->toPlainText();
+    if(fileName.length() < 1) {
+        qDebug() << "saveFileByTabIndex filename invalid tooltip " << tab;
+        return -1;
+    }
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (file.open(QFile::WriteOnly)) {
+            file.write(data.toUtf8());
+            file.close();
+        }
+    }
 
     /*
      * Make a new project list. preprend project main file after this.
