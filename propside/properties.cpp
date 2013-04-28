@@ -9,6 +9,9 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 {
     this->setWindowTitle(QString(ASideGuiKey)+tr(" Properties"));
 
+    QSettings settings(publisherKey, ASideGuiKey);
+    settings.setValue(clearKeys,0);
+
     /* clean for testing only */
     // cleanSettings();
 
@@ -41,8 +44,10 @@ void Properties::cleanSettings()
         }
     }
 
-    settings.remove(publisherComKey);
-    settings.remove(publisherKey);
+    // mac doesn't filter settings by publisher, etc...
+    settings.setValue(clearKeys,1);
+    //settings.remove(publisherComKey);
+    //settings.remove(publisherKey);
 }
 
 void Properties::setupFolders()
@@ -103,9 +108,16 @@ QString Properties::getApplicationWorkspace()
      * In Mac it's in the same level as SimpleIDE.app.
      * For development it can be set to another value.
      */
-    QString pkwrk = QApplication::applicationDirPath()+"/";
+    QString pkwrk;
 #if defined(Q_WS_MAC)
-    pkwrk += "../../";
+    QVariant compv  = settings.value(gccCompilerKey, pkwrk);
+    if(compv.canConvert(QVariant::String)) {
+        QString s = compv.toString();
+        s = s.mid(0,s.lastIndexOf("/")+1);
+        pkwrk = s;
+    }
+#else
+    pkwrk = QApplication::applicationDirPath()+"/";
 #endif
     pkwrk += "../Workspace/";
 
@@ -171,6 +183,7 @@ void Properties::setupPropGccCompiler()
     apath = apath.mid(0,apath.lastIndexOf(".app"));
     apath = apath.mid(0,apath.lastIndexOf("/"));
     mypath = apath+"/parallax/";
+    //mypath = "../parallax/";
     QString mygcc = mypath+"bin/propeller-elf-gcc";
 #else
     mypath = "/opt/parallax/";
@@ -561,6 +574,11 @@ void Properties::setupHighlight()
         hlBlockComColorKey
       */
 
+    bool checkBold = true;
+#ifdef Q_WS_MAC
+    checkBold = false;
+#endif
+
     QLabel *lNumStyle = new QLabel(tr("Numbers"));
     hlayout->addWidget(lNumStyle,hlrow,0);
     hlNumWeight.setText(tr("Bold"));
@@ -574,7 +592,7 @@ void Properties::setupHighlight()
     hlNumColor.setCurrentIndex(PColor::Magenta);
     hlrow++;
 
-    var = settings.value(hlNumWeightKey,true);
+    var = settings.value(hlNumWeightKey,checkBold);
     if(var.canConvert(QVariant::Bool)) {
         QString s = var.toString();
         hlNumWeight.setChecked(var.toBool());
@@ -616,7 +634,7 @@ void Properties::setupHighlight()
         settings.setValue(hlFuncWeightKey,var.toBool());
     }
 
-    var = settings.value(hlFuncStyleKey,true);
+    var = settings.value(hlFuncStyleKey,checkBold);
     if(var.canConvert(QVariant::Bool)) {
         QString s = var.toString();
         hlFuncStyle.setChecked(var.toBool());
@@ -631,11 +649,10 @@ void Properties::setupHighlight()
         settings.setValue(hlFuncColorKey,n);
     }
 
-
     QLabel *lKeyWordStyle = new QLabel(tr("Key Words"));
     hlayout->addWidget(lKeyWordStyle,hlrow,0);
     hlKeyWordWeight.setText(tr("Bold"));
-    hlKeyWordWeight.setChecked(true);
+    hlKeyWordWeight.setChecked(checkBold);
     hlayout->addWidget(&hlKeyWordWeight,hlrow,1);
     hlKeyWordStyle.setText(tr("Italic"));
     hlKeyWordStyle.setChecked(false);
@@ -645,7 +662,7 @@ void Properties::setupHighlight()
     hlKeyWordColor.setCurrentIndex(PColor::DarkBlue);
     hlrow++;
 
-    var = settings.value(hlKeyWordWeightKey,true);
+    var = settings.value(hlKeyWordWeightKey,checkBold);
     if(var.canConvert(QVariant::Bool)) {
         QString s = var.toString();
         hlKeyWordWeight.setChecked(var.toBool());

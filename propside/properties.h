@@ -37,6 +37,7 @@
 #define publisherComKey     "Parallax.com"
 #define ASideGuiKey         "SimpleIDE"
 
+#define clearKeys           "SimpleIDE_ClearKeys"
 #define packageKey          "SimpleIDE_Package"
 #define simpleViewKey       "SimpleIDE_SimpleViewType"
 #define oldViewBoxKey       "SimpleIDE_OldViewBoxReminder"

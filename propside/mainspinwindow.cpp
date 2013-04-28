@@ -532,9 +532,7 @@ void MainSpinWindow::quitProgram()
     exitSave(); // find
     QString fileName = "";
 
-    QStringList list = settings->allKeys();
-
-    if(list.count() != 0) {
+    if(settings->value(clearKeys).toInt() == 0) {
         if(projectFile.isEmpty()) {
             fileName = editorTabs->tabToolTip(editorTabs->currentIndex());
             if(!fileName.isEmpty())
@@ -3026,7 +3024,8 @@ void MainSpinWindow::zipIt(QString dir)
             return;
         }
 
-        while (inFile.getChar(&c) && outFile.putChar(c));
+        while (inFile.getChar(&c) && outFile.putChar(c))
+            ; // yes empty body
 
         if (outFile.getZipError() != UNZ_OK) {
             QMessageBox::critical(this, tr("Zip Error"), QString("testCreate(): outFile.putChar(): %1").arg(outFile.getZipError()));
@@ -6531,7 +6530,7 @@ void MainSpinWindow::portResetButton()
         QMessageBox::information(this, tr("Port Required"), tr("Please select a port"), QMessageBox::Ok);
         return;
     }
-    Properties::Reset res = this->propDialog->getResetType();
+    //Properties::Reset res = this->propDialog->getResetType();
 
     if(this->propDialog->getResetType() == Properties::CFG) {
         QString bname = this->cbBoard->currentText();
