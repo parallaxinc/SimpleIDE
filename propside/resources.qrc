@@ -95,5 +95,6 @@
         <file>images/closeproj.png</file>
         <file>images/DeleteAll.png</file>
         <file>images/Delete.png</file>
+        <file>images/SimpleIDE.icns</file>
     </qresource>
 </RCC>
