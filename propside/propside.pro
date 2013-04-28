@@ -32,7 +32,7 @@ DEFINES += SPIN
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=24
+DEFINES += FIXVERSION=25
 SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \
@@ -125,6 +125,8 @@ unix:!macx {
 }
 
 macx { 
+    ICON = $${PWD}/SimpleIDE.icns
+
     # dont use EVENT_DRIVEN for mac. must open terminal before load because mac would reset boards otherwise.
     SOURCES += qextserialenumerator_osx.cpp
     LIBS += \
