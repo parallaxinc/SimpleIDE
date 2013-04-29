@@ -127,7 +127,12 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
         editorFont = QFont(family);
     }
     else {
-        editorFont = QFont("Courier", 12, QFont::Normal, false);
+        int fontsz = 12;
+#ifdef Q_WS_MAC
+        fontsz = 14;
+#endif
+        editorFont = QFont("Courier", fontsz, QFont::Normal, false);
+        settings->setValue(fontSizeKey,fontsz);
     }
 
     fontv = settings->value(fontSizeKey);
@@ -532,7 +537,7 @@ void MainSpinWindow::quitProgram()
     exitSave(); // find
     QString fileName = "";
 
-    if(settings->value(clearKeys).toInt() == 0) {
+    if(settings->value(useKeys).toInt() == 1) {
         if(projectFile.isEmpty()) {
             fileName = editorTabs->tabToolTip(editorTabs->currentIndex());
             if(!fileName.isEmpty())
@@ -565,7 +570,11 @@ void MainSpinWindow::quitProgram()
         QByteArray geo = this->saveGeometry();
         settings->setValue(ASideGuiGeometry,geo);
     }
-
+    else {
+        settings->remove(useKeys);
+        settings->remove(publisherComKey);
+        settings->remove(publisherKey);
+    }
     delete replaceDialog;
     delete propDialog;
     delete projectOptions;

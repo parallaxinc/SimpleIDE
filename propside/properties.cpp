@@ -10,10 +10,23 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
     this->setWindowTitle(QString(ASideGuiKey)+tr(" Properties"));
 
     QSettings settings(publisherKey, ASideGuiKey);
-    settings.setValue(clearKeys,0);
+    //QStringList list = settings.allKeys();
 
-    /* clean for testing only */
-    // cleanSettings();
+    QString mywrk = QDir::homePath()+"/";
+    if(QFile::exists(mywrk+"Documents")) {
+        mywrk = mywrk +"Documents/";
+    }
+    else if(QFile::exists(mywrk+"My Documents")) {
+        mywrk = mywrk +"My Documents/";
+    }
+    mywrk += "SimpleIDE/";
+
+    QDir wrkd(mywrk);
+    if(wrkd.exists(mywrk) == false) {
+        cleanSettings();
+    }
+
+    settings.setValue(useKeys,1);
 
     setupFolders(); // always call this before setupSpinFolders();
     setupSpinFolders();
@@ -45,9 +58,9 @@ void Properties::cleanSettings()
     }
 
     // mac doesn't filter settings by publisher, etc...
-    settings.setValue(clearKeys,1);
-    //settings.remove(publisherComKey);
-    //settings.remove(publisherKey);
+    settings.setValue(useKeys,1);
+    list = settings.allKeys();
+    settings.setValue(useKeys,0);
 }
 
 void Properties::setupFolders()
@@ -91,8 +104,8 @@ void Properties::setupFolders()
     layout->addWidget(gbLibrary);
     layout->addWidget(gbWorkspace);
 
-    setupPropGccWorkspace();
     setupPropGccCompiler();
+    setupPropGccWorkspace();
 }
 
 /*
@@ -105,7 +118,7 @@ QString Properties::getApplicationWorkspace()
     /*
      * By convention in Windows we keep a SimpleIDE workspace in
      *   "Program Files\SimpleIDE\Workspace"
-     * In Mac it's in the same level as SimpleIDE.app.
+     * In Mac it's in /opt/parallax.
      * For development it can be set to another value.
      */
     QString pkwrk;
@@ -152,7 +165,6 @@ void Properties::setupPropGccWorkspace()
 
     QDir wrkd(mywrk);
     if(wrkd.exists(mywrk) == false) {
-        //wrkd.mkdir(mywrk); recursive copy does it
         Directory::recursiveCopyDir(pkwrk, mywrk);
     }
 
@@ -179,11 +191,14 @@ void Properties::setupPropGccCompiler()
     mypath = "C:/propgcc/";
     QString mygcc = mypath+"bin/propeller-elf-gcc.exe";
 #elif defined(Q_WS_MAC)
-    QString apath = QApplication::applicationFilePath();
-    apath = apath.mid(0,apath.lastIndexOf(".app"));
-    apath = apath.mid(0,apath.lastIndexOf("/"));
-    mypath = apath+"/parallax/";
-    //mypath = "../parallax/";
+    QDir gcc("/opt/parallax/bin");
+    if(gcc.exists()) {
+        mypath = "/opt/parallax/";
+    }
+    else {
+        QString apath = QApplication::applicationFilePath();
+        mypath = apath+"/parallax/";
+    }
     QString mygcc = mypath+"bin/propeller-elf-gcc";
 #else
     mypath = "/opt/parallax/";
@@ -199,6 +214,7 @@ void Properties::setupPropGccCompiler()
 
     if(QFile::exists(mygcc)) {
         qDebug() << "Found Default Compiler.";
+        compv = mygcc;
     }
     else {
         if(compv.canConvert(QVariant::String)) {
@@ -295,6 +311,8 @@ void Properties::setupSpinFolders()
         mylib = mylib.left(mylib.length()-1);
     if(myspin.contains("/bin",Qt::CaseInsensitive))
         mylib = mylib.left(mylib.lastIndexOf("/bin")+1)+"spin/";
+
+    QStringList list = settings.allKeys();
 
     QVariant compv = settings.value(spinCompilerKey,myspin);
     QVariant incv = settings.value(spinLibraryKey,mylib);
@@ -1040,7 +1058,7 @@ void Properties::browseLoader()
 void Properties::accept()
 {
     QSettings settings(publisherKey, ASideGuiKey);
-    if(settings.allKeys().count() == 0) {
+    if(settings.value(useKeys).toInt() == 0) {
         done(QDialog::Accepted);
         return;
     }
@@ -1085,7 +1103,7 @@ void Properties::accept()
 void Properties::reject()
 {
     QSettings settings(publisherKey, ASideGuiKey);
-    if(settings.allKeys().count() == 0) {
+    if(settings.value(useKeys).toInt() == 0) {
         done(QDialog::Rejected);
         return;
     }
