@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 #
 # to use this release script, QtSDK Desktop qmake must be in your PATH
 #
@@ -52,6 +52,12 @@ fi
 macdeployqt ${NAME}.app
 if test $? != 0; then
    echo "macdeployqt ${NAME}.app failed."
+   exit 1
+fi
+
+cp ../release/myInfo.plist ${NAME}.app/Contents/Info.plist
+if test $? != 0; then
+   echo "copy myInfo.plist to ${NAME}.app failed."
    exit 1
 fi
 
