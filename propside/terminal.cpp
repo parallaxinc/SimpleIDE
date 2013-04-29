@@ -155,7 +155,7 @@ void Terminal::accept()
 #endif
     // save terminal geometry
     QSettings *settings = new QSettings(publisherKey, ASideGuiKey, this);
-    if(settings->value(clearKeys).toInt() == 0) {
+    if(settings->value(useKeys).toInt() == 1) {
         QByteArray geo = this->saveGeometry();
         settings->setValue(termGeometryKey,geo);
     }
