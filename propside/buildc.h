@@ -16,9 +16,9 @@ public:
 
     int  runCOGC(QString filename, QString outext);
     int  runBstc(QString spinfile);
-    int  runCogObjCopy(QString datfile, QString tarfile);
+    int  runCogObjCopy(QString datfile, QString tarfile, QString outpath="");
     int  runObjCopyRedefineSym(QString oldsym, QString newsym, QString file);
-    int  runObjCopy(QString datfile);
+    int  runObjCopy(QString datfile, QString outpath="");
     int  runGAS(QString datfile);
     int  runPexMake(QString fileName);
     int  runAR(QStringList copts, QString libname);

@@ -144,13 +144,13 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
             if(proj.toLower().lastIndexOf(".dat") < 0) // intermediate
                 list.append(outputPath+shortFileName(name.mid(0,name.lastIndexOf(".spin")))+".dat");
         }
-#if 0 // this needs to be updated for the memory model directories
+#if 1 // this needs to be updated for the memory model directories
         else if(suffix.compare(".espin") == 0) {
             QString basepath = sourcePath(projectFile);
             this->compileStatus->appendPlainText("Copying "+name+" to tmp.spin for spin compiler.");
             if(QFile::exists(basepath+"tmp.spin"))
                 QFile::remove(basepath+"tmp.spin");
-            if(QFile::copy(basepath+base+".spin",basepath+"tmp.spin") != true) {
+            if(QFile::copy(basepath+base+".espin",basepath+"tmp.spin") != true) {
                 rc = -1;
                 continue;
             }
@@ -158,14 +158,14 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
                 rc = -1;
                 continue;
             }
-            if(QFile::exists(basepath+base+".edat"))
-                QFile::remove(basepath+base+".edat");
-            if(QFile::copy(basepath+"tmp.dat",basepath+base+".edat") != true) {
+            if(QFile::exists(basepath+outputPath+base+".edat"))
+                QFile::remove(basepath+outputPath+base+".edat");
+            if(QFile::copy(basepath+outputPath+"tmp.dat",basepath+outputPath+base+".edat") != true) {
                 rc = -1;
                 continue;
             }
             if(proj.toLower().lastIndexOf(".edat") < 0) // intermediate
-                list.append(name.mid(0,name.lastIndexOf(".espin"))+".edat");
+                list.append(outputPath+name.mid(0,name.lastIndexOf(".espin"))+".edat");
         }
 #endif
         else if(suffix.compare(".dat") == 0) {
@@ -175,11 +175,15 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
                 clist.append(outputPath+shortFileName(name.mid(0,name.lastIndexOf(".dat")))+"_firmware.o");
         }
 
-#if 0 // this needs to be updated for the memory model directories
+#if 1 // this needs to be updated for the memory model directories
         else if(suffix.compare(".edat") == 0) {
             if(runObjCopy(name))
                 rc = -1;
-            if(runCogObjCopy(base+"_firmware.ecog",base+"_firmware.o"))
+            if(runCogObjCopy(base+"_firmware.ecog", base+"_firmware.o", outputPath))
+                rc = -1;
+            if(runObjCopyRedefineSym("_binary_"+base+"_edat_start", "_load_start_"+base+"_firmware_ecog",outputPath+base+"_firmware.o"))
+                rc = -1;
+            if(runObjCopyRedefineSym("_binary_"+base+"_edat_end",   "_load_stop_"+base+"_firmware_ecog",outputPath+base+"_firmware.o"))
                 rc = -1;
             if(proj.toLower().lastIndexOf("_firmware.o") < 0)
                 clist.append(outputPath+base+"_firmware.o");
@@ -428,7 +432,7 @@ int  BuildC::runBstc(QString spinfile)
     return rc;
 }
 
-int  BuildC::runCogObjCopy(QString datfile, QString tarfile)
+int  BuildC::runCogObjCopy(QString datfile, QString tarfile, QString outpath)
 {
     int rc = 0;
 
@@ -446,7 +450,7 @@ int  BuildC::runCogObjCopy(QString datfile, QString tarfile)
 
     /* run objcopy */
     QString objcopy = "propeller-elf-objcopy";
-    rc = startProgram(objcopy, sourcePath(projectFile), args);
+    rc = startProgram(objcopy, sourcePath(projectFile)+outpath, args);
 
     return rc;
 }
@@ -473,7 +477,7 @@ int  BuildC::runObjCopyRedefineSym(QString oldsym, QString newsym, QString file)
     return rc;
 }
 
-int  BuildC::runObjCopy(QString datfile)
+int  BuildC::runObjCopy(QString datfile, QString outpath)
 {
     QString oldsym = datfile;
     oldsym = "_binary_" + oldsym.replace(separator, "_").replace(".", "_");
@@ -508,7 +512,7 @@ int  BuildC::runObjCopy(QString datfile)
 
     /* run objcopy to make a spin .dat file into an object file */
     QString objcopy = "propeller-elf-objcopy";
-    rc = startProgram(objcopy, sourcePath(projectFile), args);
+    rc = startProgram(objcopy, sourcePath(projectFile)+outpath, args);
 
     return rc;
 }
