@@ -694,6 +694,19 @@ int  BuildC::runCompiler(QStringList copts)
         }
     }
 
+    /**
+     * Here is most likely the best place to automatically add -I and -L paths and -lnames.
+     *
+     * Some folks just don't get the idea that they have to add a library to use it.
+     * Often they will just add an include.
+     * So, we have to babysit them and try to find the include in our library and add links.
+     *
+     * A potential problem is with include name collisions.
+     * If an include header is found and we don't already have a path, add paths and -lnames.
+     * -I -L are in the ILlist stringlist. -lnames are in the libs stringlist
+     */
+
+
     /* add back in reverse order */
     for(int n = ILlist.length()-1; n >= 0; n--) {
         QString s = ILlist.at(n);
