@@ -127,7 +127,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
         editorFont = QFont(family);
     }
     else {
-        int fontsz = 12;
+        int fontsz = 10;
 #ifdef Q_WS_MAC
         fontsz = 14;
 #endif
