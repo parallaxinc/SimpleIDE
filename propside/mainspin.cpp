@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     qInstallMsgHandler(myMessageOutput);
 #endif
 
-    a.setWindowIcon(QIcon(":/images/SimpleIDE6.png"));
+    a.setWindowIcon(QIcon(":/images/SimpleIDE322.png"));
 
     a.setApplicationName(ASideGuiKey);
     qDebug() << a.applicationName() << "arg count " << argc;
