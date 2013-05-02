@@ -1293,6 +1293,10 @@ QStringList BuildC::getLibraryList(QStringList &ILlist)
         foreach(QString inc, findlist) {
             inc = inc.mid(inc.indexOf(include)+include.length());
             inc = inc.trimmed();
+            if(inc.at(0) == '<')
+                continue;
+            if(inc.endsWith('>'))
+                continue;
             if(inc.at(0) == '"') inc = inc.mid(1);
             if(inc.endsWith('"'))inc = inc.left(inc.count()-1);
             inc = inc.trimmed();
