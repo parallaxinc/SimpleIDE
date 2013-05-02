@@ -4546,7 +4546,7 @@ void MainSpinWindow::setupHelpMenu()
     menuBar()->addMenu(helpMenu);
     aboutDialog = new AboutDialog(aboutLanding, this);
 
-    helpMenu->addAction(QIcon(":/images/SimpleManual.png"), tr("SimpleIDE Manual (PDF)"), this, SLOT(userguideShow()));
+    helpMenu->addAction(QIcon(":/images/SimpleManual.png"), tr("SimpleIDE User Guide (PDF)"), this, SLOT(userguideShow()));
     helpMenu->addAction(QIcon(":/images/CTutorials.png"), tr("Propeller C Tutorials (Online)"), this, SLOT(tutorialShow()));
     helpMenu->addAction(QIcon(":/images/Reference.png"), tr("PropGCC &Reference (Online)"), this, SLOT(referenceShow()));
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
