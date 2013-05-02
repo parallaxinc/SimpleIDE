@@ -123,7 +123,12 @@ void TermPrefs::chooseFont()
     bool ok;
     QFont font = serialConsole->font();
     QString family = font.family();
-    int size = font.pixelSize();
+    int size;
+#ifdef Q_WS_MAC
+    size = 14;
+#else
+    font.pixelSize();
+#endif
     settings->setValue(termKeyFontFamily, family);
     settings->setValue(termKeyFontSize, size);
     font = QFontDialog::getFont(&ok, font, this, tr("Choose Font"));

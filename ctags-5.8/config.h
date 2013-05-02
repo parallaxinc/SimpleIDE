@@ -2,7 +2,7 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define this label if your system uses case-insensitive file names */
-/* #undef CASE_INSENSITIVE_FILENAMES */
+#define CASE_INSENSITIVE_FILENAMES 1
 
 /* Define this label if you wish to check the regcomp() function at run time
    for correct behavior. This function is currently broken on Cygwin. */
@@ -250,7 +250,7 @@
 
 /* If you wish to change the directory in which temporary files are stored,
    define this label to the directory desired. */
-#define TMPDIR "/tmp"
+#define TMPDIR "/var/folders/mh/rzg8pxdx1hgdzbybl538p7j80000gn/T/"
 
 /* Package version. */
 /* #undef VERSION */

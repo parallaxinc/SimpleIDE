@@ -60,8 +60,8 @@ void Properties::cleanSettings()
     }
 
     // mac doesn't filter settings by publisher, etc...
-    settings.setValue(useKeys,1);
-    list = settings.allKeys();
+    //settings.setValue(useKeys,1);
+    //list = settings.allKeys(); // debug only
     settings.setValue(useKeys,0);
 }
 
@@ -408,7 +408,7 @@ void Properties::setupGeneral()
     QLabel *ltabs = new QLabel(tr("Editor Tab Space Count"),tbox);
     tlayout->addWidget(ltabs,row,0);
     tabSpaces.setMaximumWidth(40);
-    tabSpaces.setText("4");
+    tabSpaces.setText("2");
     tabSpaces.setAlignment(Qt::AlignHCenter);
     tlayout->addWidget(&tabSpaces,row++,1);
 

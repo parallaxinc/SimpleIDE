@@ -11,7 +11,10 @@ if [ -e ${PKG} ]; then
    rm -rf ${PKG}
 fi
 
-#if [ 1 == 0 ]; then
+#
+# useful for script debug
+#
+if [ 1 == 1 ]; then
 
 mkdir -p release
 cp -r propside/* release
@@ -32,7 +35,7 @@ fi
 
 cd ..
 
-#fi
+fi
 
 rm -rf ${NAME}
 mkdir -p ${NAME}
@@ -68,11 +71,17 @@ if test $? != 0; then
    exit 1
 fi
 
-#cp ../propside/_SimpleIDE_UserGuide_.txt .
-#if test $? != 0; then
-#   echo "copy User Guide failed."
-#   exit 1
-#fi
+cp ../SimpleIDE-User-Guide.pdf ./parallax/bin
+if test $? != 0; then
+   echo "copy User Guide failed."
+   exit 1
+fi
+
+cp ../ctags-5.8/ctags ./parallax/bin
+if test $? != 0; then
+   echo "copy ctags failed."
+   exit 1
+fi
 
 #cp -r ../propside-demos/ demos
 #if test $? != 0; then
@@ -100,7 +109,7 @@ rm -rf parallax/Workspace
 #
 mv Workspace parallax
 if test $? != 0; then
-   echo "mv license failed."
+   echo "mv Workspace failed."
    exit 1
 fi
 
