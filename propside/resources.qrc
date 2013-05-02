@@ -95,7 +95,6 @@
         <file>images/closeproj.png</file>
         <file>images/DeleteAll.png</file>
         <file>images/Delete.png</file>
-        <file>images/SimpleIDE.icns</file>
         <file>images/SimpleIDE-64.png</file>
         <file>images/SimpleIDE322.png</file>
     </qresource>
