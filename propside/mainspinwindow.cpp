@@ -4610,7 +4610,8 @@ void MainSpinWindow::tutorialShow()
 
 void MainSpinWindow::userguideShow()
 {
-    // QDesktopServices::openUrl(QUrl("http://www.parallax.com/propellergcc"), QUrl::TolerantMode);
+    QString userguide = aSideCompilerPath+"SimpleIDE-User-Guide.pdf";
+    QDesktopServices::openUrl(QUrl(QString("file:///")+userguide, QUrl::TolerantMode));
 }
 
 void MainSpinWindow::sdCardDownloadEnable()

@@ -29,6 +29,8 @@ public:
     int ensureOutputDirectory();
     void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
 
+    QStringList getLibraryList(QStringList &ILlist);
+
 private:
     QString projName;
     QString model;

@@ -12,6 +12,7 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
     QSettings settings(publisherKey, ASideGuiKey);
     //QStringList list = settings.allKeys();
 
+#ifdef MAYBE_NOT_THE_BEST_IDEA
     QString mywrk = QDir::homePath()+"/";
     if(QFile::exists(mywrk+"Documents")) {
         mywrk = mywrk +"Documents/";
@@ -25,6 +26,7 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
     if(wrkd.exists(mywrk) == false) {
         cleanSettings();
     }
+#endif
 
     settings.setValue(useKeys,1);
 
@@ -439,9 +441,20 @@ void Properties::setupGeneral()
 
     var = settings.value(resetTypeKey,(int)DTR);
     if(var.canConvert(QVariant::Int)) {
-        QString s = var.toString();
         resetType.setCurrentIndex(var.toInt());
     }
+
+#ifdef ENABLE_AUTOLIB
+    autoLibCheck.setText(tr("Auto Include Libraries"));
+    autoLibCheck.setChecked(true);
+    tlayout->addWidget(&autoLibCheck, row++, 0);
+#endif
+
+#ifdef ENABLE_KEEP_ZIP_FOLDER
+    keepZipFolder.setText(tr("Keep Zip Folder"));
+    keepZipFolder.setChecked(false);
+    tlayout->addWidget(&keepZipFolder, row++, 0);
+#endif
 
 #ifdef ENABLE_CLEAR_AND_EXIT
     QLabel *lclear = new QLabel(tr("Clear program settings for exit."),tbox);
@@ -450,12 +463,6 @@ void Properties::setupGeneral()
     clearSettings->setToolTip(tr("Clear settings for exit."));
     connect(clearSettings,SIGNAL(clicked()),this,SLOT(cleanSettings()));
     tlayout->addWidget(clearSettings,row,1);
-#endif
-
-#ifdef ENABLE_KEEP_ZIP_FOLDER
-    keepZipFolder.setText(tr("Keep Zip Folder"));
-    keepZipFolder.setChecked(false);
-    tlayout->addWidget(&keepZipFolder, row++, 0);
 #endif
 
     gbGeneral->setLayout(tlayout);
@@ -1202,4 +1209,9 @@ Properties::Reset Properties::getResetType()
 bool Properties::getKeepZipFolder()
 {
     return this->keepZipFolder.isChecked();
+}
+
+bool Properties::getAutoLib()
+{
+    return this->autoLibCheck.isChecked();
 }

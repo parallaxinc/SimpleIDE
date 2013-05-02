@@ -112,6 +112,7 @@ public:
     Reset getResetType();
 
     bool getKeepZipFolder();
+    bool getAutoLib();
 
 signals:
 
@@ -206,6 +207,7 @@ private:
     QLineEdit   loadDelay;
     QComboBox   resetType;
     QCheckBox   keepZipFolder;
+    QCheckBox   autoLibCheck;
 
     QLineEdit   leditAltTerminal;
 
