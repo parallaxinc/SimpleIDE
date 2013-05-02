@@ -23,7 +23,8 @@ DEFINES += SPIN
 
 # Experimental AutoLib feature
 # Under development. Use at your own risk!
-# DEFINES += ENABLE_AUTOLIB
+DEFINES += ENABLE_AUTOLIB
+
 #
 # IDEDEBUG define sends qDebug() output to a Debug TAB.
 # This is most useful with windows as console output is not available there.
