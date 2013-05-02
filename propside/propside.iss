@@ -48,7 +48,7 @@ UsePreviousUserInfo=false
 ChangesEnvironment=true
 ChangesAssociations=yes
 LicenseFile=.\IDE_LICENSE.txt
-WizardImageFile=images\SimpleIDE-Install-Splash3.bmp
+WizardImageFile=images\SimpleIDE-Install-Splash4.bmp
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
