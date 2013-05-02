@@ -704,8 +704,27 @@ int  BuildC::runCompiler(QStringList copts)
      * A potential problem is with include name collisions.
      * If an include header is found and we don't already have a path, add paths and -lnames.
      * -I -L are in the ILlist stringlist. -lnames are in the libs stringlist
+     *
+     * Another potential problem is with Zip project.
+     * This means we want to add links to the project.
      */
 
+#ifdef ENABLE_AUTOLIB
+    if(this->properties->getAutoLib()) {
+        QStringList libadd;
+        libadd = getLibraryList(ILlist);
+        foreach(QString s, libadd) {
+            ILlist.append("-I");
+            ILlist.append(s);
+            ILlist.append("-L");
+            ILlist.append(s+"/"+this->outputPath);
+            s = s.mid(s.lastIndexOf("/")+1);
+            if(s.indexOf("lib") == 0)
+                s = s.mid(3);
+            libs.append("-l"+s);
+        }
+    }
+#endif
 
     /* add back in reverse order */
     for(int n = ILlist.length()-1; n >= 0; n--) {
@@ -825,6 +844,44 @@ int  BuildC::runCompiler(QStringList copts)
         }
         args.append(s);
     }
+
+#ifdef AUTOLIB
+    /*
+     * libraries - use libs to make copy, then add it twice to args.
+     * we do this because there may be some library interdependencies.
+     */
+    //QStringList libs;
+    libs.clear();
+
+    if(projectOptions->getTinyLib().length()) {
+        if(model.contains("cog",Qt::CaseInsensitive) == true) {
+            this->compileStatus->insertPlainText(tr("Ignoring")+" \"-ltiny\""+tr(" flag in COG mode programs.")+"\n");
+            this->compileStatus->moveCursor(QTextCursor::End);
+        }
+        else  if(projectOptions->getMathLib().length()) {
+            this->compileStatus->insertPlainText(tr("Ignoring")+" \"-ltiny\""+tr(" flag in -lm floating point programs.")+"\n");
+            this->compileStatus->moveCursor(QTextCursor::End);
+        }
+        else {
+            libs.append(projectOptions->getTinyLib());
+        }
+    }
+
+    /* other linker options */
+    if(projectOptions->getLinkOptions().length()) {
+        QStringList linklist = projectOptions->getLinkOptions().split(" ",QString::SkipEmptyParts);
+        foreach(QString linkopt, linklist) {
+            libs.append(linkopt);
+        }
+    }
+
+    /* append libs lib count times */
+    for(int n = libs.count(); n > 0; n--) {
+        foreach(QString s, libs) {
+            args->append(s);
+        }
+    }
+#endif
 
     // this is the final compile/link
     rc = startProgram(compstr,sourcePath(projectFile),args);
@@ -1093,6 +1150,7 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
         }
     }
 
+#ifndef AUTOLIB
     /*
      * libraries - use libs to make copy, then add it twice to args.
      * we do this because there may be some library interdependencies.
@@ -1133,6 +1191,7 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
             args->append(s);
         }
     }
+#endif
 
     /* strip */
     if(projectOptions->getStripElf().length())
@@ -1176,4 +1235,77 @@ void BuildC::appendLoaderParameters(QString copts, QString file, QStringList *ar
         args->append(file);
 
     //qDebug() << args;
+}
+
+#include <directory.h>
+
+QStringList BuildC::getLibraryList(QStringList &ILlist)
+{
+    QSettings settings(publisherKey,ASideGuiKey);
+    QStringList newList;
+    QString project = this->projectFile;
+
+    if(QFile::exists(project) == false)
+        return newList;
+
+    QVariant libv = settings.value(gccLibraryKey);
+    QString libdir;
+    if(libv.canConvert(QVariant::String)) {
+        libdir = libv.toString();
+    }
+    if(libdir.isEmpty())
+        return newList;
+
+    QStringList files;
+    QString file;
+    QFile proj(projectFile);
+    if(proj.open(QFile::ReadOnly | QFile::Text)) {
+        file = proj.readAll();
+        proj.close();
+    }
+    files = file.split("\n",QString::SkipEmptyParts);
+
+    QStringList srcList;
+    for(int n = files.count()-1; n > -1; n--) {
+        QString s = files.at(n);
+        if(s.indexOf("-I") == 0 ||
+           s.indexOf("-L") == 0 ||
+           s.indexOf(">")  == 0 ) {
+            continue;
+        }
+        else if(s.indexOf("->") > 0) {
+            srcList.append(s.mid(s.indexOf("->")+2).trimmed());
+        }
+        else {
+            srcList.append(s.trimmed());
+        }
+    }
+
+    QStringList ilist;
+    for(int n = 0; n < ILlist.count(); n+=2) {
+        ilist.append(ILlist.at(n)+" "+ILlist.at(n+1));
+    }
+    QString projectPath = projectFile;
+    projectPath = projectPath.left(projectPath.lastIndexOf("/"));
+    QString include("#include ");
+    foreach(QString srcFile, srcList) {
+        QStringList findlist = Directory::findList(projectPath+"/"+srcFile, include);
+        foreach(QString inc, findlist) {
+            inc = inc.mid(inc.indexOf(include)+include.length());
+            inc = inc.trimmed();
+            if(inc.at(0) == '"') inc = inc.mid(1);
+            if(inc.endsWith('"'))inc = inc.left(inc.count()-1);
+            inc = inc.trimmed();
+            inc = "lib"+inc;
+            inc = inc.mid(0,inc.indexOf(".h"));
+            QString lib = Directory::recursiveFindFile(libdir,inc);
+            QDir dir(projectPath);
+            lib = dir.relativeFilePath(lib);
+            QString libpath = "-L "+lib;
+            if(lib.isEmpty() == false && ilist.contains(libpath) == false) {
+                newList.append(lib);
+            }
+        }
+    }
+    return newList;
 }

@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-25"
+#define MyAppVersion "0-9-26"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -17,7 +17,7 @@
 #define MyGccPath "C:\msys\opt\parallax"
 #define MyGccMingwPath "C:\mingw"
 #define MyTranslations "..\propside\translations"
-#define MyUserGuide "..\propside\userguide"
+#define MyUserGuide "..\SimpleIDE-User-Guide.pdf"
 #define MySpinPath "..\spin"
 #define MyEduLibPath "..\edulib"
 #define MyAppBin "{app}\bin"
@@ -94,7 +94,7 @@ Source: "{#MyEduLibPath}\*"; DestDir: "{app}\Workspace"; Flags: ignoreversion re
 Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
 Source: "{#MyTranslations}\*"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
-;Source: "{#MyUserGuide}\*"; DestDir: {app}/userguide/; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
+Source: "{#MyUserGuide}"; DestDir: "{code:GetCompilerDir}\bin"; Flags: IgnoreVersion; 
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
