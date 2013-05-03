@@ -4548,6 +4548,7 @@ void MainSpinWindow::setupHelpMenu()
 
     helpMenu->addAction(QIcon(":/images/SimpleManual.png"), tr("SimpleIDE User Guide (PDF)"), this, SLOT(userguideShow()));
     helpMenu->addAction(QIcon(":/images/CTutorials.png"), tr("Propeller C Tutorials (Online)"), this, SLOT(tutorialShow()));
+    helpMenu->addAction(QIcon(":/images/SimpleLibrary.png"), tr("Simple Library Reference"), this, SLOT(simpleLibraryShow()));
     helpMenu->addAction(QIcon(":/images/Reference.png"), tr("PropGCC &Reference (Online)"), this, SLOT(referenceShow()));
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
     helpMenu->addAction(QIcon(":/images/Credits.png"), tr("&Credits"), this, SLOT(creditShow()));
@@ -4596,6 +4597,20 @@ void MainSpinWindow::helpShow()
 void MainSpinWindow::libraryShow()
 {
     findSymbolHelp("");
+}
+
+void MainSpinWindow::simpleLibraryShow()
+{
+    QVariant libv = settings->value(gccLibraryKey, QDir::homePath()+"Documents/SimpleIDE/Learn/Simple Libraries");
+    QString s = libv.toString();
+    s = "file:///"+s+" Index.html";
+    if(s.isEmpty() == false) {
+        try {
+            QDesktopServices::openUrl(QUrl(s, QUrl::TolerantMode));
+        } catch(int e) {
+            qDebug() << "Cant find Library Index " + s;
+        }
+    }
 }
 
 void MainSpinWindow::referenceShow()

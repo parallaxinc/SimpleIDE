@@ -97,5 +97,6 @@
         <file>images/Delete.png</file>
         <file>images/SimpleIDE-64.png</file>
         <file>images/SimpleIDE322.png</file>
+        <file>images/SimpleLibrary.png</file>
     </qresource>
 </RCC>
