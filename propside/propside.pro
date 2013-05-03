@@ -22,9 +22,7 @@ INCLUDEPATH += $$[QT_INSTALL_PREFIX]/src/3rdparty/zlib
 DEFINES += SPIN
 
 # Experimental AutoLib feature
-# Under development. Use at your own risk!
 DEFINES += ENABLE_AUTOLIB
-
 #
 # IDEDEBUG define sends qDebug() output to a Debug TAB.
 # This is most useful with windows as console output is not available there.
@@ -37,7 +35,7 @@ DEFINES += ENABLE_AUTOLIB
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=26
+DEFINES += FIXVERSION=27
 SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \

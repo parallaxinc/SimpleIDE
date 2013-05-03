@@ -92,6 +92,7 @@ public slots:
     void creditShow();
     void helpShow();
     void libraryShow();
+    void simpleLibraryShow();
     void referenceShow();
     void tutorialShow();
     void userguideShow();
