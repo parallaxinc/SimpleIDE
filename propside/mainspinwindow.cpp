@@ -3958,19 +3958,22 @@ void MainSpinWindow::fontDialog()
     bool ok = false;
 
     QFont font;
+    QFontDialog fd(this);
     Editor *editor = editors->at(editorTabs->currentIndex());
     if(editor) {
         QFont edfont = editor->font();
-        font = QFontDialog::getFont(&ok, edfont);
+        font = fd.getFont(&ok, edfont, this);
     }
     else {
-        font = QFontDialog::getFont(&ok, editorFont);
+        font = fd.getFont(&ok, editorFont, this);
     }
 
     if(ok) {
         for(int n = editors->count()-1; n >= 0; n--) {
             Editor *ed = editors->at(n);
             ed->setFont(font);
+            QString fs = QString("font: %1pt \"%2\";").arg(font.pointSize()).arg(font.family());
+            ed->setStyleSheet(fs);
         }
         editorFont = font;
     }
@@ -3987,6 +3990,9 @@ void MainSpinWindow::fontBigger()
         for(int n = editors->count()-1; n >= 0; n--) {
             Editor *ed = editors->at(n);
             ed->setFont(font);
+            QString fs = QString("font: %1pt \"%2\";").arg(font.pointSize()).arg(font.family());
+            ed->setStyleSheet(fs);
+
         }
         editorFont = font;
     }
@@ -4003,6 +4009,8 @@ void MainSpinWindow::fontSmaller()
         for(int n = editors->count()-1; n >= 0; n--) {
             Editor *ed = editors->at(n);
             ed->setFont(font);
+            QString fs = QString("font: %1pt \"%2\";").arg(font.pointSize()).arg(font.family());
+            ed->setStyleSheet(fs);
         }
         editorFont = font;
     }
@@ -4603,6 +4611,9 @@ void MainSpinWindow::simpleLibraryShow()
 {
     QVariant libv = settings->value(gccLibraryKey, QDir::homePath()+"Documents/SimpleIDE/Learn/Simple Libraries");
     QString s = libv.toString();
+    int len = s.length()-1;
+    if(s.at(len) == '\\' || s.at(len) == '/')
+        s = s.left(len);
     s = "file:///"+s+" Index.html";
     if(s.isEmpty() == false) {
         try {
@@ -6712,7 +6723,9 @@ int MainSpinWindow::setupEditor()
     editor->setTabStopWidth(propDialog->getTabSpaces()*10);
 
     /* font is user's preference */
-    editor->setFont(editorFont);
+    editor->setFont(editorFont); // setFont doesn't work very well but style sheet does
+    QString fs = QString("font: %1pt \"%2\";").arg(editorFont.pointSize()).arg(editorFont.family());
+    editor->setStyleSheet(fs);
     editor->setLineWrapMode(Editor::NoWrap);
     connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
     connect(editor, SIGNAL(saveEditorFile()), this, SLOT(saveEditor()));
