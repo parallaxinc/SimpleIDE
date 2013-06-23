@@ -1,13 +1,18 @@
 #!/bin/sh -x
 #
-# to use this release script, QtSDK Desktop qmake must be in your PATH
+# To use this release script:
+#
+# 1) QtSDK Desktop qmake must be in your PATH
+# 2) workspace must exist in spinside folder ala:
+#   hg clone https://jsdenson@code.google.com/p/propsideworkspace/ workspace
+# 
 #
 NAME=SimpleIDE
 PKG=${NAME}.zip
 PROPGCC=/opt/parallax
 BUILD=build
 
-CTAGS="./ctags-5.8/ctags"
+CTAGS="./ctags-5.8"
 QUAZIP="./quazip-0.5/quazip"
 LIBS="/usr/lib/libQtGui.so.4 /usr/lib/libQtCore.so.4"
 LIBAUDIO="/usr/lib/libaudio.so.2"
@@ -16,6 +21,19 @@ SPINLIB="./spin"
 
 CLEAN=$1
 
+UARCH=`arch`
+UNAME=`uname -n`
+if [ `uname -s` = "msys" ]; then
+    JOBS=
+else
+    ISARM=`echo ${UARCH} | grep -i "arm"`
+    if [ ${ISARM} -ne "" ]; then
+        JOBS=-j2
+    else
+        JOBS=-j6
+    fi
+fi
+
 #
 # remove package
 #
@@ -23,10 +41,20 @@ if [ -e ${PKG} ]; then
    rm -rf ${PKG}
 fi
 
+mkdir -p ${BUILD}
+
+cd $QUAZIP
+qmake -config quazip.pro
+if [ x$CLEAN != xnoclean ]; then
+   make clean
+fi
+make ${JOBS}
+export LD_LIBRARY_PATH=`pwd`
+cd ../../
+
 #
 # build SimpleIDE for release
 #
-mkdir -p ${BUILD}
 cp -r ./propside/* ${BUILD}
 DIR=`pwd`
 cd ${BUILD}
@@ -40,11 +68,7 @@ if [ x$CLEAN != xnoclean ]; then
     make clean
 fi
 
-if [ `uname -s` = "msys" ]; then
-    make
-else
-    make -j4
-fi
+make ${JOBS}
 
 if test $? != 0; then
    echo "make failed."
@@ -86,15 +110,6 @@ if test $? != 0; then
    exit 1
 fi
 
-#
-# point to parallax.com/propellergcc user guide instead
-#
-#cp -r ${BUILD}/userguide ${VERSION}
-#if test $? != 0; then
-#   echo "copy userguide failed."
-#   exit 1
-#fi
-
 MYLDD=`ldd ${BUILD}/${NAME} | grep libQt | awk '{print $3}'`
 LIBS=`echo $MYLDD`
 
@@ -116,9 +131,22 @@ if [ ${LIBAUDIO}X != X ]; then
    fi
 fi
 
-cp -f ${CTAGS} ${VERSION}/bin
+cd ${CTAGS}
+./configure
 if test $? != 0; then
-   echo "copy ${CTAGS} failed."
+   echo "configure ${CTAGS} failed."
+   exit 1
+fi
+make
+if test $? != 0; then
+   echo "make ${CTAGS} failed."
+   exit 1
+fi
+cd ..
+
+cp -f ${CTAGS}/ctags ${VERSION}/bin
+if test $? != 0; then
+   echo "copy ${CTAGS}/ctags failed."
    exit 1
 ls -alRF ${VERSION}/bin
 fi
@@ -132,15 +160,21 @@ fi
 
 cp -rf ${SPINLIB} ${VERSION}/parallax
 if test $? != 0; then
-   echo "copy ${CTAGS} failed."
+   echo "copy ${SPINLIB} failed."
    exit 1
 fi
 
-cp -f ${CTAGS} ${VERSION}/parallax/bin
+cp -f ${CTAGS}/ctags ${VERSION}/parallax/bin
 if test $? != 0; then
-   echo "copy ${CTAGS} failed."
+   echo "copy ${CTAGS}/ctags failed."
    exit 1
 ls -alRF ${VERSION}/bin
+fi
+
+cp ./SimpleIDE-User-Guide.pdf ${VERSION}/parallax/bin
+if test $? != 0; then
+   echo "copy User Guide failed."
+   exit 1
 fi
 
 cp -r ./propside-demos/ ${VERSION}/demos
@@ -149,9 +183,20 @@ if test $? != 0; then
    exit 1
 fi
 
+rm -rf ${VERSION}/Documents/SimpleIDE
+mkdir  ${VERSION}/Documents
+cp -r ./workspace/ ${VERSION}/Documents/SimpleIDE
+if test $? != 0; then
+   echo "copy workspace failed."
+   exit 1
+fi
+rm -rf ${VERSION}/Documents/SimpleIDE/.hg
+if test $? != 0; then
+   echo "remove workspace .hg tracking failed."
+   exit 1
+fi
+
 # pack-up a bzip tarball for distribution
-UARCH=`arch`
-UNAME=`uname -n`
 tar -cjf ${VERSION}.${UARCH}.${UNAME}-linux.tar.bz2 ${VERSION}
 
 exit 0

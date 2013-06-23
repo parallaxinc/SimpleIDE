@@ -1293,8 +1293,10 @@ QStringList BuildC::getLibraryList(QStringList &ILlist)
     }
     QString projectPath = projectFile;
     projectPath = projectPath.left(projectPath.lastIndexOf("/"));
-    QString include("#include ");
     foreach(QString srcFile, srcList) {
+        autoAddLib(projectPath, srcFile, libdir, ilist, &newList);
+#if 0
+        QString include("#include ");
         QStringList findlist = Directory::findList(projectPath+"/"+srcFile, include);
         foreach(QString inc, findlist) {
             inc = inc.mid(inc.indexOf(include)+include.length());
@@ -1316,6 +1318,43 @@ QStringList BuildC::getLibraryList(QStringList &ILlist)
                 newList.append(lib);
             }
         }
+#endif
     }
     return newList;
+}
+
+int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QStringList incList, QStringList *newList)
+{
+    QString include("#include ");
+    QStringList findlist = Directory::findList(projectPath+"/"+srcFile, include);
+    foreach(QString inc, findlist) {
+        inc = inc.mid(inc.indexOf(include)+include.length());
+        inc = inc.trimmed();
+        if(inc.at(0) == '<')
+            continue;
+        if(inc.endsWith('>'))
+            continue;
+        if(inc.at(0) == '"') inc = inc.mid(1); // " or <>
+        if(inc.endsWith('"'))inc = inc.left(inc.count()-1);
+        inc = inc.trimmed();
+        inc = "lib"+inc;
+        inc = inc.mid(0,inc.indexOf(".h"));
+        QString lib = Directory::recursiveFindFile(libdir,inc);
+        QDir dir(projectPath);
+        //lib = dir.relativeFilePath(lib);
+        QString libpath = "-L "+lib;
+        if(lib.isEmpty() == false && incList.contains(libpath) == false) {
+            incList.append(libpath);
+            newList->append(lib);
+            QStringList ilist;
+            ilist.append(lib);
+            if(libdir.endsWith("/") == false)
+                libdir += "/";
+            QString incFile = inc.mid(3) + ".h";
+            QString mydir = Directory::recursiveFindFile(libdir,incFile);
+            mydir = mydir.mid(0,mydir.lastIndexOf("/"));
+            autoAddLib(mydir, incFile, libdir, incList, newList);
+        }
+    }
+    return newList->count();
 }

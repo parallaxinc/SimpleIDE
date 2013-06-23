@@ -24,6 +24,8 @@ public:
     int  runAR(QStringList copts, QString libname);
     int  runCompiler(QStringList copts);
 
+    int  autoAddLib(QString projectPath, QString srcFile, QString libDir, QStringList incList, QStringList *newList);
+
     QStringList getCompilerParameters(QStringList copts);
     int  getCompilerParameters(QStringList copts, QStringList *args);
     int ensureOutputDirectory();
