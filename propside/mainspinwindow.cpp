@@ -5889,7 +5889,7 @@ void MainSpinWindow::deleteProjectFile()
                     /* if the link options has our -lname, remove it. set new link options. */
                     if(s.contains(arg)) {
                         s = s.remove(arg);
-                        projectOptions->setLinkOptions(s);
+                        projectOptions->setLinkOptions(s.trimmed());
                     }
                 }
             }
