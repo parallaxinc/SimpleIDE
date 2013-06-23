@@ -477,7 +477,7 @@ void Properties::setupGeneral()
     }
 
 #ifdef ENABLE_AUTOLIB
-    autoLibCheck.setText(tr("Auto Include Libraries"));
+    autoLibCheck.setText(tr("Auto Include Simple Libraries"));
     autoLibCheck.setChecked(true);
     tlayout->addWidget(&autoLibCheck, row++, 0);
 #endif

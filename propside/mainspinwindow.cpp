@@ -1426,8 +1426,11 @@ void MainSpinWindow::newProject()
         }
 
         QString s = projectOptions->getCompOptions();
-        if(s.contains("-std=c99", Qt::CaseInsensitive) == false)
-            projectOptions->setCompOptions(s + "-std=c99");
+        if(s.contains("-std=c99", Qt::CaseInsensitive) == false) {
+            // only apply -std=c99 to standard C, not C++
+            if(projectOptions->getCompiler().contains("C++") == false)
+                projectOptions->setCompOptions(s + "-std=c99");
+        }
         qDebug() << "Save Project File: " << projectFile;
         saveProjectOptions();
     }

@@ -716,7 +716,12 @@ int  BuildC::runCompiler(QStringList copts)
 #ifdef ENABLE_AUTOLIB
     if(this->properties->getAutoLib()) {
         QStringList libadd;
-        libadd = getLibraryList(ILlist);
+        QStringList newList;
+        // With autolib only use Simple Libraries newList is empty
+        // This means we don't search the existing folder for libraries.
+        // If we search the existing folder for libraries and autolib
+        // is enabled, then we can end up with the wrong library.
+        libadd = getLibraryList(newList);
         foreach(QString s, libadd) {
             ILlist.append("-I");
             ILlist.append(s);
@@ -1296,6 +1301,7 @@ QStringList BuildC::getLibraryList(QStringList &ILlist)
     foreach(QString srcFile, srcList) {
         autoAddLib(projectPath, srcFile, libdir, ilist, &newList);
 #if 0
+        // autoAddLib does this now. we need autoAddLib to be recursive.
         QString include("#include ");
         QStringList findlist = Directory::findList(projectPath+"/"+srcFile, include);
         foreach(QString inc, findlist) {
@@ -1340,8 +1346,12 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
         inc = "lib"+inc;
         inc = inc.mid(0,inc.indexOf(".h"));
         QString lib = Directory::recursiveFindFile(libdir,inc);
-        QDir dir(projectPath);
-        //lib = dir.relativeFilePath(lib);
+        /*
+         With autolib, we only want to add full paths.
+         These paths will never be save as or zipped.
+         QDir dir(projectPath);
+         lib = dir.relativeFilePath(lib);
+         */
         QString libpath = "-L "+lib;
         if(lib.isEmpty() == false && incList.contains(libpath) == false) {
             incList.append(libpath);
