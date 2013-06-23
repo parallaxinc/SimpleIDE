@@ -381,6 +381,9 @@ int  BuildC::runBstc(QString spinfile)
 {
     int rc = 0;
 
+    if (ensureOutputDirectory() != 0)
+        return -1;
+
     //getApplicationSettings();
     if(checkCompilerInfo()) {
         return -1;
@@ -479,11 +482,12 @@ int  BuildC::runObjCopyRedefineSym(QString oldsym, QString newsym, QString file)
 
 int  BuildC::runObjCopy(QString datfile, QString outpath)
 {
-    QString oldsym = datfile;
-    oldsym = "_binary_" + oldsym.replace(separator, "_").replace(".", "_");
-    QString newsym = datfile;
-    newsym = "_binary_" + newsym.mid(newsym.lastIndexOf(separator)+1).replace(".", "_");
     int rc = 0;
+
+    QString oldsym = datfile.replace("-","_");//.mid(datfile.lastIndexOf("/")+1);
+    oldsym = "_binary_" + oldsym.replace(separator, "_").replace(".", "_");
+    QString newsym = datfile.replace("-","_");//.mid(datfile.lastIndexOf("/")+1);
+    newsym = "_binary_" + newsym.mid(newsym.lastIndexOf(separator)+1).replace(".", "_");
 
     //getApplicationSettings();
     if(checkCompilerInfo()) {
@@ -1204,7 +1208,9 @@ int BuildC::ensureOutputDirectory()
 {
     QString modelOption = projectOptions->getMemModel();
     model = modelOption.mid(0, modelOption.indexOf(" "));
+    model = model.replace("-","_");
     outputPath = model + separator;
+
     int rc = 0;
 
     QDir projectDir(sourcePath(projectFile));

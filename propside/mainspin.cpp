@@ -1,32 +1,19 @@
 #include <QtGui>
 #include "mainspinwindow.h"
 
-//#undef IDEDEBUG
-
-QPlainTextEdit *status;
-
-void myMessageOutput(QtMsgType type, const char *msg)
-{
-    status->appendPlainText(msg);
-}
-
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainSpinWindow w;
 
-#if defined(IDEDEBUG)
-    status = w.getDebugEditor();
-    qInstallMsgHandler(myMessageOutput);
-#endif
-
     a.setWindowIcon(QIcon(":/images/SimpleIDE322.png"));
 
     a.setApplicationName(ASideGuiKey);
-    qDebug() << a.applicationName() << "arg count " << argc;
+    qDebug() << a.applicationName() << "argument count " << argc;
 
+    qDebug() << "Arguments: ";
     foreach(QString arg, a.arguments()) {
-        qDebug() << "arg " << arg;
+        qDebug() << arg;
     }
     QString dir = QApplication::applicationDirPath();
 
@@ -37,6 +24,7 @@ int main(int argc, char *argv[])
     QTranslator qtTranslator;
     QString progName = QString(ASideGuiKey)+"_";
 
+    qDebug() << "Locale: ";
     qDebug() << transpath+progName+QLocale::system().name()+".qm";
 
     /*
@@ -47,7 +35,8 @@ int main(int argc, char *argv[])
         a.installTranslator(&qtTranslator);
     }
 
-    qDebug() << "temp directory" << QDir::toNativeSeparators(QDir::tempPath());
+    qDebug() << "Temp directory";
+    qDebug() << QDir::toNativeSeparators(QDir::tempPath());
 
     if(argc > 1) {
         QString s = QString(argv[1]);
