@@ -11,23 +11,6 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 
     QSettings settings(publisherKey, ASideGuiKey);
     //QStringList list = settings.allKeys();
-
-#ifdef MAYBE_NOT_THE_BEST_IDEA
-    QString mywrk = QDir::homePath()+"/";
-    if(QFile::exists(mywrk+"Documents")) {
-        mywrk = mywrk +"Documents/";
-    }
-    else if(QFile::exists(mywrk+"My Documents")) {
-        mywrk = mywrk +"My Documents/";
-    }
-    mywrk += "SimpleIDE/";
-
-    QDir wrkd(mywrk);
-    if(wrkd.exists(mywrk) == false) {
-        cleanSettings();
-    }
-#endif
-
     settings.setValue(useKeys,1);
 
     setupFolders(); // always call this before setupSpinFolders();
@@ -188,11 +171,24 @@ void Properties::setupPropGccWorkspace()
 void Properties::setupPropGccCompiler()
 {
     QSettings settings(publisherKey, ASideGuiKey);
+    QString mygcc;
+    QString apath = QApplication::applicationDirPath();
 
 #if defined(Q_WS_WIN32)
-    mypath = "C:/propgcc/";
-    QString mygcc = mypath+"bin/propeller-elf-gcc.exe";
+    // if windoze
+    apath += "/../propeller-gcc/";
+    QDir gcc("C:/propgcc/");
+    QDir relative(apath);
+    if(relative.exists()) {
+        mypath = apath;
+    }
+    else if(gcc.exists()) {
+        mypath = "C:/propgcc/";
+    }
+    mygcc = mypath+"bin/propeller-elf-gcc.exe";
+
 #elif defined(Q_WS_MAC)
+    // if macos
     QDir gcc("/opt/parallax/bin");
     if(gcc.exists()) {
         mypath = "/opt/parallax/";
@@ -201,21 +197,26 @@ void Properties::setupPropGccCompiler()
         QString apath = QApplication::applicationFilePath();
         mypath = apath+"/parallax/";
     }
-    QString mygcc = mypath+"bin/propeller-elf-gcc";
+    mygcc = mypath+"bin/propeller-elf-gcc";
+
 #else
-    mypath = "/opt/parallax/";
-    QString mygcc = mypath+"bin/propeller-elf-gcc";
-    if(QFile::exists(mygcc) == false) {
+    // if linux
+    QDir gcc("/opt/parallax/bin");
+    if(gcc.exists()) {
+        mypath = "/opt/parallax/";
+    }
+    else {
         qDebug() << "Alternative Default Compiler?";
         mypath = "./parallax/";
-        mygcc = mypath+"bin/propeller-elf-gcc";
     }
+    mygcc = mypath+"bin/propeller-elf-gcc";
+
 #endif
 
     QVariant compv = settings.value(gccCompilerKey);
 
     if(QFile::exists(mygcc)) {
-        qDebug() << "Found Default Compiler.";
+        qDebug() << "Found Default GCC Compiler:";
         compv = mygcc;
     }
     else {
@@ -224,6 +225,8 @@ void Properties::setupPropGccCompiler()
             if(s.length() > 0) {
                 mygcc = QDir::fromNativeSeparators(s);
                 mypath = mygcc.mid(0,mygcc.lastIndexOf("/bin")+1);
+                qDebug() << "Mypath reassigned:";
+                qDebug() << mypath;
             }
         }
     }
@@ -275,24 +278,39 @@ void Properties::setupSpinFolders()
     QSettings settings(publisherKey, ASideGuiKey,this);
 
     QVariant gv = settings.value(gccCompilerKey,"");
-    QString mygcc;
 
-    if(gv.canConvert(QVariant::String)) {
+    QString mygcc = mypath+"bin/propeller-elf-gcc";
+#if defined(Q_WS_WIN32)
+    mygcc += ".exe";
+#endif
+
+    if(QFile::exists(mygcc)) {
+        qDebug() << "Found Default Spin Compiler Path.";
+    }
+    else if(gv.canConvert(QVariant::String)) {
         QString s = gv.toString();
-        s = QDir::fromNativeSeparators(s);
-        mygcc = s;
+        if(s.length()) {
+            s = QDir::fromNativeSeparators(s);
+            mygcc = s;
+            qDebug() << "Spin Compiler Path Reassigned:";
+        }
     }
 
     // setupFolders() sets mygcc
     QString myspin = mygcc.mid(0,mygcc.lastIndexOf("/"))+"/";
+    qDebug() << myspin;
 
+#if 0
+    /* using spin fails to compile dat at the moment. */
     if(QFile::exists(myspin+"spin")) {
         myspin += "spin";
     }
     else if(QFile::exists(myspin+"spin.exe")) {
         myspin += "spin.exe";
     }
-    else if(QFile::exists(myspin+"bstc")) {
+    else
+#endif
+    if(QFile::exists(myspin+"bstc")) {
         myspin += "bstc";
     }
     else if(QFile::exists(myspin+"bstc.exe")) {
@@ -308,17 +326,23 @@ void Properties::setupSpinFolders()
         qDebug() << "Default Spin Compiler not found.";
     }
 
+    qDebug() << "Default Spin Compiler: ";
+    qDebug() << mypath;
+
     QString mylib(myspin);
     if(mylib.lastIndexOf("/") == mylib.length()-1)
         mylib = mylib.left(mylib.length()-1);
     if(myspin.contains("/bin",Qt::CaseInsensitive))
         mylib = mylib.left(mylib.lastIndexOf("/bin")+1)+"spin/";
 
-    QStringList list = settings.allKeys();
+    qDebug() << "Default Spin Library: ";
+    qDebug() << mypath;
 
-    QVariant compv = settings.value(spinCompilerKey,myspin);
-    QVariant incv = settings.value(spinLibraryKey,mylib);
-    QVariant wrkv = settings.value(spinWorkspaceKey);
+    //QStringList list = settings.allKeys();
+
+    QVariant compv = settings.value(spinCompilerKey, myspin);
+    QVariant incv  = settings.value(spinLibraryKey, mylib);
+    QVariant wrkv  = settings.value(spinWorkspaceKey);
 
     fileStringProperty(&compv, leditSpinCompiler, spinCompilerKey, &myspin);
     fileStringProperty(&incv,  leditSpinLibrary,  spinLibraryKey,  &mylib);
@@ -335,8 +359,8 @@ void Properties::setupSpinFolders()
         leditSpinWorkspace->setText(this->leditGccWorkspace->text());
     }
 
-    this->spinCompilerStr = leditSpinCompiler->text();
-    this->spinLibraryStr = leditSpinLibrary->text();
+    this->spinCompilerStr  = leditSpinCompiler->text();
+    this->spinLibraryStr   = leditSpinLibrary->text();
     this->spinWorkspaceStr = leditSpinWorkspace->text();
 }
 
@@ -348,15 +372,23 @@ void Properties::fileStringProperty(QVariant *var, QLineEdit *ledit, const char 
         if(s.length() > 0) {
             s = QDir::fromNativeSeparators(s);
             ledit->setText(s);
+            qDebug() << "Changed Line Edit for: " << key;
+            qDebug() << s;
+            qDebug() << "Value was: ";
+            qDebug() << *value;
         }
         else {
             ledit->setText(*value);
             settings.setValue(key,*value);
+            qDebug() << "Set Key Value " << key;
+            qDebug() << *value;
         }
     }
     else {
         ledit->setText(*value);
         settings.setValue(key,*value);
+        qDebug() << "Set Key Value " << key;
+        qDebug() << *value;
     }
 }
 

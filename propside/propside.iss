@@ -3,12 +3,12 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-27"
+#define MyAppVersion "0-9-32"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
 
-#define compiler "C:\propgcc"
+#define compiler "propeller-gcc"
 
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ---- IMPORTANT!!! ---- Set this to your QtPath
@@ -64,16 +64,16 @@ Name: "modifypath"; Description: "&Add Propeller-GCC directory to your environme
 ; GroupDescription: "Propeller-GCC Path:"
 
 [Files]
-Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
+;Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "..\propside-build-desktop\release\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "IDE_LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_2_1.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_EXCEPTION.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: ..\ctags58\README; DestDir: {app}; Flags: ignoreversion; DestName: ctags-readme.txt; 
 Source: ..\ctags58\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: ctags-license.txt; 
 Source: ..\icons\24x24-free-application-icons\readme.txt; DestDir: {app}; Flags: ignoreversion; DestName: aha-soft-license.txt; 
-Source: "{#MyBoardFilter}"; DestDir: "{code:GetCompilerDir}\propeller-load\"; Flags: ignoreversion
+Source: "{#MyBoardFilter}"; DestDir: "{app}\propeller-gcc\propeller-load\"; Flags: ignoreversion
 Source: "{#MyFont}"; DestDir: "{app}\bin"; Flags: ignoreversion
-;Source: "..\propside-demos\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 Source: "{#MyGccMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -82,19 +82,22 @@ Source: "{#MyQtPath}\bin\quazip1.dll"; DestDir: "{app}\bin"; Flags: ignoreversio
 
 ; remove temporarily for faster testing
 ; putback for package
+Source: "{#MyQtPath}\bin\QtCore4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyQtPath}\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyGccPath}\*"; DestDir: "{code:GetCompilerDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#MySpinPath}\*"; DestDir: "{code:GetCompilerDir}\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyQtPath}\bin\QtGui4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+;Source: "{#MyQtPath}\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyGccPath}\*"; DestDir: "{app}\propeller-gcc"; Flags: ignoreversion recursesubdirs createallsubdirs
 
-;Source: "{#MyEduLibPath}\*"; DestDir: "{code:GetDataDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Stephanie says not to include the Spin folder with all docs - this one trims the docs.
+Source: "{#MySpinPath}\*"; DestDir: "{app}\propeller-gcc\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
+
 ;Source: "{#MyEduLibPath}\My Projects\*"; DestDir: "{app}\templates"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyEduLibPath}\*"; DestDir: "{app}\Workspace"; Flags: ignoreversion recursesubdirs createallsubdirs
 
-Source: "..\ctags58\ctags.exe"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
-Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{code:GetCompilerDir}\bin"; Flags: ignoreversion
+Source: "..\ctags-5.8\ctags.exe"; DestDir: "{app}\propeller-gcc\bin"; Flags: ignoreversion
+Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{app}\propeller-gcc\bin"; Flags: ignoreversion
 Source: "{#MyTranslations}\*"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
-Source: "{#MyUserGuide}"; DestDir: "{code:GetCompilerDir}\bin"; Flags: IgnoreVersion; 
+Source: "{#MyUserGuide}"; DestDir: "{app}\propeller-gcc\bin"; Flags: IgnoreVersion; 
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -107,48 +110,32 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 ;Filename: {app}\{#MyAppExeName}; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: skipifsilent NoWait PostInstall; 
 
 [Registry]
+; would like to use HKLM for these things if possible for specifying compiler and user workspace fields.
 Root: HKCU; SubKey: Software\{#MyAppPublisher}; Flags: UninsDeleteKey; 
 Root: HKCU; SubKey: Software\{#MyAppPublisher}\SimpleIDE; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Compiler; ValueData: {code:GetCompilerDir}\bin\propeller-elf-gcc.exe; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Includes; ValueData: {code:GetCompilerDir}\propeller-load\; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Workspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
-Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Library; ValueData: "{code:GetDataDir}\Learn\Simple Libraries\"; Flags: UninsDeleteKey;
-Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinCompiler; ValueData: {code:GetCompilerDir}\bin\bstc.exe; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinLibrary; ValueData: {code:GetCompilerDir}\spin\; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinWorkspace; ValueData: {code:GetDataDir}; Flags: UninsDeleteKey;
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata};{code:GetCompilerDir}\bin;"; Check: NeedsAddPropGccBinPath();
+;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Compiler; ValueData: "{app}\propeller-gcc\bin\propeller-elf-gcc.exe"; Flags: UninsDeleteKey; 
+;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Includes; ValueData: "{app}\propeller-gcc\propeller-load\"; Flags: UninsDeleteKey; 
+;;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Workspace; ValueData: "{userdocs}\Workspace"; Flags: UninsDeleteKey;
+;;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Library; ValueData: "{userdocs}\Workspace\Learn\Simple Libraries\"; Flags: UninsDeleteKey;
+;;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinCompiler; ValueData: "{app}\propeller-gcc\bin\bstc.exe"; Flags: UninsDeleteKey; 
+;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinLibrary; ValueData: "{app}\propeller-gcc\spin\"; Flags: UninsDeleteKey; 
+;;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinWorkspace; ValueData: "{userdocs}\Workspace\"; Flags: UninsDeleteKey;
+;Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata};{app}\propeller-gcc\bin;"; Check: NeedsAddPropGccBinPath();
 
 ; File Association. Doesn't work without ChangesAssociations=yes
-Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteValue; Tasks: association; 
-Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: UninsDeleteKey; Tasks: association
-Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1"""
-Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: {app}\bin\SimpleIDE.exe,0; Tasks: association
+Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Tasks: association;  Flags: UninsDeleteKey;
+Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Tasks: association;  Flags: UninsDeleteKey;
+Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: UninsDeleteKey;
+Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,1"; Tasks: association;  Flags: UninsDeleteKey;
 
 ; Startup File
-; Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: {code:GetDataDir}\hello\hello.c; Flags: UninsDeleteKey; 
-Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: "{code:GetDataDir}\My Projects\Welcome.c"; Flags: UninsDeleteKey; 
+;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: "{userdocs}\Workspace\My Projects\Welcome.c"; Flags: UninsDeleteKey; 
 
 [Code]
-var
-  DataDirPage: TInputDirWizardPage;
-  CompilerPage: TInputDirWizardPage;
   
 procedure InitializeWizard;
 begin
   { Create the pages }
-  CompilerPage := CreateInputDirPage(wpSelectDir,
-    'Select Compiler Folder', 'Where is Propeller-GCC installed?',
-    'Select the folder where Propeller-GCC tools will be installed.    Please do not use a folder having spaces in the folder name.',
-    False, '');
-  CompilerPage.Add('');
-  CompilerPage.Values[0] := GetPreviousData('CompilerDir', ExpandConstant('{#compiler}'));
-
-  DataDirPage := CreateInputDirPage(wpSelectDir,
-    'Select Workspace Folder', 'Where should source files be installed?',
-    'Select the folder where Setup will install source files, then click Next.',
-    False, '');
-  DataDirPage.Add('');
-  DataDirPage.Values[0] := GetPreviousData('DataDir', ExpandConstant('{userdocs}')+'\SimpleIDE');
 end;
 
 function UpdateReadyMemo(Space, NewLine, MemoUserInfoInfo, MemoDirInfo, MemoTypeInfo,
@@ -160,21 +147,16 @@ begin
   S := '';
   S := S + MemoGroupInfo + Newline + Newline;
   S := S + MemoDirInfo + Newline + Newline;
-  S := S + 'SimpleIDE Workspace folder:' + Newline + Space + DataDirPage.Values[0] + NewLine + NewLine;
-  S := S + 'Propeller-GCC folder:' + Newline + Space + CompilerPage.Values[0] + NewLine + NewLine;
+  S := S + 'Propeller-GCC folder:' + Newline + Space + ExpandConstant('{app}\{#compiler}') + NewLine + NewLine;
+  S := S + 'SimpleIDE Workspace folder:' + NewLine + Space + 'Will copy to the user Documents\SimpleIDE folder on first SimpleIDE start.' + NewLine;
+  S := S + Space + 'Remove the user Documents\SimpleIDE folder first to get a new workspace.' + NewLine;
   Result := S;
-end;
-
-function GetDataDir(Param: String): String;
-begin
-  { Return the selected DataDir }
-  Result := DataDirPage.Values[0];
 end;
 
 function GetCompilerDir(Param: String): String;
 begin
   { Return the selected CompilerDir }
-  Result := CompilerPage.Values[0];
+  Result := ExpandConstant('{app}\{#compiler}');
 end;
 
 function NeedsAddPath(Param: string): boolean;
@@ -197,20 +179,6 @@ function NeedsAddPropGccBinPath(): boolean;
 var
   str: string;
 begin
-  str := CompilerPage.Values[0]+'\bin';
+  str := ExpandConstant('{app}\{#compiler}')+'\bin';
   Result := NeedsAddPath(str);
 end;
-
-{
-const
-    ModPathName = 'modifypath';
-    ModPathType = 'user';
-
-function ModPathDir(): TArrayOfString;
-begin
-    setArrayLength(Result, 1);
-    Result[0] := ExpandConstant('{#compiler}\bin');
-end;
-include "modpath.iss"
-}
-

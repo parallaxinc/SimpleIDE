@@ -26,7 +26,7 @@ DEFINES += ENABLE_AUTOLIB
 #
 # IDEDEBUG define sends qDebug() output to a Debug TAB.
 # This is most useful with windows as console output is not available there.
-# DEFINES += IDEDEBUG
+DEFINES += IDEDEBUG
 #
 # EVENT_DRIVEN QEXTSERIALPORT is no longer used.
 # GDBENABLE is not ready, and will only be used for development testing
@@ -35,7 +35,7 @@ DEFINES += ENABLE_AUTOLIB
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=27
+DEFINES += FIXVERSION=32
 SOURCES += mainspin.cpp \
     editor.cpp \
     ctags.cpp \

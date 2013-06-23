@@ -198,7 +198,6 @@ public slots:
     void showMapFile();
     int  makeDebugFiles(QString fileName);
 
-    QPlainTextEdit* getDebugEditor();
     void toggleSimpleView();
 
     void showProjectPane(bool show);
@@ -337,7 +336,6 @@ private:
     QMenu           *edpopup;
 
     QPlainTextEdit  *compileStatus;
-    QPlainTextEdit  *debugStatus;
 
     QString         projectFile;
     CBuildTree      *projectModel;
@@ -421,6 +419,11 @@ private:
     BuildC          *buildC;
     BuildSpin       *buildSpin;
     SpinParser      spinParser;
+
+public slots:
+    void ideDebugShow();
+private:
+    int ideDebugTabIndex;
 
 };
 

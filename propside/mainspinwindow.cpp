@@ -88,8 +88,27 @@
 
 #define FileToSDCard "File to SD Card"
 
+/**
+ * Having some global symbols may seem a little odd, but serves a purpose.
+ * This is the IDE debug editor where all qDebug() output goes. The output is
+ * used for IDE debug information displayed by Build Status with CTRL+SHIFT+D.
+ */
+QPlainTextEdit *debugStatus;
+
+void myMessageOutput(QtMsgType type, const char *msg)
+{
+    debugStatus->appendPlainText(msg);
+}
+
 MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 {
+#if defined(IDEDEBUG)
+    debugStatus = new QPlainTextEdit(this);
+    debugStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
+    debugStatus->setReadOnly(true);
+    qInstallMsgHandler(myMessageOutput);
+#endif
+
     /* setup application registry info */
     QCoreApplication::setOrganizationName(publisherKey);
     QCoreApplication::setOrganizationDomain(publisherComKey);
@@ -5212,10 +5231,14 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     statusTabs->addTab(compileStatus,tr("Build Status"));
 
 #if defined(IDEDEBUG)
-    debugStatus = new QPlainTextEdit(this);
-    debugStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
-    //debugStatus->setReadOnly(true);
-    statusTabs->addTab(debugStatus,tr("IDE Debug"));
+    statusTabs->addTab(debugStatus,tr("IDE Debug Info"));
+    ideDebugTabIndex = statusTabs->count()-1;
+    statusTabs->removeTab(ideDebugTabIndex);
+    ideDebugTabIndex = 0;
+    QAction *ideDebugAction = new QAction(tr("Show IDE Debug Info"), this);
+    ideDebugAction->setShortcut(Qt::CTRL+Qt::ShiftModifier+Qt::Key_D);
+    connect(ideDebugAction,SIGNAL(triggered()),this,SLOT(ideDebugShow()));
+    this->addAction(ideDebugAction);
 #endif
 
 #if defined(GDBENABLE)
@@ -7150,11 +7173,6 @@ void MainSpinWindow::setupToolBars()
 
 }
 
-QPlainTextEdit* MainSpinWindow::getDebugEditor()
-{
-    return this->debugStatus;
-}
-
 void MainSpinWindow::toggleSimpleView()
 {
      simpleViewType = !simpleViewType;
@@ -7341,4 +7359,17 @@ void MainSpinWindow::splitterChanged()
 {
     showProjectPane(leftSplit->isVisible());
     showStatusPane(statusTabs->isVisible());
+}
+
+void MainSpinWindow::ideDebugShow()
+{
+    if(ideDebugTabIndex != 0) {
+        statusTabs->removeTab(ideDebugTabIndex);
+        ideDebugTabIndex = 0;
+    }
+    else {
+        statusTabs->addTab(debugStatus,tr("IDE Debug Info"));
+        ideDebugTabIndex = statusTabs->count()-1;
+        statusTabs->setCurrentIndex(ideDebugTabIndex);
+    }
 }
