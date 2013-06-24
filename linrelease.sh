@@ -151,6 +151,12 @@ if test $? != 0; then
 ls -alRF ${VERSION}/bin
 fi
 
+cp ${QUAZIP}/lib*.so* ${VERSION}/bin
+if test $? != 0; then
+   echo "copy ${QUAZIP} failed."
+   exit 1
+fi
+
 rm -rf parallax
 cp -r ${PROPGCC} ${VERSION}
 if test $? != 0; then
