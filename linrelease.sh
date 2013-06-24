@@ -21,6 +21,13 @@ SPINLIB="./spin"
 
 CLEAN=$1
 
+if [ ! -e ./Workspace ]
+then
+    echo "SimpleIDE Workspace not found. Add it with this command:"
+    echo "hg clone https://jsdenson@code.google.com/p/propsideworkspace/ Workspace"
+    exit 1
+fi
+
 UARCH=`arch`
 UNAME=`uname -n`
 if [ `uname -s` = "msys" ]; then
@@ -189,9 +196,9 @@ if test $? != 0; then
    exit 1
 fi
 
-rm -rf ${VERSION}/Documents/SimpleIDE
-mkdir  ${VERSION}/Documents
-cp -r ./workspace/ ${VERSION}/Documents/SimpleIDE
+rm -rf ${VERSION}/Documents
+rm -rf ${VERSION}/Workspace
+cp -r ./Workspace/ ${VERSION}/Workspace
 if test $? != 0; then
    echo "copy workspace failed."
    exit 1
