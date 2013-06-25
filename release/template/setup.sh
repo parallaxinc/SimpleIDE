@@ -25,7 +25,7 @@ THISUSER=root
 if [ x$1 != x ]; then
     THISUSER=$1
 fi
-echo "Installing ./simpleide as ${THISUSER}"
+echo "Installing ${STARTPRG} as ${THISUSER}"
 
 #
 # if we don't have simpleide name here,
@@ -37,11 +37,16 @@ if [ ! -e $STARTPRG ]; then
         cp -rf ./${PRODNAME} /opt
     fi
     if [ -e $PRGCCBIN ]; then
-        echo "Found Users $PRGCCBIN"
+        echo "Found $PRGCCBIN"
         cp -f $CTAGPROG $PRGCCBIN
         cp $TEMPLATE $STARTPRG
         chmod u+x $STARTPRG
         chown $THISUSER $STARTPRG
+        echo ""
+        echo "On first run ./simpleide will install ~/Documents/SimpleIDE ."
+        echo "Remove ~/Documents/SimpleIDE to get a new copy of the workspace."
+        echo "Previous users should remove ~/.config/ParallaxInc/SimpleIDE.conf ."
+        echo ""
         echo "Setup complete. To run program use: $STARTPRG"
     else
         echo "$PRGCCBIN not found. Please install Propeller-GCC and run setup.sh again."
