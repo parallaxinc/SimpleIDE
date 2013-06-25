@@ -23,23 +23,43 @@ In the instruction below SimpleIDE-packagename.bz2 refers to the package
 such as SimpleIDE-0-6-2-i686-linux.bz2. SimpleIDE-version refers to the
 SimpleIDE version such as SimpleIDE-0-6-2.
 
-1. Optionally download and install Propeller-GCC to /opt/parallax
-2. Unpack SimpleIDE with $ tar -xjf SimpleIDE-packagename.bz2
-3. Change directory $ cd SimpleIDE-version.
-4. Setup with $ sudo ./setup.sh $USER (or use root $ ./setup.sh username)
-5. Run with $ ./simpleide
-6. In SimpleIDE Compiler Properties:
- a. Choose the compiler from /opt/parallax/bin
- b. Choose the loader path as /opt/parallax/propeller-load
- c. Choose a workspace for new projects.
-7. Open the hello demo from SimpleIDE-version/demos/hello/hello.side
+INSTALL
 
-Please read the SimpleIDE User Guide on the web for using the IDE.
-The PropellerGCC web site address is: http://www.parallax.com/propellergcc
+1. Unpack SimpleIDE with $ tar -xjf SimpleIDE-packagename.bz2
+2. Change directory $ cd SimpleIDE-version.
+3. Setup with $ sudo ./setup.sh $USER (or use root $ ./setup.sh username)
+4. SimpleIDE workspace:
+ a. Remove ~/Documents/SimpleIDE to get a new copy of the workspace.
+ b. On first run ./simpleide will install ~/Documents/SimpleIDE files.
+5. Previous users should remove the ~/.config/ParallaxInc/SimpleIDE.conf file.
 
-SimpleIDE is MIT licensed.
-Copyright (C) 2012 Parallax, Inc.
+RUN
 
+1. Run with $ ./simpleide
+2. SimpleIDE Compiler Properties should have:
+ a. Compiler /opt/parallax/bin
+ b. Loader path /opt/parallax/propeller-load
+ c. Workspace ~/Documents/SimpleIDE
+3. SimpleIDE should start with the Welcome.c demo
+
+Documentation
+
+The SimpleIDE User Guide can be found in Program Help Menu.
+The SimpleIDE Simple Libraray help can be found in Program Help Menu.
+
+Parallax Education site: http://learn.parallax.com
+Propeller-C Tutorial site: http://learn.parallax.com/propeller-c
+
+PropellerGCC site address is: http://www.parallax.com/propellergcc
+PropellerGCC source site address is: http://www.parallax.com/propgcc
+SimpleIDE source site address is: https://code.google.com/p/propside
+
+PropellerGCC is a GNU GCC OpenSource project released according to GPLV3.
+PropellerGCC does not require your application to be GPL.
+
+
++---------------------------------------------------------------------
+| Copyright (C) 2012-2013 Parallax, Inc.
 +---------------------------------------------------------------------
 | TERMS OF USE: MIT License
 +---------------------------------------------------------------------

@@ -103,19 +103,19 @@ QString Properties::getApplicationWorkspace()
     /*
      * By convention in Windows we keep a SimpleIDE workspace in
      *   "Program Files\SimpleIDE\Workspace"
-     * In Mac it's in /opt/parallax.
+     * In Mac and Linux it's in /opt/parallax.
      * For development it can be set to another value.
      */
     QString pkwrk;
-#if defined(Q_WS_MAC)
+#if defined(Q_WS_WIN32)
+    pkwrk = QApplication::applicationDirPath()+"/";
+#else
     QVariant compv  = settings.value(gccCompilerKey, pkwrk);
     if(compv.canConvert(QVariant::String)) {
         QString s = compv.toString();
         s = s.mid(0,s.lastIndexOf("/")+1);
         pkwrk = s;
     }
-#else
-    pkwrk = QApplication::applicationDirPath()+"/";
 #endif
     pkwrk += "../Workspace/";
 

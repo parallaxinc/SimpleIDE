@@ -24,7 +24,7 @@ CLEAN=$1
 if [ ! -e ./Workspace ]
 then
     echo "SimpleIDE Workspace not found. Add it with this command:"
-    echo "hg clone https://jsdenson@code.google.com/p/propsideworkspace/ Workspace"
+    echo "hg clone https://code.google.com/p/propsideworkspace/ Workspace"
     exit 1
 fi
 
@@ -196,14 +196,13 @@ if test $? != 0; then
    exit 1
 fi
 
-rm -rf ${VERSION}/Documents
-rm -rf ${VERSION}/Workspace
-cp -r ./Workspace/ ${VERSION}/Workspace
+rm -rf ${VERSION}/parallax/Workspace
+cp -r ./Workspace/ ${VERSION}/parallax
 if test $? != 0; then
    echo "copy workspace failed."
    exit 1
 fi
-rm -rf ${VERSION}/Documents/SimpleIDE/.hg
+rm -rf ${VERSION}/parallax/Workspace/.hg
 if test $? != 0; then
    echo "remove workspace .hg tracking failed."
    exit 1
