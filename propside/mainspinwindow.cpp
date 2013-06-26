@@ -95,10 +95,12 @@
  */
 QPlainTextEdit *debugStatus;
 
+#if defined(IDEDEBUG)
 void myMessageOutput(QtMsgType type, const char *msg)
 {
     debugStatus->appendPlainText(msg);
 }
+#endif
 
 MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 {
