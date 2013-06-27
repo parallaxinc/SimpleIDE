@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-32"
+#define MyAppVersion "0-9-34"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -60,7 +60,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; Flags: check
 ; GroupDescription: "{cm:AdditionalIcons}"; 
 Name: "association"; Description: "Associate *.side Files with SimpleIDE"; Flags: checkedonce;
 ; GroupDescription: "File Association:"; 
-Name: "modifypath"; Description: "&Add Propeller-GCC directory to your environment PATH"; Flags: checkedonce;
+;Name: "modifypath"; Description: "&Add Propeller-GCC directory to your environment PATH"; Flags: checkedonce;
 ; GroupDescription: "Propeller-GCC Path:"
 
 [Files]
@@ -80,19 +80,18 @@ Source: "{#MyGccMingwPath}\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignor
 Source: "{#MyGccMingwPath}\bin\libstdc++*"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\bin\quazip1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 
+; Use only for debug version
+;Source: "{#MyQtPath}\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+
 ; remove temporarily for faster testing
 ; putback for package
 Source: "{#MyQtPath}\bin\QtCore4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\bin\QtGui4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-;Source: "{#MyQtPath}\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccPath}\*"; DestDir: "{app}\propeller-gcc"; Flags: ignoreversion recursesubdirs createallsubdirs
-
+Source: "{#MyEduLibPath}\*"; DestDir: "{app}\Workspace"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Stephanie says not to include the Spin folder with all docs - this one trims the docs.
 Source: "{#MySpinPath}\*"; DestDir: "{app}\propeller-gcc\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
-
-;Source: "{#MyEduLibPath}\My Projects\*"; DestDir: "{app}\templates"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#MyEduLibPath}\*"; DestDir: "{app}\Workspace"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 Source: "..\ctags-5.8\ctags.exe"; DestDir: "{app}\propeller-gcc\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{app}\propeller-gcc\bin"; Flags: ignoreversion
@@ -120,7 +119,7 @@ Root: HKCU; SubKey: Software\{#MyAppPublisher}\SimpleIDE; Flags: UninsDeleteKey;
 ;;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinCompiler; ValueData: "{app}\propeller-gcc\bin\bstc.exe"; Flags: UninsDeleteKey; 
 ;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinLibrary; ValueData: "{app}\propeller-gcc\spin\"; Flags: UninsDeleteKey; 
 ;;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_SpinWorkspace; ValueData: "{userdocs}\Workspace\"; Flags: UninsDeleteKey;
-;Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata};{app}\propeller-gcc\bin;"; Check: NeedsAddPropGccBinPath();
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata}"; Check: NeedPropGccBinPath();
 
 ; File Association. Doesn't work without ChangesAssociations=yes
 Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Tasks: association;  Flags: UninsDeleteKey;
@@ -159,6 +158,89 @@ begin
   Result := ExpandConstant('{app}\{#compiler}');
 end;
 
+function CleanPathString(OldPath: string): boolean;
+var
+  OrigPath: string;
+  PropPath: string;
+  PropIndex: integer;
+  PropLen: Integer;
+  Deleted: boolean;
+begin
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE,'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
+  then begin
+    Result := False;
+    exit;
+  end;
+  
+  // look for string like "C:\propgcc\bin" in PATH
+  // Pos() returns 0 if not found
+  PropPath := OldPath;
+  PropLen := Length(PropPath);
+  repeat
+    PropIndex := Pos(PropPath, UpperCase(OrigPath));
+    if PropIndex <> 0  then begin
+      Delete( OrigPath, PropIndex, PropLen );
+      Deleted := true; 
+    end;  
+  until PropIndex = 0;
+
+  if Deleted then
+    RegWriteExpandStringValue(HKEY_LOCAL_MACHINE,'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
+  Result := True;
+end;
+
+{
+// this doesn't seem to work! can't rely on it.
+function CleanDoubleSemi(): boolean;
+var
+  OrigPath: string;
+  Semi2: string;
+  Semi2Index: integer;
+  Deleted: boolean;
+begin
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE,'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
+  then begin
+    Result := False;
+    exit;
+  end;
+  
+  // remove one ; from any double ;;
+  Semi2 := ';;';
+  repeat
+    Semi2Index := Pos(OrigPath, Semi2);
+    if Semi2Index <> 0 then begin
+      Delete( OrigPath, Semi2Index, 1 );
+      Deleted := true; 
+    end;
+  until Semi2Index = 0;
+  
+  if Deleted then
+    RegWriteExpandStringValue(HKEY_LOCAL_MACHINE,'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
+  Result := True;
+end;
+}
+
+function SetPath(NewPath: string): boolean;
+var
+  OrigPath: string;
+  PropPath: string;
+  PropIndex: integer;
+  PropLen: Integer;
+  Semi2: string;
+  Semi2Index: integer;
+begin
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE,'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
+  then begin
+    Result := False;
+    exit;
+  end;
+  
+  OrigPath := OrigPath + ';' + NewPath + ';';
+
+  RegWriteExpandStringValue(HKEY_LOCAL_MACHINE,'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
+  Result := True;
+end;
+   
 function NeedsAddPath(Param: string): boolean;
 var
   OrigPath: string;
@@ -168,17 +250,23 @@ begin
     Result := True;
     exit;
   end;
-  // look for the path with leading and trailing semicolon
+  // look for the path with leading semicolon
   // Pos() returns 0 if not found
-  Result := Pos(';' + UpperCase(Param) + ';', ';' + UpperCase(OrigPath) + ';') = 0;  
-  if Result = True then
-     Result := Pos(';' + UpperCase(Param) + '\;', ';' + UpperCase(OrigPath) + ';') = 0; 
+  Result := Pos(';' + UpperCase(Param) + ';', ';' + UpperCase(OrigPath)) = 0;  
+  //if Result = True then
+  //   Result := Pos(';' + UpperCase(Param) + '\;', ';' + UpperCase(OrigPath) + ';') = 0; 
 end;
 
-function NeedsAddPropGccBinPath(): boolean;
+function NeedPropGccBinPath(): boolean;
 var
   str: string;
 begin
+  CleanPathString(';C:\PROPGCC\BIN');
+  CleanPathString('C:\PROPGCC\BIN'); // incase it was the first entry
   str := ExpandConstant('{app}\{#compiler}')+'\bin';
   Result := NeedsAddPath(str);
+  if Result then
+    SetPath(str);
+  //CleanDoubleSemi(); // can't make this work
 end;
+
