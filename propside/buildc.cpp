@@ -723,14 +723,20 @@ int  BuildC::runCompiler(QStringList copts)
         // is enabled, then we can end up with the wrong library.
         libadd = getLibraryList(newList);
         foreach(QString s, libadd) {
-            ILlist.append("-I");
-            ILlist.append(s);
-            ILlist.append("-L");
-            ILlist.append(s+"/"+this->outputPath);
+            if(ILlist.contains(s) == false) {
+                ILlist.append("-I");
+                ILlist.append(s);
+                ILlist.append("-L");
+                ILlist.append(s+"/"+this->outputPath);
+            }
             s = s.mid(s.lastIndexOf("/")+1);
-            if(s.indexOf("lib") == 0)
+
+            if(s.indexOf("lib") == 0) {
                 s = s.mid(3);
-            libs.append("-l"+s);
+                s = "-l"+s;
+                if(libs.contains(s) == false)
+                    libs.append(s);
+            }
         }
     }
 #endif
@@ -845,6 +851,7 @@ int  BuildC::runCompiler(QStringList copts)
 
     // add libs back
     // skip the project library if it was also included in the linker options
+#if 0
     foreach(QString s, libs) {
         if(libbase.mid(0, 3) == "lib" && libbase.mid(3) == s.mid(2)) {
             if(projectOptions->getMakeLibrary().isEmpty() != true)
@@ -853,14 +860,15 @@ int  BuildC::runCompiler(QStringList copts)
         }
         args.append(s);
     }
+#endif
 
-#ifdef AUTOLIB
+#if 0
     /*
      * libraries - use libs to make copy, then add it twice to args.
      * we do this because there may be some library interdependencies.
      */
     //QStringList libs;
-    libs.clear();
+    //libs.clear();
 
     if(projectOptions->getTinyLib().length()) {
         if(model.contains("cog",Qt::CaseInsensitive) == true) {
@@ -883,14 +891,17 @@ int  BuildC::runCompiler(QStringList copts)
             libs.append(linkopt);
         }
     }
+#endif
 
     /* append libs lib count times */
     for(int n = libs.count(); n > 0; n--) {
-        foreach(QString s, libs) {
-            args->append(s);
+        int m = 0;
+        for(; m < libs.count(); m++) {
+            //foreach(QString s, libs) {
+            args.append(libs[m]);
         }
+        libs.removeAt(m-1); // optimize library add
     }
-#endif
 
     // this is the final compile/link
     rc = startProgram(compstr,sourcePath(projectFile),args);
