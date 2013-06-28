@@ -4449,6 +4449,7 @@ void MainSpinWindow::programDebug()
     term->getEditor()->setPortEnable(true);
     term->setPortName(cbPort->currentText());
     term->activateWindow();
+    term->setPortEnabled(true);
     term->show();
     term->getEditor()->setFocus();
     cbPort->setEnabled(false);
