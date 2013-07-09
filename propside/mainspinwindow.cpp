@@ -356,49 +356,16 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 void MainSpinWindow::keyHandler(QKeyEvent* event)
 {
     //qDebug() << "MainSpinWindow::keyHandler";
-#if 1
-    int key = termEditor->eventKey(event);
-    if(key < 1) return;
-#else
-    int key = event->key();
-    switch(key)
-    {
-    case Qt::Key_Enter:
-    case Qt::Key_Return:
-        key = termEditor->getEnter();
-        break;
-    case Qt::Key_Backspace:
-        key = '\b';
-        break;
-    case Qt::Key_Alt:
+    QString s = termEditor->eventKey(event);
+    if(!s.length())
         return;
-    case Qt::Key_Control:
-        return;
-    case Qt::Key_Shift:
-        return;
-    default:
-        if(QApplication::keyboardModifiers() & Qt::CTRL) {
-            key &= ~0xe0;
-        }
-        else {
-            if(event->text().length() > 0) {
-                QChar c = event->text().at(0);
-                key = (int)c.toAscii();
-            }
-        }
-        break;
-    }
-#endif
-
-    QByteArray barry;
-    barry.append((char)key);
-    portListener->send(barry);
+    sendPortMessage(s);
 }
 
 void MainSpinWindow::sendPortMessage(QString s)
 {
     QByteArray barry;
-    foreach(QChar c, s) {
+    foreach(QChar c, s.toUtf8()) {
         barry.append(c);
         portListener->send(barry);
         barry.clear();
