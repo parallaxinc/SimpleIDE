@@ -12,7 +12,7 @@ public:
     void setPortEnable(bool value);
     bool enabled();
     void clear();
-    int  eventKey(QKeyEvent* event);
+    QString eventKey(QKeyEvent* event);
 
     void setEnableClearScreen(bool value);
     void setEnableHomeCursor(bool value);

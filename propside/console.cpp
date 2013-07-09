@@ -54,37 +54,37 @@ void Console::clear()
     setPlainText("");
 }
 
-int  Console::eventKey(QKeyEvent* event)
+QString Console::eventKey(QKeyEvent* event)
 {
     int key = event->key();
+
     switch(key)
     {
     case Qt::Key_Enter:
     case Qt::Key_Return:
-        key = getEnter();
+        if(enableEnterIsNL)
+            return QString("\n");
+        else
+            return QString("\r");
         break;
     case Qt::Key_Backspace:
-        key = '\b';
-        break;
+        return QString("\b");
     case Qt::Key_Alt:
-        return 0;
     case Qt::Key_Control:
-        return 0;
     case Qt::Key_Shift:
-        return 0;
+        return QString("");
     default:
         if(QApplication::keyboardModifiers() & Qt::CTRL) {
             key &= ~0xe0;
         }
         else {
             if(event->text().length() > 0) {
-                QChar c = event->text().at(0);
-                key = (int)c.toAscii();
+                return event->text();
             }
         }
         break;
     }
-    return key;
+    return QString("");
 }
 
 void Console::keyPressEvent(QKeyEvent *event)
@@ -102,12 +102,11 @@ void Console::keyPressEvent(QKeyEvent *event)
         parentMain->sendPortMessage(clip->text());
     }
     else {
-        int key = eventKey(event);
-        if(key < 1)
+        QString s = eventKey(event);
+        if(!s.length())
             return;
         if(this->enableEchoOn) {
-            if(isascii(key) != 0)
-                this->insertPlainText(QChar(key));
+            this->insertPlainText(s);
         }
         parentMain->keyHandler(event);
     }
@@ -528,10 +527,9 @@ void Console::update(char ch)
 
             case EN_MoveCursorRight: {
                     if(this->enableMoveCursorRight) {
-                        if(cur.columnNumber() < cur.block().length())
-                            cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor);
-                        else
+                        if(cur.columnNumber() >= cur.block().length()-1)
                             cur.insertText(" ");
+                        cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor);
                         setTextCursor(cur);
                     }
                 }
