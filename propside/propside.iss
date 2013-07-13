@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-34"
+#define MyAppVersion "0-9-36"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -223,11 +223,6 @@ end;
 function SetPath(NewPath: string): boolean;
 var
   OrigPath: string;
-  PropPath: string;
-  PropIndex: integer;
-  PropLen: Integer;
-  Semi2: string;
-  Semi2Index: integer;
 begin
   if not RegQueryStringValue(HKEY_LOCAL_MACHINE,'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
   then begin
