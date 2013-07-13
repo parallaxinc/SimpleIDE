@@ -2731,6 +2731,7 @@ bool MainSpinWindow::isInFilterList(QString file, QStringList list)
  * Zip project saves any referenced non-standard libraries into a single library folder in the existing project.
  * It then creates an archive project such as name_zip.side or name_archive.side having adjusted path names.
  * If project options "Create Project Library" is checked, we save mem-model/\*.a and \*.elf, else no mem-model folders are archived.
+ * If Auto Include Simple Libraries is checked in Properties->General add included libraries to zip.
  * If leave zip folder option is checked, don't remove the intermediate zip folder.
  */
 void MainSpinWindow::zipProject()
@@ -3049,6 +3050,54 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
 
     // WORK IN PROGRESS
     // need to call gcc -M to find other includes.
+
+#ifdef ENABLE_AUTOLIB
+    QString linkopts;
+    QStringList libs;
+    if(this->propDialog->getAutoLib()) {
+        QStringList libadd;
+        QStringList addList;
+        // With autolib only use Simple Libraries newList is empty
+        // This means we don't search the existing folder for libraries.
+        // If we search the existing folder for libraries and autolib
+        // is enabled, then we can end up with the wrong library.
+        QDir path(srcPath);
+        libadd = buildC->getLibraryList(addList,dstProjFile);
+        foreach(QString s, libadd) {
+            s = path.relativeFilePath(s);
+            QString tmps = s;
+            tmps = tmps.remove("../");
+            if(projList.contains(tmps) == false) {
+                projList.append("-I "+s);
+                projList.append("-L "+s);
+            }
+
+            s = s.mid(s.lastIndexOf("/")+1);
+
+            if(s.indexOf("lib") == 0) {
+                s = s.mid(3);
+                s = "-l"+s;
+                if(libs.contains(s) == false)
+                    libs.append(s);
+            }
+        }
+
+        linkopts = projectOptions->getLinkOptions();
+        /* append libs final compile optimizes */
+        for(int n = libs.count()-1; n > -1; n--) {
+            linkopts += " " + libs[n];
+        }
+        linkopts = linkopts.trimmed();
+        for(int n = 1; n < projList.length(); n++) {
+            QString item = projList.at(n);
+            if(item.contains(">linker::")) {
+                linkopts += item;
+                projList.removeAt(n);
+            }
+        }
+        projList.append(">linker::"+linkopts);
+    }
+#endif
 
     QStringList newList;
     // start at 1 because main filename has already been copied
