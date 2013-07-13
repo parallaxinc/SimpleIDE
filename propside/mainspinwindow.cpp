@@ -3062,7 +3062,7 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
         // If we search the existing folder for libraries and autolib
         // is enabled, then we can end up with the wrong library.
         QDir path(srcPath);
-        libadd = buildC->getLibraryList(addList,dstProjFile);
+        libadd = buildC->getLibraryList(addList,projFile);
         foreach(QString s, libadd) {
             s = path.relativeFilePath(s);
             QString tmps = s;
