@@ -721,7 +721,7 @@ int  BuildC::runCompiler(QStringList copts)
         // This means we don't search the existing folder for libraries.
         // If we search the existing folder for libraries and autolib
         // is enabled, then we can end up with the wrong library.
-        libadd = getLibraryList(newList);
+        libadd = getLibraryList(newList,this->projectFile);
         foreach(QString s, libadd) {
             if(ILlist.contains(s) == false) {
                 ILlist.append("-I");
@@ -1261,13 +1261,13 @@ void BuildC::appendLoaderParameters(QString copts, QString file, QStringList *ar
 
 #include <directory.h>
 
-QStringList BuildC::getLibraryList(QStringList &ILlist)
+QStringList BuildC::getLibraryList(QStringList &ILlist, QString projFile)
 {
     QSettings settings(publisherKey,ASideGuiKey);
     QStringList newList;
-    QString project = this->projectFile;
+    //QString projFile = this->projectFile;
 
-    if(QFile::exists(project) == false)
+    if(QFile::exists(projFile) == false)
         return newList;
 
     QVariant libv = settings.value(gccLibraryKey);
@@ -1280,7 +1280,7 @@ QStringList BuildC::getLibraryList(QStringList &ILlist)
 
     QStringList files;
     QString file;
-    QFile proj(projectFile);
+    QFile proj(projFile);
     if(proj.open(QFile::ReadOnly | QFile::Text)) {
         file = proj.readAll();
         proj.close();
@@ -1307,35 +1307,10 @@ QStringList BuildC::getLibraryList(QStringList &ILlist)
     for(int n = 0; n < ILlist.count(); n+=2) {
         ilist.append(ILlist.at(n)+" "+ILlist.at(n+1));
     }
-    QString projectPath = projectFile;
+    QString projectPath = projFile;
     projectPath = projectPath.left(projectPath.lastIndexOf("/"));
     foreach(QString srcFile, srcList) {
         autoAddLib(projectPath, srcFile, libdir, ilist, &newList);
-#if 0
-        // autoAddLib does this now. we need autoAddLib to be recursive.
-        QString include("#include ");
-        QStringList findlist = Directory::findList(projectPath+"/"+srcFile, include);
-        foreach(QString inc, findlist) {
-            inc = inc.mid(inc.indexOf(include)+include.length());
-            inc = inc.trimmed();
-            if(inc.at(0) == '<')
-                continue;
-            if(inc.endsWith('>'))
-                continue;
-            if(inc.at(0) == '"') inc = inc.mid(1);
-            if(inc.endsWith('"'))inc = inc.left(inc.count()-1);
-            inc = inc.trimmed();
-            inc = "lib"+inc;
-            inc = inc.mid(0,inc.indexOf(".h"));
-            QString lib = Directory::recursiveFindFile(libdir,inc);
-            QDir dir(projectPath);
-            lib = dir.relativeFilePath(lib);
-            QString libpath = "-L "+lib;
-            if(lib.isEmpty() == false && ilist.contains(libpath) == false) {
-                newList.append(lib);
-            }
-        }
-#endif
     }
     return newList;
 }
