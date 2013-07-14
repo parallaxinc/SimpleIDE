@@ -62,10 +62,13 @@ QString Console::eventKey(QKeyEvent* event)
     {
     case Qt::Key_Enter:
     case Qt::Key_Return:
+        return QString("\r");
+#ifdef ENABLE_ENTER_ISNL
         if(enableEnterIsNL)
             return QString("\n");
         else
             return QString("\r");
+#endif
         break;
     case Qt::Key_Backspace:
         return QString("\b");

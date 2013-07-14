@@ -22,6 +22,7 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     if (ensureOutputDirectory() != 0)
         return -1;
 
+
     projName = shortFileName(projectFile).replace(".side", ".c");
     exeName = projName.mid(0, projName.lastIndexOf(".")) + ".elf";
     exePath = outputPath + exeName;
@@ -59,6 +60,8 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\r\n");
     compileStatus->moveCursor(QTextCursor::End);
     status->setText(tr("Building ..."));
+
+    showCompilerVersion();
 
     foreach(QString item, list) {
         if(item.length() == 0) {
@@ -339,9 +342,31 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     return rc;
 }
 
+int  BuildC::showCompilerVersion()
+{
+    int rc = 0;
+    QStringList args;
+    args.append("-v");
+    QString compstr;
+#if defined(Q_WS_WIN32)
+    compstr = shortFileName(aSideCompiler);
+#else
+    compstr = aSideCompiler;
+#endif
+    if(checkCompilerInfo()) {
+        return -1;
+    }
+    rc = startProgram(compstr, sourcePath(projectFile), args);
+    return rc;
+}
+
 int  BuildC::runCOGC(QString name, QString outext)
 {
     int rc = 0; // return code
+
+    if(checkCompilerInfo()) {
+        return -1;
+    }
 
     QString compstr = shortFileName(aSideCompiler);
     QString objcopy = "propeller-elf-objcopy";

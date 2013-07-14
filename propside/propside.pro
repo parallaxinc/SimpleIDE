@@ -1,10 +1,8 @@
 # -------------------------------------------------
 # Project created by QtCreator 2011-11-19T08:29:49
 # -------------------------------------------------
-#
 # Windows builds must use library 4.8.0 otherwise QuaZip fails.
 # Same goes for QuaZip build.
-#
 QT += core \
     gui
 TARGET = SimpleIDE
@@ -12,7 +10,7 @@ TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 DEFINES += SPINSIDE
 
-#include quazip
+# include quazip
 SUBDIRS += ../quazip-0.5/quazip
 INCLUDEPATH += ../quazip-0.5/quazip
 INCLUDEPATH += $$[QT_INSTALL_PREFIX]/src/3rdparty/zlib
@@ -23,17 +21,14 @@ DEFINES += SPIN
 
 # Experimental AutoLib feature
 DEFINES += ENABLE_AUTOLIB
-#
+
 # IDEDEBUG define sends qDebug() output to a Debug TAB.
 # This is most useful with windows as console output is not available there.
-#
 # Don't use IDEDEBUG in release! It BREAKS Translations!
 # DEFINES += IDEDEBUG
-#
 # EVENT_DRIVEN QEXTSERIALPORT is no longer used.
 # GDBENABLE is not ready, and will only be used for development testing
 # DEFINES += GDBENABLE
-#
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
@@ -74,7 +69,8 @@ SOURCES += mainspin.cpp \
     blinker.cpp \
     buildstatus.cpp \
     highlightbuild.cpp \
-    directory.cpp
+    directory.cpp \
+    PropellerID.cpp
 HEADERS += mainspinwindow.h \
     editor.h \
     ctags.h \
@@ -113,29 +109,30 @@ HEADERS += mainspinwindow.h \
     blinker.h \
     buildstatus.h \
     highlightbuild.h \
-    directory.h
+    directory.h \
+    DeviceID.h \
+    PropellerID.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \
     hintdialog.ui
 RESOURCES += resources.qrc
+
 # linux quazip doesn't need version, but windows does
-unix {
+unix { 
     SOURCES += qextserialport_unix.cpp
-    LIBS += -lquazip -lz
-}
-# dont use EVENT_DRIVEN for linux to be consistent with MAC.
-unix:!macx {
-    SOURCES += qextserialenumerator_unix.cpp
+    LIBS += -lquazip \
+        -lz
 }
 
+# dont use EVENT_DRIVEN for linux to be consistent with MAC.
+unix:!macx:SOURCES += qextserialenumerator_unix.cpp
 macx { 
     ICON = $${PWD}/SimpleIDE.icns
-
+    
     # dont use EVENT_DRIVEN for mac. must open terminal before load because mac would reset boards otherwise.
     SOURCES += qextserialenumerator_osx.cpp
-    LIBS += \
-        -framework \
+    LIBS += -framework \
         IOKit \
         -framework \
         CoreFoundation

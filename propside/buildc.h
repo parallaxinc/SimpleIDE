@@ -14,6 +14,8 @@ public:
     int  makeDebugFiles(QString fileName, QString projfile, QString compiler);
     QString getOutputPath(QString projfile);
 
+    int  showCompilerVersion();
+
     int  runCOGC(QString filename, QString outext);
     int  runBstc(QString spinfile);
     int  runCogObjCopy(QString datfile, QString tarfile, QString outpath="");
