@@ -2713,6 +2713,7 @@ void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir, QString no
     }
 }
 
+
 bool MainSpinWindow::isInFilterList(QString file, QStringList list)
 {
     if(list.isEmpty())
@@ -2725,6 +2726,44 @@ bool MainSpinWindow::isInFilterList(QString file, QStringList list)
             return true;
     }
     return false;
+}
+
+void MainSpinWindow::flattenDstProject(QString path, QString project)
+{
+    QString projstr;
+    QFile file(path+"/"+project);
+    if(file.exists()) {
+        if(file.open(QFile::ReadOnly | QFile::Text)) {
+            projstr = file.readAll();
+            file.close();
+        }
+    }
+    QStringList list = projstr.split("\n", QString::SkipEmptyParts);
+    QString dst;
+    foreach (QString s, list) {
+        if(s.mid(0,2).compare("-I") == 0 && s.contains("/lib")) {
+            dst = s.mid(s.lastIndexOf("/"));
+            list.removeOne(s);
+            list.append("-I .."+dst);
+        }
+        if(s.mid(0,2).compare("-L") == 0 && s.contains("/lib")) {
+            dst = s.mid(s.lastIndexOf("/"));
+            list.removeOne(s);
+            list.append("-L .."+dst);
+        }
+    }
+    projstr = "";
+    QString main = list.at(0);
+    list.removeFirst();
+    list.sort();
+    list.insert(0,main);
+    foreach (QString s, list) {
+        projstr += s+"\n";
+    }
+    if(file.open(QFile::WriteOnly | QFile::Text)) {
+        file.write(projstr.toAscii());
+        file.close();
+    }
 }
 
 /*
@@ -3057,10 +3096,13 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
     if(this->propDialog->getAutoLib()) {
         QStringList libadd;
         QStringList addList;
-        // With autolib only use Simple Libraries newList is empty
-        // This means we don't search the existing folder for libraries.
-        // If we search the existing folder for libraries and autolib
-        // is enabled, then we can end up with the wrong library.
+        /*
+         * Get all related libraries and add them to the project list.
+         * The zip as it is flattens the libraries, but Simple Libraries are not flat.
+         * So we have a choice of using the Simple Library hierarchy or fixing the library projects.
+         * It is impractical to use the hierarchy because of the way the zip code works.
+         * Changing the zip code is a huge risk. Flattening the projects is a one line zip code change.
+         */
         QDir path(srcPath);
         libadd = buildC->getLibraryList(addList,projFile);
         foreach(QString s, libadd) {
@@ -3192,6 +3234,8 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
                 if(libd.exists(dstPath+zipLib) == false)
                     libd.mkdir(dstPath+zipLib);
                 recursiveCopyDir(als, dstPath+zipLib+dls, QString("*.o *.elf"));
+                // TODO fix projects to flatten here ?
+                flattenDstProject(dstPath+zipLib+dls, dls+".side");
                 als = "./"+zipLib+dls;
                 if(als.length() > 0)
                     item = "-L "+als;

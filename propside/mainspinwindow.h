@@ -208,6 +208,7 @@ public slots:
     void recursiveRemoveDir(QString dir);
     void recursiveCopyDir(QString srcdir, QString dstdir, QString notlist);
     bool isInFilterList(QString file, QStringList list);
+    void flattenDstProject(QString path, QString project);
 
     void zipIt(QString dir);
     QStringList zipCproject(QStringList list, QString srcPath, QString projFile, QString dstPath, QString dstProjFile, QString optype = tr("Zip"));
