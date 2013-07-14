@@ -8,6 +8,11 @@ TermPrefs::TermPrefs(Terminal *term) : ui(new Ui::TermPrefs)
     serialConsole = term->getEditor();
     terminal = term;
 
+#ifndef ENABLE_ENTER_ISNL
+    ui->cbEnterIsNL->setVisible(false);
+    ui->cbSwapNLCR->setVisible(false);
+#endif
+
     /* setup application registry info */
     QCoreApplication::setOrganizationName(publisherKey);
     QCoreApplication::setOrganizationDomain(publisherComKey);

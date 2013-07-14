@@ -36,6 +36,7 @@
 #include "buildc.h"
 #include "buildspin.h"
 #include "spinparser.h"
+#include "DeviceID.h"
 
 #define untitledstr "Untitled"
 
@@ -144,6 +145,9 @@ public slots:
     void fileChanged();
     void keyHandler(QKeyEvent* event);
     void sendPortMessage(QString s);
+
+    void findChip();
+    QString serialPort();
     void enumeratePorts();
     void reloadBoardTypes();
     void initBoardTypes();

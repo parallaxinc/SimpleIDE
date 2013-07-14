@@ -26,6 +26,8 @@ Build::Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, Q
  */
 int Build::runBuild(QString options, QString projfile, QString compiler)
 {
+    if(options.isEmpty() || projfile.isEmpty() || compiler.isEmpty())
+        return -1;
     return -1;
 }
 
@@ -34,6 +36,8 @@ int Build::runBuild(QString options, QString projfile, QString compiler)
  */
 int Build::makeDebugFiles(QString fileName, QString projfile, QString compiler)
 {
+    if(fileName.isEmpty() || projfile.isEmpty() || compiler.isEmpty())
+        return -1;
     return -1;
 }
 
@@ -42,6 +46,8 @@ int Build::makeDebugFiles(QString fileName, QString projfile, QString compiler)
  */
 QString Build::getOutputPath(QString projfile)
 {
+    if(projfile.isEmpty())
+        return "";
     return "";
 }
 
@@ -228,6 +234,15 @@ void Build::procReadyRead()
         isbstc = true;
         if(QString(bytes).contains("Error",Qt::CaseInsensitive)) {
             procResultError = true;
+        }
+    }
+
+    if(progname.contains("propeller-elf-gcc") && bytes.contains("gcc version")) {
+        QString line = QString(bytes);
+        QStringList lines = line.split("gcc version",QString::SkipEmptyParts);
+        if(lines.count() > 0) {
+            compileStatus->insertPlainText(" GCC "+QString(lines[1]).trimmed());
+            return;
         }
     }
 
@@ -478,4 +493,6 @@ void Build::removeArg(QStringList &list, QString arg)
 
 void Build::appendLoaderParameters(QString copts, QString projfile, QStringList *args)
 {
+    if(copts.isEmpty() || projfile.isEmpty() || args->isEmpty())
+        return;
 }

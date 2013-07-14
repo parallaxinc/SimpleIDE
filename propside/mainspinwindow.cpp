@@ -37,6 +37,7 @@
 #include "buildstatus.h"
 #include "quazip.h"
 #include "quazipfile.h"
+#include "PropellerID.h"
 
 #define ENABLE_ADD_LINK
 #define APP_FOLDER_TEMPLATES
@@ -62,6 +63,7 @@
 #define SIDE_EXTENSION ".side"
 #define SPIN_TEXT      "SPIN"
 #define SPIN_EXTENSION ".spin"
+#define AUTO_PORT "AUTO"
 
 #define CloseFile "Close"
 #define NewFile "&New"
@@ -544,6 +546,8 @@ void MainSpinWindow::quitProgram()
 
         QString boardstr = cbBoard->itemText(cbBoard->currentIndex());
         QString portstr = cbPort->itemText(cbPort->currentIndex());
+        if(portstr.compare(AUTO_PORT) == 0)
+            portstr = serialPort();
 
         settings->setValue(lastBoardNameKey,boardstr);
         settings->setValue(lastPortNameKey,portstr);
@@ -4507,7 +4511,7 @@ void MainSpinWindow::programDebug()
     btnConnected->setChecked(true);
     term->getEditor()->setPlainText("");
     term->getEditor()->setPortEnable(true);
-    term->setPortName(cbPort->currentText());
+    term->setPortName(serialPort());
     term->activateWindow();
     term->setPortEnabled(true);
     term->show();
@@ -4533,7 +4537,7 @@ void MainSpinWindow::debugCompileLoad()
         return;
 
     /* start debugger */
-    QString port = cbPort->currentText();
+    QString port = serialPort();
 
     /* set gdb tab */
     for(int n = statusTabs->count(); n >= 0; n--) {
@@ -4919,6 +4923,8 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts, QString file)
     }
 
     portName = cbPort->itemText(cbPort->currentIndex());
+    if(portName.compare(AUTO_PORT) == 0)
+        portName = serialPort();
     QString bname = this->cbBoard->currentText();
     boardName = bname;
     QString sdrun = ASideConfig::UserDelimiter+ASideConfig::SdRun;
@@ -6549,11 +6555,47 @@ int MainSpinWindow::makeDebugFiles(QString fileName)
     return rc;
 }
 
+void MainSpinWindow::findChip()
+{
+    PropellerID dev(DeviceID::RESET_BY_DTR);
+    if(this->propDialog->getResetType() == Properties::RTS)
+        dev.setRtsReset();
+
+    for (int n = 1; n < cbPort->count(); n++) {
+        QString s = cbPort->itemText(n);
+        if(dev.isDevice(s)) {
+            cbPort->setCurrentIndex(n);
+            return;
+        }
+    }
+}
+
+QString MainSpinWindow::serialPort()
+{
+    PropellerID dev(DeviceID::RESET_BY_DTR);
+    if(this->propDialog->getResetType() == Properties::RTS)
+        dev.setRtsReset();
+
+    QString name = cbPort->currentText();
+
+    if (name.compare(AUTO_PORT) == 0) {
+        for (int n = 1; n < cbPort->count(); n++) {
+            QString s = cbPort->itemText(n);
+            if(dev.isDevice(s)) {
+                cbPort->setCurrentIndex(n);
+                return s;
+            }
+        }
+    }
+    return name;
+}
+
 void MainSpinWindow::enumeratePorts()
 {
     if(cbPort != NULL) cbPort->clear();
 
     friendlyPortName.clear();
+    friendlyPortName.append(AUTO_PORT);
     QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
     QStringList stringlist;
     QString name;
@@ -6590,6 +6632,7 @@ void MainSpinWindow::enumeratePorts()
 #endif
     }
     cbPort->setCurrentIndex(0);
+    cbPort->insertItem(0,AUTO_PORT);
 }
 
 void MainSpinWindow::connectButton()
@@ -6598,7 +6641,7 @@ void MainSpinWindow::connectButton()
         term->getEditor()->setPortEnable(true);
         term->show();
         term->setPortEnabled(true);
-        term->setPortName(cbPort->currentText());
+        term->setPortName(serialPort());
         term->activateWindow();
         term->getEditor()->setFocus();
         portListener->open();
@@ -6617,7 +6660,7 @@ void MainSpinWindow::menuActionConnectButton()
         term->getEditor()->setPortEnable(true);
         term->show();
         term->setPortEnabled(true);
-        term->setPortName(cbPort->currentText());
+        term->setPortName(serialPort());
         term->activateWindow();
         term->getEditor()->setFocus();
         portListener->open();
@@ -6635,7 +6678,7 @@ void MainSpinWindow::menuActionConnectButton()
 void MainSpinWindow::portResetButton()
 {
     bool rts = false;
-    QString port = cbPort->currentText();
+    QString port = serialPort();
     if(port.length() == 0) {
         QMessageBox::information(this, tr("Port Required"), tr("Please select a port"), QMessageBox::Ok);
         return;
@@ -6675,7 +6718,7 @@ void MainSpinWindow::portResetButton()
     // portListener->init(port, BAUD115200);  // signals get hooked up internally
 
     QString savePortName = portListener->getPortName();
-    QString cbPortName = cbPort->currentText();
+    QString cbPortName = serialPort();
 
     bool isopen = portListener->isOpen();
     if(isopen == false)
@@ -6978,7 +7021,7 @@ void MainSpinWindow::setupFileMenu()
     // added for simple view, not necessary anymore
     //toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(reloadBoardTypes()));
     toolsMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
-
+    toolsMenu->addAction(tr("Identify Propeller"), this, SLOT(findChip()), Qt::Key_F7);
     QMenu *programMenu = new QMenu(tr("&Program"), this);
     menuBar()->addMenu(programMenu);
 
