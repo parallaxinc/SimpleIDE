@@ -6555,39 +6555,65 @@ int MainSpinWindow::makeDebugFiles(QString fileName)
     return rc;
 }
 
+void MainSpinWindow::chipId()
+{
+    progress->show();
+    progress->setValue(0);
+
+    getApplicationSettings();
+
+    QStringList args;
+    args.append("-P");
+    builder->showBuildStart(aSideLoader,args);
+
+    process->setProperty("Name", QVariant(aSideLoader));
+    process->setProperty("IsLoader", QVariant(true));
+
+    connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
+    connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
+    connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
+
+    process->setProcessChannelMode(QProcess::MergedChannels);
+    process->setWorkingDirectory(this->sourcePath(projectFile));
+
+    procMutex.lock();
+    procDone = false;
+    procMutex.unlock();
+
+    process->start(aSideLoader,args);
+
+    status->setText(tr(" Identifying ... "));
+
+    while(procDone == false) {
+        QApplication::processEvents();
+    }
+
+    progress->hide();
+}
+
 void MainSpinWindow::findChip()
 {
-    PropellerID dev(DeviceID::RESET_BY_DTR);
-    if(this->propDialog->getResetType() == Properties::RTS)
-        dev.setRtsReset();
+    compileStatus->setPlainText("");
 
+    chipId();
+    QString s = compileStatus->toPlainText();
+    s = s.mid(s.indexOf("-P")+2);
+    s = s.trimmed();
+    int old = cbPort->currentIndex();
     for (int n = 1; n < cbPort->count(); n++) {
-        QString s = cbPort->itemText(n);
-        if(dev.isDevice(s)) {
-            cbPort->setCurrentIndex(n);
+        QString mp;
+        cbPort->setCurrentIndex(n);
+        mp = cbPort->currentText();
+        if(s.contains(mp)) {
             return;
         }
     }
+    cbPort->setCurrentIndex(old);
 }
 
 QString MainSpinWindow::serialPort()
 {
-    PropellerID dev(DeviceID::RESET_BY_DTR);
-    if(this->propDialog->getResetType() == Properties::RTS)
-        dev.setRtsReset();
-
-    QString name = cbPort->currentText();
-
-    if (name.compare(AUTO_PORT) == 0) {
-        for (int n = 1; n < cbPort->count(); n++) {
-            QString s = cbPort->itemText(n);
-            if(dev.isDevice(s)) {
-                cbPort->setCurrentIndex(n);
-                return s;
-            }
-        }
-    }
-    return name;
+    return(cbPort->currentText());
 }
 
 void MainSpinWindow::enumeratePorts()
@@ -6595,7 +6621,7 @@ void MainSpinWindow::enumeratePorts()
     if(cbPort != NULL) cbPort->clear();
 
     friendlyPortName.clear();
-    friendlyPortName.append(AUTO_PORT);
+    //friendlyPortName.append(AUTO_PORT);
     QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
     QStringList stringlist;
     QString name;
@@ -6632,7 +6658,7 @@ void MainSpinWindow::enumeratePorts()
 #endif
     }
     cbPort->setCurrentIndex(0);
-    cbPort->insertItem(0,AUTO_PORT);
+    //cbPort->insertItem(0,AUTO_PORT);
 }
 
 void MainSpinWindow::connectButton()
@@ -7021,7 +7047,7 @@ void MainSpinWindow::setupFileMenu()
     // added for simple view, not necessary anymore
     //toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(reloadBoardTypes()));
     toolsMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
-    toolsMenu->addAction(tr("Identify Propeller"), this, SLOT(findChip()), Qt::Key_F7);
+    //toolsMenu->addAction(tr("Identify Propeller"), this, SLOT(findChip()), Qt::Key_F7);
     QMenu *programMenu = new QMenu(tr("&Program"), this);
     menuBar()->addMenu(programMenu);
 

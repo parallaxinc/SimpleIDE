@@ -61,7 +61,7 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     compileStatus->moveCursor(QTextCursor::End);
     status->setText(tr("Building ..."));
 
-    showCompilerVersion();
+    //showCompilerVersion();
 
     foreach(QString item, list) {
         if(item.length() == 0) {
