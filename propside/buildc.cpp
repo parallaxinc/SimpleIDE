@@ -54,7 +54,7 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
 
     //checkAndSaveFiles();
 
-    progress->show();
+    progress->hide();
     programSize->setText("");
 
     compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\r\n");
@@ -655,6 +655,10 @@ int  BuildC::runCompiler(QStringList copts)
         return -1;
     }
 
+    int prog = 0;
+    progress->show();
+    progress->setValue(prog);
+
     //getApplicationSettings();
     if(checkCompilerInfo()) {
         return -1;
@@ -778,6 +782,8 @@ int  BuildC::runCompiler(QStringList copts)
     inc = 0;
     lib = 0;
 
+    int maxprogress = args.length();
+
     foreach (QString s, args) {
 
         if( s.contains(".spin",Qt::CaseInsensitive) ||
@@ -835,6 +841,7 @@ int  BuildC::runCompiler(QStringList copts)
             if(rc != 0)
                 return rc;
         }
+        progress->setValue((100*prog++)/maxprogress);
     }
 
     /* let's make a library after compiling the program so we can use .o from save-temps
@@ -865,6 +872,7 @@ int  BuildC::runCompiler(QStringList copts)
         }
 
         this->runAR(objs, libname);
+        progress->setValue((100*prog++)/maxprogress);
     }
 
     // add main file back
@@ -930,6 +938,7 @@ int  BuildC::runCompiler(QStringList copts)
 
     // this is the final compile/link
     rc = startProgram(compstr,sourcePath(projectFile),args);
+    progress->setValue((100*prog++)/maxprogress);
     if(rc != 0)
         return rc;
 
@@ -937,6 +946,7 @@ int  BuildC::runCompiler(QStringList copts)
     args.append("-h");
     args.append(exePath);
     rc = startProgram("propeller-elf-objdump",sourcePath(projectFile),args,this->DumpReadSizes);
+    progress->setValue((100*prog++)/maxprogress);
 
     /*
      * Report program size
@@ -945,6 +955,7 @@ int  BuildC::runCompiler(QStringList copts)
     if(codeSize == 0) codeSize = memorySize;
     QString ssize = QString(tr("Code Size")+" %L1 "+tr("bytes")+" (%L2 "+tr("total")+")").arg(codeSize).arg(memorySize);
     programSize->setText(ssize);
+    progress->setValue(100);
 
     return rc;
 }
@@ -1342,6 +1353,7 @@ QStringList BuildC::getLibraryList(QStringList &ILlist, QString projFile)
 
 int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QStringList incList, QStringList *newList)
 {
+    QApplication::processEvents();
     QString include("#include ");
     QStringList findlist = Directory::findList(projectPath+"/"+srcFile, include);
     foreach(QString inc, findlist) {
@@ -1359,9 +1371,7 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
         QString lib = Directory::recursiveFindFile(libdir,inc);
         /*
          With autolib, we only want to add full paths.
-         These paths will never be save as or zipped.
-         QDir dir(projectPath);
-         lib = dir.relativeFilePath(lib);
+         These paths will never be "save as" but will be zipped though differently.
          */
         QString libpath = "-L "+lib;
         if(lib.isEmpty() == false && incList.contains(libpath) == false) {
