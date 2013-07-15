@@ -69,8 +69,7 @@ SOURCES += mainspin.cpp \
     blinker.cpp \
     buildstatus.cpp \
     highlightbuild.cpp \
-    directory.cpp \
-    PropellerID.cpp
+    directory.cpp
 HEADERS += mainspinwindow.h \
     editor.h \
     ctags.h \
@@ -109,9 +108,7 @@ HEADERS += mainspinwindow.h \
     blinker.h \
     buildstatus.h \
     highlightbuild.h \
-    directory.h \
-    DeviceID.h \
-    PropellerID.h
+    directory.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \

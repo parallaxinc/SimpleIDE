@@ -146,6 +146,7 @@ public slots:
     void keyHandler(QKeyEvent* event);
     void sendPortMessage(QString s);
 
+    void chipId();
     void findChip();
     QString serialPort();
     void enumeratePorts();
