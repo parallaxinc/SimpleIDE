@@ -114,7 +114,7 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
 
     disconnect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyReadSizes()));
 
-    progress->hide();
+    //progress->hide();
 
     if(procResultError)
         return 1;
