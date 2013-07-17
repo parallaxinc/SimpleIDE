@@ -48,7 +48,9 @@ UsePreviousUserInfo=false
 ChangesEnvironment=true
 ChangesAssociations=yes
 LicenseFile=.\IDE_LICENSE.txt
-WizardImageFile=images\SimpleIDE-Install-Splash4.bmp
+WizardImageFile=images\SimpleIDE-Install-Splash5.bmp
+;WizardImageStretch=no
+SetupIconFile=images\SimpleIDE-16.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -90,12 +92,15 @@ Source: "{#MyQtPath}\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversi
 Source: "{#MyQtPath}\bin\QtGui4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyGccPath}\*"; DestDir: "{app}\propeller-gcc"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyEduLibPath}\*"; DestDir: "{app}\Workspace"; Flags: ignoreversion recursesubdirs createallsubdirs
+
 ; Stephanie says not to include the Spin folder with all docs - this one trims the docs.
 Source: "{#MySpinPath}\*"; DestDir: "{app}\propeller-gcc\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 Source: "..\ctags-5.8\ctags.exe"; DestDir: "{app}\propeller-gcc\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{app}\propeller-gcc\bin"; Flags: ignoreversion
-Source: "{#MyTranslations}\*"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
+Source: "{#MyTranslations}\SimpleIDE_es.qm"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
+Source: "{#MyTranslations}\SimpleIDE_fr.qm"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
+Source: "{#MyTranslations}\SimpleIDE_zh.qm"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
 Source: "{#MyUserGuide}"; DestDir: "{app}\propeller-gcc\bin"; Flags: IgnoreVersion; 
 
 [Icons]
@@ -125,7 +130,7 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Tasks: association;  Flags: UninsDeleteKey;
 Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Tasks: association;  Flags: UninsDeleteKey;
 Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: UninsDeleteKey;
-Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,1"; Tasks: association;  Flags: UninsDeleteKey;
+Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,2"; Tasks: association;  Flags: UninsDeleteKey;
 
 ; Startup File
 ;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: "{userdocs}\Workspace\My Projects\Welcome.c"; Flags: UninsDeleteKey; 

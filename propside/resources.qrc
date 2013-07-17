@@ -98,5 +98,12 @@
         <file>images/SimpleIDE-64.png</file>
         <file>images/SimpleIDE322.png</file>
         <file>images/SimpleLibrary.png</file>
+        <file>images/SimpleIDE-16.png</file>
+        <file>images/SimpleIDE-32.png</file>
+        <file>images/SimpleIDE-128.png</file>
+        <file>images/SimpleIDE-256.png</file>
+        <file>images/SimpleIDE-512.png</file>
+        <file>images/SimpleIDE-32.ico</file>
+        <file>images/SimpleIDE-16.ico</file>
     </qresource>
 </RCC>

@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     MainSpinWindow w;
 #endif
 
-    a.setWindowIcon(QIcon(":/images/SimpleIDE322.png"));
+    a.setWindowIcon(QIcon(":/images/SimpleIDE-16.ico"));
 
     a.setApplicationName(ASideGuiKey);
 
