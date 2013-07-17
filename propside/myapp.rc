@@ -1,2 +1,3 @@
-IDI_ICON1               ICON    DISCARDABLE     "images/SimpleIDE322.ico"
-IDI_ICON2               ICON    DISCARDABLE     "images/SimpleIDE322.ico"
+IDI_ICON1               ICON    DISCARDABLE     "images/SimpleIDE-16.ico"
+IDI_ICON2               ICON    DISCARDABLE     "images/SimpleIDE-16.ico"
+IDI_ICON3               ICON    DISCARDABLE     "images/SimpleIDE-16.ico"

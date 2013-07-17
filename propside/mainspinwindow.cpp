@@ -4637,7 +4637,7 @@ void MainSpinWindow::setupHelpMenu()
         "<a href=\"http://www.parallax.com/propellergcc/\">"+
         ASideGuiKey+"</a>"+
         tr(" for more information.")+"<br/>"+
-        tr("Email bug reports to")+" <a href=\"mailto:gccbeta@parallax.com\">gccbeta@parallax.com</a>"+
+        tr("Email bug reports to")+" <a href=\"mailto:SimpleIDE@parallax.com\">SimpleIDE@parallax.com</a>"+
         "<br/></body></html>";
 
     menuBar()->addMenu(helpMenu);
@@ -4671,7 +4671,7 @@ void MainSpinWindow::creditShow()
                        "Licenses are in this package."));
 
     QString translations("<p><b>"+tr("Translations:")+"</b><p>");
-    QString simplechinese(tr("Simplified Chinese by ")+tr("Kenichi Kato, designer of Matanya") + " <a href=\"http://estory.com.sg/\">eStory.com.sg</a>");
+    QString simplechinese(tr("Simplified Chinese by ")+tr("Kenichi Kato, designer of Matanya") + " <a href=\"mailto:MacTuxLin@gmail.com\">MacTuxLin@gmail.com</a>");
 
     QMessageBox::information(this, ASideGuiKey+tr(" Credits"),"<html><body>"+
         license+propgcc+ctags+icons+sources+translations+simplechinese+"</body></html>",
@@ -6597,6 +6597,7 @@ void MainSpinWindow::findChip()
 
     chipId();
     QString s = compileStatus->toPlainText();
+    compileStatus->setPlainText(s.replace("\n\n", "\n"));
     s = s.mid(s.indexOf("-P")+2);
     s = s.trimmed();
     int old = cbPort->currentIndex();
