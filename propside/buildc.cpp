@@ -697,7 +697,6 @@ int  BuildC::runCompiler(QStringList copts)
     QString mainProjectFile = args.at(args.count()-1);
     args.removeLast();
 
-#if 1
     /*
      * move -I and -L entries to beginning of args list
      * 1) make an ILlist and remove entries.
@@ -775,7 +774,6 @@ int  BuildC::runCompiler(QStringList copts)
         QString s = ILlist.at(n);
         args.insert(0,s);
     }
-#endif
 
     // just use inc for this next round.
     // we must be concerned with multiple field args like -I -L -D
@@ -882,27 +880,7 @@ int  BuildC::runCompiler(QStringList copts)
     if(projectOptions->getMakeLibrary().isEmpty() != true)
         args.append(libname);
 
-    // add libs back
-    // skip the project library if it was also included in the linker options
-#if 0
-    foreach(QString s, libs) {
-        if(libbase.mid(0, 3) == "lib" && libbase.mid(3) == s.mid(2)) {
-            if(projectOptions->getMakeLibrary().isEmpty() != true)
-                args.append(s);
-            continue;
-        }
-        args.append(s);
-    }
-#endif
-
-#if 0
-    /*
-     * libraries - use libs to make copy, then add it twice to args.
-     * we do this because there may be some library interdependencies.
-     */
-    //QStringList libs;
-    //libs.clear();
-
+    /* disable tiny lib if inappropriate */
     if(projectOptions->getTinyLib().length()) {
         if(model.contains("cog",Qt::CaseInsensitive) == true) {
             this->compileStatus->insertPlainText(tr("Ignoring")+" \"-ltiny\""+tr(" flag in COG mode programs.")+"\n");
@@ -916,15 +894,6 @@ int  BuildC::runCompiler(QStringList copts)
             libs.append(projectOptions->getTinyLib());
         }
     }
-
-    /* other linker options */
-    if(projectOptions->getLinkOptions().length()) {
-        QStringList linklist = projectOptions->getLinkOptions().split(" ",QString::SkipEmptyParts);
-        foreach(QString linkopt, linklist) {
-            libs.append(linkopt);
-        }
-    }
-#endif
 
     /* append libs lib count times */
     for(int n = libs.count(); n > 0; n--) {
@@ -1021,11 +990,14 @@ int BuildC::makeDebugFiles(QString fileName, QString projfile, QString compiler)
         file.close();
     }
 
+    QStringList ILlist;
     proj = proj.trimmed(); // kill extra white space
     QStringList list = proj.split("\n");
     foreach(QString name, list) {
-        if(name.contains("-I"))
+        if(name.contains("-I")) {
             copts.append(name);
+            ILlist.append(name);
+        }
     }
 
     QStringList args = getCompilerParameters(copts);
@@ -1057,9 +1029,34 @@ int BuildC::makeDebugFiles(QString fileName, QString projfile, QString compiler)
     removeArg(args,exePath);
     args.append("-o");
     args.append(outputPath+name+".o");
-    args.insert(0,"-Wa,-ahdnl="+outputPath+name+SHOW_ASM_EXTENTION); // peward++
+    args.insert(0,"-Wa,-ahdlnsg="+outputPath+name+SHOW_ASM_EXTENTION); // peward++
     args.insert(0,"-c"); // peward++
     args.insert(0,"-g"); // peward++
+
+#ifdef ENABLE_AUTOLIB
+    if(this->properties->getAutoLib()) {
+        QStringList libadd;
+        QStringList newList;
+        // With autolib only use Simple Libraries newList is empty
+        // This means we don't search the existing folder for libraries.
+        // If we search the existing folder for libraries and autolib
+        // is enabled, then we can end up with the wrong library.
+        libadd = getLibraryList(newList,this->projectFile);
+        foreach(QString s, libadd) {
+            if(ILlist.contains(s) == false) {
+                ILlist.append("-I");
+                ILlist.append(s);
+            }
+            s = s.mid(s.lastIndexOf("/")+1);
+        }
+    }
+
+    /* add back in reverse order */
+    for(int n = ILlist.length()-1; n >= 0; n--) {
+        QString s = ILlist.at(n);
+        args.insert(0,s);
+    }
+#endif
 
     /* this is the final compile/link */
     compileStatus->setPlainText("");
