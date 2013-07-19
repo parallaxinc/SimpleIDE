@@ -4758,6 +4758,7 @@ void MainSpinWindow::sdCardDownloadEnable()
 void MainSpinWindow::setCurrentBoard(int index)
 {
     boardName = cbBoard->itemText(index);
+    projectOptions->setBoardType(boardName);
     cbBoard->setCurrentIndex(index);
     sdCardDownloadEnable();
 }
