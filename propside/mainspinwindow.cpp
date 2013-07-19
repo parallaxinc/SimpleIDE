@@ -546,8 +546,6 @@ void MainSpinWindow::quitProgram()
 
         QString boardstr = cbBoard->itemText(cbBoard->currentIndex());
         QString portstr = cbPort->itemText(cbPort->currentIndex());
-        if(portstr.compare(AUTO_PORT) == 0)
-            portstr = serialPort();
 
         settings->setValue(lastBoardNameKey,boardstr);
         settings->setValue(lastPortNameKey,portstr);
@@ -3725,6 +3723,15 @@ void MainSpinWindow::downloadSdCard()
 
     // don't add fileName here since it can have spaces
     QStringList args = getLoaderParameters("", "");
+
+    portName = serialPort();
+    if(portName.compare(AUTO_PORT) == 0) {
+        compileStatus->appendPlainText("Propeller not found on any port.");
+        return;
+    }
+    args.append("-p");
+    args.append(portName);
+
     QString s = projectOptions->getMemModel();
     if(s.contains(" "))
         s = s.mid(0,s.indexOf(" "));
@@ -4511,7 +4518,7 @@ void MainSpinWindow::programDebug()
     btnConnected->setChecked(true);
     term->getEditor()->setPlainText("");
     term->getEditor()->setPortEnable(true);
-    term->setPortName(serialPort());
+    term->setPortName(portName);
     term->activateWindow();
     term->setPortEnabled(true);
     term->show();
@@ -4759,12 +4766,15 @@ void MainSpinWindow::setCurrentPort(int index)
 {
     if(index < 0)
         return;
-    portName = cbPort->itemText(index);
+
     cbPort->setCurrentIndex(index);
     if(friendlyPortName.length() > 0)
         cbPort->setToolTip(friendlyPortName.at(index));
+
+    portName = cbPort->itemText(index);
     if(portName.length()) {
-        portListener->init(portName, BAUD115200);  // signals get hooked up internally
+        if(portName.compare(AUTO_PORT) != 0)
+            portListener->init(portName, BAUD115200);  // signals get hooked up internally
     }
 }
 
@@ -4922,9 +4932,8 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts, QString file)
         compileType = ProjectOptions::TAB_C_COMP;
     }
 
-    portName = cbPort->itemText(cbPort->currentIndex());
-    if(portName.compare(AUTO_PORT) == 0)
-        portName = serialPort();
+    //portName = serialPort(); //cbPort->itemText(cbPort->currentIndex());
+
     QString bname = this->cbBoard->currentText();
     boardName = bname;
     QString sdrun = ASideConfig::UserDelimiter+ASideConfig::SdRun;
@@ -4971,8 +4980,8 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts, QString file)
             args.append(boardName);
         }
     }
-    args.append("-p");
-    args.append(portName);
+    //args.append("-p");
+    //args.append(portName);
 
     builder->appendLoaderParameters(copts, file, &args);
 
@@ -5035,6 +5044,14 @@ int  MainSpinWindow::runLoader(QString copts)
     }
 
     QStringList args = getLoaderParameters(copts, file);
+
+    portName = serialPort();
+    if(portName.compare(AUTO_PORT) == 0) {
+        compileStatus->appendPlainText("error: Propeller not found on any port.");
+        return 1;
+    }
+    args.append("-p");
+    args.append(portName);
 
     builder->showBuildStart(aSideLoader,args);
 
@@ -6555,66 +6572,73 @@ int MainSpinWindow::makeDebugFiles(QString fileName)
     return rc;
 }
 
-void MainSpinWindow::chipId()
+bool MainSpinWindow::rtsReset()
 {
-    progress->show();
-    progress->setValue(0);
-
-    getApplicationSettings();
-
-    QStringList args;
-    args.append("-P");
-    builder->showBuildStart(aSideLoader,args);
-
-    process->setProperty("Name", QVariant(aSideLoader));
-    process->setProperty("IsLoader", QVariant(true));
-
-    connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
-    connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
-    connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
-
-    process->setProcessChannelMode(QProcess::MergedChannels);
-    process->setWorkingDirectory(this->sourcePath(projectFile));
-
-    procMutex.lock();
-    procDone = false;
-    procMutex.unlock();
-
-    process->start(aSideLoader,args);
-
-    status->setText(tr(" Identifying ... "));
-
-    while(procDone == false) {
-        QApplication::processEvents();
+    bool rts = false;
+    if(this->propDialog->getResetType() == Properties::CFG) {
+        QString bname = this->cbBoard->currentText();
+        ASideBoard* board = aSideConfig->getBoardData(bname);
+        if(board != NULL) {
+            QString reset = board->get(ASideBoard::reset);
+            if(reset.length() && reset.contains("RTS",Qt::CaseInsensitive)) {
+                rts = true;
+            }
+        }
     }
-
-    progress->hide();
+    else if(this->propDialog->getResetType() == Properties::RTS) {
+        rts = true;
+    }
+    return rts;
 }
 
 void MainSpinWindow::findChip()
 {
-    compileStatus->setPlainText("");
+    if(rtsReset())
+        propId.setRtsReset();
+    else
+        propId.setDtrReset();
 
-    chipId();
-    QString s = compileStatus->toPlainText();
-    compileStatus->setPlainText(s.replace("\n\n", "\n"));
-    s = s.mid(s.indexOf("-P")+2);
-    s = s.trimmed();
-    int old = cbPort->currentIndex();
-    for (int n = 1; n < cbPort->count(); n++) {
+    compileStatus->setPlainText("Identifying Propellers ...\n");
+    int size = cbPort->count();
+
+    for (int n = 1; n < size; n++) {
         QString mp;
-        cbPort->setCurrentIndex(n);
-        mp = cbPort->currentText();
-        if(s.contains(mp)) {
-            return;
+        mp = cbPort->itemText(n);
+        int rc = propId.isDevice(mp);
+        if(rc < 0) {
+            compileStatus->appendPlainText("  Port "+mp+" is busy.");
+        } else if(rc > 0) {
+            compileStatus->appendPlainText("  Propeller found on "+mp+".");
+        } else {
+            compileStatus->appendPlainText("  Propeller not found on "+mp+".");
         }
     }
-    cbPort->setCurrentIndex(old);
 }
 
 QString MainSpinWindow::serialPort()
 {
-    return(cbPort->currentText());
+    int portIndex = cbPort->currentIndex();
+    if(cbPort->currentText().compare(AUTO_PORT) == 0) {
+        if(rtsReset())
+            propId.setRtsReset();
+        else
+            propId.setDtrReset();
+
+        //compileStatus->setPlainText("Finding first available propeller ... ");
+        int size = cbPort->count();
+
+        for (int n = 1; n < size; n++) {
+            QString mp;
+            mp = cbPort->itemText(n);
+            int rc = propId.isDevice(mp);
+            if(rc > 0) {
+                //compileStatus->appendPlainText("Propeller found on "+mp+".");
+                portIndex = n;
+                break;
+            }
+        }
+    }
+    return(cbPort->itemText(portIndex));
 }
 
 void MainSpinWindow::enumeratePorts()
@@ -6622,7 +6646,7 @@ void MainSpinWindow::enumeratePorts()
     if(cbPort != NULL) cbPort->clear();
 
     friendlyPortName.clear();
-    //friendlyPortName.append(AUTO_PORT);
+    friendlyPortName.append(AUTO_PORT);
     QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
     QStringList stringlist;
     QString name;
@@ -6659,16 +6683,21 @@ void MainSpinWindow::enumeratePorts()
 #endif
     }
     cbPort->setCurrentIndex(0);
-    //cbPort->insertItem(0,AUTO_PORT);
+    cbPort->insertItem(0,AUTO_PORT);
 }
 
 void MainSpinWindow::connectButton()
 {
     if(btnConnected->isChecked()) {
+        portName = serialPort();
+        if(portName.compare(AUTO_PORT) == 0) {
+            btnConnected->setChecked(false);
+            return;
+        }
         term->getEditor()->setPortEnable(true);
         term->show();
         term->setPortEnabled(true);
-        term->setPortName(serialPort());
+        term->setPortName(portName);
         term->activateWindow();
         term->getEditor()->setFocus();
         portListener->open();
@@ -6683,22 +6712,10 @@ void MainSpinWindow::connectButton()
 
 void MainSpinWindow::menuActionConnectButton()
 {
+
     if(btnConnected->isChecked() == false) {
-        term->getEditor()->setPortEnable(true);
-        term->show();
-        term->setPortEnabled(true);
-        term->setPortName(serialPort());
-        term->activateWindow();
-        term->getEditor()->setFocus();
-        portListener->open();
         btnConnected->setChecked(true);
-        cbPort->setEnabled(false);
-    }
-    else {
-        portListener->close();
-        term->hide();
-        btnConnected->setChecked(false);
-        cbPort->setEnabled(true);
+        connectButton();
     }
 }
 
@@ -6745,20 +6762,22 @@ void MainSpinWindow::portResetButton()
     // portListener->init(port, BAUD115200);  // signals get hooked up internally
 
     QString savePortName = portListener->getPortName();
-    QString cbPortName = serialPort();
+
+    /* if port name is AUTO, just reset the first port we find. */
+    portName = serialPort();
 
     bool isopen = portListener->isOpen();
     if(isopen == false)
     {
-        if(savePortName.compare(cbPortName) != 0) {
-            portListener->init(cbPortName, portListener->getBaudRate());
+        if(savePortName.compare(portName) != 0) {
+            portListener->init(portName, portListener->getBaudRate());
         }
 
         portListener->open();
         resetPort(rts);
         portListener->close();
 
-        if(savePortName.compare(cbPortName) != 0) {
+        if(savePortName.compare(portName) != 0) {
             portListener->init(savePortName, portListener->getBaudRate());
         }
     }
@@ -7048,7 +7067,7 @@ void MainSpinWindow::setupFileMenu()
     // added for simple view, not necessary anymore
     //toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(reloadBoardTypes()));
     toolsMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
-    //toolsMenu->addAction(tr("Identify Propeller"), this, SLOT(findChip()), Qt::Key_F7);
+    toolsMenu->addAction(tr("Identify Propeller"), this, SLOT(findChip()), Qt::Key_F7);
     QMenu *programMenu = new QMenu(tr("&Program"), this);
     menuBar()->addMenu(programMenu);
 
@@ -7280,7 +7299,7 @@ void MainSpinWindow::setupToolBars()
     connect(cbPort,SIGNAL(clicked()),this,SLOT(enumeratePorts()));
 
     btnConnected = new QAction(this);
-    btnConnected->setToolTip(tr("SimpleIDE Terminal"));
+    btnConnected->setToolTip(tr("SimpleIDE Terminal")+tr(" resets port if AUTO."));
     btnConnected->setCheckable(true);
     connect(btnConnected,SIGNAL(triggered()),this,SLOT(connectButton()));
 

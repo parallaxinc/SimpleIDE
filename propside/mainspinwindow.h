@@ -36,7 +36,7 @@
 #include "buildc.h"
 #include "buildspin.h"
 #include "spinparser.h"
-#include "DeviceID.h"
+#include "PropellerID.h"
 
 #define untitledstr "Untitled"
 
@@ -146,7 +146,6 @@ public slots:
     void keyHandler(QKeyEvent* event);
     void sendPortMessage(QString s);
 
-    void chipId();
     void findChip();
     QString serialPort();
     void enumeratePorts();
@@ -288,6 +287,8 @@ private:
 
     void showSimpleView(bool simple);
 
+    bool rtsReset();
+
     AboutDialog     *aboutDialog;
     QString         aboutLanding;
 
@@ -425,6 +426,8 @@ private:
     BuildC          *buildC;
     BuildSpin       *buildSpin;
     SpinParser      spinParser;
+
+    PropellerID     propId;
 
 public slots:
     void ideDebugShow();

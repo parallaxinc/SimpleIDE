@@ -2,12 +2,19 @@
 #define DEVICEID_H
 
 #include <QObject>
+#include <QThread>
 
-class DeviceID : public QObject
+class DeviceID : public QThread
 {
+Q_OBJECT
 public:
-    DeviceID(int reset) {
-        resetType = reset;
+    DeviceID() {
+        resetType = RESET_BY_DTR;
+    }
+    virtual ~DeviceID() {
+    }
+
+    virtual void run() {
     }
 
     virtual bool isDevice(QString port) {
