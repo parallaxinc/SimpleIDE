@@ -1,28 +1,41 @@
 #ifndef PROPELLERID_H
 #define PROPELLERID_H
 
-#include "DeviceID.h"
+#include <QtGui>
+#include <QThread>
 #include "qextserialport.h"
 
-class PropellerID : public DeviceID
+class PropellerID : public QThread
 {
 Q_OBJECT
 public:
-    PropellerID(int reset);
-    bool isDevice(QString port);
+    PropellerID(QObject *parent = 0);
+    virtual ~PropellerID();
 
-private slots:
-    void updateReady(QextSerialPort* port);
+    int  isDevice(QString port);
+    void run();
+
+
+    enum { RESET_BY_DTR = 1 };
+    enum { RESET_BY_RTS = 2 };
+
+    void setDtrReset() {
+        resetType = RESET_BY_DTR;
+    }
+    void setRtsReset() {
+        resetType = RESET_BY_RTS;
+    }
 
 private:
 
+    int resetType;
     QextSerialPort *port;
 
-    enum { RXSIZE = 1024 };
+    enum { RXSIZE = (1<<10)-1 };
 
     int rxhead;
     int rxtail;
-    char rxqueue[RXSIZE];
+    char rxqueue[RXSIZE+1];
 
     /**
      * receive a buffer
@@ -121,13 +134,24 @@ private:
     int hwfind(int retry);
 
     /**
+     * read all data until empty.
+     */
+    void flushPort();
+
+    /**
      * find a propeller on port
      * @param hSerial - file handle to serial port
      * @param sparm - pointer to DCB serial control struct
      * @param port - pointer to com port name
-     * @returns non-zero on error
+     * @returns 1 if found, 0 if not found, or -1 if port not opened.
      */
-    bool findprop(const char* port);
+    int findprop(const char* port);
+
+private slots:
+    void portHandler();
+
+signals:
+    void portEvent();
 
 };
 

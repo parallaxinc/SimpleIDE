@@ -22,7 +22,7 @@ public:
     void setTerminalWindow(QPlainTextEdit *editor);
     void send(QByteArray &data);
     int  readData(char *buff, int length);
-    virtual void run();
+    void run();
 
     QString getPortName();
     BaudRateType getBaudRate();

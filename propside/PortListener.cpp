@@ -65,8 +65,12 @@ bool PortListener::open()
         return false;
 
     port->open(QIODevice::ReadWrite);
+
 #if !defined(EVENT_DRIVEN)
+    connect(this, SIGNAL(updateEvent(QextSerialPort*)), this, SLOT(updateReady(QextSerialPort*)));
     this->start();
+#else
+    connect(port, SIGNAL(readyRead()), this, SLOT(updateReady()));
 #endif
     return true;
 }
@@ -75,6 +79,12 @@ void PortListener::close()
 {
     if(port == NULL)
         return;
+
+#if !defined(EVENT_DRIVEN)
+    disconnect(this, SIGNAL(updateEvent(QextSerialPort*)), this, SLOT(updateReady(QextSerialPort*)));
+#else
+    disconnect(port, SIGNAL(readyRead()), this, SLOT(updateReady()));
+#endif
 
     port->close();
 }

@@ -28,48 +28,77 @@
  * THE SOFTWARE.
  *
  */
-#include "Sleeper.h"
-#include "PropellerID.h"
-#include <QtCore>
-#include <QApplication>
 
-PropellerID::PropellerID(int reset) : DeviceID(reset)
+#include "PropellerID.h"
+
+PropellerID::PropellerID(QObject *parent) : QThread(parent)
 {
+    port = new QextSerialPort(QextSerialPort::Polling);
     pload_verbose = 0;
-    pload_delay = 0;
     rxhead = 0;
     rxtail = 0;
+    resetType = RESET_BY_DTR;
     LFSR = 80; // 'P'
 }
 
-bool PropellerID::isDevice(QString portName)
+PropellerID::~PropellerID()
 {
-    bool rc;
-    port = new QextSerialPort(QextSerialPort::Polling);
-    connect(this, SIGNAL(updateEvent(QextSerialPort*)), this, SLOT(updateReady(QextSerialPort*)));
-    rc = findprop(portName.toAscii());
     delete port;
-    return rc;
 }
 
-void PropellerID::updateReady(QextSerialPort* port)
+int PropellerID::isDevice(QString portName)
 {
-    if(port->bytesAvailable() < 1)
-        return;
-    /**
-     * [--------------t-----h-----------] head > tail, read size-head into buffer
-     * [---h-------------t--------------] head < tail, read head amount into buffer
+    return findprop(portName.toAscii());
+}
+
+void PropellerID::run()
+{
+    while(port->isOpen()) {
+        msleep(5);
+        QApplication::processEvents();
+        emit portEvent();
+    }
+}
+
+void PropellerID::portHandler()
+{
+    /*
+     * TODO Queue is broken. Fix it later.
+     * For the time being the current queue buffer is big enough to hold
+     * all expected receive data + garbage from quickstart boards.
      */
-    int size = 0;
-    if (rxhead > rxtail) {
-        size = RXSIZE-rxhead;
+
+    /*
+     * [--t--h-] head >= tail, read size-(head-tail) into buffer
+     * [-h-t---] head < tail, read head amount into buffer
+     * [b------] head == tail
+     * [t-----h] full
+     * [-----ht]
+     * [------b]
+     */
+    int size = port->bytesAvailable();
+    if(size < 1) {
+        return;
+    }
+#if 1
+    if (rxhead >= rxtail) {
+        size = RXSIZE-(rxhead-rxtail);
         size = port->read(&rxqueue[rxhead], size);
     } else {
-        size = port->read(&rxqueue[0], rxhead);
+        size = port->read(&rxqueue[rxhead], rxtail-rxhead-1);
     }
-    rxhead = (rxhead + size) && RXSIZE;
-    if (pload_verbose)
-        qDebug() << size << " bytes read.";
+#else
+    if (rxhead > rxtail) {
+        size = RXSIZE-(rxhead-rxtail);
+        size = port->read(&rxqueue[rxhead], size);
+    } else if (rxhead < rxtail) {
+        size = port->read(&rxqueue[0], rxtail - rxhead);
+    } else {
+        size = port->read(&rxqueue[0], RXSIZE);
+    }
+#endif
+    rxhead = (rxhead + size) & RXSIZE;
+    // if (pload_verbose) qDebug() << size << " bytes read H" << rxhead << "T" << rxtail;
 }
 
 /**
@@ -81,13 +110,15 @@ void PropellerID::updateReady(QextSerialPort* port)
 int PropellerID::rx(char* buff, int n)
 {
     int size = 0;
+    while(rxhead == rxtail)
+        ;
     while(rxhead != rxtail) {
         if(size >= n)
             break;
         buff[size] = rxqueue[rxtail];
         size++;
+        rxtail = (rxtail + size) & RXSIZE;
     }
-    rxtail = (rxtail + size) && RXSIZE;
     return size;
 }
 
@@ -99,11 +130,8 @@ int PropellerID::rx(char* buff, int n)
  */
 int PropellerID::tx(char* buff, int n)
 {
-    int size = 0;
-    while(n-- >= 0) {
-        port->write((const char*)buff[size],1);
-        size++;
-    }
+    int size = port->write((const char*)buff, n);
+    QApplication::processEvents();
     return size;
 }
 
@@ -117,15 +145,18 @@ int PropellerID::tx(char* buff, int n)
 int PropellerID::rx_timeout(char* buff, int n, int timeout)
 {
     int size = 0;
-    while(rxhead != rxtail) {
-        Sleeper::ms(1);
+    while(rxhead == rxtail) {
+        msleep(1);
         QApplication::processEvents();
         if(timeout-- < 0)
             break;
+    }
+    while(timeout > 0 && rxhead != rxtail) {
         if(size >= n)
             break;
         buff[size] = rxqueue[rxtail];
         size++;
+        rxtail = (rxtail + size) & RXSIZE;
     }
     return size == 0 ? SERIAL_TIMEOUT : size;
 }
@@ -137,18 +168,18 @@ int PropellerID::rx_timeout(char* buff, int n, int timeout)
  */
 void PropellerID::hwreset(void)
 {
-    if(this->resetType == DeviceID::RESET_BY_DTR) {
+    if(this->resetType == RESET_BY_DTR) {
         port->setDtr(true);
-        Sleeper::ms(10);
+        msleep(10);
         port->setDtr(false);
-        Sleeper::ms(90);
+        msleep(90);
         port->flush();
     }
     else {
         port->setRts(true);
-        Sleeper::ms(10);
+        msleep(10);
         port->setRts(false);
-        Sleeper::ms(90);
+        msleep(90);
         port->flush();
     }
 }
@@ -222,16 +253,7 @@ int PropellerID::sendlong(int data)
         makelong(data, mybuf);
         return tx(mybuf, 11);
     }
-    else {
-        int n;
-        makelong(data, mybuf);
-        for(n = 0; n < 11; n++) {
-            usleep(pload_delay);
-            if(tx(&mybuf[n], 1) == 0)
-                return 0;
-        }
-        return n-1;
-    }
+    return 0;
 }
 
 /**
@@ -244,7 +266,7 @@ int PropellerID::hwfind(int retry)
     int  n, ii, jj, rc, to;
     char mybuf[300];
 
-    /* hwfind is recursive if we get a failure on th first try.
+    /* hwfind is recursive if we get a failure on the first try.
      * retry is set by caller and should never be more than one.
      */
     if(retry < 0)
@@ -261,6 +283,8 @@ int PropellerID::hwfind(int retry)
     if(tx(mybuf, 1) == 0)
         return 0;   // tx should never return 0, return error if it does.
 
+    //if(rx_timeout(mybuf,10,10) > -1) { qDebug("Junk chars ..."); }
+
     /* Send the magic propeller LFSR byte stream.
      */
     for(n = 0; n < 250; n++)
@@ -269,10 +293,10 @@ int PropellerID::hwfind(int retry)
         return 0;   // tx should never return 0, return error if it does.
 
     n = 0;
-    while((jj = rx_timeout(mybuf,10,50)) > -1)
+    while((jj = rx_timeout(mybuf,10,10)) > -1) {
         n += jj;
-    if(n != 0)
-        printf("Ignored %d bytes. \n", n);
+    }
+    if(n != 0) qDebug("Ignored %d bytes. \n", n);
 
     /* Send 258 0xF9 for LFSR and Version ID
      * These bytes clock the LSFR bits and ID from propeller back to us.
@@ -289,7 +313,8 @@ int PropellerID::hwfind(int retry)
      */
     ii = getBit(&rc, 110);
     if(rc == 0) {
-        //printf("Timeout waiting for first response bit. Propeller not found\n");
+        if (pload_verbose)
+            qDebug("Timeout waiting for first response bit. Propeller not found.");
         return 0;
     }
 
@@ -297,14 +322,13 @@ int PropellerID::hwfind(int retry)
     for(n = 1; n < 250; n++) {
 
         jj = iterate();
-        //printf("%d:%d ", ii, jj);
-        //fflush(stdout);
+        //if (pload_verbose) { printf("%d:%d %3d ", ii, jj, n); fflush(stdout); }
 
         if(ii != jj) {
             /* if we get this far, we probably have a propeller chip
              * but the serial port is in a funny state. just retry.
              */
-            //printf("Lost HW contact. %d %x ... retry.\n", n, *mybuf & 0xff);
+            qDebug("Lost HW contact. %d %x ... retry.", n, *mybuf & 0xff);
             for(n = 0; (n < 300) && (rx_timeout(mybuf,1,10) > -1); n++);
             hwreset();
             return hwfind(--retry);
@@ -313,21 +337,32 @@ int PropellerID::hwfind(int retry)
         do {
             ii = getBit(&rc, 100);
         } while(rc == 0 && to++ < 100);
-        //printf("%d", rc);
+        //printf(" %d\n", rc);
         if(to > 100) {
-            //printf("Timeout waiting for response bit. Propeller Not Found!\n");
+            qDebug("Timeout waiting for bit-stream response.");
             return 0;
         }
     }
 
-    //printf("Propeller Version ... ");
     rc = 0;
     for(n = 0; n < 8; n++) {
         rc >>= 1;
         rc += getBit(0, 100) ? 0x80 : 0;
     }
-    //printf("%d\n",rc);
+    if (pload_verbose) qDebug("Propeller Version ... %d", rc);
     return rc;
+}
+
+void PropellerID::flushPort()
+{
+    int size = 0;
+    do {
+        msleep(5);
+        QApplication::processEvents();
+        size = port->bytesAvailable();
+        //if (pload_verbose) qDebug("Flushing port %d", size);
+        port->readAll();
+    } while(size > 0);
 }
 
 /**
@@ -337,9 +372,12 @@ int PropellerID::hwfind(int retry)
  * @param port - pointer to com port name
  * @returns non-zero on error
  */
-bool PropellerID::findprop(const char* name)
+int PropellerID::findprop(const char* name)
 {
     int version = 0;
+
+    if (pload_verbose)
+        qDebug("\nChecking for Propeller on port %s", name);
 
     port->setPortName(name);
     port->setBaudRate(BAUD115200);
@@ -348,16 +386,33 @@ bool PropellerID::findprop(const char* name)
     port->setDataBits(DATA_8);
     port->setStopBits(STOP_1);
     port->setTimeout(10);
-    port->open(QIODevice::ReadWrite);
+    if(port->open(QIODevice::ReadWrite) == false)
+        return -1;
 
+    flushPort();
+
+    /*
+     * TODO Queue is broken. Fix it later.
+     * For the time being the current queue buffer is big enough to hold
+     * all expected receive data + garbage from quickstart boards.
+     */
+    rxhead = 0;
+    rxtail = 0;
+
+    connect(this, SIGNAL(portEvent()), this, SLOT(portHandler()));
+    start();
     hwreset();
     version = hwfind(1); // retry once
-    if(version && port) {
-        if (pload_verbose)
-            qDebug() << "Propeller Version " << version << " on " << name;
-    }
+    disconnect(this, SIGNAL(portEvent()), this, SLOT(portHandler()));
 
+    if (pload_verbose) {
+        if(version) {
+            qDebug() << "Propeller Version" << version << "on" << name;
+        } else {
+            qDebug() << "Propeller not found on" << name;
+        }
+    }
     port->close();
 
-    return version != 0 ? false : true;
+    return version != 0 ? 1 : 0;
 }
