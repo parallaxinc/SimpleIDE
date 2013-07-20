@@ -118,13 +118,15 @@ ProjectOptions::ProjectOptions(QWidget *parent, QComboBox *boardType) : QWidget(
     ui->checkBoxSimplePrintf->setChecked(false);
     ui->checkBoxStripELF->setChecked(false);
     ui->checkBoxMakeLibrary->setChecked(false);
+    ui->checkBoxDisableGc->setChecked(false);
 
     // keep strip and no exceptions but hide them
     ui->checkBoxStripELF->setVisible(false);
     //ui->checkBoxExceptions->setVisible(false);
 
     // turn this on when Ted commits tiny lib
-    ui->checkBoxTinylib->setVisible(true);
+    // Tiny Lib has proven more trouble than it's worth for simple users.
+    ui->checkBoxTinylib->setVisible(false);
 
     // start with project options
     ui->tabWidget->setCurrentIndex(0);
@@ -167,6 +169,7 @@ void ProjectOptions::clearOptions()
     ui->checkBoxSimplePrintf->setChecked(false);
     ui->checkBoxStripELF->setChecked(false);
     ui->checkBoxMakeLibrary->setChecked(false);
+    ui->checkBoxDisableGc->setChecked(false);
     ui->lineEditCompOptions->setText("");
     ui->lineEditLinkOptions->setText("");
     ui->lineEditSpinCompOptions->setText("");
@@ -326,6 +329,10 @@ QString ProjectOptions::getMakeLibrary()
 {
     return ui->checkBoxMakeLibrary->isChecked() ? QString ("-create_library") : QString("");
 }
+QString ProjectOptions::getDisableGcSections()
+{
+    return ui->checkBoxDisableGc->isChecked() ? QString ("-disable_pruning") : QString("");
+}
 
 void ProjectOptions::setOptions(QString s)
 {
@@ -409,6 +416,10 @@ void ProjectOptions::setOptions(QString s)
         if(s.contains("create_library")) {
             setMakeLibrary(true);
         }
+        else
+        if(s.contains("disable_pruning")) {
+            setDisableGcSections(true);
+        }
     }
 }
 
@@ -482,7 +493,7 @@ void ProjectOptions::setSimplePrintf(bool s)
 }
 void ProjectOptions::setStripElf(bool s)
 {
-    if(s == true) s = false;  // never strip - eliminate warnings
+    if(s == true) s = false;  // never strip because loader needs symbols
     ui->checkBoxStripELF->setChecked(s);
 }
 void ProjectOptions::setCompOptions(QString s)
@@ -501,7 +512,10 @@ void ProjectOptions::setMakeLibrary(bool s)
 {
     ui->checkBoxMakeLibrary->setChecked(s);
 }
-
+void ProjectOptions::setDisableGcSections(bool s)
+{
+    ui->checkBoxDisableGc->setChecked(s);
+}
 
 QStringList ProjectOptions::getSpinOptions()
 {
@@ -569,3 +583,4 @@ void ProjectOptions::setMinimumWidth(int width)
     QWidget::setMinimumWidth(width);
     ui->tabWidget->setMinimumWidth(width);
 }
+

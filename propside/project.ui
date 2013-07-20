@@ -38,9 +38,12 @@
     <string>Project Options</string>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="ProjectControl">
+    <property name="toolTip">
+     <string>Board and Compiler Options</string>
+    </property>
     <attribute name="title">
      <string>Project Options</string>
     </attribute>
@@ -171,11 +174,14 @@
       </rect>
      </property>
      <property name="toolTip">
-      <string>Board Type</string>
+      <string>Choose a Board Type</string>
      </property>
     </widget>
    </widget>
    <widget class="QWidget" name="CompileOptions">
+    <property name="toolTip">
+     <string>C/C++ Compiler Options</string>
+    </property>
     <attribute name="title">
      <string>Compiler</string>
     </attribute>
@@ -274,6 +280,9 @@
      <property name="text">
       <string>32bit Double</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QLabel" name="labelOtherCompiler">
      <property name="geometry">
@@ -288,8 +297,27 @@
       <string>Other Compiler Options</string>
      </property>
     </widget>
+    <widget class="QCheckBox" name="checkBoxDisableGc">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>50</y>
+       <width>121</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Disable pruning of unused function code and data sections.</string>
+     </property>
+     <property name="text">
+      <string>Disable Pruning</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="LinkerOptions">
+    <property name="toolTip">
+     <string>C/C++ Linker Options</string>
+    </property>
     <attribute name="title">
      <string>Linker</string>
     </attribute>
@@ -339,10 +367,13 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxTinylib">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>30</y>
+       <y>50</y>
        <width>121</width>
        <height>21</height>
       </rect>
@@ -368,6 +399,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxStripELF">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>140</x>
@@ -387,7 +421,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>50</y>
+       <y>40</y>
        <width>241</width>
        <height>17</height>
       </rect>
@@ -398,6 +432,9 @@
     </widget>
    </widget>
    <widget class="QWidget" name="SpinOptions">
+    <property name="toolTip">
+     <string>Spin Compiler Options</string>
+    </property>
     <attribute name="title">
      <string>Compiler</string>
     </attribute>

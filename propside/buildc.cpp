@@ -873,6 +873,13 @@ int  BuildC::runCompiler(QStringList copts)
         progress->setValue((100*prog++)/maxprogress);
     }
 
+    // add GC stuff
+    if(projectOptions->getDisableGcSections().length() == 0) {
+        args.append("-ffunction-sections");
+        args.append("-fdata-sections");
+        args.append("-Wl,--gc-sections");
+    }
+
     // add main file back
     args.append(mainProjectFile);
 
