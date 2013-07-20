@@ -3316,7 +3316,7 @@ QStringList MainSpinWindow::zipSPINproject(QStringList projList, QString srcPath
         }
         else {
             // find in spin library
-            item = findFileNoCase(spinlib+item);
+            item = findFileNoCase(spinlib+newList[n]);
             if(QFile::exists(item)) {
                 if(item.indexOf("/") > -1)
                     item = item.mid(item.lastIndexOf("/")+1);
