@@ -5929,6 +5929,8 @@ void MainSpinWindow::deleteProjectFile()
     {
         fileName = vs.toString();
     }
+    if(fileName.isEmpty())
+        return;
 
     QString mainFile;
 
