@@ -65,6 +65,7 @@ public:
     QString getLinkOptions();
     QString getBoardType();
     QString getMakeLibrary();
+    QString getDisableGcSections();
 
     void setCompiler(QString s);
     void setMemModel(QString s);
@@ -83,6 +84,7 @@ public:
     void setLinkOptions(QString s);
     void setBoardType(QString s);
     void setMakeLibrary(bool s);
+    void setDisableGcSections(bool s);
 
     QStringList getOptions();
     void        setOptions(QString s);
