@@ -36,7 +36,9 @@ int  BuildSpin::runBuild(QString option, QString projfile, QString compiler)
     compileStatus->moveCursor(QTextCursor::End);
     status->setText(tr("Building ...")+" "+spinfile);
 
-    return runBstc(spinfile);
+    rc = runBstc(spinfile);
+    status->setText(status->text()+" done.");
+    return rc;
 }
 
 int  BuildSpin::makeDebugFiles(QString fileName, QString projfile, QString compiler)
