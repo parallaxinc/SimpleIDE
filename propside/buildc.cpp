@@ -1372,7 +1372,7 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
         inc = inc.trimmed();
         inc = "lib"+inc;
         inc = inc.mid(0,inc.indexOf(".h"));
-        QString lib = Directory::recursiveFindFile(libdir,inc);
+        QString lib = findInclude(libdir,inc);
         /*
          With autolib, we only want to add full paths.
          These paths will never be "save as" but will be zipped though differently.
@@ -1386,10 +1386,28 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
             if(libdir.endsWith("/") == false)
                 libdir += "/";
             QString incFile = inc.mid(3) + ".h";
-            QString mydir = Directory::recursiveFindFile(libdir,incFile);
+            QString mydir = findInclude(libdir,incFile);
             mydir = mydir.mid(0,mydir.lastIndexOf("/"));
             autoAddLib(mydir, incFile, libdir, incList, newList);
         }
     }
     return newList->count();
 }
+
+/*
+ * findInclude uses a hash table to speed up entries.
+ * replace recursiveFindFile in autoAddLib.
+ */
+QString BuildC::findInclude(QString libdir, QString include)
+{
+    QString s("");
+    if(incHash.contains(include)) {
+        s = incHash[include];
+    }
+    else {
+        s = Directory::recursiveFindFile(libdir,include);
+        incHash.insert(include, s);
+    }
+    return s;
+}
+
