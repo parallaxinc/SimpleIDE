@@ -34,6 +34,7 @@ public:
     void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
 
     QStringList getLibraryList(QStringList &ILlist, QString projectFile);
+    QString findInclude(QString libdir, QString include);
 
 private:
     QString projName;
@@ -41,6 +42,8 @@ private:
     QString outputPath;
     QString exePath;
     QString exeName;
+
+    QHash<QString, QString> incHash;
 };
 
 #endif // BUILDC_H
