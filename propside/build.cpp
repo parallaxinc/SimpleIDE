@@ -149,8 +149,10 @@ void Build::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
 
     int len = status->text().length();
     QString s = status->text().mid(len-8);
+    /*
     if(s.contains("done.",Qt::CaseInsensitive) == false)
         status->setText(status->text()+" done.");
+    */
 }
 
 /*

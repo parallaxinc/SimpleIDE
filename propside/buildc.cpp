@@ -932,6 +932,7 @@ int  BuildC::runCompiler(QStringList copts)
     QString ssize = QString(tr("Code Size")+" %L1 "+tr("bytes")+" (%L2 "+tr("total")+")").arg(codeSize).arg(memorySize);
     programSize->setText(ssize);
     progress->setValue(100);
+    status->setText(status->text()+" done.");
 
     return rc;
 }
