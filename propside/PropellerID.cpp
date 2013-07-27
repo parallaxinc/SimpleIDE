@@ -54,7 +54,7 @@ int PropellerID::isDevice(QString portName)
 void PropellerID::run()
 {
     while(port->isOpen()) {
-        msleep(5);
+        msleep(25);
         QApplication::processEvents();
         emit portEvent();
     }
