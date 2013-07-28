@@ -5924,6 +5924,8 @@ void MainSpinWindow::deleteProjectFile()
     QString fileName = "";
     QStringList list;
 
+    if(projectModel == NULL) return;
+
     QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
     if(vs.canConvert(QVariant::String))
     {
@@ -5942,6 +5944,10 @@ void MainSpinWindow::deleteProjectFile()
         }
         list = projstr.split("\n");
         mainFile = list[0];
+        if(fileName.compare(mainFile) == 0) {
+            qDebug() << "Can't delete mainfile.";
+            return;
+        }
         projstr = "";
         for(int n = 0; n < list.length(); n++) {
             QString arg = list[n];
