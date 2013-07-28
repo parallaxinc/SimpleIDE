@@ -206,6 +206,8 @@ QStringList ProjectOptions::getOptions()
         args.append(getExceptions());
     if(getSimplePrintf().length())
         args.append(getSimplePrintf());
+    if(getDisableGcSections().length())
+        args.append(getDisableGcSections());
 
     if(getCompiler().indexOf("++") > -1)
         args.append("-fno-rtti");

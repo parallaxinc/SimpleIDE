@@ -6596,13 +6596,18 @@ bool MainSpinWindow::rtsReset()
 
 void MainSpinWindow::findChip()
 {
+    compileStatus->setPlainText("Identifying Propellers ...\n");
+
     if(rtsReset())
         propId.setRtsReset();
     else
         propId.setDtrReset();
 
-    compileStatus->setPlainText("Identifying Propellers ...\n");
+    int indx = cbPort->currentIndex();
+    this->enumeratePorts();
     int size = cbPort->count();
+    if(indx < size)
+        cbPort->setCurrentIndex(indx);
 
     for (int n = 1; n < size; n++) {
         QString mp;
