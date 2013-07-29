@@ -6602,6 +6602,9 @@ bool MainSpinWindow::rtsReset()
 
 void MainSpinWindow::findChip()
 {
+    if(btnConnected->isChecked())
+        return;
+
     compileStatus->setPlainText("Identifying Propellers ...\n");
 
     if(rtsReset())
