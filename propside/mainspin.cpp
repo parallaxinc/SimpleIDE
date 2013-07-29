@@ -8,8 +8,11 @@ int main(int argc, char *argv[])
     MainSpinWindow w;
 #endif
 
+#if defined(Q_WS_MAC)
+    a.setWindowIcon(QIcon(":/images/SimpleIDE-64.ico"));
+#else
     a.setWindowIcon(QIcon(":/images/SimpleIDE-16.ico"));
-
+#endif
     a.setApplicationName(ASideGuiKey);
 
     qDebug() << a.applicationName() << "argument count " << argc;
