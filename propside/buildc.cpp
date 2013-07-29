@@ -874,7 +874,7 @@ int  BuildC::runCompiler(QStringList copts)
     }
 
     // add GC stuff
-    if(projectOptions->getDisableGcSections().length() == 0) {
+    if(projectOptions->getEnableGcSections().length() != 0) {
         args.append("-ffunction-sections");
         args.append("-fdata-sections");
         args.append("-Wl,--gc-sections");

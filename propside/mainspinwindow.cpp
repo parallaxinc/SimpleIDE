@@ -6663,7 +6663,9 @@ void MainSpinWindow::enumeratePorts()
     if(cbPort != NULL) cbPort->clear();
 
     friendlyPortName.clear();
+#ifdef ENABLE_AUTO_PORT
     friendlyPortName.append(AUTO_PORT);
+#endif
     QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
     QStringList stringlist;
     QString name;
@@ -6700,7 +6702,9 @@ void MainSpinWindow::enumeratePorts()
 #endif
     }
     cbPort->setCurrentIndex(0);
+#ifdef ENABLE_AUTO_PORT
     cbPort->insertItem(0,AUTO_PORT);
+#endif
 }
 
 void MainSpinWindow::connectButton()
@@ -7084,7 +7088,9 @@ void MainSpinWindow::setupFileMenu()
     // added for simple view, not necessary anymore
     //toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(reloadBoardTypes()));
     toolsMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
+#ifdef ENABLE_AUTO_PORT
     toolsMenu->addAction(tr("Identify Propeller"), this, SLOT(findChip()), Qt::Key_F7);
+#endif
     QMenu *programMenu = new QMenu(tr("&Program"), this);
     menuBar()->addMenu(programMenu);
 
