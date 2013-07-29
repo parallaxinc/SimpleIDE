@@ -237,6 +237,9 @@ void Build::procReadyRead()
         if(QString(bytes).contains("Error",Qt::CaseInsensitive)) {
             procResultError = true;
         }
+        if(QString(bytes).contains("longs",Qt::CaseInsensitive)) {
+            bytes = bytes.replace("longs", "bytes");
+        }
     }
 
     if(progname.contains("propeller-elf-gcc") && bytes.contains("gcc version")) {
