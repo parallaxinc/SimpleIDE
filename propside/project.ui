@@ -38,7 +38,7 @@
     <string>Project Options</string>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="ProjectControl">
     <property name="toolTip">
@@ -195,7 +195,7 @@
       </rect>
      </property>
      <property name="toolTip">
-      <string>Compile Options</string>
+      <string>GCC Compile Options</string>
      </property>
      <property name="text">
       <string/>
@@ -297,7 +297,7 @@
       <string>Other Compiler Options</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="checkBoxDisableGc">
+    <widget class="QCheckBox" name="checkBoxEnableGc">
      <property name="geometry">
       <rect>
        <x>140</x>
@@ -307,10 +307,10 @@
       </rect>
      </property>
      <property name="toolTip">
-      <string>Disable pruning of unused function code and data sections.</string>
+      <string>Enable pruning of unused function code and data sections.</string>
      </property>
      <property name="text">
-      <string>Disable Pruning</string>
+      <string>Enable Pruning</string>
      </property>
     </widget>
    </widget>
@@ -368,18 +368,18 @@
     </widget>
     <widget class="QCheckBox" name="checkBoxTinylib">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>50</y>
+       <y>30</y>
        <width>121</width>
        <height>21</height>
       </rect>
      </property>
      <property name="toolTip">
-      <string>Check to include the floating point math library.</string>
+      <string>Include Tiny IO library - not recommended.</string>
      </property>
      <property name="text">
       <string>Tiny Lib</string>
@@ -421,13 +421,19 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>40</y>
+       <y>50</y>
        <width>241</width>
-       <height>17</height>
+       <height>21</height>
       </rect>
+     </property>
+     <property name="toolTip">
+      <string>Create libproject.a for given memory model.</string>
      </property>
      <property name="text">
       <string>Create Project Library</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
      </property>
     </widget>
    </widget>
@@ -448,7 +454,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Other Compiler Options</string>
+      <string>Spin Compiler Options</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="lineEditSpinCompOptions">
@@ -461,7 +467,7 @@
       </rect>
      </property>
      <property name="toolTip">
-      <string>Compile Options</string>
+      <string>Spin Compiler Options</string>
      </property>
      <property name="text">
       <string/>

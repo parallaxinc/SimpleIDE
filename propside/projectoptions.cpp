@@ -118,7 +118,7 @@ ProjectOptions::ProjectOptions(QWidget *parent, QComboBox *boardType) : QWidget(
     ui->checkBoxSimplePrintf->setChecked(false);
     ui->checkBoxStripELF->setChecked(false);
     ui->checkBoxMakeLibrary->setChecked(false);
-    ui->checkBoxDisableGc->setChecked(false);
+    ui->checkBoxEnableGc->setChecked(false);
 
     // keep strip and no exceptions but hide them
     ui->checkBoxStripELF->setVisible(false);
@@ -126,7 +126,8 @@ ProjectOptions::ProjectOptions(QWidget *parent, QComboBox *boardType) : QWidget(
 
     // turn this on when Ted commits tiny lib
     // Tiny Lib has proven more trouble than it's worth for simple users.
-    ui->checkBoxTinylib->setVisible(false);
+    // but turning it off is trouble too.
+    // ui->checkBoxTinylib->setVisible(false);
 
     // start with project options
     ui->tabWidget->setCurrentIndex(0);
@@ -169,7 +170,7 @@ void ProjectOptions::clearOptions()
     ui->checkBoxSimplePrintf->setChecked(false);
     ui->checkBoxStripELF->setChecked(false);
     ui->checkBoxMakeLibrary->setChecked(false);
-    ui->checkBoxDisableGc->setChecked(false);
+    ui->checkBoxEnableGc->setChecked(false);
     ui->lineEditCompOptions->setText("");
     ui->lineEditLinkOptions->setText("");
     ui->lineEditSpinCompOptions->setText("");
@@ -206,8 +207,8 @@ QStringList ProjectOptions::getOptions()
         args.append(getExceptions());
     if(getSimplePrintf().length())
         args.append(getSimplePrintf());
-    if(getDisableGcSections().length())
-        args.append(getDisableGcSections());
+    if(getEnableGcSections().length())
+        args.append(getEnableGcSections());
 
     if(getCompiler().indexOf("++") > -1)
         args.append("-fno-rtti");
@@ -331,9 +332,9 @@ QString ProjectOptions::getMakeLibrary()
 {
     return ui->checkBoxMakeLibrary->isChecked() ? QString ("-create_library") : QString("");
 }
-QString ProjectOptions::getDisableGcSections()
+QString ProjectOptions::getEnableGcSections()
 {
-    return ui->checkBoxDisableGc->isChecked() ? QString ("-disable_pruning") : QString("");
+    return ui->checkBoxEnableGc->isChecked() ? QString ("-enable_pruning") : QString("");
 }
 
 void ProjectOptions::setOptions(QString s)
@@ -419,8 +420,8 @@ void ProjectOptions::setOptions(QString s)
             setMakeLibrary(true);
         }
         else
-        if(s.contains("disable_pruning")) {
-            setDisableGcSections(true);
+        if(s.contains("enable_pruning")) {
+            setEnableGcSections(true);
         }
     }
 }
@@ -514,9 +515,9 @@ void ProjectOptions::setMakeLibrary(bool s)
 {
     ui->checkBoxMakeLibrary->setChecked(s);
 }
-void ProjectOptions::setDisableGcSections(bool s)
+void ProjectOptions::setEnableGcSections(bool s)
 {
-    ui->checkBoxDisableGc->setChecked(s);
+    ui->checkBoxEnableGc->setChecked(s);
 }
 
 QStringList ProjectOptions::getSpinOptions()
