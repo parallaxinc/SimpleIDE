@@ -105,7 +105,7 @@ int  BuildSpin::runBstc(QString spinfile)
     if(codeSize != 0)
         ssize = QString(tr("Code Size")+" %L1 "+tr("bytes")).arg(codeSize);
     programSize->setText(ssize);
-
+    progress->setVisible(false);
     return rc;
 }
 
