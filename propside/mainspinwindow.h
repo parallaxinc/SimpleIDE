@@ -391,7 +391,6 @@ private:
     QLabel          *programSize;
 
     QMenu           *projectMenu;
-    QModelIndex     projectIndex;
     QString         projectHome;
 
     ProjectOptions  *projectOptions;

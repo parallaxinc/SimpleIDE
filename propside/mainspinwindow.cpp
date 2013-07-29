@@ -5619,7 +5619,7 @@ void MainSpinWindow::projectTreeClicked(QModelIndex index)
 {
     if(projectModel == NULL)
         return;
-    projectIndex = index; // same as projectTree->currentIndex();
+    //projectIndex = index; // same as projectTree->currentIndex();
     if(projectTree->rightClick(false) && projectMenu->isEnabled())
         projectMenu->popup(QCursor::pos());
     else
@@ -5925,8 +5925,12 @@ void MainSpinWindow::deleteProjectFile()
     QStringList list;
 
     if(projectModel == NULL) return;
+    if(projectTree == NULL) return;
 
-    QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
+    int row = projectTree->currentIndex().row();
+    if(row < 1) return;
+
+    QVariant vs = projectModel->data(projectTree->currentIndex(), Qt::DisplayRole);
     if(vs.canConvert(QVariant::String))
     {
         fileName = vs.toString();
@@ -6029,7 +6033,7 @@ void MainSpinWindow::showProjectFile()
     QString fileName;
     qDebug() << "showProjectFile" << "Total Tabs" << editorTabs->count() << "Total Editors" << editors->count();
 
-    QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
+    QVariant vs = projectModel->data(projectTree->currentIndex(), Qt::DisplayRole);
     if(vs.canConvert(QVariant::String))
     {
         fileName = vs.toString();
@@ -6531,7 +6535,7 @@ void MainSpinWindow::showAssemblyFile()
 {
     QString outputPath = builder->sourcePath(projectFile)+builder->getOutputPath(projectFile);
     QString fileName;
-    QVariant vs = projectModel->data(projectIndex, Qt::DisplayRole);
+    QVariant vs = projectModel->data(projectTree->currentIndex(), Qt::DisplayRole);
     if(vs.canConvert(QVariant::String))
         fileName = vs.toString();
 
