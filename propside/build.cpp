@@ -224,6 +224,7 @@ void Build::procReadyRead()
 #else
     QString eol("\n");
 #endif
+    bytes = bytes.replace("\r\n","\n");
 
     // bstc doesn't return good exit status
     QString progname;

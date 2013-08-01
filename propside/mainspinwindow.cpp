@@ -368,6 +368,7 @@ void MainSpinWindow::sendPortMessage(QString s)
 {
     QByteArray barry;
     foreach(QChar c, s.toUtf8()) {
+        Sleeper::ms(1);
         barry.append(c);
         portListener->send(barry);
         barry.clear();
