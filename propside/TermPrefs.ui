@@ -312,7 +312,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>(10) Carriage Return CR</string>
+      <string>(10)  New Line NL</string>
      </property>
      <property name="checked">
       <bool>true</bool>
@@ -408,7 +408,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>(13) New Line NL</string>
+      <string>(13) Carriage Return CR</string>
      </property>
      <property name="checked">
       <bool>true</bool>
