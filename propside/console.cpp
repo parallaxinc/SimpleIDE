@@ -102,7 +102,9 @@ void Console::keyPressEvent(QKeyEvent *event)
     else
     if(event->matches((QKeySequence::Paste))) {
         QClipboard *clip = QApplication::clipboard();
-        parentMain->sendPortMessage(clip->text());
+        QString s = clip->text();
+        s = s.replace("\n","\r");
+        parentMain->sendPortMessage(s);
     }
     else {
         QString s = eventKey(event);
