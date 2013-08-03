@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-36"
+#define MyAppVersion "0-9-39"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -50,7 +50,7 @@ ChangesAssociations=yes
 LicenseFile=.\IDE_LICENSE.txt
 WizardImageFile=images\SimpleIDE-Install-Splash5.bmp
 ;WizardImageStretch=no
-SetupIconFile=images\SimpleIDE-16.ico
+SetupIconFile=images\SimpleIDE-all.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -130,7 +130,7 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Tasks: association;  Flags: UninsDeleteKey;
 Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Tasks: association;  Flags: UninsDeleteKey;
 Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: UninsDeleteKey;
-Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,2"; Tasks: association;  Flags: UninsDeleteKey;
+Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,3"; Tasks: association;  Flags: UninsDeleteKey;
 
 ; Startup File
 ;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: "{userdocs}\Workspace\My Projects\Welcome.c"; Flags: UninsDeleteKey; 

@@ -918,6 +918,13 @@ int  BuildC::runCompiler(QStringList copts)
     if(rc != 0)
         return rc;
 
+    if(exePath.contains("xmm", Qt::CaseInsensitive) == false) {
+        args.clear();
+        args.append("-s");
+        args.append(exePath);
+        rc = startProgram("propeller-load",sourcePath(projectFile),args,this->DumpNormal);
+    }
+
     args.clear();
     args.append("-h");
     args.append(exePath);
