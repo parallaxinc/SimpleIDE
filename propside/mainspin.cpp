@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 #if defined(Q_WS_MAC)
     a.setWindowIcon(QIcon(":/images/SimpleIDE-64.ico"));
 #else
-    a.setWindowIcon(QIcon(":/images/SimpleIDE-16.ico"));
+    a.setWindowIcon(QIcon(":/images/SimpleIDE-all.ico"));
 #endif
     a.setApplicationName(ASideGuiKey);
 
