@@ -242,6 +242,15 @@ void Build::procReadyRead()
             bytes = bytes.replace("longs", "bytes");
         }
     }
+    if(progname.contains("propbasic",Qt::CaseInsensitive)) {
+        isbstc = true;
+        if(QString(bytes).contains("Error",Qt::CaseInsensitive) && !QString(bytes).contains("0 Error",Qt::CaseInsensitive)) {
+            procResultError = true;
+        }
+        if(QString(bytes).contains("longs",Qt::CaseInsensitive)) {
+            bytes = bytes.replace("longs", "bytes");
+        }
+    }
 
     if(progname.contains("propeller-elf-gcc") && bytes.contains("gcc version")) {
         QString line = QString(bytes);

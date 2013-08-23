@@ -38,6 +38,7 @@ int  BuildSpin::runBuild(QString option, QString projfile, QString compiler)
 
     rc = runBstc(spinfile);
     status->setText(status->text()+" done.");
+    if(rc) statusFailed();
     return rc;
 }
 

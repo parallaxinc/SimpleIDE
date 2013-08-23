@@ -1360,6 +1360,7 @@ QStringList BuildC::getLibraryList(QStringList &ILlist, QString projFile)
     foreach(QString srcFile, srcList) {
         autoAddLib(projectPath, srcFile, libdir, ilist, &newList);
     }
+    newList.removeDuplicates();
     return newList;
 }
 
@@ -1381,6 +1382,10 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
         inc = "lib"+inc;
         inc = inc.mid(0,inc.indexOf(".h"));
         QString lib = findInclude(libdir,inc);
+        /* If this is in a library project, don't include it
+           otherwise and infinite directory can be made */
+        if(lib.compare(projectPath) == 0)
+            continue;
         /*
          With autolib, we only want to add full paths.
          These paths will never be "save as" but will be zipped though differently.
