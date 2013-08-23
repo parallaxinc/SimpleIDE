@@ -2610,8 +2610,8 @@ void MainSpinWindow::recursiveAddDir(QString dir, QStringList *files)
     if(dir.length() < 1)
         return;
 
-    if(dir.at(dir.length()-1) != QDir::separator())
-        dir += QDir::separator();
+    if(dir.at(dir.length()-1) != '/')
+        dir += '/';
 
     flist = dpath.entryList(QDir::AllEntries, QDir::DirsLast);
     foreach(file, flist) {
@@ -2644,8 +2644,8 @@ void MainSpinWindow::recursiveRemoveDir(QString dir)
     if(dir.length() < 1)
         return;
 
-    if(dir.at(dir.length()-1) != QDir::separator())
-        dir += QDir::separator();
+    if(dir.at(dir.length()-1) != '/')
+        dir += '/';
 
     flist = dpath.entryList(QDir::AllEntries, QDir::DirsLast);
     foreach(file, flist) {
@@ -2683,10 +2683,10 @@ void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir, QString no
     if(notlist.isEmpty() == false)
         list = notlist.split(" ", QString::SkipEmptyParts);
 
-    if(srcdir.at(srcdir.length()-1) != QDir::separator())
-        srcdir += QDir::separator();
-    if(dstdir.at(dstdir.length()-1) != QDir::separator())
-        dstdir += QDir::separator();
+    if(srcdir.at(srcdir.length()-1) != '/')
+        srcdir += '/';
+    if(dstdir.at(dstdir.length()-1) != '/')
+        dstdir += '/';
 
     QDir spath(srcdir);
     QDir dpath(dstdir);
@@ -2891,6 +2891,7 @@ void MainSpinWindow::zipProject()
     if(dpath.exists()) {
         recursiveRemoveDir(dstPath);
     }
+    QApplication::processEvents();
     dpath.mkdir(dstPath);
 
     if(dpath.exists() == false) {
@@ -4753,7 +4754,6 @@ void MainSpinWindow::sdCardDownloadEnable()
     else {
         btnDownloadSdCard->setEnabled(false);
     }
-    QApplication::processEvents();
 }
 
 void MainSpinWindow::setCurrentBoard(int index)
