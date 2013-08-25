@@ -70,7 +70,9 @@ int  BuildSpin::runBstc(QString spinfile)
     QDir libdir;
 
     if((comp.compare("spin",Qt::CaseInsensitive) == 0) ||
-       (comp.compare("spin.exe",Qt::CaseInsensitive) == 0)) {
+       (comp.compare("spin.exe",Qt::CaseInsensitive) == 0) ||
+       (comp.compare("openspin",Qt::CaseInsensitive) == 0) ||
+       (comp.compare("openspin.exe",Qt::CaseInsensitive) == 0)) {
         // Roy's compiler always makes a .binary
         if(libdir.exists(properties->getSpinLibraryStr())) {
             args.append("-I");

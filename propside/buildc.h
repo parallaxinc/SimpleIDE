@@ -34,7 +34,10 @@ public:
     void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
 
     QStringList getLibraryList(QStringList &ILlist, QString projectFile);
-    QString findInclude(QString libdir, QString include);
+    QString findInclude(QString projdir, QString libdir, QString include);
+
+private:
+    QString findIncludePath(QString projdir, QString libdir, QString include);
 
 private:
     QString projName;
