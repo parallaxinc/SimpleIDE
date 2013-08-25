@@ -751,6 +751,11 @@ int  BuildC::runCompiler(QStringList copts)
         // is enabled, then we can end up with the wrong library.
         libadd = getLibraryList(newList,this->projectFile);
         foreach(QString s, libadd) {
+            // remove .h files
+            if(s.endsWith(".h")) {
+                continue;
+            }
+
             if(ILlist.contains(s) == false) {
                 ILlist.append("-I");
                 ILlist.append(s);
@@ -781,7 +786,6 @@ int  BuildC::runCompiler(QStringList copts)
     lib = 0;
 
     int maxprogress = args.length();
-
     foreach (QString s, args) {
 
         if( s.contains(".spin",Qt::CaseInsensitive) ||
@@ -797,7 +801,7 @@ int  BuildC::runCompiler(QStringList copts)
 
         // *.spin should never happen because of C build rules
         // remove .h files
-        if(s.contains(".h",Qt::CaseInsensitive)) {
+        if(s.endsWith(".h")) {
             args.removeOne(s);
             continue;
         }
@@ -1357,6 +1361,8 @@ QStringList BuildC::getLibraryList(QStringList &ILlist, QString projFile)
     }
     QString projectPath = projFile;
     projectPath = projectPath.left(projectPath.lastIndexOf("/"));
+    /* invalidate cache each time we build */
+    //incHash.clear();
     foreach(QString srcFile, srcList) {
         autoAddLib(projectPath, srcFile, libdir, ilist, &newList);
     }
@@ -1381,9 +1387,12 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
         inc = inc.trimmed();
         inc = "lib"+inc;
         inc = inc.mid(0,inc.indexOf(".h"));
-        QString lib = findInclude(libdir,inc);
+        QString lib = findInclude(projectPath,libdir,inc);
+        if(lib.length() == 0) {
+            continue;
+        }
         /* If this is in a library project, don't include it
-           otherwise and infinite directory can be made */
+           otherwise an infinite directory can be made */
         if(lib.compare(projectPath) == 0)
             continue;
         /*
@@ -1399,7 +1408,7 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
             if(libdir.endsWith("/") == false)
                 libdir += "/";
             QString incFile = inc.mid(3) + ".h";
-            QString mydir = findInclude(libdir,incFile);
+            QString mydir = findInclude(projectPath, libdir,incFile);
             mydir = mydir.mid(0,mydir.lastIndexOf("/"));
             autoAddLib(mydir, incFile, libdir, incList, newList);
         }
@@ -1408,19 +1417,57 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
 }
 
 /*
- * findInclude uses a hash table to speed up entries.
- * replace recursiveFindFile in autoAddLib.
+ * findInclude is cached and uses a hash table to speed up entries.
+ * protects against changes in the file-system.
  */
-QString BuildC::findInclude(QString libdir, QString include)
+QString BuildC::findInclude(QString projdir, QString libdir, QString include)
 {
     QString s("");
-    if(incHash.contains(include)) {
-        s = incHash[include];
+    if(incHash.contains(include) == false) {
+        // library path is not cached yet - cache it
+        s = findIncludePath(projdir, libdir, include);
     }
     else {
-        s = Directory::recursiveFindFile(libdir,include);
-        incHash.insert(include, s);
+        // we have a cache match.
+        s = incHash[include];
+        // if the file is missing for some reason, find it again.
+        if(QFile::exists(s) == false) {
+            // entry is invalid. remove it.
+            incHash.remove(include);
+            s = findIncludePath(projdir, libdir, include);
+        }
     }
     return s;
 }
+
+/*
+ * find and cache the include path.
+ */
+QString BuildC::findIncludePath(QString projdir, QString libdir, QString include)
+{
+    QString s;
+    // look in project first
+    s = Directory::recursiveFindFile(projdir, include);
+    if(s.length() > 0) {
+        incHash.insert(include, s);
+        return s;
+    }
+    // includes aren't always for libraries in the local project path
+    else if(include.mid(0,2).compare("lib")) {
+        s = Directory::recursiveFindFile(projdir, include.mid(3)+".h");
+        if(s.length() > 0) {
+            incHash.insert(include, s);
+            return s;
+        }
+    }
+    // if we get here, not project code was found - look in global library
+    s = Directory::recursiveFindFile(libdir,include);
+    if(s.length() > 0) {
+        s = Directory::recursiveFindFile(libdir, include);
+        incHash.insert(include, s);
+        return s;
+    }
+    return s;
+}
+
 
