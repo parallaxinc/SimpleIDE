@@ -3243,6 +3243,8 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
                     libd.mkdir(dstPath+zipLib);
                 recursiveCopyDir(als, dstPath+zipLib+dls, QString("*.o *.elf"));
                 // TODO fix projects to flatten here ?
+                if(dls.endsWith(".h"))
+                    continue;
                 flattenDstProject(dstPath+zipLib+dls, dls+".side");
                 als = "./"+zipLib+dls;
                 if(als.length() > 0)
