@@ -77,6 +77,12 @@ if test $? != 0; then
    exit 1
 fi
 
+cp ../boards.txt ./parallax/propeller-load
+if test $? != 0; then
+   echo "copy boards.txt filter failed."
+   exit 1
+fi
+
 cp ../ctags-5.8/ctags ./parallax/bin
 if test $? != 0; then
    echo "copy ctags failed."
