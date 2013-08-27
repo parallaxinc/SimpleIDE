@@ -2741,6 +2741,10 @@ void MainSpinWindow::flattenDstProject(QString path, QString project)
             file.close();
         }
     }
+    else {
+        qDebug() << path+"/"+project << "not found";
+        return;
+    }
     QStringList list = projstr.split("\n", QString::SkipEmptyParts);
     QString dst;
     foreach (QString s, list) {
