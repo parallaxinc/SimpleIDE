@@ -105,6 +105,7 @@
         <file>images/SimpleIDE-512.png</file>
         <file>images/SimpleIDE-32.ico</file>
         <file>images/SimpleIDE-16.ico</file>
+        <file>images/SimpleIDE.icns</file>
         <file>images/SimpleIDE-all.ico</file>
     </qresource>
 </RCC>

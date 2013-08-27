@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if defined(Q_WS_MAC)
-    a.setWindowIcon(QIcon(":/images/SimpleIDE-64.ico"));
+    a.setWindowIcon(QIcon(":/images/SimpleIDE.icns"));
 #else
     a.setWindowIcon(QIcon(":/images/SimpleIDE-all.ico"));
 #endif
