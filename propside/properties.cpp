@@ -150,8 +150,65 @@ void Properties::setupPropGccWorkspace()
 
     QDir wrkd(mywrk);
     if(wrkd.exists(mywrk) == false) {
+        // Workspace does not exist. Copy for the user.
         Directory::recursiveCopyDir(pkwrk, mywrk);
     }
+#if 0
+    else {
+        // Workspace exists. If it is out of date ask permission to replace it.
+        QFileInfo pinfo(pkwrk);
+        QFileInfo winfo(mywrk);
+        QDateTime ptime = pinfo.lastModified();
+        QDateTime wtime = winfo.lastModified();
+
+        qDebug() << ptime.date() << ptime.time() << ptime.toMSecsSinceEpoch();
+        qDebug() << wtime.date() << wtime.time() << wtime.toMSecsSinceEpoch();
+
+        bool keepwrk = false;
+        QVariant keep = settings.value(keepOldWorkspaceKey, false);
+        if(keep.canConvert(QVariant::Bool)) {
+            keepwrk = keep.toBool();
+        }
+
+        if(!keepwrk) {
+
+            // remove true || after dialog setup.
+            if(true || wtime.secsTo(ptime) > 0) {
+
+                //qDebug() << pkwrk << "is newer";
+                QApplication::processEvents();
+
+                int rc = QMessageBox::question(this, tr("Replace Workspace?"),
+                    tr("The SimpleIDE workspace is out of date.")+" "+
+                    tr("Replace it?")+"\n"+
+                    tr("(The workspace will be saved.)"),
+                    QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes);
+
+                if(rc == QMessageBox::Yes) {
+                    qDebug() << "Add replace code";
+                    QString cpy = mywrk;
+                    if(cpy.endsWith("/")) cpy = cpy.left(cpy.length()-1);
+                    cpy = cpy+" ("+QDateTime::currentDateTime().toString()+")";
+                    cpy = cpy.replace(":","_");
+                    bool bv = wrkd.rename(mywrk, cpy);
+                    if(!bv) {
+                        QMessageBox::information(this, tr("Can't Replace Workspace."),
+                            tr("Can't replace the SimpleIDE workspace.")+"\n"+
+                            tr("Please rename or remove it and restart SimpleIDE."));
+                    } else {
+                        QApplication::processEvents();
+                        Directory::recursiveCopyDir(pkwrk, mywrk);
+                        QApplication::processEvents();
+                    }
+                } else {
+                    settings.setValue(keepOldWorkspaceKey, true);
+                }
+            } else {
+                qDebug() << pkwrk << "is older";
+            }
+        }
+    }
+#endif
 
     QString mylib;
     if(QFile::exists(mywrk+"Learn/Simple Libraries")) {

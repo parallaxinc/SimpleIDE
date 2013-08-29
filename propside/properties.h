@@ -44,6 +44,7 @@
 #define spinLibraryKey      "SimpleIDE_SpinLibrary"
 #define spinWorkspaceKey    "SimpleIDE_SpinWorkspace"
 #define propLoaderKey       "SimpleIDE_Loader"
+#define keepOldWorkspaceKey "SimpleIDE_KeepOldWorkspace"
 
 #define clearKeys           "SimpleIDE_ClearKeys"
 #define useKeys             "SimpleIDE_UseKeys"
@@ -100,7 +101,7 @@ class Properties : public QDialog
     Q_OBJECT
 public:
     explicit Properties(QWidget *parent = 0);
-
+    virtual ~Properties() {}
     QString getApplicationWorkspace();
 
     int getTabSpaces();

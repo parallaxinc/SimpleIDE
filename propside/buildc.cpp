@@ -751,10 +751,6 @@ int  BuildC::runCompiler(QStringList copts)
         // is enabled, then we can end up with the wrong library.
         libadd = getLibraryList(newList,this->projectFile);
         foreach(QString s, libadd) {
-            // remove .h files
-            if(s.endsWith(".h")) {
-                continue;
-            }
 
             if(ILlist.contains(s) == false) {
                 ILlist.append("-I");
@@ -1389,7 +1385,7 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
         inc = inc.mid(0,inc.indexOf(".h"));
         QString lib = findInclude(projectPath,libdir,inc);
         if(lib.length() == 0) {
-            continue;
+            //continue;
         }
         /* If this is in a library project, don't include it
            otherwise an infinite directory can be made */
@@ -1408,7 +1404,7 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
             if(libdir.endsWith("/") == false)
                 libdir += "/";
             QString incFile = inc.mid(3) + ".h";
-            QString mydir = findInclude(projectPath, libdir,incFile);
+            QString mydir = findInclude(projectPath, libdir, incFile);
             mydir = mydir.mid(0,mydir.lastIndexOf("/"));
             autoAddLib(mydir, incFile, libdir, incList, newList);
         }
@@ -1422,19 +1418,24 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
  */
 QString BuildC::findInclude(QString projdir, QString libdir, QString include)
 {
-    QString s("");
+    QString ms;
+    QString s;
     if(incHash.contains(include) == false) {
         // library path is not cached yet - cache it
-        s = findIncludePath(projdir, libdir, include);
+        ms = s = findIncludePath(projdir,libdir,include);
+        if(s.length() > 0)
+            incHash.insert(include, s);
     }
     else {
         // we have a cache match.
-        s = incHash[include];
+        ms = s = incHash[include];
         // if the file is missing for some reason, find it again.
         if(QFile::exists(s) == false) {
             // entry is invalid. remove it.
             incHash.remove(include);
-            s = findIncludePath(projdir, libdir, include);
+            ms = s = findIncludePath(projdir,libdir,include);
+            if(s.length() > 0)
+                incHash.insert(include, s);
         }
     }
     return s;
@@ -1451,14 +1452,6 @@ QString BuildC::findIncludePath(QString projdir, QString libdir, QString include
     if(s.length() > 0) {
         incHash.insert(include, s);
         return s;
-    }
-    // includes aren't always for libraries in the local project path
-    else if(include.mid(0,2).compare("lib")) {
-        s = Directory::recursiveFindFile(projdir, include.mid(3)+".h");
-        if(s.length() > 0) {
-            incHash.insert(include, s);
-            return s;
-        }
     }
     // if we get here, not project code was found - look in global library
     s = Directory::recursiveFindFile(libdir,include);
