@@ -2896,7 +2896,13 @@ void MainSpinWindow::zipProject()
     }
 
     // zip folder
-    zipIt(dTmpPath, dstPath);
+    zipIt(dTmpPath, dTmpPath);
+    if(dstPath.endsWith("/"))
+        dstPath = dstPath.left(dstPath.lastIndexOf("/"));
+    if(dTmpPath.endsWith("/"))
+        dTmpPath = dTmpPath.left(dTmpPath.lastIndexOf("/"));
+    QFile::copy(dTmpPath+".zip", dstPath+".zip");
+    QFile::remove(dTmpPath+".zip");
 
 #ifdef ENABLE_KEEP_ZIP_FOLDER
     // and remove folder if save zip folder is not checked
@@ -2976,6 +2982,8 @@ void MainSpinWindow::zipIt(QString dir, QString dst)
 
         while (inFile.getChar(&c) && outFile.putChar(c))
             ; // yes empty body
+
+        QApplication::processEvents();
 
         if (outFile.getZipError() != UNZ_OK) {
             QMessageBox::critical(this, tr("Zip Error"), QString("testCreate(): outFile.putChar(): %1").arg(outFile.getZipError()));
