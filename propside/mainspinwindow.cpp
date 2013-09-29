@@ -7038,10 +7038,31 @@ void MainSpinWindow::setupFileMenu()
     QMenu *programMenu = new QMenu(tr("&Program"), this);
     menuBar()->addMenu(programMenu);
 
+#ifdef CHANGE_ALL_MAC_PROGRAM_KEYS
+#if Q_WS_MAC
+    programMenu->addAction(QIcon(":/images/RunConsole2.png"), tr("Run with Terminal"), this, SLOT(programDebug()), Qt::ALT+Qt::Key_F8);
+    programMenu->addAction(QIcon(":/images/build3.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::ALT+Qt::Key_F9);
+    programMenu->addAction(QIcon(":/images/run.png"), tr("Load RAM && Run"), this, SLOT(programRun()), Qt::ALT+Qt::Key_F10);
+    programMenu->addAction(QIcon(":/images/burnee.png"), tr("Load EEPROM && Run"), this, SLOT(programBurnEE()), Qt::ALT+Qt::Key_F11);
+#else
     programMenu->addAction(QIcon(":/images/RunConsole2.png"), tr("Run with Terminal"), this, SLOT(programDebug()), Qt::Key_F8);
     programMenu->addAction(QIcon(":/images/build3.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::Key_F9);
     programMenu->addAction(QIcon(":/images/run.png"), tr("Load RAM && Run"), this, SLOT(programRun()), Qt::Key_F10);
     programMenu->addAction(QIcon(":/images/burnee.png"), tr("Load EEPROM && Run"), this, SLOT(programBurnEE()), Qt::Key_F11);
+#endif
+#else
+/* Don't CHANGE_ALL_MAC_PROGRAM_KEYS */
+    programMenu->addAction(QIcon(":/images/RunConsole2.png"), tr("Run with Terminal"), this, SLOT(programDebug()), Qt::Key_F8);
+    programMenu->addAction(QIcon(":/images/build3.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::Key_F9);
+    programMenu->addAction(QIcon(":/images/run.png"), tr("Load RAM && Run"), this, SLOT(programRun()), Qt::Key_F10);
+#if Q_WS_MAC
+    programMenu->addAction(QIcon(":/images/burnee.png"), tr("Load EEPROM && Run"), this, SLOT(programBurnEE()), Qt::ALT+Qt::Key_F11);
+#else
+    programMenu->addAction(QIcon(":/images/burnee.png"), tr("Load EEPROM && Run"), this, SLOT(programBurnEE()), Qt::Key_F11);
+#endif
+#endif
+/* CHANGE_ALL_MAC_PROGRAM_KEYS */
+
     programMenu->addAction(QIcon(":/images/Abort.png"), tr("Stop Build or Loader"), this, SLOT(programStopBuild()));
     programMenu->addSeparator();
     programMenu->addAction(QIcon(":/images/SaveToSD.png"), tr(FileToSDCard), this, SLOT(downloadSdCard()));
