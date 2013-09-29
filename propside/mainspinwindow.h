@@ -209,12 +209,9 @@ public slots:
     void splitterChanged();
 
     void recursiveAddDir(QString dir, QStringList *files);
-    void recursiveRemoveDir(QString dir);
-    void recursiveCopyDir(QString srcdir, QString dstdir, QString notlist);
-    bool isInFilterList(QString file, QStringList list);
     void flattenDstProject(QString path, QString project);
 
-    void zipIt(QString dir);
+    void zipIt(QString dir, QString dst);
     QStringList zipCproject(QStringList list, QString srcPath, QString projFile, QString dstPath, QString dstProjFile, QString optype = tr("Zip"));
     QStringList zipSPINproject(QStringList list, QString srcPath, QString projFile, QString dstPath, QString dstProjFile);
     QString findFileNoCase(QString file);

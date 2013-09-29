@@ -38,6 +38,7 @@
 #include "quazip.h"
 #include "quazipfile.h"
 #include "PropellerID.h"
+#include "directory.h"
 
 #define ENABLE_ADD_LINK
 #define APP_FOLDER_TEMPLATES
@@ -1300,7 +1301,7 @@ void MainSpinWindow::newProject()
                         QMessageBox::Yes, QMessageBox::No);
             if(rc == QMessageBox::No)
                 return;
-            this->recursiveRemoveDir(dstPath);
+            Directory::recursiveRemoveDir(dstPath);
         }
 
         /**
@@ -2377,7 +2378,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
                     QMessageBox::Yes, QMessageBox::No);
         if(rc == QMessageBox::No)
             return;
-        this->recursiveRemoveDir(dstPath);
+        Directory::recursiveRemoveDir(dstPath);
     }
 
     dpath.mkdir(dstPath);
@@ -2632,105 +2633,6 @@ void MainSpinWindow::recursiveAddDir(QString dir, QStringList *files)
     }
 }
 
-
-void MainSpinWindow::recursiveRemoveDir(QString dir)
-{
-    QDir dpath(dir);
-    QString file;
-
-    QStringList dlist;
-    QStringList flist;
-
-    if(dir.length() < 1)
-        return;
-
-    if(dir.at(dir.length()-1) != '/')
-        dir += '/';
-
-    flist = dpath.entryList(QDir::AllEntries, QDir::DirsLast);
-    foreach(file, flist) {
-        if(file.compare(".") == 0)
-            continue;
-        if(file.compare("..") == 0)
-            continue;
-        QFile::remove(dir+file);
-    }
-    dlist = dpath.entryList(QDir::AllDirs, QDir::DirsLast);
-    foreach(file, dlist) {
-        if(file.compare(".") == 0)
-            continue;
-        if(file.compare("..") == 0)
-            continue;
-        recursiveRemoveDir(dir+file);
-        dpath.rmdir(dir+file);
-    }
-    dpath.rmdir(dir);
-}
-
-void MainSpinWindow::recursiveCopyDir(QString srcdir, QString dstdir, QString notlist)
-{
-    QString file;
-
-    QStringList slist;
-    QStringList flist;
-
-    if(srcdir.length() < 1)
-        return;
-    if(dstdir.length() < 1)
-        return;
-
-    QStringList list;
-    if(notlist.isEmpty() == false)
-        list = notlist.split(" ", QString::SkipEmptyParts);
-
-    if(srcdir.at(srcdir.length()-1) != '/')
-        srcdir += '/';
-    if(dstdir.at(dstdir.length()-1) != '/')
-        dstdir += '/';
-
-    QDir spath(srcdir);
-    QDir dpath(dstdir);
-
-    if(spath.exists() == false)
-        return;
-    if(dpath.exists() == false)
-        dpath.mkdir(dstdir);
-
-    flist = spath.entryList(QDir::AllEntries, QDir::DirsLast);
-    foreach(file, flist) {
-        if(file.compare(".") == 0)
-            break;
-        if(file.compare("..") == 0)
-            break;
-        if(isInFilterList(file,list) == false)
-            QFile::copy(srcdir+file, dstdir+file);
-    }
-    slist = spath.entryList(QDir::AllDirs, QDir::DirsLast);
-    foreach(file, slist) {
-        if(file.compare(".") == 0)
-            continue;
-        if(file.compare("..") == 0)
-            continue;
-        if(isInFilterList(file,list) == false)
-            recursiveCopyDir(srcdir+file, dstdir+file, notlist);
-    }
-}
-
-
-bool MainSpinWindow::isInFilterList(QString file, QStringList list)
-{
-    if(list.isEmpty())
-        return false;
-
-    foreach(QString item, list) {
-        QRegExp reg(item);
-        reg.setPatternSyntax(QRegExp::Wildcard);
-        if(reg.exactMatch(file))
-            return true;
-    }
-    return false;
-}
-
 void MainSpinWindow::flattenDstProject(QString path, QString project)
 {
     QString projstr;
@@ -2890,18 +2792,31 @@ void MainSpinWindow::zipProject()
         return;
     }
 
-    QDir dpath(dstPath);
+    /*
+     * get the temp path for making zip folder.
+     */
+    QString dTmpPath = dstPath;
+    if(dTmpPath.at(dTmpPath.length()-1) == '/')
+        dTmpPath = dTmpPath.left(dTmpPath.length()-1);
+    if(dTmpPath.length() == 0)
+        return; // should never happen
+    dTmpPath = dTmpPath.mid(dTmpPath.lastIndexOf("/"));
+    if(dTmpPath.length() == 0)
+        return; // should never happen
+    dTmpPath = QDir::tempPath() + dTmpPath + "/";
+
+    QDir dpath(dTmpPath);
 
     if(dpath.exists()) {
-        recursiveRemoveDir(dstPath);
+        Directory::recursiveRemoveDir(dTmpPath);
     }
     QApplication::processEvents();
-    dpath.mkdir(dstPath);
+    dpath.mkdir(dTmpPath);
 
     if(dpath.exists() == false) {
         QMessageBox::critical(
                 this,tr("Zip Project Error."),
-                tr("System can not create project in ")+dstPath,
+                tr("System can not create project in ")+dTmpPath,
                 QMessageBox::Ok);
         return;
     }
@@ -2911,7 +2826,7 @@ void MainSpinWindow::zipProject()
      */
 
     // copy project file
-    dstProjFile = dstPath+dstName+SIDE_EXTENSION;
+    dstProjFile = dTmpPath+dstName+SIDE_EXTENSION;
     QFile::copy(projFile,dstProjFile);
 
     QString projSrc;
@@ -2937,7 +2852,7 @@ void MainSpinWindow::zipProject()
     QString dstMainFile = projList.at(0);
     dstMainFile = dstMainFile.trimmed();
     QString dstMainExt = dstMainFile.mid(dstMainFile.lastIndexOf("."));
-    dstMainFile = dstPath+dstName+dstMainExt;
+    dstMainFile = dTmpPath+dstName+dstMainExt;
 
     // remove new file before copy or copy will fail
     if(QFile::exists(dstMainFile))
@@ -2955,11 +2870,11 @@ void MainSpinWindow::zipProject()
     QStringList newList;
 
     if(this->isCProject()) {
-        newList = zipCproject(projList, srcPath, projFile, dstPath, dstProjFile);
+        newList = zipCproject(projList, srcPath, projFile, dTmpPath, dstProjFile);
     }
 #ifdef SPIN
     else if(this->isSpinProject()) {
-        newList = zipSPINproject(projList, srcPath, projFile, dstPath, dstProjFile);
+        newList = zipSPINproject(projList, srcPath, projFile, dTmpPath, dstProjFile);
     }
 #endif
 
@@ -2981,34 +2896,36 @@ void MainSpinWindow::zipProject()
     }
 
     // zip folder
-    zipIt(dstPath);
+    zipIt(dTmpPath, dstPath);
 
 #ifdef ENABLE_KEEP_ZIP_FOLDER
     // and remove folder if save zip folder is not checked
     if(propDialog->getKeepZipFolder() == false) {
         QDir dst;
         if(dst.exists(dstPath))
-            recursiveRemoveDir(dstPath);
+            Directory::recursiveRemoveDir(dTmpPath);
     }
 #else
     // and remove folder
-    recursiveRemoveDir(dstPath);
+    Directory::recursiveRemoveDir(dTmpPath);
 #endif
 }
 
 
-void MainSpinWindow::zipIt(QString dir)
+void MainSpinWindow::zipIt(QString dir, QString dst)
 {
     dir = QDir::fromNativeSeparators(dir);
     if(dir.length() > 0 && dir.at(dir.length()-1) == '/')
         dir = dir.left(dir.length()-1);
-    QString folder = dir.mid(dir.lastIndexOf('/')+1);
-    dir = dir.mid(0,dir.lastIndexOf('/'));
+    if(dst.length() > 0 && dst.at(dst.length()-1) == '/')
+        dst = dst.left(dst.length()-1);
+    QString folder = dst.mid(dst.lastIndexOf('/')+1);
+    //dir = dir.mid(0,dir.lastIndexOf('/'));
     QString zipProgram("zip");
     if(QDir::separator() == '\\')
         zipProgram += ".exe";
-    QFile::remove(dir+"/"+folder+".zip");
-    this->compileStatus->setPlainText(tr("Archiving Project: ")+dir+"/"+folder+".zip");
+    QFile::remove(dst+".zip");
+    this->compileStatus->setPlainText(tr("Archiving Project: ")+dst+".zip");
 
 #ifdef USE_ZIP_APP
 
@@ -3020,14 +2937,14 @@ void MainSpinWindow::zipIt(QString dir)
 
 #else
 
-    QuaZip zip(dir+"/"+folder+".zip");
+    QuaZip zip(dst+".zip");
     if(!zip.open(QuaZip::mdCreate)) {
         QMessageBox::critical(this,tr("Can't Save Zip"), tr("Can't open .zip file to write: ")+folder+".zip");
         return;
     }
     QFile inFile;
     QStringList fileList;
-    recursiveAddDir(dir+"/"+folder, &fileList);
+    recursiveAddDir(dir, &fileList);
 
     QFileInfoList files;
     foreach (QString fn, fileList)
@@ -3241,7 +3158,15 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
                 QDir libd;
                 if(libd.exists(dstPath+zipLib) == false)
                     libd.mkdir(dstPath+zipLib);
-                recursiveCopyDir(als, dstPath+zipLib+dls, QString("*.o *.elf"));
+                if(Directory::isPossibleInfiniteFolder(als, dstPath+zipLib+dls)) {
+                    QMessageBox::information(
+                            this,tr("Invalid Project Structure."),
+                            trOpType+tr(" Project structure would result in infinite folder.")+"\n"+
+                            dstPath+zipLib+dls + " " + tr("includes") + " " + als +"\n"+
+                            tr("Please do not create projects that include projects in folders within projects."));
+                    return QStringList();
+                }
+                Directory::recursiveCopyDir(als, dstPath+zipLib+dls, QString("*.o *.elf"));
                 // TODO fix projects to flatten here ?
                 if(dls.endsWith(".h"))
                     continue;
@@ -3284,8 +3209,16 @@ QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, Q
                 model = model.toLower();
                 if(dir.exists(srcPath+model)) {
                     dir.mkdir(dstPath+model);
-                    this->recursiveCopyDir(srcPath+model,dstPath+model,QString("*.o *.elf"));
-                    //this->recursiveRemoveDir(dstPath+model);
+                    if(Directory::isPossibleInfiniteFolder(srcPath+model,dstPath+model)) {
+                        QMessageBox::information(
+                                this,tr("Invalid Project Structure."),
+                                trOpType+tr(" Project structure would result in infinite folder.")+"\n"+
+                                dstPath+model + " " + tr("includes") + " " + srcPath+model +"\n"+
+                                tr("Please do not create projects that include projects in folders within projects."));
+                        return QStringList();
+                    }
+                    Directory::recursiveCopyDir(srcPath+model,dstPath+model,QString("*.o *.elf"));
+                    //Directory::recursiveRemoveDir(dstPath+model);
                 }
             }
         }
