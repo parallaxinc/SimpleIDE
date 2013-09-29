@@ -18,6 +18,18 @@ bool Directory::isInFilterList(QString file, QStringList list)
     return false;
 }
 
+/*
+ * check if copying source path to destination will cause an infinite folder.
+ */
+bool Directory::isPossibleInfiniteFolder(QString spath, QString dpath)
+{
+    if(dpath.endsWith("/")) dpath = dpath.left(dpath.lastIndexOf("/"));
+    if(spath.endsWith("/")) spath = spath.left(spath.lastIndexOf("/"));
+    if(dpath.endsWith("..")) dpath = dpath.left(dpath.lastIndexOf(".."));
+    if(spath.endsWith("..")) spath = spath.left(spath.lastIndexOf(".."));
+    return dpath.contains(spath);
+}
+
 void Directory::recursiveCopyDir(QString srcdir, QString dstdir, QString notlist)
 {
     QString file;
@@ -34,20 +46,20 @@ void Directory::recursiveCopyDir(QString srcdir, QString dstdir, QString notlist
     if(notlist.isEmpty() == false)
         list = notlist.split(" ", QString::SkipEmptyParts);
 
-    if(srcdir.at(srcdir.length()-1) != QDir::separator())
-        srcdir += QDir::separator();
-    if(dstdir.at(dstdir.length()-1) != QDir::separator())
-        dstdir += QDir::separator();
+    if(srcdir.at(srcdir.length()-1) != '/')
+        srcdir += '/';
+    if(dstdir.at(dstdir.length()-1) != '/')
+        dstdir += '/';
 
     QDir spath(srcdir);
     QDir dpath(dstdir);
 
     if(spath.exists() == false)
         return;
+    if(isPossibleInfiniteFolder(srcdir, dstdir))
+        return;
     if(dpath.exists() == false)
         dpath.mkdir(dstdir);
-    if(dpath.exists() == false)
-        return;
 
     flist = spath.entryList(QDir::AllEntries, QDir::DirsLast);
     foreach(file, flist) {
@@ -69,8 +81,30 @@ void Directory::recursiveCopyDir(QString srcdir, QString dstdir, QString notlist
     }
 }
 
-void Directory::recursiveRemoveDir(QString dir)
+/*
+ * This is just in the idea stage.
+ */
+void Directory::recursiveRemoveDirSpecial(QString dir, QString parent)
 {
+#ifdef DONTDEF
+    QStringList dirs = dir.split("/", QString::SkipEmptyParts);
+
+    QString smaller;
+    QString tmpdir;
+
+    for(int n = 0; n < dirs.count(); n++) {
+        tmpdir = dirs[n];
+        if(smaller.length() < 150) {
+            smaller += tmpdir + "/";
+        }
+        else {
+            break;
+        }
+    }
+    exit(1);
+
+    //QDir::rename(smaller, parent+tmpdir+"_tempdir");
+
     QDir dpath(dir);
     QString file;
 
@@ -80,8 +114,55 @@ void Directory::recursiveRemoveDir(QString dir)
     if(dir.length() < 1)
         return;
 
-    if(dir.at(dir.length()-1) != QDir::separator())
-        dir += QDir::separator();
+    if(dir.at(dir.length()-1) != '/')
+        dir += '/';
+
+    flist = dpath.entryList(QDir::AllEntries, QDir::DirsLast);
+    foreach(file, flist) {
+        if(file.compare(".") == 0)
+            continue;
+        if(file.compare("..") == 0)
+            continue;
+        QFile::remove(dir+file);
+    }
+    dlist = dpath.entryList(QDir::AllDirs, QDir::DirsLast);
+    foreach(file, dlist) {
+        if(file.compare(".") == 0)
+            continue;
+        if(file.compare("..") == 0)
+            continue;
+        recursiveRemoveDirSpecial(dir+file, parent);
+        dpath.rmdir(dir+file);
+    }
+    dpath.rmdir(dir);
+#endif
+}
+
+void Directory::recursiveRemoveDir(QString dir)
+{
+    /*
+     * Windows can't remove a folder with name > 256 without special treatment.
+     * While this should never happen, it is possible that some previous versions
+     * of this program created recursive folders. We need to remove such folders.
+     *
+     * Not implemented yet.
+     *
+    if(dir.length() > 10) {
+        recursiveRemoveDirSpecial(dir, dir);
+    }
+    */
+
+    QDir dpath(dir);
+    QString file;
+
+    QStringList dlist;
+    QStringList flist;
+
+    if(dir.length() < 1)
+        return;
+
+    if(dir.at(dir.length()-1) != '/')
+        dir += '/';
 
     flist = dpath.entryList(QDir::AllEntries, QDir::DirsLast);
     foreach(file, flist) {

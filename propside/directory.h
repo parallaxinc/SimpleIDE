@@ -9,7 +9,9 @@ public:
     Directory();
 
     static bool isInFilterList(QString file, QStringList list);
+    static bool isPossibleInfiniteFolder(QString spath, QString dpath);
     static void recursiveCopyDir(QString srcdir, QString dstdir, QString notlist = "");
+    static void recursiveRemoveDirSpecial(QString dir, QString parent);
     static void recursiveRemoveDir(QString dir);
     static QString find(QString file, QString find);
     static QStringList findList(QString file, QString find);
