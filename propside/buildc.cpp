@@ -427,8 +427,8 @@ int  BuildC::runBstc(QString spinfile)
     binaryfile = binaryfile.mid(binaryfile.lastIndexOf("/")+1);
     binaryfile = outputPath+binaryfile;
 
-    if((comp.compare("spin",Qt::CaseInsensitive) == 0) ||
-       (comp.compare("spin.exe",Qt::CaseInsensitive) == 0)) {
+    if((comp.compare("openspin",Qt::CaseInsensitive) == 0) ||
+       (comp.compare("openspin.exe",Qt::CaseInsensitive) == 0)) {
         // Roy's compiler always makes a .binary
         if(libdir.exists(properties->getSpinLibraryStr())) {
             args.append("-I");
