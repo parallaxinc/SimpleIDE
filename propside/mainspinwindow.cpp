@@ -1334,7 +1334,7 @@ void MainSpinWindow::newProject()
               " */\n" \
               "int main(void)\n" \
               "{\n" \
-              "    return 0;\n" \
+              "  return 0;\n" \
               "}\n" \
               "\n");
             mainstr = main;
@@ -1345,7 +1345,7 @@ void MainSpinWindow::newProject()
               " */\n" \
               "int main(void)\n" \
               "{\n" \
-              "    return 0;\n" \
+              "  return 0;\n" \
               "}\n" \
               "\n");
             mainstr = main;
@@ -1353,7 +1353,7 @@ void MainSpinWindow::newProject()
         else if(ftype.endsWith(".spin")) {
             QString main("pub main\n" \
                  "\n" \
-                 "    repeat\n" \
+                 "  repeat\n" \
                  "\n" \
                  "\n");
             mainstr = main;
@@ -1388,6 +1388,10 @@ void MainSpinWindow::newProject()
         projectOptions->setCompiler(comp);
         qDebug() << "Set Memory Model: CMM";
         projectOptions->setMemModel(projectOptions->memTypeCMM);
+        qDebug() << "Set All Warnings: " + comp;
+        projectOptions->setWarnAll(true);
+        qDebug() << "Set 32bit Doubles: " + comp;
+        projectOptions->set32bitDoubles(true);
 
         // board type GENERIC for simpleview
         for(int n = 0; n < cbBoard->count(); n++) {
@@ -1914,6 +1918,7 @@ int MainSpinWindow::copyProjectAs(QString srcProjFile, QString dstProjFile, QStr
  *    fixes up any links in project file and writes file
  *
  */
+
 int MainSpinWindow::saveAsProject(const QString &inputProjFile)
 {
     int rc = 0;
