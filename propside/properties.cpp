@@ -357,16 +357,14 @@ void Properties::setupSpinFolders()
     QString myspin = mygcc.mid(0,mygcc.lastIndexOf("/"))+"/";
     qDebug() << myspin;
 
-#if 0
-    /* using spin fails to compile dat at the moment. */
-    if(QFile::exists(myspin+"spin")) {
-        myspin += "spin";
+    /* using openspin */
+    if(QFile::exists(myspin+"openspin")) {
+        myspin += "openspin";
     }
-    else if(QFile::exists(myspin+"spin.exe")) {
-        myspin += "spin.exe";
+    else if(QFile::exists(myspin+"openspin.exe")) {
+        myspin += "openspin.exe";
     }
     else
-#endif
     if(QFile::exists(myspin+"bstc")) {
         myspin += "bstc";
     }
