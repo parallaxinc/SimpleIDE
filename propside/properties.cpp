@@ -1052,9 +1052,9 @@ void Properties::browseSpinCompiler()
         compiler = mypath;
 
 #if defined(Q_WS_WIN32)
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Select Spin Compiler"), compiler, "Compiler (spin.exe bstc.exe)");
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Select Spin Compiler"), compiler, "Compiler (openspin.exe bstc.exe)");
 #else
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Select Spin Compiler"), compiler, "Compiler (spin spin.* bstc bstc.*)");
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Select Spin Compiler"), compiler, "Compiler (openspin openspin.* bstc bstc.*)");
 #endif
 
     QString s = QDir::fromNativeSeparators(fileName);
