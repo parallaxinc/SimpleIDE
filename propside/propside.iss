@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-43"
+#define MyAppVersion "0-9-45"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -115,8 +115,8 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 
 [Registry]
 ; would like to use HKLM for these things if possible for specifying compiler and user workspace fields.
-Root: HKCU; SubKey: Software\{#MyAppPublisher}; Flags: UninsDeleteKey; 
-Root: HKCU; SubKey: Software\{#MyAppPublisher}\SimpleIDE; Flags: UninsDeleteKey; 
+Root: HKCU; SubKey: Software\{#MyAppPublisher}; Flags: DeleteKey UninsDeleteKey; 
+Root: HKCU; SubKey: Software\{#MyAppPublisher}\SimpleIDE\*; Flags: DeleteKey UninsDeleteKey; 
 ;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Compiler; ValueData: "{app}\propeller-gcc\bin\propeller-elf-gcc.exe"; Flags: UninsDeleteKey; 
 ;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Includes; ValueData: "{app}\propeller-gcc\propeller-load\"; Flags: UninsDeleteKey; 
 ;;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Workspace; ValueData: "{userdocs}\Workspace"; Flags: UninsDeleteKey;
@@ -136,7 +136,6 @@ Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app
 ;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: "{userdocs}\Workspace\My Projects\Welcome.c"; Flags: UninsDeleteKey; 
 
 [Code]
-  
 procedure InitializeWizard;
 begin
   { Create the pages }
