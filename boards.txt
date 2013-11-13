@@ -6,7 +6,7 @@
 activityboard.cfg      # this is the Propeller Activity board type
 eeprom.cfg             # this is the default 64KB EEPROM board type
 rcfast.cfg             # the generic rcfast clock setting
-rcslow.cfg             # the generic rcfast clock setting
+rcslow.cfg             # the generic rcslow clock setting
 c3.cfg                 # this is the default C3 type
 c3f.cfg                # this is the C3 type where only flash is used for code
 demoboard.cfg          # demoboard type
