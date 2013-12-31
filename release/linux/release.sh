@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "This script is being deprecated. Use top level linrelease.sh instead"
+echo "This script is being deprecated. Use top level linrelease.sh, macrelease.sh, or plinrelease.sh instead"
 exit 0
 
 #
