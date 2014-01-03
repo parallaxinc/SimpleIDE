@@ -1,22 +1,37 @@
 #!/bin/sh
 #---------------------------------------------------------------
 #
-# SimpleIDE user setup for linux.
+# SimpleIDE user setup for Linux.
 #
 # This script assumes you have root access.
 #
-# To install simpleide and propeller-gcc enter: ./setup.sh
+# To install SimpleIDE and Propeller GCC run: ./setup.sh
 # This will copy Propeller GCC to /opt/parallax and Simple IDE
-# tp /opt/simpleide and create a shortcut for the executible
+# to /opt/simpleide and create a shortcut for the executable
 # /opt/simpleide/SimpleIDE in /usr/bin/simpleide 
 #
-# To start SimpleIDE enter: simpleide
+# To start SimpleIDE use the command: simpleide
 #
 #---------------------------------------------------------------
 #
 
 PROPGCC_DIR=/opt/parallax
 SIMPLEIDE_DIR=/opt/simpleide
+
+# Show usage
+usage()
+{
+	echo "Usage: setup.sh [action [target]]"
+	echo "Action:"
+	echo  "  install	Install target"
+	echo "  uninstall	Uninstall target"
+	echo ""
+	echo "Targets:"
+	echo "  propellergcc	Set target to only Propeller GCC"
+	echo "  simpleide	Set target to only SimpleIDE"
+	echo ""
+	echo "If the target is not given, the default is both Propeller GCC and SimpleIDE"
+}
 
 # Uninstall Propeller GCC function
 uninstall_propgcc()
@@ -27,7 +42,7 @@ uninstall_propgcc()
 		case $response in
 			# Does the user really want to uninstall it?
 			Y|y|YES|Yes|yes) echo "Removing Propeller GCC"
-        rm -r $PROPGCC_DIR
+				rm -r $PROPGCC_DIR
 			;;
 			*) echo "Not modifying Propeller GCC"
 		esac
@@ -58,8 +73,8 @@ uninstall_simpleide()
 		case $response in
 			# Does the user really want to uninstall it?
 			Y|y|YES|Yes|yes) echo "Removing Simple IDE"
-        rm -r $SIMPLEIDE_DIR
-        rm /usr/bin/simpleide
+				rm -r $SIMPLEIDE_DIR
+				rm /usr/bin/simpleide
 			;;
 			*) echo "Not modifying Simple IDE"
 		esac
@@ -80,9 +95,9 @@ install_simpleide()
 	echo "Installing SimpleIDE"
 	mkdir -p $SIMPLEIDE_DIR
 	cp -R bin demos license translations $SIMPLEIDE_DIR
-	cp simpleide.sh /usr/bin/simpleide
+	cp $SIMPLEIDE_DIR/bin/simpleide.sh /usr/bin/simpleide
 
-    # do this if simpleide.sh file permissions don't carry.
+	# do this if simpleide.sh file permissions don't carry.
 	# chmod 755 /usr/bin/simpleide
 }
 
@@ -109,9 +124,10 @@ case $1 in
 				install_simpleide
 				exit
 			;;
-			# Installation instrctions unclear, do nothing
+			# Installation instructions unclear, show usage
 			?*)
-        echo Parameter \"$2\" not recognized
+				echo Target \"$2\" not recognized
+				usage
 				exit
 		esac
 		# No specific uninstall instructions, install everything
@@ -119,6 +135,7 @@ case $1 in
 		install_simpleide
 		exit
 	;;
+
 	# Uninstall something
 	uninstall)
 		case $2 in
@@ -132,9 +149,10 @@ case $1 in
 				uninstall_simpleide
 				exit
 			;;
-			# Uninstallation instrctions unclear, do nothing
+			# Uninstallation instructions unclear, show usage
 			?*)
-        echo Parameter \"$2\" not recognized
+				echo Target \"$2\" not recognized
+				usage
 				exit
 		esac
 		# No specific uninstall instructions, uninstall everything
@@ -142,8 +160,11 @@ case $1 in
 		uninstall_simpleide
 		exit
 	;;
-  # Instrctions unclear, do nothing
-	?*) echo Parameter \"$1\" not recognized
+
+	# Instructions unclear, show usage
+	?*)
+		echo Action \"$1\" not recognized
+		usage
 		exit
 esac
 
