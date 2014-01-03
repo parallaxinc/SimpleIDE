@@ -27,6 +27,8 @@ SIDERSH="./release/linux/simpleide.sh"
 #
 CTAGS="./ctags-5.8"
 LIBS="/usr/lib/libQtGui.so.4 /usr/lib/libQtCore.so.4"
+LIBAUDIO="/usr/lib/libaudio.so.2"
+LIBAUDIO2="/usr/lib/x86_64-linux-gnu/libaudio.so.2"
 SPINLIB="./spin"
 
 CLEAN=$1
@@ -124,6 +126,36 @@ LIBS=`echo $MYLDD`
 cp -f ${LIBS} ${VERSION}/bin
 if test $? != 0; then
    echo "copy ${LIBS} failed."
+   exit 1
+fi
+
+MYLDD=`ldd ${BUILD}/${NAME} | grep libQt | awk '{print $3}'`
+LIBS=`echo $MYLDD`
+
+cp -f ${LIBS} ${VERSION}/bin
+if test $? != 0; then
+   echo "copy ${LIBS} failed."
+   exit 1
+fi
+
+AULDD=`ldd ${BUILD}/${NAME} | grep libaudio | awk '{print $3}'`
+LIBAUDIO=`echo $AULDD`
+
+if [ ${LIBAUDIO}X != X ]; then
+   cp -f ${LIBAUDIO} ${VERSION}/bin
+   if test $? != 0; then
+      if test $? != 0; then
+         echo "Can't find libaudio...."
+      fi
+   fi
+fi
+
+MYLDD=`ldd ${BUILD}/${NAME} | grep quazip | awk '{print $3}'`
+QUAZIP=`echo $MYLDD`
+
+cp ${QUAZIP} ${VERSION}/bin
+if test $? != 0; then
+   echo "copy ${QUAZIP} failed."
    exit 1
 fi
 
