@@ -212,6 +212,18 @@ if test $? != 0; then
 fi
 
 rm -rf ${VERSION}/parallax/Workspace
+cd Workspace
+hg pull
+if test $? != 0; then
+   echo "workspace pull failed."
+   exit 1
+fi
+hg update
+if test $? != 0; then
+   echo "workspace update failed."
+   exit 1
+fi
+cd ..
 cp -r ./Workspace/ ${VERSION}/parallax
 if test $? != 0; then
    echo "copy workspace failed."
@@ -224,7 +236,7 @@ if test $? != 0; then
 fi
 
 cp ${SETUPSH} ${VERSION}
-cp ${SIDERSH} ${VERSION}
+cp ${SIDERSH} ${VERSION}/bin
 
 # pack-up a bzip tarball for distribution
 tar -cjf ${VERSION}.${UARCH}.${UNAME}-linux.tar.bz2 ${VERSION}
