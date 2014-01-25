@@ -38,6 +38,11 @@
 #include "spinparser.h"
 #include "PropellerID.h"
 
+#if defined(Q_WS_WIN32)
+#include <qt_windows.h>
+#include <dbt.h>
+#endif
+
 #define untitledstr "Untitled"
 
 QT_BEGIN_NAMESPACE
@@ -58,6 +63,7 @@ public:
 
 signals:
     void highlightCurrentLine(QColor lineColor);
+    void doPortEnumerate();
 
 public slots:
     void terminalEditorTextChanged();
@@ -149,6 +155,7 @@ public slots:
     void findChip();
     QString serialPort();
     void enumeratePorts();
+    void enumeratePortsEvent();
     void reloadBoardTypes();
     void initBoardTypes();
 
@@ -429,6 +436,11 @@ public slots:
     void ideDebugShow();
 private:
     int ideDebugTabIndex;
+
+#if defined(Q_WS_WIN32)
+protected:
+    bool winEvent(MSG *msg,long * result);
+#endif
 
 };
 
