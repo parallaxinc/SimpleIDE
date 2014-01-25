@@ -688,7 +688,8 @@ int  BuildC::runCompiler(QStringList copts)
     foreach (QString s, args) {
         if(s.contains("-l")) {
             args.removeOne(s);
-            libs.append(s);
+            if(libs.contains(s) == false)
+                libs.append(s);
             continue;
         }
     }
@@ -751,8 +752,17 @@ int  BuildC::runCompiler(QStringList copts)
         // is enabled, then we can end up with the wrong library.
         libadd = getLibraryList(newList,this->projectFile);
         foreach(QString s, libadd) {
+            bool contains = false;
+            QString ms = s.mid(s.lastIndexOf("/")+1);
 
-            if(ILlist.contains(s) == false) {
+            foreach(QString ils, ILlist) {
+                if(ils.endsWith(ms)) {
+                    contains = true;
+                    break;
+                }
+            }
+
+            if(contains == false) {
                 ILlist.append("-I");
                 ILlist.append(s);
                 ILlist.append("-L");

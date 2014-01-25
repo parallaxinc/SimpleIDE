@@ -253,6 +253,8 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     /* get available ports at startup */
     enumeratePorts();
     // QDeviceWatcher may be useful for doing USB event handling
+    /* connect windows USB change detect signal to enumerator */
+    connect(this,SIGNAL(doPortEnumerate()),this, SLOT(enumeratePortsEvent()));
 
     /* these are read once per app startup */
     QVariant lastportv  = settings->value(lastPortNameKey);
@@ -355,6 +357,26 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
         HintDialog::hint("SimpleProjectView", "This is the Project View.  If you prefer Simple View from previous versions, just click Tools and select Set Simple View.");
 
 }
+
+#if defined(Q_WS_WIN32)
+bool MainSpinWindow::winEvent(MSG *message, long *result)
+{
+    if (message->message==WM_DEVICECHANGE)
+    {
+        qDebug() << ("WM_DEVICECHANGE message received");
+        if (message->wParam==DBT_DEVICEARRIVAL) {
+            qDebug() << ("A new device has arrived");
+            emit doPortEnumerate();
+        }
+        if (message->wParam==DBT_DEVICEREMOVECOMPLETE) {
+            qDebug() << ("A device has been removed");
+            emit doPortEnumerate();
+        }
+    }
+    return false;
+}
+#endif
+
 
 void MainSpinWindow::keyHandler(QKeyEvent* event)
 {
@@ -6615,6 +6637,15 @@ QString MainSpinWindow::serialPort()
     return(cbPort->itemText(portIndex));
 }
 
+void MainSpinWindow::enumeratePortsEvent()
+{
+    enumeratePorts();
+    int len = this->cbPort->count();
+    if(len > 1) {
+        this->cbPort->showPopup();
+    }
+}
+
 void MainSpinWindow::enumeratePorts()
 {
     if(cbPort != NULL) cbPort->clear();
@@ -6662,6 +6693,7 @@ void MainSpinWindow::enumeratePorts()
 #ifdef ENABLE_AUTO_PORT
     cbPort->insertItem(0,AUTO_PORT);
 #endif
+    this->cbPort->hidePopup();
 }
 
 void MainSpinWindow::connectButton()
