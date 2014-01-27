@@ -12,7 +12,7 @@ PortConnectionMonitor::PortConnectionMonitor(QObject *parent) :
 void PortConnectionMonitor::stop()
 {
     running = false;
-    this->msleep(200); // let run finish. don't terminate it.
+    this->msleep(600); // let run finish. don't terminate it.
 }
 
 QStringList PortConnectionMonitor::enumeratePorts()
@@ -51,7 +51,7 @@ void PortConnectionMonitor::run()
     portList = enumeratePorts();
     while(running) {
         QApplication::processEvents();
-        this->msleep(100);
+        this->msleep(300);
         ports = enumeratePorts();
         if(ports != portList) {
             portList = ports;
