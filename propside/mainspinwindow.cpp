@@ -6675,6 +6675,11 @@ void MainSpinWindow::enumeratePorts()
         stringlist << "===================================";
 #if defined(Q_WS_WIN32)
         name = ports.at(i).portName;
+        if(ports.at(i).friendName.length() > 0) {
+            if(ports.at(i).friendName.contains("Bluetooth", Qt::CaseInsensitive)) {
+                continue;
+            }
+        }
         if(name.lastIndexOf('\\') > -1)
             name = name.mid(name.lastIndexOf('\\')+1);
         if(name.contains(QString("LPT"),Qt::CaseInsensitive) == false) {
@@ -6683,6 +6688,11 @@ void MainSpinWindow::enumeratePorts()
         }
 #elif defined(Q_WS_MAC)
         name = ports.at(i).portName;
+        if(ports.at(i).physName.length() > 0) {
+            if(ports.at(i).physName.contains("Bluetooth", Qt::CaseInsensitive)) {
+                continue;
+            }
+        }
         if(name.indexOf("usbserial",0,Qt::CaseInsensitive) > -1) {
             friendlyPortName.append(ports.at(i).friendName);
             cbPort->addItem(name);
