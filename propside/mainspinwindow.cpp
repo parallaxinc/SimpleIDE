@@ -252,9 +252,15 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 
     /* get available ports at startup */
     enumeratePorts();
-    // QDeviceWatcher may be useful for doing USB event handling
+#if 0
+#if defined(Q_WS_WIN32)
     /* connect windows USB change detect signal to enumerator */
     connect(this,SIGNAL(doPortEnumerate()),this, SLOT(enumeratePortsEvent()));
+#endif
+#else
+    portConnectionMonitor = new PortConnectionMonitor();
+    connect(portConnectionMonitor, SIGNAL(portChanged()), this, SLOT(enumeratePortsEvent()));
+#endif
 
     /* these are read once per app startup */
     QVariant lastportv  = settings->value(lastPortNameKey);
@@ -546,6 +552,7 @@ void MainSpinWindow::quitProgram()
     portListener->close();
     term->accept(); // just in case serial terminal is open
 
+    portConnectionMonitor->stop();
     programStopBuild();
 
     exitSave(); // find
@@ -6676,7 +6683,7 @@ void MainSpinWindow::enumeratePorts()
         }
 #elif defined(Q_WS_MAC)
         name = ports.at(i).portName;
-        if(name.indexOf("usbserial") > -1) {
+        if(name.indexOf("usbserial",0,Qt::CaseInsensitive) > -1) {
             friendlyPortName.append(ports.at(i).friendName);
             cbPort->addItem(name);
         }
