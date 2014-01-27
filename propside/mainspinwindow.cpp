@@ -33,6 +33,7 @@
 #include "qportcombobox.h"
 #include "Sleeper.h"
 #include "hintdialog.h"
+#include "blinker.h"
 #include "build.h"
 #include "buildstatus.h"
 #include "quazip.h"
@@ -4485,6 +4486,7 @@ void MainSpinWindow::programDebug()
         return;
 
 #if !defined(Q_WS_WIN32)
+    portListener->init(portName, term->getBaud());
     portListener->open();
     term->getEditor()->setPortEnable(false);
     if(runLoader("-r -t")) {
@@ -4496,6 +4498,7 @@ void MainSpinWindow::programDebug()
     btnConnected->setChecked(false);
     if(runLoader("-r -t"))
         return;
+    portListener->init(portName, term->getBaud());
     portListener->open();
 #endif
     btnConnected->setChecked(true);
@@ -4756,8 +4759,9 @@ void MainSpinWindow::setCurrentPort(int index)
 
     portName = cbPort->itemText(index);
     if(portName.length()) {
-        if(portName.compare(AUTO_PORT) != 0)
-            portListener->init(portName, BAUD115200);  // signals get hooked up internally
+        if(portName.compare(AUTO_PORT) != 0) {
+            portListener->init(portName, term->getBaud());  // signals get hooked up internally
+        }
     }
 }
 
@@ -4972,8 +4976,32 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts, QString file)
     return args;
 }
 
+void MainSpinWindow::statusNone()
+{
+    status->setStyleSheet("QLabel { background-color: palette(window) }");
+}
+
+void MainSpinWindow::statusFailed()
+{
+    status->setStyleSheet("QLabel { background-color: rgb(255,0,0) }");
+}
+
+void MainSpinWindow::statusPassed()
+{
+    status->setStyleSheet("QLabel { background-color: rgb(0,200,0); }");
+}
+
 int  MainSpinWindow::runLoader(QString copts)
 {
+
+    // don't allow if no port available
+    if(copts.length() > 0 && cbPort->count() < 1) {
+        status->setText(tr("Serial port not available.")+" "+tr("Can't program device.")+" "+tr("Connect a USB Propeller board and turn it on."));
+        statusFailed();
+        blinker->start();
+        return 1;
+    }
+
     if(projectModel == NULL || projectFile.isNull()) {
         QMessageBox mbox(QMessageBox::Critical, "Error No Project",
             "Please select a tab and press F4 to set main project file.", QMessageBox::Ok);
@@ -5354,6 +5382,10 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     programSize->setMinimumWidth(PROJECT_WIDTH);
 
     status = new QLabel();
+
+    blinker = new Blinker(status);
+    connect(blinker, SIGNAL(statusNone()), this, SLOT(statusNone()));
+    connect(blinker, SIGNAL(statusFailed()), this, SLOT(statusFailed()));
 
     statusBar->addPermanentWidget(progress);
     statusBar->addWidget(btnShowProjectPane);
@@ -6648,8 +6680,14 @@ void MainSpinWindow::enumeratePortsEvent()
 {
     enumeratePorts();
     int len = this->cbPort->count();
-    if(len > 1) {
+    if(len > 0) {
         this->cbPort->showPopup();
+    }
+    else {
+        if(this->btnConnected->isChecked()) {
+            btnConnected->setChecked(false);
+            connectButton();
+        }
     }
 }
 
@@ -6797,7 +6835,7 @@ void MainSpinWindow::portResetButton()
     if(isopen == false)
     {
         if(savePortName.compare(portName) != 0) {
-            portListener->init(portName, portListener->getBaudRate());
+            portListener->init(portName, term->getBaud());
         }
 
         portListener->open();
@@ -6805,7 +6843,7 @@ void MainSpinWindow::portResetButton()
         portListener->close();
 
         if(savePortName.compare(portName) != 0) {
-            portListener->init(savePortName, portListener->getBaudRate());
+            portListener->init(savePortName, term->getBaud());
         }
     }
     else {

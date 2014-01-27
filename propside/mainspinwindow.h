@@ -224,6 +224,10 @@ public slots:
     QStringList zipSPINproject(QStringList list, QString srcPath, QString projFile, QString dstPath, QString dstProjFile);
     QString findFileNoCase(QString file);
 
+    void statusNone();
+    void statusFailed();
+    void statusPassed();
+
 private:
     QString pathDiff(QString s2, QString s1);
     QString saveAsProjectLinkFix(QString srcPath, QString dstPath, QString link);
@@ -430,6 +434,8 @@ private:
     BuildC          *buildC;
     BuildSpin       *buildSpin;
     SpinParser      spinParser;
+
+    Blinker         *blinker;
 
     PropellerID     propId;
 
