@@ -120,6 +120,20 @@ void Terminal::baudRateChange(int index)
     //options->saveBaudRate(baud);
 }
 
+BaudRateType Terminal::getBaud()
+{
+    int index = comboBoxBaud->currentIndex();
+    QVariant var = comboBoxBaud->itemData(index);
+    bool ok;
+    int baud = var.toInt(&ok);
+    if(ok) {
+        return (BaudRateType) baud;
+    }
+    else {
+        return BAUD115200;
+    }
+}
+
 int Terminal::getBaudRate()
 {
     return options->getBaudRate();
