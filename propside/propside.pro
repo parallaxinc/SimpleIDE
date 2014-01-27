@@ -32,8 +32,9 @@ DEFINES += ENABLE_AUTOLIB
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=45
+DEFINES += FIXVERSION=46
 SOURCES += mainspin.cpp \
+    PortConnectionMonitor.cpp \
     PropellerID.cpp \
     editor.cpp \
     ctags.cpp \
@@ -72,6 +73,7 @@ SOURCES += mainspin.cpp \
     highlightbuild.cpp \
     directory.cpp
 HEADERS += mainspinwindow.h \
+    PortConnectionMonitor.h \
     PropellerID.h \
     editor.h \
     ctags.h \

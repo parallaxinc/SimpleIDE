@@ -37,6 +37,7 @@
 #include "buildspin.h"
 #include "spinparser.h"
 #include "PropellerID.h"
+#include "PortConnectionMonitor.h"
 
 #if defined(Q_WS_WIN32)
 #include <qt_windows.h>
@@ -431,6 +432,8 @@ private:
     SpinParser      spinParser;
 
     PropellerID     propId;
+
+    PortConnectionMonitor *portConnectionMonitor;
 
 public slots:
     void ideDebugShow();
