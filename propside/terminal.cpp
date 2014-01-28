@@ -98,6 +98,11 @@ void Terminal::setPortListener(PortListener *listener)
         portLabel.setText("");
 }
 
+QString Terminal::getPortName()
+{
+    return portLabel.text();
+}
+
 void Terminal::setPortName(QString name)
 {
     portLabel.setText(name);

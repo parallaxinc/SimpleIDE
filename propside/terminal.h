@@ -15,6 +15,7 @@ class Terminal : public QDialog
 public:
     explicit Terminal(QWidget *parent);
     void setPortListener(PortListener *listener);
+    QString getPortName();
     void setPortName(QString name);
     void setPosition(int x, int y);
     void accept();
