@@ -387,15 +387,16 @@ int  Build::buildResult(int exitStatus, int exitCode, QString progName, QString 
     mbox.setStandardButtons(QMessageBox::Ok);
     mbox.setInformativeText(result);
 
+    progress->setVisible(false);
     if(exitStatus == QProcess::CrashExit)
     {
-        status->setText(status->text()+" "+progName+" "+tr("Compiler Crashed"));
+        status->setText(status->text()+" "+shortFileName(progName)+" "+tr("Compiler Crashed"));
         mbox.setText(progName+" "+tr("Compiler Crashed"));
         mbox.exec();
     }
     else if(result.toLower().indexOf("error") > -1)
     { // just in case we get an error without exitCode
-        status->setText(status->text()+" "+progName+tr(" Error:")+result);
+        status->setText(status->text()+" "+shortFileName(progName)+tr(" Error:")+result);
         if(progName.contains("load",Qt::CaseInsensitive))
             mbox.setText(tr("Load Error"));
         else {
@@ -408,11 +409,23 @@ int  Build::buildResult(int exitStatus, int exitCode, QString progName, QString 
     }
     else if(exitCode != 0)
     {
-        status->setText(status->text()+" "+progName+tr(" Error: ")+QString("%1").arg(exitCode));
+        if(compileStatus->toPlainText().contains("error")) {
+            QString errstr;
+            QStringList list = compileStatus->toPlainText().split("\n");
+            for(int n = list.length()-1; n > -1; n--) {
+                if(QString(list[n]).contains("error")) {
+                    errstr = list[n];
+                }
+            }
+            status->setText(status->text()+" "+errstr+". ");
+        }
+        else {
+            status->setText(status->text()+" "+shortFileName(progName)+tr(" Error: ")+QString("%1").arg(exitCode));
+        }
     }
     else if(result.toLower().indexOf("warning") > -1)
     {
-        status->setText(status->text()+" "+progName+tr(" Compiled OK with Warning(s)."));
+        status->setText(status->text()+" "+shortFileName(progName)+tr(" Compiled OK with Warning(s)."));
         statusPassed();
         return 0;
     }
