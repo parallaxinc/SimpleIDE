@@ -4996,7 +4996,7 @@ int  MainSpinWindow::runLoader(QString copts)
 
     // don't allow if no port available
     if(copts.length() > 0 && cbPort->count() < 1) {
-        status->setText(tr("Serial port not available.")+" "+tr("Can't program device.")+" "+tr("Connect a USB Propeller board and turn it on."));
+        status->setText(tr("Serial port not available.")+" "+tr("Connect a USB Propeller board and turn it on."));
         statusFailed();
         blinker->start();
         return 1;
@@ -6680,15 +6680,26 @@ void MainSpinWindow::enumeratePortsEvent()
 {
     enumeratePorts();
     int len = this->cbPort->count();
-    if(len > 0) {
-        this->cbPort->showPopup();
-    }
-    else {
-        if(this->btnConnected->isChecked()) {
+
+    // need to check if the port we are using disappeared.
+    if(this->btnConnected->isChecked()) {
+        bool notFound = true;
+        QString plPortName = this->term->getPortName();
+        for(int n = this->cbPort->count()-1; n > -1; n--) {
+            QString name = cbPort->itemText(n);
+            if(!name.compare(plPortName)) {
+                notFound = false;
+            }
+        }
+        if(notFound) {
             btnConnected->setChecked(false);
             connectButton();
         }
     }
+    else if(len > 1) {
+        this->cbPort->showPopup();
+    }
+
 }
 
 void MainSpinWindow::enumeratePorts()

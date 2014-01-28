@@ -407,11 +407,11 @@ private:
     // find and replace
     ReplaceDialog   *replaceDialog;
 
-    enum { MaxRecentFiles = 5 };
+    enum { MaxRecentFiles = 10 };
     QAction *recentFileActs[MaxRecentFiles];
     QAction *separatorFileAct;
 
-    enum { MaxRecentProjects = 5 };
+    enum { MaxRecentProjects = 10 };
     QAction *recentProjectActs[MaxRecentProjects];
     QAction *separatorProjectAct;
 
