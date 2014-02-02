@@ -463,7 +463,7 @@ void TermPrefs::readSettings()
     /*
      * read user's foreground setting.
      */
-    int fgindex = PColor::Yellow;
+    int fgindex = PColor::White;
     var = settings->value(termKeyForeground,QVariant(fgindex));
     if(var.canConvert(QVariant::Int)) {
         fgindex = var.toInt();
