@@ -234,6 +234,7 @@ void Terminal::setPortEnabled(bool value)
 #endif
         termEditor->setPortEnable(true);
         portLabel.setEnabled(true);
+        this->portLabel.setText(portListener->getPortName());
     }
     else {
 #ifdef TERM_ENABLE_BUTTON
@@ -241,6 +242,7 @@ void Terminal::setPortEnabled(bool value)
 #endif
         termEditor->setPortEnable(false);
         portLabel.setEnabled(false);
+        this->portLabel.setText("NONE");
     }
     QApplication::processEvents();
 }

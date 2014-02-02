@@ -6679,6 +6679,7 @@ QString MainSpinWindow::serialPort()
 void MainSpinWindow::enumeratePortsEvent()
 {
     enumeratePorts();
+    QApplication::processEvents();
     int len = this->cbPort->count();
 
     // need to check if the port we are using disappeared.
@@ -6693,11 +6694,13 @@ void MainSpinWindow::enumeratePortsEvent()
         }
         if(notFound) {
             btnConnected->setChecked(false);
-            connectButton();
+            //connectButton();
+            term->setPortEnabled(false);
         }
     }
-    else if(len > 1) {
+    else if(len > 0) {
         this->cbPort->showPopup();
+        term->setPortEnabled(true);
     }
 
 }
