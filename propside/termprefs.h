@@ -36,6 +36,8 @@ class TermPrefs;
 #define termKeyBackground           appNameKey "_termBackground"
 #define termKeyFontFamily           appNameKey "_termFontFamily"
 #define termKeyFontSize             appNameKey "_termFontSize"
+#define termKeyFontWeight           appNameKey "_termFontWeight"
+#define termKeyFontItalic           appNameKey "_termFontItalic"
 #define termKeyWrapMode             appNameKey "_termWrapMode"
 #define termKeyPageLineSize         appNameKey "_termPageLineSize"
 #define termKeyBufferLines          appNameKey "_termBufferLines"
