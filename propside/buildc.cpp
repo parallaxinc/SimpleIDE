@@ -988,8 +988,15 @@ int BuildC::makeDebugFiles(QString fileName, QString projfile, QString compiler)
         return -1;
     }
 
-    if(fileName.contains(FILELINK))
+    QString name = fileName.mid(0,fileName.lastIndexOf('.'));
+    if(fileName.contains(FILELINK)) {
         fileName = fileName.mid(fileName.indexOf(FILELINK)+QString(FILELINK).length());
+        name = fileName.mid(0,fileName.lastIndexOf('.'));
+        if(name.contains("/")) {
+            name = name.mid(name.lastIndexOf("/")+1);
+        }
+    }
+
 
     //getApplicationSettings();
     if(checkCompilerInfo()) {
@@ -999,7 +1006,6 @@ int BuildC::makeDebugFiles(QString fileName, QString projfile, QString compiler)
         return -1;
     }
 
-    QString name = fileName.mid(0,fileName.lastIndexOf('.'));
     QStringList copts;
     if(fileName.contains(".cogc",Qt::CaseInsensitive)) {
         copts.append("-xc");
@@ -1018,10 +1024,10 @@ int BuildC::makeDebugFiles(QString fileName, QString projfile, QString compiler)
     QStringList ILlist;
     proj = proj.trimmed(); // kill extra white space
     QStringList list = proj.split("\n");
-    foreach(QString name, list) {
-        if(name.contains("-I")) {
-            copts.append(name);
-            ILlist.append(name);
+    foreach(QString iname, list) {
+        if(iname.contains("-I")) {
+            copts.append(iname);
+            ILlist.append(iname);
         }
     }
 
