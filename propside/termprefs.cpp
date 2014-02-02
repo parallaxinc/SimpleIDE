@@ -127,22 +127,23 @@ void TermPrefs::chooseFont()
 {
     bool ok;
     QFont font = serialConsole->font();
-    QString family = font.family();
     int size = font.pointSize();
 #ifdef Q_WS_MAC
     size = 14;
 #else
     font.pixelSize();
 #endif
-    settings->setValue(termKeyFontFamily, family);
+    settings->setValue(termKeyFontFamily, font.family());
     settings->setValue(termKeyFontSize, size);
+    settings->setValue(termKeyFontWeight, font.weight());
+    settings->setValue(termKeyFontItalic, font.italic());
     font = QFontDialog::getFont(&ok, font, this, tr("Choose Font"));
     if(ok) {
-        family = font.family();
-        size   = font.pixelSize();
         serialConsole->setFont(font);
         settings->setValue(termKeyFontFamily,font.family());
         settings->setValue(termKeyFontSize,font.pointSize());
+        settings->setValue(termKeyFontWeight, font.weight());
+        settings->setValue(termKeyFontItalic, font.italic());
         ui->labelFont->setText(font.family()+QString(" (%1)").arg(font.pointSize()));
     }
 }
@@ -488,7 +489,7 @@ void TermPrefs::readSettings()
      * setup user's editor font
      */
     QFont font = serialConsole->font();
-    QFont dfont("Courier New", 10, QFont::Normal, false);
+    QFont dfont("Courier New", 12, QFont::Bold, false);
 
     QVariant fontv = settings->value(termKeyFontFamily, QVariant(dfont.family()));
     if(fontv.canConvert(QVariant::String)) {
@@ -499,14 +500,30 @@ void TermPrefs::readSettings()
         font = dfont;
     }
 
-    fontv = settings->value(termKeyFontSize, QVariant(font.pointSize()));
+    fontv = settings->value(termKeyFontSize, QVariant(dfont.pointSize()));
     if(fontv.canConvert(QVariant::Int)) {
-        int size = fontv.toInt();
-        font.setPointSize(size);
+        font.setPointSize(fontv.toInt());
     }
     else {
-        font.setPointSize(10);
+        font.setPointSize(12);
     }
+
+    fontv = settings->value(termKeyFontWeight, QVariant(dfont.weight()));
+    if(fontv.canConvert(QVariant::Int)) {
+        font.setWeight(fontv.toInt());
+    }
+    else {
+        dfont.weight();
+    }
+
+    fontv = settings->value(termKeyFontItalic, QVariant(dfont.italic()));
+    if(fontv.canConvert(QVariant::Bool)) {
+        font.setItalic(fontv.toBool());
+    }
+    else {
+        dfont.italic();
+    }
+
     serialConsole->setFont(font);
     ui->labelFont->setText(font.family()+QString(" (%1)").arg(font.pointSize()));
 
