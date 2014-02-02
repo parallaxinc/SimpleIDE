@@ -1179,6 +1179,7 @@ QString MainSpinWindow::getNewProjectDialog(QString workspace, QStringList filte
 void MainSpinWindow::newProject()
 {
     this->compileStatus->setPlainText("");
+    this->status->setText("");
 
     // simpleView version
     if(this->simpleViewType) {
@@ -1560,6 +1561,7 @@ void MainSpinWindow::openProject(const QString &path)
     QString fileName = path;
 
     this->compileStatus->setPlainText("");
+    this->status->setText("");
 
 #ifndef SPIN
         if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
@@ -1959,6 +1961,7 @@ int MainSpinWindow::saveAsProject(const QString &inputProjFile)
     QString projFile = inputProjFile;
 
     this->compileStatus->setPlainText("");
+    this->status->setText("");
 
     /*
      * 1. function assumes an empty projectFolder parameter means to copy existing project.
