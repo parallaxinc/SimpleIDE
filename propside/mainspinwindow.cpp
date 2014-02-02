@@ -6607,9 +6607,13 @@ void MainSpinWindow::showAssemblyFile()
 
     if(makeDebugFiles(fileName))
         return;
+
     QString outfile = fileName.mid(0,fileName.lastIndexOf("."));
     if(outfile.contains(FILELINK)) {
         outfile = outfile.mid(outfile.indexOf(FILELINK)+QString(FILELINK).length());
+        if(outfile.contains("/")) {
+            outfile = outfile.mid(outfile.lastIndexOf("/")+1);
+        }
         openFileName(outputPath+outfile+SHOW_ASM_EXTENTION);
     }
     else {
