@@ -4450,6 +4450,7 @@ void MainSpinWindow::programBuild()
 
 void MainSpinWindow::programBurnEE()
 {
+    bool connected = this->btnConnected->isChecked();
     if(runBuild(""))
         return;
 #ifdef Q_WS_WIN32
@@ -4458,6 +4459,12 @@ void MainSpinWindow::programBurnEE()
     term->setPortEnabled(false);
 #endif
     runLoader("-e -r");
+    if(connected) {
+        term->getEditor()->setPlainText("");
+        portListener->open();
+        btnConnected->setChecked(true);
+        term->setPortEnabled(true);
+    }
 }
 
 void MainSpinWindow::programRun()
@@ -4466,6 +4473,7 @@ void MainSpinWindow::programRun()
     if(btnProgramRun->isEnabled() == false)
         return;
 
+    bool connected = this->btnConnected->isChecked();
     if(runBuild(""))
         return;
 #ifdef Q_WS_WIN32
@@ -4474,6 +4482,12 @@ void MainSpinWindow::programRun()
     term->setPortEnabled(false);
 #endif
     runLoader("-r");
+    if(connected) {
+        term->getEditor()->setPlainText("");
+        portListener->open();
+        btnConnected->setChecked(true);
+        term->setPortEnabled(true);
+    }
 }
 
 void MainSpinWindow::programDebug()
