@@ -32,7 +32,7 @@ DEFINES += ENABLE_AUTOLIB
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=46
+DEFINES += FIXVERSION=47
 SOURCES += mainspin.cpp \
     PortConnectionMonitor.cpp \
     PropellerID.cpp \
