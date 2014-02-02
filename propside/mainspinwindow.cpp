@@ -4912,8 +4912,32 @@ int  MainSpinWindow::runBuild(QString option)
     selectBuilder();
 
     int index = editorTabs->currentIndex();
-    if(index > -1 && !this->shortFileName(projectFile).contains(this->editorTabs->tabText(index))) {
-        HintDialog::hint("NotMainProjectFile", tr("The file being displayed is not the main project file. It may not represent the program to build. Use the project button to check the project name if necessary. For making a main file for building, press F4 to set the project."), this);
+    if(index > -1) {
+        QString tabname = this->editorTabs->tabText(index);
+        QString mainFile;
+        QStringList list;
+        QString projstr;
+        QFile file(projectFile);
+        if(file.exists()) {
+            if(file.open(QFile::ReadOnly | QFile::Text)) {
+                projstr = file.readAll();
+                file.close();
+            }
+            list = projstr.split("\n");
+            mainFile = list[0];
+        }
+        bool inlist = false;
+        for(int n = 0; n < list.length(); n++) {
+            if(list[n].contains(tabname))
+                inlist = true;
+        }
+
+        if(!inlist) {
+            HintDialog::hint("NotInProject", tr("The file being displayed is not part of the project. It will not be included in the program being built. Use the project button to check the project contents."), this);
+        }
+        else if(!mainFile.contains(tabname)) {
+            HintDialog::hint("NotProjectMainFile", tr("The file being displayed is not the main project file. It may not represent the program to build. Use the project button to check the project name if necessary. For making a main file for building, press F4 to set the project."), this);
+        }
     }
 #if defined(GDBENABLE)
     /* stop debugger */
