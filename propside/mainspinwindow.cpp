@@ -356,13 +356,14 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
         if(helpStartup == true)
             aboutDialog->exec();
     }
-
+#if 0
+    // remove according to issue 212
     /* show hint for Simple/Project view settings */
     if(this->simpleViewType)
         HintDialog::hint("SimpleProjectView", "Welcome to the new Simple View.  If you prefer Project View from previous versions, just click Tools and select Set Project View.");
     else
         HintDialog::hint("SimpleProjectView", "This is the Project View.  If you prefer Simple View from previous versions, just click Tools and select Set Simple View.");
-
+#endif
 }
 
 #if defined(Q_WS_WIN32)
@@ -7469,6 +7470,10 @@ void MainSpinWindow::showSimpleView(bool simple)
      */
     QList <QAction*> fileMenuList = fileMenu->actions();
     QList <QAction*> projMenuList = projMenu->actions();
+
+    if(!simple) {
+        HintDialog::hint("FirstSimpleProjectView", tr("Welcome to Project View. Users of this view are often experienced. Parallax does not recommend Project View for beginners."));
+    }
 
     /* simple view */
     if(simple)
