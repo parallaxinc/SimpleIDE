@@ -364,6 +364,8 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     else
         HintDialog::hint("SimpleProjectView", "This is the Project View.  If you prefer Simple View from previous versions, just click Tools and select Set Simple View.");
 #endif
+
+    showSimpleView(simpleViewType);
 }
 
 #if defined(Q_WS_WIN32)
@@ -7442,8 +7444,6 @@ void MainSpinWindow::setupToolBars()
     ctrlToolBar->addWidget(cbPort);
     ctrlToolBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 
-    showSimpleView(simpleViewType);
-
 }
 
 void MainSpinWindow::toggleSimpleView()
@@ -7470,10 +7470,6 @@ void MainSpinWindow::showSimpleView(bool simple)
      */
     QList <QAction*> fileMenuList = fileMenu->actions();
     QList <QAction*> projMenuList = projMenu->actions();
-
-    if(!simple) {
-        HintDialog::hint("FirstSimpleProjectView", tr("Welcome to Project View. Users of this view are often experienced. Parallax does not recommend Project View for beginners."));
-    }
 
     /* simple view */
     if(simple)
@@ -7589,6 +7585,9 @@ void MainSpinWindow::showSimpleView(bool simple)
         if(ctags->enabled()) {
             browseToolBar->setVisible(true);
         }
+
+        QApplication::processEvents();
+        HintDialog::hint("FirstSimpleProjectView", tr("Welcome to Project View. Users of this view are often experienced. Parallax does not recommend Project View for beginners."), this);
     }
     QVariant viewv = simple;
     settings->setValue(simpleViewKey, viewv);
