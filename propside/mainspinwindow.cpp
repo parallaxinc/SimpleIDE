@@ -4911,6 +4911,10 @@ int  MainSpinWindow::runBuild(QString option)
     checkAndSaveFiles();
     selectBuilder();
 
+    int index = editorTabs->currentIndex();
+    if(index > -1 && !this->shortFileName(projectFile).contains(this->editorTabs->tabText(index))) {
+        HintDialog::hint("NotMainProjectFile", tr("The file being displayed is not the main project file. It may not represent the program to build. Use the project button to check the project name if necessary. For making a main file for building, press F4 to set the project."), this);
+    }
 #if defined(GDBENABLE)
     /* stop debugger */
     gdb->stop();
