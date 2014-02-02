@@ -7065,7 +7065,7 @@ void MainSpinWindow::setupFileMenu()
     projMenu->addAction(QIcon(":/images/openproj.png"), tr("Open"), this, SLOT(openProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_O);
     projMenu->addAction(QIcon(":/images/saveproj.png"), tr("Save"), this, SLOT(saveProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_S);
     projMenu->addAction(QIcon(":/images/saveasproj.png"), tr(SaveAsProject), this, SLOT(saveAsProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_A);
-    projMenu->addAction(QIcon(":/images/zip2.png"), tr(ZipProject), this, SLOT(zipProject()), Qt::CTRL+Qt::Key_Z);
+    projMenu->addAction(QIcon(":/images/zip2.png"), tr(ZipProject), this, SLOT(zipProject()), Qt::CTRL+Qt::ShiftModifier+Qt::Key_Z);
 
     projMenu->addAction(QIcon(":/images/AddFileCopy.png"), tr(AddFileCopy), this, SLOT(addProjectFile()));
 #ifdef ENABLE_ADD_LINK
