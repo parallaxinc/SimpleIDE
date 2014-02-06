@@ -253,15 +253,9 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 
     /* get available ports at startup */
     enumeratePorts();
-#if 0
-#if defined(Q_WS_WIN32)
-    /* connect windows USB change detect signal to enumerator */
-    connect(this,SIGNAL(doPortEnumerate()),this, SLOT(enumeratePortsEvent()));
-#endif
-#else
+
     portConnectionMonitor = new PortConnectionMonitor();
     connect(portConnectionMonitor, SIGNAL(portChanged()), this, SLOT(enumeratePortsEvent()));
-#endif
 
     /* these are read once per app startup */
     QVariant lastportv  = settings->value(lastPortNameKey);
@@ -367,26 +361,6 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
 
     showSimpleView(simpleViewType);
 }
-
-#if defined(Q_WS_WIN32)
-bool MainSpinWindow::winEvent(MSG *message, long *result)
-{
-    if (message->message==WM_DEVICECHANGE)
-    {
-        qDebug() << ("WM_DEVICECHANGE message received");
-        if (message->wParam==DBT_DEVICEARRIVAL) {
-            qDebug() << ("A new device has arrived");
-            emit doPortEnumerate();
-        }
-        if (message->wParam==DBT_DEVICEREMOVECOMPLETE) {
-            qDebug() << ("A device has been removed");
-            emit doPortEnumerate();
-        }
-    }
-    return false;
-}
-#endif
-
 
 void MainSpinWindow::keyHandler(QKeyEvent* event)
 {
@@ -6754,8 +6728,12 @@ void MainSpinWindow::enumeratePortsEvent()
             term->setPortEnabled(false);
         }
     }
+    else if(len > 1) {
+        if(this->isActiveWindow())
+            this->cbPort->showPopup();
+        term->setPortEnabled(true);
+    }
     else if(len > 0) {
-        this->cbPort->showPopup();
         term->setPortEnabled(true);
     }
 
