@@ -39,11 +39,6 @@
 #include "PropellerID.h"
 #include "PortConnectionMonitor.h"
 
-#if defined(Q_WS_WIN32)
-#include <qt_windows.h>
-#include <dbt.h>
-#endif
-
 #define untitledstr "Untitled"
 
 QT_BEGIN_NAMESPACE
@@ -445,11 +440,6 @@ public slots:
     void ideDebugShow();
 private:
     int ideDebugTabIndex;
-
-#if defined(Q_WS_WIN32)
-protected:
-    bool winEvent(MSG *msg,long * result);
-#endif
 
 };
 
