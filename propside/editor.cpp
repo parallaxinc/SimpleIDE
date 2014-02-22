@@ -116,6 +116,12 @@ void Editor::keyPressEvent (QKeyEvent *e)
         QPlainTextEdit::keyPressEvent(e);
 #endif
     }
+#ifdef ENABLE_AUTO_ENTER
+    else if(key == Qt::Key_BraceRight) {
+        if(braceMatchColumn() == 0)
+            QPlainTextEdit::keyPressEvent(e);;
+    }
+#endif
     /* if F1 get word under mouse and pass to findSymbolHelp. no word is ok too. */
     else if(key == Qt::Key_F1) {
         contextHelp();
@@ -188,6 +194,11 @@ void Editor::mousePressEvent (QMouseEvent *e)
 int Editor::autoEnterColumn()
 {
     QTextCursor cur = this->textCursor();
+    if(cur.selectedText().length() > 0) {
+        return 0;
+    }
+
+    int line = cur.blockNumber();
 
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
     QString text = cur.selectedText();
@@ -197,11 +208,149 @@ int Editor::autoEnterColumn()
     cur.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,text.length());
     setTextCursor(cur);
     cur.clearSelection();
+
+    int stop = -1;
+    int indent = -1;
+    int star = -1;
+    int slcm = text.indexOf("//");
+
+    // don't indent under closed comment
+    if(text.indexOf("*/") > -1) {
+        return 0;
+    }
+    if(isCommentOpen(line)) {
+        star = stop = text.indexOf("*");
+    }
+    if(stop < 0 && slcm > -1) {
+        stop = slcm;
+    }
+    if(stop < 0 && text.lastIndexOf("{") == text.length()-1) {
+        indent = this->tabStopWidth()/10;;
+    }
+
+    qDebug() << text;
+    /* start a single undo/redo operation */
+    cur.beginEditBlock();
+
     cur.insertText("\n");
 
-    //qDebug() << text;
-    for(int n = 0; isspace(text[n].toAscii()); n++)
+    for(int n = 0; n <= stop || isspace(text[n].toAscii()); n++) {
+        if(n == star) {
+            cur.insertText("*");
+        }
+        else if(n == slcm) {
+            cur.insertText("// ");
+        }
+        else {
+            cur.insertText(" ");
+        }
+    }
+
+    if(indent > 0) {
+        for(int n = 0; n < indent; n++) {
+            cur.insertText(" ");
+        }
+    }
+
+    this->setTextCursor(cur);
+    /* end a single undo/redo operation */
+    cur.endEditBlock();
+
+    return 1;
+}
+
+bool Editor::isCommentOpen(int line)
+{
+    // find out if there is a brace mismatch
+    QString s = this->toPlainText();
+    QStringList sl = s.split("\n",QString::SkipEmptyParts);
+    int length = sl.length();
+
+    int como = 0;
+    int comc = 0;
+
+    for(int n = 0; n < length; n++) {
+        QString s = sl.at(n);
+        if(s.contains("/*")) {
+            como++;
+        }
+        if(s.contains("*/")) {
+            comc++;
+        }
+        if(line == n && como > comc)
+            return true;
+    }
+    return !(como == comc);
+}
+
+int Editor::braceMatchColumn()
+{
+    int position = this->textCursor().positionInBlock();
+    int indent = this->tabStopWidth()/10;
+
+    if(position <= indent)
+        return 0;
+
+    QTextCursor cur = this->textCursor();
+
+    /* if this line has a brace, ignore */
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+    cur.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+    QString text = cur.selectedText();
+
+    cur.clearSelection();
+    if(text.contains("{"))
+        return 0;
+
+    // find out if there is a brace mismatch
+    QString s = this->toPlainText();
+    QStringList sl = this->toPlainText().split(QRegExp("/\\*.*\\*/"));
+    s = sl.join("\n");
+    sl = s.split("\n",QString::SkipEmptyParts);
+    int length = sl.length();
+
+    int braceo = 0;
+    int bracec = 0;
+
+    for(int n = 0; n < length; n++) {
+        QString s = sl.at(n);
+        if(s.contains("{")) {
+            braceo++;
+        }
+        if(s.contains("}")) {
+            bracec++;
+        }
+    }
+
+    if(braceo == bracec) {
+        return 0;
+    }
+
+    // if brace mismatch, set closing brace
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+    cur.movePosition(QTextCursor::Up,QTextCursor::MoveAnchor,1);
+    cur.movePosition(QTextCursor::Down,QTextCursor::KeepAnchor,1);
+
+    text = cur.selectedText();
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+    if(text.length() == 0)
+        return 0;
+
+    //cur.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,text.length());
+    setTextCursor(cur);
+    cur.clearSelection();
+
+    /* start a single undo/redo operation */
+    cur.beginEditBlock();
+
+    for(int n = 0; n < position-indent; n++) {
         cur.insertText(" ");
+    }
+    cur.insertText("}");
+
+    this->setTextCursor(cur);
+    /* end a single undo/redo operation */
+    cur.endEditBlock();
 
     return 1;
 }

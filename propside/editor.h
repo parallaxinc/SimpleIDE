@@ -22,6 +22,8 @@ public:
 
 private:
     int  autoEnterColumn();
+    int  braceMatchColumn();
+    bool isCommentOpen(int line);
     QString spinPrune(QString s);
     void addAutoItem(QString type, QString s);
     void spinAutoShow(int width);
@@ -54,7 +56,6 @@ private:
 private slots:
     void cbAutoSelected(int index);
     void cbAutoSelected0insert(int index);
-
 
 /* lineNumberArea support below this line: see Nokia Copyright below */
 public:

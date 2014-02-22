@@ -410,11 +410,27 @@ int  Build::buildResult(int exitStatus, int exitCode, QString progName, QString 
     else if(exitCode != 0)
     {
         if(compileStatus->toPlainText().contains("error")) {
+            /* try to add something reasonable without growing the screensize too much */
             QString errstr;
             QStringList list = compileStatus->toPlainText().split("\n");
             for(int n = list.length()-1; n > -1; n--) {
-                if(QString(list[n]).contains("error")) {
-                    errstr = list[n];
+                QString str = list[n];
+                QRegExp re("\\b:\\d+:\\d.*error\\b", Qt::CaseInsensitive);
+                if(QString(str).contains(re)) {
+                    QStringList sa = str.split(re, QString::SkipEmptyParts);
+                    if(sa.length() > 1) {
+                        QDir dir(sourcePath(str));
+                        if(dir.exists()) {
+                            /*
+                             * show short filename and error only
+                             * even relative paths can be too long.
+                             */
+                            errstr = shortFileName(sa[0]) + " Error: "+sa[1];
+                        }
+                    }
+                    else {
+                        errstr = list[n];
+                    }
                 }
             }
             status->setText(status->text()+" "+errstr+". ");
