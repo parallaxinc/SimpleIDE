@@ -963,6 +963,7 @@ void MainSpinWindow::openFile(const QString &path)
 //        fileName = fileDialog.getOpenFileName(this, tr("Open File"), lastPath, tr(SOURCE_FILE_TYPES));
 //#endif
         fileName = QFileDialog::getOpenFileName(this, tr("Open File"), lastPath, SOURCE_FILE_TYPES); //"All (*)");
+        fileName = fileName.trimmed();
         if(fileName.length() > 0)
             lastPath = sourcePath(fileName);
     }
@@ -1182,6 +1183,7 @@ void MainSpinWindow::newProject()
         #endif
 
         QString dstName = getNewProjectDialog(workspace, filters);
+        dstName = dstName.trimmed();
         if(dstName.isEmpty())
             return;
 
@@ -1263,6 +1265,7 @@ void MainSpinWindow::newProject()
         if(dstList.length() < 1)
             return;
         QString dstPath = dstList.at(0);
+        dstPath = dstPath.trimmed();
         if(dstPath.length() < 1)
            return;
 
@@ -1426,6 +1429,8 @@ void MainSpinWindow::newProjectAccepted()
 {
     QString name = newProjDialog->getName();
     QString path = newProjDialog->getPath();
+    name = name.trimmed();
+    path = path.trimmed();
     QDir dir(path);
 
     QString comp = newProjDialog->getCompilerType();
@@ -1551,6 +1556,7 @@ void MainSpinWindow::openProject(const QString &path)
 
     if (fileName.isNull()) {
         fileName = fileDialog.getOpenFileName(this, tr("Open Project"), this->sourcePath(projectFile), "Project Files (*.side)");
+        fileName = fileName.trimmed();
         if(fileName.length() > 0)
             lastPath = sourcePath(fileName);
     }
@@ -2501,6 +2507,7 @@ void MainSpinWindow::cloneProject()
     }
 
     QString srcFile = QFileDialog::getOpenFileName(this,tr("Project to Clone"), src, PROJECT_FILE_FILTER);
+    srcFile = srcFile.trimmed();
     if(srcFile.length() == 0)
         return;
 
@@ -3576,18 +3583,20 @@ QString MainSpinWindow::getSaveAsFile(const QString &path)
             if(dstList.length() < 1)
                 return QString("");
             QString dstPath = dstList.at(0);
+            dstPath = dstPath.trimmed();
             if(dstPath.length() < 1)
                 return QString("");
 
             QString ftype = dialog.selectedNameFilter();
             fileName = filterAsFilename(dstPath, ftype);
-
+            fileName = fileName.trimmed();
             dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
             lastPath = dstPath;
         }
         else {
             fileName = fileDialog.getSaveFileName(this,
                           tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
+            fileName = fileName.trimmed();
         }
     }
     if(fileName.length() > 0)
@@ -3988,8 +3997,9 @@ void MainSpinWindow::printFile()
 void MainSpinWindow::copyFromFile()
 {
     Editor *editor = editors->at(editorTabs->currentIndex());
-    if(editor)
+    if(editor) {
         editor->copy();
+    }
     editor->clearCtrlPressed();
 }
 void MainSpinWindow::cutFromFile()
@@ -4924,7 +4934,26 @@ int  MainSpinWindow::runBuild(QString option)
     /* stop debugger */
     gdb->stop();
 #endif
+
+    /*
+     * The status bar contents can grow the window width.
+     * We want too keep the window size the same if possible.
+     * Lets just set the status label max size here so it doesn't grow.
+     * Do it here because the user may have changed the width.
+     */
+    QSize fs = this->frameSize();
+    int maxw = fs.width() - status->x()-100;
+    status->setMaximumWidth(maxw);
+
     return builder->runBuild(option, projectFile, aSideCompiler);
+}
+
+void MainSpinWindow::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    QSize fs = this->frameSize();
+    int maxw = fs.width() - status->x()-100;
+    status->setMaximumWidth(maxw);
 }
 
 QStringList MainSpinWindow::getLoaderParameters(QString copts, QString file)
@@ -6797,6 +6826,12 @@ void MainSpinWindow::enumeratePorts()
     cbPort->insertItem(0,AUTO_PORT);
 #endif
     this->cbPort->hidePopup();
+    if(!cbPort->count()) {
+        btnConnected->setCheckable(false);
+    }
+    else {
+        btnConnected->setCheckable(true);
+    }
 }
 
 void MainSpinWindow::connectButton()
@@ -7034,6 +7069,7 @@ void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, 
     editor->setPlainText(text);
     editor->setHighlights(shortName);
     connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
+    connect(this, SIGNAL(copyAvailable(bool)), this, SLOT(copyFromFile()));
     QApplication::restoreOverrideCursor();
     fileChangeDisable = false;
     editorTabs->setTabText(num,shortName);

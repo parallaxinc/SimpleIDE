@@ -29,6 +29,8 @@ DEFINES += ENABLE_AUTOLIB
 # EVENT_DRIVEN QEXTSERIALPORT is no longer used.
 # GDBENABLE is not ready, and will only be used for development testing
 # DEFINES += GDBENABLE
+# ENABLE_AUTO_ENTER turns on AUTO-INDENT
+DEFINES += ENABLE_AUTO_ENTER
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9

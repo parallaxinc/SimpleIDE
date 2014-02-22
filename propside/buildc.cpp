@@ -57,7 +57,7 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     progress->hide();
     programSize->setText("");
 
-    compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\r\n");
+    compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\n");
     compileStatus->moveCursor(QTextCursor::End);
     status->setText(tr("Building ..."));
 

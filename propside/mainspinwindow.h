@@ -292,6 +292,7 @@ private:
     void showSimpleView(bool simple);
 
     bool rtsReset();
+    void resizeEvent(QResizeEvent *ev);
 
     AboutDialog     *aboutDialog;
     QString         aboutLanding;
