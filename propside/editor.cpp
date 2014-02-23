@@ -191,7 +191,22 @@ void Editor::mousePressEvent (QMouseEvent *e)
     QPlainTextEdit::mousePressEvent(e);
 }
 
+
 int Editor::autoEnterColumn()
+{
+    if(fileName.endsWith(".spin", Qt::CaseInsensitive)) {
+        return autoEnterColumnSpin();
+    }
+    else if(fileName.endsWith(".c", Qt::CaseInsensitive) ||
+            fileName.endsWith(".cpp", Qt::CaseInsensitive) ||
+            fileName.endsWith(".h", Qt::CaseInsensitive)
+            ) {
+        return autoEnterColumnC();
+    }
+    return 0;
+}
+
+int Editor::autoEnterColumnC()
 {
     QTextCursor cur = this->textCursor();
     if(cur.selectedText().length() > 0) {
@@ -199,15 +214,12 @@ int Editor::autoEnterColumn()
     }
 
     int line = cur.blockNumber();
-
-    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
+    int col  = cur.positionInBlock();
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+    cur.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,col);
     QString text = cur.selectedText();
-    //qDebug() << text.length();
-    if(text.length() == 0)
-        return 0;
-    cur.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,text.length());
-    setTextCursor(cur);
     cur.clearSelection();
+    if(text.length() == 0) return 0;
 
     int stop = -1;
     int indent = -1;
@@ -232,9 +244,9 @@ int Editor::autoEnterColumn()
     /* start a single undo/redo operation */
     cur.beginEditBlock();
 
-    cur.insertText("\n");
+    cur.insertBlock();
 
-    for(int n = 0; n <= stop || isspace(text[n].toAscii()); n++) {
+    for(int n = 0; n <= stop || isspace(text[n].toLatin1()); n++) {
         if(n == star) {
             cur.insertText("*");
         }
@@ -258,6 +270,63 @@ int Editor::autoEnterColumn()
 
     return 1;
 }
+
+int Editor::autoEnterColumnSpin()
+{
+    QTextCursor cur = this->textCursor();
+    if(cur.selectedText().length() > 0) {
+        return 0;
+    }
+
+    int col = cur.positionInBlock();
+
+    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+    cur.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,col);
+    QString text = cur.selectedText();
+    cur.clearSelection();
+    if(text.length() == 0) return 0;
+
+    // handle indent for spin
+    int stop = -1;
+    int indent = -1;
+    int slcm = text.indexOf("'");
+
+    if(slcm > -1) {
+        stop = slcm;
+    }
+
+    //qDebug() << text;
+    /* start a single undo/redo operation */
+    cur.beginEditBlock();
+
+    cur.insertBlock();
+    //cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+
+    for(int n = 0; n <= stop || isspace(text[n].toLatin1()); n++) {
+        if(n == slcm) {
+            if(text.indexOf("''") > -1)
+                cur.insertText("''");
+            else
+                cur.insertText("'");
+        }
+        else {
+            cur.insertText(" ");
+        }
+    }
+
+    if(indent > 0) {
+        for(int n = 0; n < indent; n++) {
+            cur.insertText(" ");
+        }
+    }
+
+    this->setTextCursor(cur);
+    /* end a single undo/redo operation */
+    cur.endEditBlock();
+
+    return 1;
+}
+
 
 bool Editor::isCommentOpen(int line)
 {
