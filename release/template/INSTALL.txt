@@ -28,19 +28,22 @@ INSTALL
 1. Unpack SimpleIDE with $ tar -xjf SimpleIDE-packagename.bz2
 2. Change directory $ cd SimpleIDE-version.
 3. Setup with $ sudo ./setup.sh $USER (or use root $ ./setup.sh username)
+   (Note that setup.sh will add /usr/bin/simpleide, /opt/parallax, and /opt/simpleide.)
 4. SimpleIDE workspace:
  a. Remove ~/Documents/SimpleIDE to get a new copy of the workspace.
- b. On first run ./simpleide will install ~/Documents/SimpleIDE files.
+ b. On first run simpleide will install ~/Documents/SimpleIDE files.
 5. Previous users should remove the ~/.config/ParallaxInc/SimpleIDE.conf file.
 
 RUN
 
-1. Run with $ ./simpleide
-2. SimpleIDE Compiler Properties should have:
+1. From any directory, run with the command $ simpleide
+   (Do not use "./simpleide". The one installed in /usr/bin/simpleide should work.)
+   (The $ sign is a standard symbol for a command prompt in Linux.)
+2. The SimpleIDE Compiler Properties should have:
  a. Compiler /opt/parallax/bin
  b. Loader path /opt/parallax/propeller-load
  c. Workspace ~/Documents/SimpleIDE
-3. SimpleIDE should start with the Welcome.c demo
+3. The SimpleIDE program should start with the Welcome.c demo
 
 Documentation
 
