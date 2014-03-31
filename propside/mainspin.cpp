@@ -1,4 +1,5 @@
-#include <QtGui>
+#include <QtWidgets>
+#include <QtWidgets>
 #include "mainspinwindow.h"
 
 int main(int argc, char *argv[])
@@ -8,7 +9,7 @@ int main(int argc, char *argv[])
     MainSpinWindow w;
 #endif
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     a.setWindowIcon(QIcon(":/images/SimpleIDE.icns"));
 #else
     a.setWindowIcon(QIcon(":/images/SimpleIDE-all.ico"));

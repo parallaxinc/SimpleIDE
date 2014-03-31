@@ -8,7 +8,7 @@ CTags::CTags(QString path, QObject *parent) : QObject(parent)
     compilerPath = path;
     ctagsProgram = path+ctags;
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     ctagsProgram = ctagsProgram+".exe";
 #endif
 
@@ -110,7 +110,7 @@ int CTags::runCtags(QString path)
 
     procDone = false;
     /*
-    qDebug() << ctagsProgram.toAscii();
+    qDebug() << ctagsProgram.toLatin1();
     for(int n = 0; n < args.count(); n++)
         qDebug() << args.at(n);
     */

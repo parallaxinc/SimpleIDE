@@ -3,7 +3,7 @@
  * TODO: put findNext in find and __findNext in replace and try replace up/down.
  */
 
-#include <QtGui>
+#include <QtWidgets>
 #include "replacedialog.h"
 
 #define USE_REGEX 0

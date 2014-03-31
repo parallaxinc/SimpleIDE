@@ -1,7 +1,7 @@
 #ifndef PROJECTTREE_H
 #define PROJECTTREE_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class ProjectTree : public QTreeView
 {
@@ -23,6 +23,7 @@ private:
 
 signals:
     void deleteProjectItem();
+    void showPopup();
 };
 
 #endif // PROJECTTREE_H

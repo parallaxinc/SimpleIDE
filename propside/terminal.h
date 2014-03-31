@@ -3,7 +3,7 @@
 
 class Terminal;
 
-#include <QtGui>
+#include <QtWidgets>
 #include "console.h"
 #include "PortListener.h"
 #include "loader.h"

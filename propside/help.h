@@ -1,6 +1,6 @@
 #ifndef HELP_H
 #define HELP_H
-#include <QtGui>
+#include <QtWidgets>
 
 class Help : public QDialog
 {

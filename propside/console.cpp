@@ -256,7 +256,7 @@ void Console::setHexDump(bool enable)
 #ifdef EVENT_DRIVEN
 enum { BUFFERSIZE = 2048 };
 #else
-#ifdef Q_WS_WIN32
+#ifdef Q_OS_WIN32
 enum { BUFFERSIZE = 16 };
 #else
 enum { BUFFERSIZE = 64 };
@@ -356,7 +356,7 @@ void Console::update(char ch)
     //moveCursor(QTextCursor::End);
     // now that we have cursor positioning we can't always start at the end.
 
-    //qDebug(QString(" %1 %2").arg(ch, 2, 16, QChar('0')).arg(QChar(ch)).toAscii());
+    //qDebug(QString(" %1 %2").arg(ch, 2, 16, QChar('0')).arg(QChar(ch)).toLatin1());
     //insertPlainText(QString(" %1 ").arg(ch, 2, 16, QChar('0')));
     //insertPlainText(QChar(ch));
 

@@ -76,7 +76,7 @@ void GDB::sendCommand(QString command)
     setReady(false);
     command += "\n";
     status->insertPlainText(command);
-    QByteArray barry(command.toAscii());
+    QByteArray barry(command.toLatin1());
     process->write(barry);
 
 }

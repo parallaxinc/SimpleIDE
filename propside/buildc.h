@@ -1,7 +1,7 @@
 #ifndef BUILDC_H
 #define BUILDC_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "build.h"
 
 class BuildC : public Build
@@ -46,7 +46,6 @@ private:
     QString exePath;
     QString exeName;
 
-    QHash<QString, QString> incHash;
 };
 
 #endif // BUILDC_H

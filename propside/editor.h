@@ -1,7 +1,7 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "gdb.h"
 #include "highlighter.h"
 #include "spinparser.h"

@@ -5,9 +5,11 @@
 #ifndef MAINSPINWINDOW_H
 #define MAINSPINWINDOW_H
 
-#include <QtGui>
+#include <QWidget>
 #include <QIcon>
 #include <QMainWindow>
+#include <QtPrintSupport/QPrinter>
+#include <QtPrintSupport/QPrintDialog>
 #include <iostream>
 #include <exception>
 #include "stdio.h"
@@ -38,6 +40,7 @@
 #include "spinparser.h"
 #include "PropellerID.h"
 #include "PortConnectionMonitor.h"
+#include "zipper.h"
 
 #define untitledstr "Untitled"
 
@@ -99,7 +102,7 @@ public slots:
     void referenceShow();
     void tutorialShow();
     void userguideShow();
-    void projectTreeClicked(QModelIndex index);
+    void projectTreeClicked();
     void closeTab(int index = 0);
     void saveTab(int index = 0, bool ask = true);
     void editorTabMenu(QPoint);
@@ -201,6 +204,7 @@ public slots:
     void fontBigger();
     void fontSmaller();
 
+    void showProjectPopup();
     void showAssemblyFile();
     void showMapFile();
     int  makeDebugFiles(QString fileName);
@@ -348,6 +352,7 @@ private:
     QMenu           *edpopup;
 
     QPlainTextEdit  *compileStatus;
+    bool            compileStatusClickEnable;
 
     QString         projectFile;
     CBuildTree      *projectModel;
@@ -436,6 +441,9 @@ private:
     PropellerID     propId;
 
     PortConnectionMonitor *portConnectionMonitor;
+
+    StatusDialog    *statusDialog;
+    Zipper          zipper;
 
 public slots:
     void ideDebugShow();

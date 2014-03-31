@@ -128,7 +128,7 @@ void TermPrefs::chooseFont()
     bool ok;
     QFont font = serialConsole->font();
     int size = font.pointSize();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     size = 14;
 #else
     font.pixelSize();

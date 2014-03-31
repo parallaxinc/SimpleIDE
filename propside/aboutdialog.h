@@ -2,7 +2,7 @@
 #define ABOUTDIALOG_H
 
 #include <QDialog>
-#include <QtGui>
+#include <QtWidgets>
 
 class AboutDialog : public QDialog
 {
@@ -10,7 +10,7 @@ class AboutDialog : public QDialog
 public:
     explicit AboutDialog(QString landing, QWidget *parent = 0);
     void    show();
-    void    exec();
+    int    exec();
 
 private:
     QCheckBox *showSplashStartCheckBox;

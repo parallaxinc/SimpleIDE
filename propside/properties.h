@@ -33,6 +33,10 @@
 
 #include "propertycolor.h"
 
+#include <QWidget>
+#include <QDialog>
+//#include <QtWidgets>
+
 #define publisherKey        "ParallaxInc"
 #define publisherComKey     "Parallax.com"
 #define ASideGuiKey         "SimpleIDE"
@@ -93,8 +97,6 @@
 #define hlBlockComWeightKey "SimpleIDE_HighlightBlockCommentTypeWeight"
 #define hlBlockComColorKey  "SimpleIDE_HighlightBlockCommentTypeColor"
 #define HintKeyPrefix       "SimpleIDE_Hint_"
-
-#include <QtGui>
 
 class Properties : public QDialog
 {

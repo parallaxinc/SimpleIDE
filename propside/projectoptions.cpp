@@ -318,11 +318,11 @@ QString  ProjectOptions::getStripElf()
 
 QString  ProjectOptions::getCompOptions()
 {
-    return ui->lineEditCompOptions->text().toAscii();
+    return ui->lineEditCompOptions->text().toLatin1();
 }
 QString  ProjectOptions::getLinkOptions()
 {
-    return ui->lineEditLinkOptions->text().toAscii();
+    return ui->lineEditLinkOptions->text().toLatin1();
 }
 QString  ProjectOptions::getBoardType()
 {
@@ -535,7 +535,7 @@ QStringList ProjectOptions::getSpinOptions()
 
 QString  ProjectOptions::getSpinCompOptions()
 {
-    return ui->lineEditSpinCompOptions->text().toAscii();
+    return ui->lineEditSpinCompOptions->text().toLatin1();
 }
 
 void ProjectOptions::setSpinOptions(QString s)

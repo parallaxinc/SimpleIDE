@@ -1,7 +1,7 @@
 #ifndef BUILDSPIN_H
 #define BUILDSPIN_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "build.h"
 
 class BuildSpin : public Build

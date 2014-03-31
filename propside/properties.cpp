@@ -107,7 +107,7 @@ QString Properties::getApplicationWorkspace()
      * For development it can be set to another value.
      */
     QString pkwrk;
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     pkwrk = QApplication::applicationDirPath()+"/";
 #else
     QVariant compv  = settings.value(gccCompilerKey, pkwrk);
@@ -231,7 +231,7 @@ void Properties::setupPropGccCompiler()
     QString mygcc;
     QString apath = QApplication::applicationDirPath();
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     // if windoze
     apath += "/../propeller-gcc/";
     QDir gcc("C:/propgcc/");
@@ -244,7 +244,7 @@ void Properties::setupPropGccCompiler()
     }
     mygcc = mypath+"bin/propeller-elf-gcc.exe";
 
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
     // if macos
     QDir gcc("/opt/parallax/bin");
     if(gcc.exists()) {
@@ -337,7 +337,7 @@ void Properties::setupSpinFolders()
     QVariant gv = settings.value(gccCompilerKey,"");
 
     QString mygcc = mypath+"bin/propeller-elf-gcc";
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     mygcc += ".exe";
 #endif
 
@@ -687,7 +687,7 @@ void Properties::setupHighlight()
       */
 
     bool checkBold = true;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     checkBold = false;
 #endif
 
@@ -963,7 +963,7 @@ void Properties::browseGccCompiler()
     if(compiler.length() < 1)
         compiler = mypath;
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     QString fileName = QFileDialog::getOpenFileName(this,tr("Select Propeller Compiler"), compiler, "Compiler (propeller-elf-gcc.exe)");
 #else
     QString fileName = QFileDialog::getOpenFileName(this,tr("Select Propeller Compiler"), compiler, "Compiler (propeller-elf-gcc)");
@@ -990,7 +990,7 @@ void Properties::browseGccLibrary()
     if(gccLibraryStr.length() < 1)
         gccLibraryStr = mypath;
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     pathName = QFileDialog::getExistingDirectory(this,tr("Select GCC Library Folder"), gccLibraryStr, QFileDialog::ShowDirsOnly);
 #else
     pathName = QFileDialog::getExistingDirectory(this,tr("Select GCC Library Folder"), gccLibraryStr, QFileDialog::ShowDirsOnly);
@@ -1051,7 +1051,7 @@ void Properties::browseSpinCompiler()
     if(compiler.length() < 1)
         compiler = mypath;
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     QString fileName = QFileDialog::getOpenFileName(this,tr("Select Spin Compiler"), compiler, "Compiler (openspin.exe bstc.exe)");
 #else
     QString fileName = QFileDialog::getOpenFileName(this,tr("Select Spin Compiler"), compiler, "Compiler (openspin openspin.* bstc bstc.*)");

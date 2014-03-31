@@ -48,7 +48,7 @@ PropellerID::~PropellerID()
 
 int PropellerID::isDevice(QString portName)
 {
-    return findprop(portName.toAscii());
+    return findprop(portName.toLatin1());
 }
 
 void PropellerID::run()

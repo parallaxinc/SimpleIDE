@@ -1,7 +1,7 @@
 #ifndef ASIDECONFIG_H
 #define ASIDECONFIG_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "asideboard.h"
 
 #define GENERIC_BOARD "GENERIC"

@@ -561,7 +561,7 @@ QString Editor::selectAutoComplete()
     while((col = cur.columnNumber()) > 0) {
         cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor,1);
         text = cur.selectedText();
-        ch = text.at(0).toAscii();
+        ch = text.at(0).toLatin1();
         if(isspace(ch))
             break;
     }
