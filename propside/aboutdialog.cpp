@@ -54,7 +54,7 @@ void AboutDialog::show()
     QDialog::show();
 }
 
-void AboutDialog::exec()
+int AboutDialog::exec()
 {
     QSettings settings(publisherKey, ASideGuiKey, this);
     QVariant helpStartup = settings.value(helpStartupKey,true);

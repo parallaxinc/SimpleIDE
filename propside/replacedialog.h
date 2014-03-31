@@ -5,7 +5,7 @@
 #ifndef REPLACEDIALOG_H
 #define REPLACEDIALOG_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class ReplaceDialog : public QDialog
 {

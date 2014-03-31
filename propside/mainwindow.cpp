@@ -291,7 +291,7 @@ void MainWindow::getApplicationSettings()
         aSideCompilerPath = aSideCompiler.mid(0,aSideCompiler.lastIndexOf('/')+1);
     }
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     aSideLoader = aSideCompilerPath + "propeller-load.exe";
 #else
     aSideLoader = aSideCompilerPath + "propeller-load";
@@ -1316,7 +1316,7 @@ void MainWindow::printFile()
     QString name = editorTabs->tabText(tab);
     name = name.mid(0,name.lastIndexOf("."));
 
-#if defined(Q_WS_WIN32) || defined(Q_WS_MAC)
+#if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
     printer.setDocName(name);
 #else
     printer.setOutputFormat(QPrinter::PdfFormat);
@@ -1542,7 +1542,7 @@ bool MainWindow::isTagged(QString text)
 
 void MainWindow::findDeclarationInfo()
 {
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
      QMessageBox::information(this,
          tr("Browse Declaration"),
          tr("Use \"Command+]\" to find a declaration.\n" \
@@ -1720,7 +1720,7 @@ void MainWindow::programRun()
 
     if(runBuild(""))
         return;
-#ifdef Q_WS_WIN32
+#ifdef Q_OS_WIN32
     portListener->close();
     btnConnected->setChecked(false);
 #endif
@@ -1736,7 +1736,7 @@ void MainWindow::programDebug()
     if(runBuild(""))
         return;
 
-#if !defined(Q_WS_WIN32)
+#if !defined(Q_OS_WIN32)
     portListener->open();
     term->getEditor()->setPortEnable(false);
     if(runLoader("-r -t")) {
@@ -1761,7 +1761,7 @@ void MainWindow::programDebug()
 void MainWindow::debugCompileLoad()
 {
     QString gdbprog("propeller-elf-gdb");
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     gdbprog += ".exe";
 #else
     gdbprog = aSideCompilerPath + gdbprog;
@@ -2368,9 +2368,9 @@ int  MainWindow::runBstc(QString spinfile)
     args.append(spinfile); // using shortname limits us to files in the project directory.
 
     /* run the bstc program */
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     QString bstc = "bstc";
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
     QString bstc = aSideCompilerPath+"bstc.osx";
 #else
     QString bstc = aSideCompilerPath+"bstc.linux";
@@ -2638,7 +2638,7 @@ int  MainWindow::runCompiler(QStringList copts)
     QStringList args = getCompilerParameters(copts);
     QString compstr;
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     compstr = shortFileName(aSideCompiler);
 #else
     compstr = aSideCompiler;
@@ -2809,7 +2809,7 @@ int  MainWindow::startProgram(QString program, QString workpath, QStringList arg
      */
     showBuildStart(program,args);
 
-#if !defined(Q_WS_WIN32)
+#if !defined(Q_OS_WIN32)
     if(program.contains(aSideCompilerPath) == false)
         program = aSideCompilerPath + program;
 #endif
@@ -2940,7 +2940,7 @@ void MainWindow::procReadyRead()
     if(bytes.length() == 0)
         return;
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     QString eol("\r");
 #else
     QString eol("\n");
@@ -3979,7 +3979,7 @@ int MainWindow::makeDebugFiles(QString fileName)
         }
     }
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     compstr = shortFileName(aSideCompiler);
 #else
     compstr = aSideCompiler;
@@ -4040,7 +4040,7 @@ void MainWindow::enumeratePorts()
         stringlist << "vendor ID:" << QString::number(ports.at(i).vendorID, 16);
         stringlist << "product ID:" << QString::number(ports.at(i).productID, 16);
         stringlist << "===================================";
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
         name = ports.at(i).portName;
         if(name.lastIndexOf('\\') > -1)
             name = name.mid(name.lastIndexOf('\\')+1);
@@ -4048,7 +4048,7 @@ void MainWindow::enumeratePorts()
             friendlyPortName.append(ports.at(i).friendName);
             cbPort->addItem(name);
         }
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
         name = ports.at(i).portName;
         if(name.indexOf("usbserial") > -1) {
             friendlyPortName.append(ports.at(i).friendName);

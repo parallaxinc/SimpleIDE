@@ -126,7 +126,7 @@ void PortListener::updateReady(QextSerialPort* port)
             terminal->updateReady(port);
 }
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
 // delay less than 25ms here is dangerous for windows
 #define POLL_DELAY 25
 #else

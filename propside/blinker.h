@@ -1,7 +1,7 @@
 #ifndef BLINKER_H
 #define BLINKER_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QThread>
 
 class Blinker : public QThread

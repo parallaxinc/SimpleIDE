@@ -2,7 +2,7 @@
   This class extends Highlighter
 *****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "spinhighlighter.h"
 

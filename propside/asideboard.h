@@ -1,7 +1,7 @@
 #ifndef ASIDEBOARD_H
 #define ASIDEBOARD_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QHash>
 
 class ASideBoard

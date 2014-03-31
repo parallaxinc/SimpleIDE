@@ -3,8 +3,12 @@
 # -------------------------------------------------
 # Windows builds must use library 4.8.0 otherwise QuaZip fails.
 # Same goes for QuaZip build.
-QT += core \
-    gui
+QT += core
+QT -= gui
+QT += widgets
+
+QT += printsupport
+
 TARGET = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
@@ -34,7 +38,7 @@ DEFINES += ENABLE_AUTO_ENTER
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=47
+DEFINES += FIXVERSION=48
 SOURCES += mainspin.cpp \
     PortConnectionMonitor.cpp \
     PropellerID.cpp \
@@ -73,7 +77,10 @@ SOURCES += mainspin.cpp \
     blinker.cpp \
     buildstatus.cpp \
     highlightbuild.cpp \
-    directory.cpp
+    directory.cpp \
+    zip.cpp \
+    zipper.cpp \
+    StatusDialog.cpp
 HEADERS += mainspinwindow.h \
     PortConnectionMonitor.h \
     PropellerID.h \
@@ -114,7 +121,13 @@ HEADERS += mainspinwindow.h \
     blinker.h \
     buildstatus.h \
     highlightbuild.h \
-    directory.h
+    directory.h \
+    zconf.h \
+    zipper.h \
+    zipreader.h \
+    zipwriter.h \
+    zlib.h \
+    StatusDialog.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \
@@ -124,8 +137,8 @@ RESOURCES += resources.qrc
 # linux quazip doesn't need version, but windows does
 unix { 
     SOURCES += qextserialport_unix.cpp
-    LIBS += -lquazip \
-        -lz
+    #LIBS += -lquazip
+    LIBS += -lz
 }
 
 # dont use EVENT_DRIVEN for linux to be consistent with MAC.
@@ -139,6 +152,8 @@ macx {
         IOKit \
         -framework \
         CoreFoundation
+    #LIBS   += -L../quazip-0.5/quazip -lquazip
+    LIBS += -lz
 }
 win32 { 
     RC_FILE = myapp.rc
@@ -148,5 +163,6 @@ win32 {
     SOURCES += qextserialenumerator_win.cpp
     DEFINES += WINVER=0x0501 # needed for mingw to pull in appropriate dbt business...probably a better way to do this
     LIBS += -lsetupapi
-    LIBS += -lquazip1
+    #LIBS += -lquazip1
+    LIBS += -L$$PWD -lzlib1
 }

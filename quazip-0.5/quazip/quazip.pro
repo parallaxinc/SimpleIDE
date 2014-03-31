@@ -47,7 +47,7 @@ win32 {
     headers.files=$$HEADERS
     target.path=$$PREFIX/lib
     INSTALLS += headers target
-
+    LIBS += -lz
 }
 
 

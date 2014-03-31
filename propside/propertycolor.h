@@ -1,7 +1,7 @@
 #ifndef PROPERTYCOLORS_H
 #define PROPERTYCOLORS_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class PColor : public QColor
 {

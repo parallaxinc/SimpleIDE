@@ -4,7 +4,7 @@
 #include "asideconfig.h"
 #include "hintdialog.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 BuildC::BuildC(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb, Properties *p)
     : Build(projopts, compstat, stat, progsize, progbar, cb, p)
@@ -348,7 +348,7 @@ int  BuildC::showCompilerVersion()
     QStringList args;
     args.append("-v");
     QString compstr;
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     compstr = shortFileName(aSideCompiler);
 #else
     compstr = aSideCompiler;
@@ -628,7 +628,7 @@ int  BuildC::runAR(QStringList copts, QString libname)
             args.append(s);
     }
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     compstr = shortFileName(aSideCompiler);
 #else
     compstr = aSideCompiler;
@@ -667,7 +667,7 @@ int  BuildC::runCompiler(QStringList copts)
     QStringList args = getCompilerParameters(copts);
     QString compstr;
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     compstr = shortFileName(aSideCompiler);
 #else
     compstr = aSideCompiler;
@@ -1044,7 +1044,7 @@ int BuildC::makeDebugFiles(QString fileName, QString projfile, QString compiler)
         }
     }
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     compstr = shortFileName(aSideCompiler);
 #else
     compstr = aSideCompiler;

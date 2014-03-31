@@ -1,7 +1,7 @@
 #ifndef BUILD_H
 #define BUILD_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "blinker.h"
 #include "properties.h"
 #include "projectoptions.h"
@@ -49,6 +49,11 @@ public:
     QString shortFileName(QString fileName);
     void removeArg(QStringList &list, QString arg);
 
+    void clearIncludeHash() {
+        if(incHash.count() > 0)
+            incHash.clear();
+    }
+
 signals:
     void showCompileStatusError();
 
@@ -81,6 +86,8 @@ protected:
     Properties      *properties;
 
     QString         outputFile;
+
+    QHash<QString, QString> incHash;
 };
 
 #endif // BUILD_H

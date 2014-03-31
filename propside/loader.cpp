@@ -66,7 +66,7 @@ int Loader::reload(QString port)
             QString s = incv.toString();
             s = QDir::fromNativeSeparators(s);
             this->program = s + "propeller-load";
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
             this->program+=".exe";
 #endif
         }
@@ -165,7 +165,7 @@ void Loader::keyPressEvent(QKeyEvent* e)
         QClipboard *clip = QApplication::clipboard();
         QString command = clip->text();
         this->insertPlainText(command);
-        QByteArray barry(command.toAscii());
+        QByteArray barry(command.toLatin1());
         process->write(barry);
         return;
     }
@@ -183,7 +183,7 @@ void Loader::keyPressEvent(QKeyEvent* e)
             if(key & Qt::Key_Escape)
                 return;
             QChar c = e->text().at(0);
-            key = (int)c.toAscii();
+            key = (int)c.toLatin1();
             break;
     }
     QByteArray barry;
@@ -246,7 +246,7 @@ void Loader::procReadyRead()
          * Also we need to add character enable filters simiar to PST
          */
         for(int n = 0; n < s.length();n++) {
-            char ch = QChar(s.at(n)).toAscii();
+            char ch = QChar(s.at(n)).toLatin1();
             //this->insertPlainText(QString(" %1").arg(ch, 2, 16, QChar('0')));
             if(ch == '\0')
                 continue; // for now ignore 0's

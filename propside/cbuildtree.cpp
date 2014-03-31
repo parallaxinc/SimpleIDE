@@ -1,5 +1,5 @@
 #include "cbuildtree.h"
-#include <QtGui>
+#include <QtWidgets>
 
 CBuildTree::CBuildTree(const QString &shortFileName, QObject *parent)
     : TreeModel(shortFileName, parent)
@@ -32,7 +32,7 @@ QStringList CBuildTree::getRowList()
 void CBuildTree::addRootItem(QString text)
 {
     QList<QVariant> clist;
-    clist << text.toAscii();
+    clist << text.toLatin1();
     if(!isDuplicate(rootItem, text))
         rootItem->appendChild(new TreeItem(clist, rootItem));
 }

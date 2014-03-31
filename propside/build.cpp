@@ -69,7 +69,7 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
      */
     showBuildStart(program,args);
 
-#if !defined(Q_WS_WIN32)
+#if !defined(Q_OS_WIN32)
     if(program.contains(aSideCompilerPath) == false)
         program = aSideCompilerPath + program;
 #endif
@@ -174,8 +174,10 @@ void Build::procReadyReadSizes()
     if(bytes.length() == 0)
         return;
 
-    this->codeSize = 0;
-    this->memorySize = 0;
+    if(QString(bytes).contains("file format elf32-propeller",Qt::CaseInsensitive)) {
+        this->codeSize = 0;
+        this->memorySize = 0;
+    }
     QStringList lines = QString(bytes).split("\n",QString::SkipEmptyParts);
     int len = lines.length();
     for (int n = 0; n < len; n++) {
@@ -219,7 +221,7 @@ void Build::procReadyRead()
     if(bytes.length() == 0)
         return;
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     QString eol("\r");
 #else
     QString eol("\n");

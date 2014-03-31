@@ -1,7 +1,7 @@
 #ifndef NEWPROJECT_H
 #define NEWPROJECT_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class NewProject : public QDialog
 {

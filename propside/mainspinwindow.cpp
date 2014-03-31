@@ -106,7 +106,7 @@ void myMessageOutput(QtMsgType type, const char *msg)
 }
 #endif
 
-MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
+MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent), compileStatusClickEnable(false)
 {
 #if defined(IDEDEBUG)
     debugStatus = new QPlainTextEdit(this);
@@ -153,7 +153,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent)
     }
     else {
         int fontsz = 10;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         fontsz = 14;
 #endif
         editorFont = QFont("Courier", fontsz, QFont::Normal, false);
@@ -421,7 +421,7 @@ void MainSpinWindow::getApplicationSettings()
         aSideCompilerPath = aSideCompiler.mid(0,aSideCompiler.lastIndexOf('/')+1);
     }
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     aSideLoader = aSideCompilerPath + "propeller-load.exe";
 #else
     aSideLoader = aSideCompilerPath + "propeller-load";
@@ -1153,6 +1153,8 @@ QString MainSpinWindow::getNewProjectDialog(QString workspace, QStringList filte
  */
 void MainSpinWindow::newProject()
 {
+    if(builder != NULL) builder->clearIncludeHash();
+
     this->compileStatus->setPlainText("");
     this->status->setText("");
     this->programSize->setText("");
@@ -1326,7 +1328,7 @@ void MainSpinWindow::newProject()
 
         QString sidestr = dstName+ftype+"\n";
         if(sidefile.open(QFile::WriteOnly | QFile::Text)) {
-            sidefile.write(sidestr.toAscii());
+            sidefile.write(sidestr.toLatin1());
             sidefile.close();
         }
         else {
@@ -1539,6 +1541,8 @@ void MainSpinWindow::newProjectAccepted()
 void MainSpinWindow::openProject(const QString &path)
 {
     QString fileName = path;
+
+    if(builder != NULL) builder->clearIncludeHash();
 
     this->compileStatus->setPlainText("");
     this->status->setText("");
@@ -1913,7 +1917,7 @@ int MainSpinWindow::copyProjectAs(QString srcProjFile, QString dstProjFile, QStr
 
     QFile dproj(dstProjFile);
     if(dproj.open(QFile::WriteOnly | QFile::Text)) {
-        dproj.write(projSrc.toAscii());
+        dproj.write(projSrc.toLatin1());
         dproj.close();
     }
 
@@ -1941,6 +1945,8 @@ int MainSpinWindow::saveAsProject(const QString &inputProjFile)
     int rc = 0;
     QString projFolder(sourcePath(inputProjFile));
     QString projFile = inputProjFile;
+
+    if(builder != NULL) builder->clearIncludeHash();
 
     this->compileStatus->setPlainText("");
     this->status->setText("");
@@ -2288,7 +2294,7 @@ int MainSpinWindow::saveAsProject(const QString &inputProjFile)
 
     QFile dproj(dstProjFile);
     if(dproj.open(QFile::WriteOnly | QFile::Text)) {
-        dproj.write(projSrc.toAscii());
+        dproj.write(projSrc.toLatin1());
         dproj.close();
     }
 
@@ -2484,7 +2490,7 @@ void MainSpinWindow::saveAsProject(const QString &inputProjFile)
 
     QFile dproj(dstProjFile);
     if(dproj.open(QFile::WriteOnly | QFile::Text)) {
-        dproj.write(projSrc.toAscii());
+        dproj.write(projSrc.toLatin1());
         dproj.close();
     }
 
@@ -2696,7 +2702,7 @@ void MainSpinWindow::flattenDstProject(QString path, QString project)
         projstr += s+"\n";
     }
     if(file.open(QFile::WriteOnly | QFile::Text)) {
-        file.write(projstr.toAscii());
+        file.write(projstr.toLatin1());
         file.close();
     }
 }
@@ -2917,7 +2923,7 @@ void MainSpinWindow::zipProject()
 
     QFile dproj(dstProjFile);
     if(dproj.open(QFile::WriteOnly | QFile::Text)) {
-        dproj.write(projSrc.toAscii());
+        dproj.write(projSrc.toLatin1());
         dproj.close();
     }
 
@@ -2946,6 +2952,34 @@ void MainSpinWindow::zipProject()
 
 void MainSpinWindow::zipIt(QString dir, QString dst)
 {
+#ifndef USE_QUAZIP
+
+    dir = QDir::fromNativeSeparators(dir);
+    if(dir.length() > 0 && dir.at(dir.length()-1) == '/')
+        dir = dir.left(dir.length()-1);
+    if(dst.length() > 0 && dst.at(dst.length()-1) == '/')
+        dst = dst.left(dst.length()-1);
+    QString folder = dst.mid(dst.lastIndexOf('/')+1);
+    //dir = dir.mid(0,dir.lastIndexOf('/'));
+    QString zipProgram("zip");
+    if(QDir::separator() == '\\')
+        zipProgram += ".exe";
+    QFile::remove(dst+".zip");
+    this->compileStatus->setPlainText(tr("Archiving Project: ")+dst+".zip");
+
+
+    int n = this->editorTabs->currentIndex();
+    QString fileName = editorTabs->tabToolTip(n);
+    if (fileName.isEmpty()) {
+        return;
+    }
+    QString spinLibPath; //     = propDialog->getSpinLibraryString();
+    QStringList fileTree    = spinParser.spinFileTree(fileName, spinLibPath);
+    if(fileTree.count() > 0) {
+        zipper.makeZip(fileName, fileTree, spinLibPath, statusDialog);
+    }
+
+#else
     dir = QDir::fromNativeSeparators(dir);
     if(dir.length() > 0 && dir.at(dir.length()-1) == '/')
         dir = dir.left(dir.length()-1);
@@ -3037,6 +3071,7 @@ void MainSpinWindow::zipIt(QString dir, QString dst)
 #endif
 
     compileStatus->appendPlainText(tr("Done."));
+#endif
 }
 
 QStringList MainSpinWindow::zipCproject(QStringList projList, QString srcPath, QString projFile, QString dstPath, QString dstProjFile, QString trOpType)
@@ -3804,7 +3839,7 @@ void MainSpinWindow::procReadyRead()
     if(bytes.length() == 0)
         return;
 
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     QString eol("\r");
 #else
     QString eol("\n");
@@ -3975,7 +4010,7 @@ void MainSpinWindow::printFile()
     QString name = editorTabs->tabText(tab);
     name = name.mid(0,name.lastIndexOf("."));
 
-#if defined(Q_WS_WIN32) || defined(Q_WS_MAC)
+#if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
     printer.setDocName(name);
 #else
     printer.setOutputFormat(QPrinter::PdfFormat);
@@ -4232,7 +4267,7 @@ bool MainSpinWindow::isTagged(QString text)
 
 void MainSpinWindow::findDeclarationInfo()
 {
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
      QMessageBox::information(this,
          tr("Browse Code"),
          tr("Use \"Command+]\" to find a declaration.\n" \
@@ -4447,7 +4482,7 @@ void MainSpinWindow::programBurnEE()
     bool connected = this->btnConnected->isChecked();
     if(runBuild(""))
         return;
-#ifdef Q_WS_WIN32
+#ifdef Q_OS_WIN32
     portListener->close();
     btnConnected->setChecked(false);
     term->setPortEnabled(false);
@@ -4470,7 +4505,7 @@ void MainSpinWindow::programRun()
     bool connected = this->btnConnected->isChecked();
     if(runBuild(""))
         return;
-#ifdef Q_WS_WIN32
+#ifdef Q_OS_WIN32
     portListener->close();
     btnConnected->setChecked(false);
     term->setPortEnabled(false);
@@ -4493,7 +4528,7 @@ void MainSpinWindow::programDebug()
     if(runBuild(""))
         return;
 
-#if !defined(Q_WS_WIN32)
+#if !defined(Q_OS_WIN32)
     portListener->init(portName, term->getBaud());
     portListener->open();
     term->getEditor()->setPortEnable(false);
@@ -4523,7 +4558,7 @@ void MainSpinWindow::programDebug()
 void MainSpinWindow::debugCompileLoad()
 {
     QString gdbprog("propeller-elf-gdb");
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
     gdbprog += ".exe";
 #else
     gdbprog = aSideCompilerPath + gdbprog;
@@ -5260,7 +5295,7 @@ void MainSpinWindow::clearTabHighlight()
 void MainSpinWindow::addToolButton(QToolBar *bar, QToolButton *btn, QString imgfile)
 {
     const QSize buttonSize(24, 24);
-    btn->setIcon(QIcon(QPixmap(imgfile.toAscii())));
+    btn->setIcon(QIcon(QPixmap(imgfile.toLatin1())));
     btn->setMinimumSize(buttonSize);
     btn->setMaximumSize(buttonSize);
     btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -5269,7 +5304,7 @@ void MainSpinWindow::addToolButton(QToolBar *bar, QToolButton *btn, QString imgf
 
 void MainSpinWindow::addToolBarAction(QToolBar *bar, QAction *btn, QString imgfile)
 {
-    btn->setIcon(QIcon(QPixmap(imgfile.toAscii())));
+    btn->setIcon(QIcon(QPixmap(imgfile.toLatin1())));
     bar->addAction(btn);
 }
 
@@ -5311,15 +5346,17 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     projectTree->setMinimumWidth(PROJECT_WIDTH);
     projectTree->setMaximumWidth(PROJECT_WIDTH);
     projectTree->setToolTip(tr("Current Project"));
-    connect(projectTree,SIGNAL(clicked(QModelIndex)),this,SLOT(projectTreeClicked(QModelIndex)));
+    connect(projectTree, SIGNAL(clicked(QModelIndex)),this,SLOT(projectTreeClicked(QModelIndex)));
+    connect(projectTree, SIGNAL(activated(QModelIndex)),this,SLOT(projectTreeClicked()));
     connect(projectTree, SIGNAL(deleteProjectItem()),this,SLOT(deleteProjectFile()));
+    connect(projectTree, SIGNAL(showPopup()),this,SLOT(showProjectPopup()));
     projectTab->addTab(projectTree,tr("Project Manager"));
     projectTab->setMaximumWidth(PROJECT_WIDTH);
     projectTab->setMinimumWidth(PROJECT_WIDTH);
     leftSplit->addWidget(projectTab);
 
     // projectMenu is popup for projectTree
-    projectMenu = new QMenu(QString("Project Menu"));
+    projectMenu = new QMenu(QString("Project Menu"), projectTree);
     projectMenu->addAction(tr(AddFileCopy), this,SLOT(addProjectFile()));
 #ifdef ENABLE_ADD_LINK
     projectMenu->addAction(tr(AddFileLink), this,SLOT(addProjectLink()));
@@ -5594,6 +5631,9 @@ void MainSpinWindow::spinStatusClicked(QString line)
  */
 void MainSpinWindow::compileStatusClicked(void)
 {
+    if(compileStatusClickEnable == false)
+        return;
+    compileStatusClickEnable = false;
     QTextCursor cur = compileStatus->textCursor();
     QString line = cur.selectedText();
     /* if more than one line, we have a select all */
@@ -5613,6 +5653,7 @@ void MainSpinWindow::compileStatusClicked(void)
         spinStatusClicked(line);
     }
 #endif
+    compileStatusClickEnable = true;
 }
 
 void MainSpinWindow::showCompileStatusError()
@@ -5684,15 +5725,16 @@ void MainSpinWindow::compilerChanged()
 #endif
 }
 
-void MainSpinWindow::projectTreeClicked(QModelIndex index)
+void MainSpinWindow::projectTreeClicked()
 {
     if(projectModel == NULL)
         return;
-    //projectIndex = index; // same as projectTree->currentIndex();
-    if(projectTree->rightClick(false) && projectMenu->isEnabled())
-        projectMenu->popup(QCursor::pos());
-    else
-        showProjectFile();
+    showProjectFile();
+}
+
+void MainSpinWindow::showProjectPopup()
+{
+    projectMenu->popup(QCursor::pos());
 }
 
 /*
@@ -5769,7 +5811,7 @@ void MainSpinWindow::addProjectListFile(QString fileName)
         }
         // save project file in english
         if(file.open(QFile::WriteOnly | QFile::Text)) {
-            file.write(projstr.toAscii());
+            file.write(projstr.toLatin1());
             file.close();
         }
     }
@@ -6078,7 +6120,7 @@ void MainSpinWindow::deleteProjectFile()
         }
         // save project file in english
         if(file.open(QFile::WriteOnly | QFile::Text)) {
-            file.write(projstr.toAscii());
+            file.write(projstr.toLatin1());
             file.close();
         }
     }
@@ -6245,7 +6287,8 @@ void MainSpinWindow::saveProjectOptions()
         return;
 
     if(projectFile.length() > 0)
-        setWindowTitle(QString(ASideGuiKey)+" "+QDir::convertSeparators(projectFile));
+        setWindowTitle(QString(ASideGuiKey)+" "+QDir::toNativeSeparators(projectFile));
+
 #ifdef SPIN
     if(isSpinProject())
         saveSpinProjectOptions();
@@ -6299,7 +6342,7 @@ void MainSpinWindow::saveSpinProjectOptions()
 
         /* save project file in english only ok */
         if(file.open(QFile::WriteOnly | QFile::Text)) {
-            file.write(projstr.toAscii());
+            file.write(projstr.toLatin1());
             file.close();
         }
 
@@ -6354,7 +6397,7 @@ void MainSpinWindow::saveManagedProjectOptions()
 
         /* save project file in english only ok */
         if(file.open(QFile::WriteOnly | QFile::Text)) {
-            file.write(projstr.toAscii());
+            file.write(projstr.toLatin1());
             file.close();
         }
     }
@@ -6370,7 +6413,7 @@ void MainSpinWindow::updateProjectTree(QString fileName)
 
     basicPath = sourcePath(fileName);
     projectFile = basicPath+projName;
-    setWindowTitle(QString(ASideGuiKey)+" "+QDir::convertSeparators(projectFile));
+    setWindowTitle(QString(ASideGuiKey)+" "+QDir::toNativeSeparators(projectFile));
 
     if(projectModel != NULL) delete projectModel;
     projectModel = new CBuildTree(projName, this);
@@ -6437,11 +6480,11 @@ void MainSpinWindow::updateSpinProjectTree(QString fileName, QString projName)
         if (file.open(QFile::WriteOnly | QFile::Text)) {
             for(int n = 0; n < flist.count(); n ++) {
                 QString s = QString(flist[n]).trimmed();
-                file.write((shortFileName(s)+"\n").toAscii());
+                file.write((shortFileName(s)+"\n").toLatin1());
             }
             QStringList list = projectOptions->getSpinOptions();
             for(int n = 0; n < list.count(); n ++) {
-                file.write(">"+QString(list[n]).toAscii()+"\n");
+                file.write(">"+QString(list[n]).toLatin1()+"\n");
             }
             file.close();
             //projectModel->addRootItem(this->shortFileName(fileName));
@@ -6509,7 +6552,7 @@ void MainSpinWindow::updateSpinProjectTree(QString fileName, QString projName)
         if(file.open(QFile::WriteOnly | QFile::Append | QFile::Text)) {
             for(int n = 0; n < list.count(); n++) {
                 QString s = list[n];
-                file.write(s.toAscii()+"\n");
+                file.write(s.toLatin1()+"\n");
             }
             file.close();
         }
@@ -6530,7 +6573,7 @@ void MainSpinWindow::updateManagedProjectTree(QString fileName, QString projName
          * project file is in english.
          */
         if (file.open(QFile::WriteOnly | QFile::Text)) {
-            file.write(this->shortFileName(fileName).toAscii());
+            file.write(this->shortFileName(fileName).toLatin1());
             projectModel->addRootItem(this->shortFileName(fileName));
             file.close();
         }
@@ -6788,7 +6831,7 @@ void MainSpinWindow::enumeratePorts()
         stringlist << "vendor ID:" << QString::number(ports.at(i).vendorID, 16);
         stringlist << "product ID:" << QString::number(ports.at(i).productID, 16);
         stringlist << "===================================";
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
         name = ports.at(i).portName;
         if(ports.at(i).friendName.length() > 0) {
             if(ports.at(i).friendName.contains("Bluetooth", Qt::CaseInsensitive)) {
@@ -6801,7 +6844,7 @@ void MainSpinWindow::enumeratePorts()
             friendlyPortName.append(ports.at(i).friendName);
             cbPort->addItem(name);
         }
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
         name = ports.at(i).portName;
         if(ports.at(i).physName.length() > 0) {
             if(ports.at(i).physName.contains("Bluetooth", Qt::CaseInsensitive)) {
@@ -7224,7 +7267,7 @@ void MainSpinWindow::setupFileMenu()
 
 #if 1
 // CHANGE_ALL_MAC_PROGRAM_KEYS
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     programMenu->addAction(QIcon(":/images/RunConsole2.png"), tr("Run with Terminal"), this, SLOT(programDebug()), Qt::ALT+Qt::Key_F8);
     programMenu->addAction(QIcon(":/images/build3.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::ALT+Qt::Key_F9);
     programMenu->addAction(QIcon(":/images/run.png"), tr("Load RAM && Run"), this, SLOT(programRun()), Qt::ALT+Qt::Key_F10);
@@ -7240,7 +7283,7 @@ void MainSpinWindow::setupFileMenu()
     programMenu->addAction(QIcon(":/images/RunConsole2.png"), tr("Run with Terminal"), this, SLOT(programDebug()), Qt::Key_F8);
     programMenu->addAction(QIcon(":/images/build3.png"), tr("Build Project"), this, SLOT(programBuild()), Qt::Key_F9);
     programMenu->addAction(QIcon(":/images/run.png"), tr("Load RAM && Run"), this, SLOT(programRun()), Qt::Key_F10);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     programMenu->addAction(QIcon(":/images/burnee.png"), tr("Load EEPROM && Run"), this, SLOT(programBurnEE()), Qt::ALT+Qt::Key_F11);
 #else
     programMenu->addAction(QIcon(":/images/burnee.png"), tr("Load EEPROM && Run"), this, SLOT(programBurnEE()), Qt::Key_F11);

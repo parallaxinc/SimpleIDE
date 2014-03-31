@@ -30,10 +30,10 @@ QStringList PortConnectionMonitor::enumeratePorts()
         stringlist << "vendor ID:" << QString::number(ports.at(i).vendorID, 16);
         stringlist << "product ID:" << QString::number(ports.at(i).productID, 16);
         stringlist << "===================================";
-#if defined(Q_WS_WIN32)
+#if defined(Q_OS_WIN32)
         name = ports.at(i).portName;
         myPortList.append(name);
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
         name = ports.at(i).portName;
         if(name.indexOf("usbserial") > -1)
             myPortList.append(name);

@@ -3,7 +3,7 @@
 
 class TermPrefs;
 
-#include <QtGui>
+#include <QtWidgets>
 #include "terminal.h"
 #include "console.h"
 #include "properties.h"

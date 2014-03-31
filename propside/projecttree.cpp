@@ -4,7 +4,7 @@ ProjectTree::ProjectTree(QWidget *parent) : QTreeView(parent)
 {
     this->mouseRightClick = false;
     this->header()->setStretchLastSection(false);
-    this->header()->setResizeMode(QHeaderView::ResizeToContents);
+    this->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 ProjectTree::~ProjectTree()
@@ -13,8 +13,10 @@ ProjectTree::~ProjectTree()
 
 void ProjectTree::mousePressEvent(QMouseEvent *event)
 {
-    if(event->button() == Qt::RightButton)
+    if(event->button() == Qt::RightButton) {
         this->mouseRightClick = true;
+        emit showPopup();
+    }
     QTreeView::mousePressEvent(event);
 }
 

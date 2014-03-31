@@ -1,17 +1,17 @@
-#include <QtGui>
+#include <QWidget>
 #include "spinparser.h"
 
 #define KEY_ELEMENT_SEP ":"
 
 SpinParser::SpinParser()
 {
-    setKind(&SpinKinds[SpinParser::K_NONE],     FALSE,'n', "none", "none"); // place-holder only
-    setKind(&SpinKinds[SpinParser::K_CONST],    TRUE, 'c', "constant", "constants");
-    setKind(&SpinKinds[SpinParser::K_PUB],      TRUE, 'f', "public", "methods");
-    setKind(&SpinKinds[SpinParser::K_PRI],      TRUE, 'p', "private", "functions");
-    setKind(&SpinKinds[SpinParser::K_OBJECT],   TRUE, 'o', "obj", "objects");
-    setKind(&SpinKinds[SpinParser::K_VAR],      TRUE, 'v', "var", "variables");
-    setKind(&SpinKinds[SpinParser::K_DAT],      TRUE, 'x', "dat", "dat");
+    setKind(&SpinKinds[SpinParser::K_NONE],     false,'n', "none", "none"); // place-holder only
+    setKind(&SpinKinds[SpinParser::K_CONST],    true, 'c', "constant", "constants");
+    setKind(&SpinKinds[SpinParser::K_PUB],      true, 'f', "public", "methods");
+    setKind(&SpinKinds[SpinParser::K_PRI],      true, 'p', "private", "functions");
+    setKind(&SpinKinds[SpinParser::K_OBJECT],   true, 'o', "obj", "objects");
+    setKind(&SpinKinds[SpinParser::K_VAR],      true, 'v', "var", "variables");
+    setKind(&SpinKinds[SpinParser::K_DAT],      true, 'x', "dat", "dat");
 
     KeyWord keyCon = {"con", K_CONST, 0};
     KeyWord keyObj = {"obj", K_OBJECT, 0};
@@ -106,11 +106,11 @@ void SpinParser::makeTags(QString file)
     QString path = file.mid(0,file.lastIndexOf("/")+1);
     QFile tags(path+"tags");
     if(tags.open(QFile::WriteOnly | QFile::Text)) {
-        tags.write(tagheader.toAscii());
+        tags.write(tagheader.toLatin1());
         foreach(QString key, keys) {
             QStringList tl = db[key].split("\t");
             QString ts = tl[0]+"\t"+tl[1]+"\t/^"+tl[2]+"$/";
-            tags.write(ts.toAscii()+"\n");
+            tags.write(ts.toLatin1()+"\n");
         }
         tags.close();
     }
@@ -651,7 +651,7 @@ void SpinParser::findSpinTags (QString fileName, QString objnode)
             // if line has obj at position 0, get the type and store it
             // else set to some other type so we stop looking for objects
             if(line.indexOf("obj",0,Qt::CaseInsensitive) == 0)
-                type = (SpinKind) match_keyword (line.toAscii(), &kw, tag);
+                type = (SpinKind) match_keyword (line.toLatin1(), &kw, tag);
             else
                 type = this->K_CONST;
 
@@ -680,7 +680,7 @@ void SpinParser::findSpinTags (QString fileName, QString objnode)
             line = line.trimmed();
             if(line.indexOf(kw.token,0,Qt::CaseInsensitive) == 0) {
                 // if line has a token, get the type and store it
-                type = (SpinKind) match_keyword (line.toAscii(), &kw, tag);
+                type = (SpinKind) match_keyword (line.toLatin1(), &kw, tag);
 
                 // keep state until it changes from K_NONE
                 if(type != K_NONE) {

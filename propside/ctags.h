@@ -1,7 +1,7 @@
 #ifndef CTAGS_H
 #define CTAGS_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class CTags : public QObject
 {
