@@ -3810,6 +3810,8 @@ void MainSpinWindow::procReadyRead()
     QString eol("\n");
 #endif
 
+    qDebug() << bytes;
+
     // bstc doesn't return good exit status
     QString progname;
     QVariant pvar = process->property("Name");
@@ -3820,6 +3822,11 @@ void MainSpinWindow::procReadyRead()
         if(QString(bytes).contains("Error",Qt::CaseInsensitive)) {
             procResultError = true;
         }
+    }
+
+    if(QString(bytes).contains("error",Qt::CaseInsensitive)) {
+        compileStatus->insertPlainText(bytes);
+        procResultError = true;
     }
 
     QStringList lines = QString(bytes).split("\n",QString::SkipEmptyParts);

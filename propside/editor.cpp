@@ -237,7 +237,7 @@ int Editor::autoEnterColumnC()
         stop = slcm;
     }
     if(stop < 0 && text.lastIndexOf("{") == text.length()-1) {
-        indent = this->tabStopWidth()/10;;
+        indent = this->tabStopWidth()/10;
     }
 
     qDebug() << text;
@@ -357,7 +357,7 @@ int Editor::braceMatchColumn()
     int position = this->textCursor().positionInBlock();
     int indent = this->tabStopWidth()/10;
 
-    if(position <= indent)
+    if(position < indent)
         return 0;
 
     QTextCursor cur = this->textCursor();
@@ -391,6 +391,7 @@ int Editor::braceMatchColumn()
         }
     }
 
+    // if all braces match exit
     if(braceo == bracec) {
         return 0;
     }
@@ -417,7 +418,8 @@ int Editor::braceMatchColumn()
     }
     cur.insertText("}");
 
-    this->setTextCursor(cur);
+    setTextCursor(cur);
+
     /* end a single undo/redo operation */
     cur.endEditBlock();
 

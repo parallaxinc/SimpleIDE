@@ -10,6 +10,8 @@ TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 DEFINES += SPINSIDE
 
+CONFIG  += exceptions
+
 # include quazip
 SUBDIRS += ../quazip-0.5/quazip
 INCLUDEPATH += ../quazip-0.5/quazip
@@ -148,5 +150,5 @@ win32 {
     SOURCES += qextserialenumerator_win.cpp
     DEFINES += WINVER=0x0501 # needed for mingw to pull in appropriate dbt business...probably a better way to do this
     LIBS += -lsetupapi
-    LIBS += -lquazip1
+    LIBS += -L../quazip-0.5 -lquazip1
 }
