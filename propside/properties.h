@@ -32,6 +32,7 @@
 #define PROPERTIES_H
 
 #include "propertycolor.h"
+#include "StatusDialog.h"
 
 #include <QWidget>
 #include <QDialog>
@@ -117,6 +118,10 @@ public:
 
     bool getKeepZipFolder();
     bool getAutoLib();
+
+    void saveUpdateFile(QString name, QString timestamp);
+    bool replaceLearnWorkspace();
+    bool updateLearnWorkspace();
 
 signals:
 

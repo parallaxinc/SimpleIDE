@@ -36,8 +36,8 @@
 #include "blinker.h"
 #include "build.h"
 #include "buildstatus.h"
-#include "quazip.h"
-#include "quazipfile.h"
+//#include "quazip.h"
+//#include "quazipfile.h"
 #include "PropellerID.h"
 #include "directory.h"
 
@@ -279,6 +279,8 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent), compileSt
     this->show();
     QApplication::processEvents();
 
+    propDialog->replaceLearnWorkspace();
+
     QString workspace;
 
     /* load the last file into the editor to make user happy */
@@ -421,7 +423,7 @@ void MainSpinWindow::getApplicationSettings()
         aSideCompilerPath = aSideCompiler.mid(0,aSideCompiler.lastIndexOf('/')+1);
     }
 
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN)
     aSideLoader = aSideCompilerPath + "propeller-load.exe";
 #else
     aSideLoader = aSideCompilerPath + "propeller-load";
@@ -446,6 +448,8 @@ void MainSpinWindow::getApplicationSettings()
         tmp = tmp.left(tmp.lastIndexOf("/")+1)+"share/lib/html";
         aSideDocPath = tmp;
     }
+
+    aSideCfgFile = aSideIncludes;
 
     if(!file.exists(aSideCfgFile))
     {
@@ -1055,6 +1059,26 @@ void MainSpinWindow::openFileName(QString fileName)
             setEditorTab(tabIndexByShortName(untitledstr), sname, fileName, data);
         }
     }
+}
+
+void MainSpinWindow::openFileStringTab(QString fileName, QString data)
+{
+    if(!fileName.contains("/")) fileName = "./"+fileName;
+    QString sname = this->shortFileName(fileName);
+    if(editorTabs->count()>0) {
+        for(int n = editorTabs->count()-1; n > -1; n--) {
+            if(editorTabs->tabText(n) == sname) {
+                setEditorTab(n, sname, fileName, data);
+                return;
+            }
+        }
+    }
+    if(editorTabs->tabText(0).contains(untitledstr)) {
+        setEditorTab(0, sname, fileName, data);
+        return;
+    }
+    newFile();
+    setEditorTab(tabIndexByShortName(untitledstr), sname, fileName, data);
 }
 
 /*
@@ -2737,6 +2761,8 @@ void MainSpinWindow::zipProject()
         projFile = projectFile;
     }
 
+    if(projFolder.length() == 0) projFolder = ".";
+
     if(projFile.length() == 0) {
         QMessageBox::critical(
                 this,tr("No Project"),
@@ -2928,13 +2954,28 @@ void MainSpinWindow::zipProject()
     }
 
     // zip folder
-    zipIt(dTmpPath, dTmpPath);
+    if(this->isCProject()) {
+        Zipper zip;
+        this->compileStatus->setPlainText(tr("Archiving Project: ")+dstName+".zip");
+
+        QStringList fileList = zip.directoryTreeList(dTmpPath);
+        for(int n = 0; n < fileList.length(); n++) {
+            if(fileList.at(n).indexOf(">") != 0)
+                compileStatus->appendPlainText(tr("Adding ") + fileList.at(n));
+        }
+        zip.zipit(dTmpPath, dstName+".zip");
+    }
+#ifdef SPIN
+    else if(this->isSpinProject()) {
+        zipIt(dTmpPath, dTmpPath);
+    }
+#endif
     if(dstPath.endsWith("/"))
         dstPath = dstPath.left(dstPath.lastIndexOf("/"));
     if(dTmpPath.endsWith("/"))
         dTmpPath = dTmpPath.left(dTmpPath.lastIndexOf("/"));
-    QFile::copy(dTmpPath+".zip", dstPath+".zip");
-    QFile::remove(dTmpPath+".zip");
+    //QFile::copy(dTmpPath+".zip", dstPath+".zip");
+    //QFile::remove(dTmpPath+".zip");
 
 #ifdef ENABLE_KEEP_ZIP_FOLDER
     // and remove folder if save zip folder is not checked
@@ -2976,7 +3017,7 @@ void MainSpinWindow::zipIt(QString dir, QString dst)
     QString spinLibPath; //     = propDialog->getSpinLibraryString();
     QStringList fileTree    = spinParser.spinFileTree(fileName, spinLibPath);
     if(fileTree.count() > 0) {
-        zipper.makeZip(fileName, fileTree, spinLibPath, statusDialog);
+        zipper.makeSpinZip(fileName, fileTree, spinLibPath, statusDialog);
     }
 
 #else
@@ -3839,11 +3880,13 @@ void MainSpinWindow::procReadyRead()
     if(bytes.length() == 0)
         return;
 
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN)
     QString eol("\r");
 #else
     QString eol("\n");
 #endif
+
+    qDebug() << bytes;
 
     // bstc doesn't return good exit status
     QString progname;
@@ -3855,6 +3898,11 @@ void MainSpinWindow::procReadyRead()
         if(QString(bytes).contains("Error",Qt::CaseInsensitive)) {
             procResultError = true;
         }
+    }
+
+    if(QString(bytes).contains("error",Qt::CaseInsensitive)) {
+         compileStatus->insertPlainText(bytes);
+         procResultError = true;
     }
 
     QStringList lines = QString(bytes).split("\n",QString::SkipEmptyParts);
@@ -4010,7 +4058,7 @@ void MainSpinWindow::printFile()
     QString name = editorTabs->tabText(tab);
     name = name.mid(0,name.lastIndexOf("."));
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
     printer.setDocName(name);
 #else
     printer.setOutputFormat(QPrinter::PdfFormat);
@@ -4458,6 +4506,31 @@ void MainSpinWindow::propertiesAccepted()
     }
 }
 
+/**
+ * @brief MainSpinWindow::updateWorkspace
+ * Process:
+ *   1) Prompt the user
+ *   2) If the user acknowledges positively...
+ *      a) Backup the entire existing workspace (as indicated above)
+ *      b) Do a full copy from new updated workspace (archive download) into the existing workspace... effectively
+ *         replacing any individual files (that pre-existed), adding any new files (that didn't pre-exist),
+ *         and leaving all the non-colliding files (that the user created or are otherwise not included
+ *         in the new updated workspace archive.
+ *      c) Prompt the user at the end (Info dialog) to show the path and name of the backup that was made.
+ */
+void MainSpinWindow::updateWorkspace()
+{
+    int rc = QMessageBox::question(this, tr("Update SimpleIDE Workspace?"),
+       tr("This updates the SimpleIDE workspace folder's examples, libraries, and documentation. ")+
+       tr("Get the latest workspace from the [link] Parallax Learn [/link] site, ")+
+       tr("then click Update to find and select that archive.")+"\n"+
+       tr("Current workspace folder will be backed up."),"Update","Cancel");
+    //tr("To update the SimpleIDE workspace, please answer yes, and choose a Workspace .zip file."));
+    if(rc == 0) {
+        propDialog->updateLearnWorkspace();
+    }
+}
+
 void MainSpinWindow::programStopBuild()
 {
     if(builder != NULL)
@@ -4482,7 +4555,7 @@ void MainSpinWindow::programBurnEE()
     bool connected = this->btnConnected->isChecked();
     if(runBuild(""))
         return;
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
     portListener->close();
     btnConnected->setChecked(false);
     term->setPortEnabled(false);
@@ -4505,7 +4578,7 @@ void MainSpinWindow::programRun()
     bool connected = this->btnConnected->isChecked();
     if(runBuild(""))
         return;
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
     portListener->close();
     btnConnected->setChecked(false);
     term->setPortEnabled(false);
@@ -4528,7 +4601,7 @@ void MainSpinWindow::programDebug()
     if(runBuild(""))
         return;
 
-#if !defined(Q_OS_WIN32)
+#if !defined(Q_OS_WIN)
     portListener->init(portName, term->getBaud());
     portListener->open();
     term->getEditor()->setPortEnable(false);
@@ -4558,7 +4631,7 @@ void MainSpinWindow::programDebug()
 void MainSpinWindow::debugCompileLoad()
 {
     QString gdbprog("propeller-elf-gdb");
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN)
     gdbprog += ".exe";
 #else
     gdbprog = aSideCompilerPath + gdbprog;
@@ -6831,7 +6904,7 @@ void MainSpinWindow::enumeratePorts()
         stringlist << "vendor ID:" << QString::number(ports.at(i).vendorID, 16);
         stringlist << "product ID:" << QString::number(ports.at(i).productID, 16);
         stringlist << "===================================";
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN)
         name = ports.at(i).portName;
         if(ports.at(i).friendName.length() > 0) {
             if(ports.at(i).friendName.contains("Bluetooth", Qt::CaseInsensitive)) {
@@ -7258,6 +7331,7 @@ void MainSpinWindow::setupFileMenu()
     toolsMenu->addSeparator();
     // added for simple view, not necessary anymore
     //toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(reloadBoardTypes()));
+    toolsMenu->addAction(tr("Update Workspace"), this, SLOT(updateWorkspace()));
     toolsMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
 #ifdef ENABLE_AUTO_PORT
     toolsMenu->addAction(tr("Identify Propeller"), this, SLOT(findChip()), Qt::Key_F7);

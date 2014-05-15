@@ -10,12 +10,73 @@ Zipper::Zipper(QObject *parent) :
 {
 }
 
-bool Zipper::makeZip(QString fileName, QStringList fileTree, QString libPath, StatusDialog *stat)
+bool Zipper::makeSpinZip(QString fileName, QStringList fileTree, QString libPath, StatusDialog *stat)
 {
     statusDialog = stat;
     spinLibPath = libPath;
     zipSpinProjectTree(fileName, fileTree);
     return true;
+}
+
+bool Zipper::zipit(QString fileName, QString folder)
+{
+    bool retval = false;
+    retval = createFolderZip(fileName, folder);
+    return retval;
+}
+
+bool Zipper::unzipAll(QString fileName, QString folder)
+{
+    ZipReader zipr(fileName);
+    return zipr.extractAll(folder);
+}
+
+QString Zipper::unzipFirstFile(QString zipName, QString *fileName)
+{
+    QByteArray bytes;
+    ZipReader zipr(zipName);
+    QList<ZipReader::FileInfo> info = zipr.fileInfoList();
+    if(info.count() > 0) {
+        *fileName = info.at(0).filePath;
+        bytes = zipr.fileData(*fileName);
+    }
+    return QString(bytes);
+}
+
+QString Zipper::unzipFile(QString zipName, QString fileName)
+{
+    QByteArray bytes;
+    ZipReader zipr(zipName);
+    QList<ZipReader::FileInfo> info = zipr.fileInfoList();
+    for(int n = 0; n < info.count(); n++) {
+        if(info.at(n).filePath.compare(fileName) == 0) {
+            bytes = zipr.fileData(fileName);
+            break;
+        }
+    }
+    return QString(bytes);
+}
+
+bool Zipper::unzipFileExists(QString zipName, QString fileName)
+{
+    QString file;
+    ZipReader zipr(zipName);
+    QList<ZipReader::FileInfo> info = zipr.fileInfoList();
+    for(int n = 0; n < info.count(); n++) {
+        file = info.at(n).filePath;
+        qDebug() << file;
+        if(!file.compare(fileName)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int  Zipper::unzipFileCount(QString zipName)
+{
+    ZipReader zipr(zipName);
+    QList<ZipReader::FileInfo> info = zipr.fileInfoList();
+    return info.count();
 }
 
 QString Zipper::getZipDestination(QString fileName)
@@ -52,7 +113,7 @@ void Zipper::zipSpinProjectTree(QString fileName, QStringList fileTree)
     if(fileName.isEmpty())              /* no empty .zip files, please! */
     {
         QMessageBox::critical(
-                    0,tr("No Spin file"),
+                    0,tr("No file"),
                     tr("Can't \"Zip\" from an empty file.")+"\n"+
                     tr("Please create a new file or open an existing one."),
                     QMessageBox::Ok);
@@ -64,7 +125,7 @@ void Zipper::zipSpinProjectTree(QString fileName, QStringList fileTree)
 
     if(spinPath.exists() == false) {
         QMessageBox::critical(
-                0,tr("Spin folder not Found."),
+                0,tr("Source Folder not Found."),
                 tr("Can't \"Zip\" from a non-existing folder."),
                 QMessageBox::Ok);
         return;

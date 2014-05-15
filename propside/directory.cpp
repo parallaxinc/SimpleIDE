@@ -197,7 +197,44 @@ QString Directory::find(QString file, QString find)
     return QString("");
 }
 
-QStringList Directory::findList(QString fileName, QString find)
+#if 1
+bool Directory::isCSourceCommented(QString find, QString line, int num, QStringList lines)
+{
+    // return false if not commented
+
+    // easy single line comment
+    if(line.indexOf("//") > -1) {
+        if(line.indexOf("//") < line.indexOf(find))
+            return true;
+    }
+
+    // harder block comment
+    QString lineStr;
+    int comment = 0;
+    QRegExp blk("/\\*.*\\*/");
+    blk.setMinimal(true);
+
+    for(int n = 0; n < num; n++) {
+        lineStr = lines[n];
+        QString s = lineStr;
+        while(s.indexOf(blk) > -1) {
+            s = s.replace(blk,"");
+        }
+        lineStr = s;
+        if(lineStr.indexOf("/*") > -1) {
+            lineStr = lineStr.mid(0,lineStr.indexOf("/*"));
+            comment++;
+        }
+        if(lineStr.indexOf("*/") > -1) {
+            lineStr = lineStr.mid(lineStr.indexOf("*/")+2);
+            if(comment > 0)
+                comment--;
+        }
+    }
+    return comment > 0;
+}
+
+QStringList Directory::findCSourceList(QString fileName, QString find)
 {
     QStringList list;
     QString data;
@@ -207,13 +244,61 @@ QStringList Directory::findList(QString fileName, QString find)
         data = in.readAll();
         ofile.close();
         QStringList lines = data.split("\n", QString::SkipEmptyParts);
+        for(int num = 0; num < lines.count(); num++) {
+            QString line = lines[num];
+            if(line.contains(find)) {
+                if(!isCSourceCommented(find, line, num, lines))
+                    list.append(line);
+            }
+        }
+    }
+    return list;
+}
+#else
+QStringList Directory::findCSourceList(QString fileName, QString find)
+{
+    QStringList list;
+    QString data;
+    QFile ofile(fileName);
+    if(ofile.open(QFile::ReadOnly)) {
+        QTextStream in(&ofile);
+        data = in.readAll();
+        ofile.close();
+        QStringList lines = data.split("\n", QString::SkipEmptyParts);
+        int comment = 0;
+        QRegExp blk("/\\*.*\\*/");
+        blk.setMinimal(true);
         foreach(QString line, lines) {
-            if(line.contains(find)) // && line.indexOf(find) == 0)
+            //if(line.indexOf(blk) > -1)
+            {
+                QString s = line;
+                while(s.indexOf(blk) > -1) {
+                    s = s.replace(blk,"");
+                }
+                line = s;
+            }
+            if(line.indexOf("/*") > -1) {
+                line = line.mid(0,line.indexOf("/*"));
+                comment++;
+                if(line.contains(find))
+                    list.append(line);
+            }
+            if(line.indexOf("*/") > -1) {
+                line = line.mid(line.indexOf("*/")+2);
+                if(comment > 0)
+                    comment--;
+            }
+            if(comment > 0)
+                continue;
+            if(line.indexOf("//") > -1 && line.indexOf("//") < line.indexOf(find))
+                continue;
+            if(line.contains(find))
                 list.append(line);
         }
     }
     return list;
 }
+#endif
 
 QString Directory::recursiveFind(QString dir, QString find)
 {

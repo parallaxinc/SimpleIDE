@@ -1,5 +1,16 @@
 #include "properties.h"
 #include "directory.h"
+#include "zipper.h"
+
+#include <QDir>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QDateTime>
+#include <QMessageBox>
+
+#define LEARNLIB "Learn/Simple Libraries"
+#define UPDATED_TXT "Updated.txt"
 
 #define ENABLE_CLEAR_AND_EXIT
 /*
@@ -148,12 +159,12 @@ void Properties::setupPropGccWorkspace()
 
     mywrk += "SimpleIDE/";
 
+#if 0
     QDir wrkd(mywrk);
     if(wrkd.exists(mywrk) == false) {
         // Workspace does not exist. Copy for the user.
         Directory::recursiveCopyDir(pkwrk, mywrk);
     }
-#if 0
     else {
         // Workspace exists. If it is out of date ask permission to replace it.
         QFileInfo pinfo(pkwrk);
@@ -211,8 +222,8 @@ void Properties::setupPropGccWorkspace()
 #endif
 
     QString mylib;
-    if(QFile::exists(mywrk+"Learn/Simple Libraries")) {
-        mylib = mywrk+"Learn/Simple Libraries";
+    if(QFile::exists(mywrk+LEARNLIB)) {
+        mylib = mywrk+LEARNLIB;
     }
 
     QVariant libv  = settings.value(gccLibraryKey, mylib);
@@ -289,6 +300,261 @@ void Properties::setupPropGccCompiler()
     }
     fileStringProperty(&compv, leditGccCompiler,  gccCompilerKey,  &mygcc);
     settings.setValue(gccCompilerKey,mygcc);
+}
+
+void Properties::saveUpdateFile(QString name, QString timestamp)
+{
+    // create a timestamp file
+    QFile ts(name);
+    if(ts.open(QFile::WriteOnly)) {
+        ts.write(timestamp.toStdString().data());
+        ts.close();
+    }
+    else {
+        QMessageBox::information(this, tr("Workspace timestamp file error."), tr("Could not create update file ")+name);
+    }
+}
+
+bool Properties::replaceLearnWorkspace()
+{
+    bool retval = false;
+
+    QSettings settings(publisherKey, ASideGuiKey);
+
+    QString pkwrk = this->getApplicationWorkspace();
+
+    QString mywrk = QDir::homePath()+"/";
+
+    QString updateFile(UPDATED_TXT);
+
+    QDateTime dt = QDateTime::currentDateTime();
+    QString timestamp = dt.toString(Qt::ISODate)+ "";
+    timestamp = timestamp.replace(":","-");
+    timestamp = timestamp.replace("T","_");
+
+    if(QFile::exists(mywrk+"Documents")) {
+        mywrk = mywrk +"Documents/";
+    }
+    else if(QFile::exists(mywrk+"My Documents")) {
+        mywrk = mywrk +"My Documents/";
+    }
+
+    mywrk += "SimpleIDE/";
+
+    QString mylib;
+    QString pklib;
+    QVariant var;
+
+    QVariant libv  = settings.value(gccLibraryKey, mylib);
+    QVariant wrkv  = settings.value(gccWorkspaceKey, mywrk);
+
+    QString  workspace = wrkv.toString();
+    if(workspace.length() > 0)
+        mywrk = workspace;
+
+    QDir wrkd(mywrk);
+    if(wrkd.exists(mywrk) == false) {
+        // Workspace does not exist. Ask user where to put it.
+        QMessageBox::information(this,
+            tr("SimpleIDE Workspace"),
+            tr("The SimpleIDE workspace needs to be created.")+"\n"+
+            tr("Please choose a folder for the workspace in the next window."));
+        QString wrk = QFileDialog::getExistingDirectory(this,
+            tr("Please choose a folder for the SimpleIDE Workspace"), mywrk);
+        if(wrkd.exists(wrk) == false) {
+            QMessageBox::critical(this,
+                tr("Folder Error"), tr("Can't find specified folder."));
+            mywrk = "";
+        } else {
+            wrk += "/SimpleIDE/";
+            mywrk = wrk;
+            mylib = mywrk+LEARNLIB;
+            Directory::recursiveCopyDir(pkwrk, mywrk);
+            saveUpdateFile(mywrk+updateFile, timestamp);
+            QMessageBox::information(this,
+                tr("SimpleIDE Workspace Folder Created"),
+                tr("The SimpleIDE workspace was created:\n")+mywrk);
+        }
+    }
+    else {
+
+        if(pkwrk.endsWith("/") == false)
+            pkwrk += "/";
+
+        if(mywrk.endsWith("/") == false)
+            mywrk += "/";
+
+        if(QFile::exists(pkwrk+LEARNLIB)) {
+            pklib = pkwrk+LEARNLIB;
+        }
+        else {
+            QMessageBox::information(this,tr("Library not found."),tr("The SimpleIDE library package is not found. Please reinstall the software."));
+            return false;
+        }
+
+        mylib = mywrk+LEARNLIB;
+
+        // Workspace exists. If it is out of date ask permission to replace it.
+        QApplication::processEvents();
+
+        QFileInfo pinfo(pkwrk);
+        QFileInfo winfo(mywrk+updateFile);
+
+        QDateTime ptime = pinfo.lastModified();
+        QDateTime wtime = winfo.lastModified();
+
+        qDebug() << "pkwrk" << ptime.date() << ptime.time() << ptime.toMSecsSinceEpoch();
+        qDebug() << "mywrk" << wtime.date() << wtime.time() << wtime.toMSecsSinceEpoch();
+
+        bool keepwrk = false;
+        QVariant keep = settings.value(keepOldWorkspaceKey, false);
+        if(keep.canConvert(QVariant::Bool)) {
+            keepwrk = keep.toBool();
+        }
+
+        if(true || !keepwrk) {
+
+            QString wtimestr = wtime.toString();
+            if(!winfo.exists() || !wtimestr.length() || wtime.secsTo(ptime) > 0) {
+
+                //qDebug() << pkwrk << "is newer";
+                QString temp = QDir::tempPath()+"/SimpleIDE_Workspace_"+timestamp;
+
+                int rc = QMessageBox::question(this, tr("Update Workspace?"),
+                    tr("The SimpleIDE workspace has changed and should be updated.")+"\n\n"+
+                    tr("The current workspace will be saved as:")+"\n"+temp+"\n\n"+
+                    tr("User files not part of the new SimpleIDE workspace will remain in tact.")+"\n"+
+                    tr("Update the SimpleIDE workspace?")+"\n"+
+                    "",
+                    QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes);
+
+                if(rc == QMessageBox::Yes) {
+
+                    Directory::recursiveCopyDir(mywrk, temp);
+                    QApplication::processEvents();
+
+                    Directory::recursiveCopyDir(pkwrk, mywrk);
+                    QApplication::processEvents();
+
+                    saveUpdateFile(mywrk+updateFile, timestamp);
+
+                    settings.setValue(keepOldWorkspaceKey, true);
+                    retval = true;
+                }
+            } else {
+                qDebug() << pkwrk << "is older";
+                retval = false;
+            }
+        }
+    }
+
+    if(QFile::exists(mylib)) {
+        fileStringProperty(&var,  leditGccLibrary,   gccLibraryKey,   &mylib);
+    }
+    else {
+        fileStringProperty(&libv,  leditGccLibrary,   gccLibraryKey,   &mylib);
+    }
+
+    if(QFile::exists(mywrk)) {
+        fileStringProperty(&var,  leditGccWorkspace, gccWorkspaceKey, &mywrk);
+    }
+    else {
+        fileStringProperty(&wrkv,  leditGccWorkspace, gccWorkspaceKey, &mywrk);
+    }
+    settings.setValue(gccLibraryKey,leditGccLibrary->text());
+    settings.setValue(gccWorkspaceKey,leditGccWorkspace->text());
+
+    return retval;
+}
+
+bool Properties::updateLearnWorkspace()
+{
+    int  rc = 0;
+
+    QString updateFile(UPDATED_TXT);
+
+    QString mywrk;
+
+    QSettings settings(publisherKey, ASideGuiKey);
+
+    QDateTime dt = QDateTime::currentDateTime();
+    QString timestamp = dt.toString(Qt::ISODate)+ "";
+    timestamp = timestamp.replace(":","-");
+    timestamp = timestamp.replace("T","_");
+
+    QVariant wrkv  = settings.value(gccWorkspaceKey, mywrk);
+
+    QString  ws = wrkv.toString();
+    if(ws.length() < 1) {
+        rc = 0;
+    }
+    else {
+        mywrk = ws;
+        while(mywrk.endsWith("/"))
+            mywrk = mywrk.left(mywrk.length()-1);
+        if(mywrk.lastIndexOf("/") > 0)
+            mywrk = mywrk.left(mywrk.lastIndexOf("/")+1);
+
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Workspace Zip"), mywrk, "Workspace Zip (*.zip);;");
+        if(fileName.length() < 1) {
+            QMessageBox::information(this,tr("Can't Update"), tr("A Workspace Zip file was not selected.")+"\n"+tr("Workspace will not be updated."));
+            return false;
+        }
+
+        QDir wrkd(mywrk);
+        if(!QFile::exists(fileName)) {
+            QMessageBox::information(this,tr("No Zip File"),tr("Hmm, the zip file has disappeared."));
+            rc = 0;
+        }
+        else {
+            Zipper zip;
+            QString backdir = mywrk+"SimpleIDE_Backups/";
+            QString zipback = backdir+"Workspace_"+timestamp+".zip";
+
+            QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+            QApplication::processEvents(); // show wait cursor
+
+            if(!wrkd.exists(backdir)) {
+                wrkd.mkdir(backdir);
+            }
+
+            if(wrkd.exists(mywrk) == true) {
+                rc |= zip.zipit(ws, zipback) ? 0 : 1;
+                if(rc) {
+                    QApplication::restoreOverrideCursor();
+                    QMessageBox::information(this,tr("Update Error"),
+                        tr("Could not backup SimpleIDE workspace to:")+"\n"+
+                        zipback);
+                }
+            }
+            if(!rc) {
+                rc |= zip.unzipAll(fileName, mywrk) ? 0 : 2;
+                if(rc) {
+                    QApplication::restoreOverrideCursor();
+                    QMessageBox::information(this,tr("Update Error"),
+                        tr("Could not update SimpleIDE workspace with:")+"\n"+
+                        fileName);
+                }
+            }
+            if(!rc) {
+                saveUpdateFile(ws+updateFile, timestamp);
+                if(rc) {
+                    QApplication::restoreOverrideCursor();
+                    QMessageBox::information(this,tr("Update Error"),
+                        tr("Could not write SimpleIDE workspace update file:")+"\n"+
+                        ws+updateFile);
+                }
+            }
+            if(!rc) {
+                QApplication::restoreOverrideCursor();
+                QMessageBox::information(this,tr("Update Complete"),
+                    tr("The SimpleIDE workspace update is done.")+"\n"+
+                    tr("The old workspace has been saved as: ")+"\n"+
+                    zipback);
+            }
+        }
+    }
+    return rc == 0;
 }
 
 void Properties::setupSpinFolders()

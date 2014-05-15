@@ -3,18 +3,19 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-47"
+#define MyAppVersion "0-9-51"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
+#define FtdiChipApp "CDM v2.10.00 WHQL Certified.exe"
 
 #define compiler "propeller-gcc"
 
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ---- IMPORTANT!!! ---- Set this to your QtPath
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#define MyQtPath "C:\Qt\4.8.0"
-#define MyGccPath "C:\msys\opt\parallax"
+#define MyQtPath "C:\Qt\Qt5.3.0"
+#define MyGccPath "C:\mingw\msys\1.0\opt\parallax"
 #define MyGccMingwPath "C:\mingw"
 #define MyTranslations "..\propside\translations"
 #define MyUserGuide "..\SimpleIDE-User-Guide.pdf"
@@ -23,6 +24,7 @@
 #define MyAppBin "{app}\bin"
 #define MyBoardFilter "..\boards.txt"
 #define MyFont "Parallax.ttf"
+#define MyAppPath "..\build-propside-Desktop_Qt_5_3_0_MinGW_32bit-Release"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -39,7 +41,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 OutputDir=..\propside-build-desktop
-OutputBaseFilename=Simple-IDE_{#MyAppVersion}_setup
+OutputBaseFilename=Simple-IDE_{#MyAppVersion}_Setup
 Compression=lzma/Max
 SolidCompression=true
 AlwaysShowDirOnReadyPage=true
@@ -51,23 +53,28 @@ LicenseFile=.\IDE_LICENSE.txt
 WizardImageFile=images\SimpleIDE-Install-Splash5.bmp
 ;WizardImageStretch=no
 SetupIconFile=images\SimpleIDE-all.ico
+DisableDirPage=yes
+DisableProgramGroupPage=yes
+DisableReadyPage=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
-[Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; Flags: checkedonce;
+;[Tasks]
+;Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; Flags: checkedonce;
 ;  GroupDescription: "{cm:AdditionalIcons}";
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; Flags: checkedonce; OnlyBelowVersion: 0,6.1
+;Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; Flags: checkedonce; OnlyBelowVersion: 0,6.1
 ; GroupDescription: "{cm:AdditionalIcons}"; 
-Name: "association"; Description: "Associate *.side Files with SimpleIDE"; Flags: checkedonce;
+;Name: "association"; Description: "Associate *.side Files with SimpleIDE"; Flags: checkedonce;
 ; GroupDescription: "File Association:"; 
 ;Name: "modifypath"; Description: "&Add Propeller-GCC directory to your environment PATH"; Flags: checkedonce;
 ; GroupDescription: "Propeller-GCC Path:"
+;Name: FtdiChip; Description: "Install FTDI Chip USB Serial Port Drivers"; Flags: checkedonce; 
 
 [Files]
 ;Source: "..\propside-build-desktop\debug\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "..\propside-build-desktop\release\SimpleIDE.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyAppPath}\release\SimpleIDE.exe"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "..\{#FtdiChipApp}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "IDE_LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_2_1.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_EXCEPTION.txt"; DestDir: "{app}"; Flags: ignoreversion
@@ -75,21 +82,32 @@ Source: ..\ctags58\README; DestDir: {app}; Flags: ignoreversion; DestName: ctags
 Source: ..\ctags58\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: ctags-license.txt; 
 Source: ..\icons\24x24-free-application-icons\readme.txt; DestDir: {app}; Flags: ignoreversion; DestName: aha-soft-license.txt; 
 Source: "{#MyBoardFilter}"; DestDir: "{app}\propeller-gcc\propeller-load\"; Flags: ignoreversion
-Source: "{#MyFont}"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyFont}"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 
-Source: "{#MyGccMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyGccMingwPath}\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyGccMingwPath}\bin\libstdc++*"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyQtPath}\bin\quazip1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+;Source: "{#MyGccMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+;Source: "{#MyGccMingwPath}\bin\mingwm10.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+;Source: "{#MyGccMingwPath}\bin\libstdc++*"; DestDir: "{app}\bin"; Flags: ignoreversion
+;Source: "{#MyQtPath}\bin\quazip1.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+;Source: "{#MyQtPath}\bin\QtCore4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+;Source: "{#MyQtPath}\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+;Source: "{#MyQtPath}\bin\QtGui4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 
 ; Use only for debug version
 ;Source: "{#MyQtPath}\bin\QtGuid4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 
-; remove temporarily for faster testing
-; putback for package
-Source: "{#MyQtPath}\bin\QtCore4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyQtPath}\bin\QtCored4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
-Source: "{#MyQtPath}\bin\QtGui4.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "zlib1.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\bin\icuin52.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\bin\icuuc52.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\bin\icudt52.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\bin\libgcc_s_dw2-1.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\bin\libstdc++-6.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\bin\libwinpthread-1.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\bin\Qt5Core.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\bin\Qt5Gui.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\bin\Qt5Widgets.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\bin\Qt5PrintSupport.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+Source: "{#MyQtPath}\5.3\mingw482_32\plugins\platforms\qwindows.dll"; DestDir: "{#MyAppBin}\platforms"; Flags: ignoreversion
+
 Source: "{#MyGccPath}\*"; DestDir: "{app}\propeller-gcc"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyEduLibPath}\*"; DestDir: "{app}\Workspace"; Flags: ignoreversion recursesubdirs createallsubdirs
 
@@ -106,12 +124,13 @@ Source: "{#MyUserGuide}"; DestDir: "{app}\propeller-gcc\bin"; Flags: IgnoreVersi
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}";
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}";
 
 [Run]
 ;don't run: the environment variable will not be set until program restart.
 ;Filename: {app}\{#MyAppExeName}; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: skipifsilent NoWait PostInstall; 
+Filename: {app}\{#FtdiChipApp}; Flags: RunAsCurrentUser NoWait; 
 
 [Registry]
 ; would like to use HKLM for these things if possible for specifying compiler and user workspace fields.
@@ -127,10 +146,10 @@ Root: HKCU; SubKey: Software\{#MyAppPublisher}\SimpleIDE\*; Flags: DeleteKey Uni
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata}"; Check: NeedPropGccBinPath();
 
 ; File Association. Doesn't work without ChangesAssociations=yes
-Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Tasks: association;  Flags: UninsDeleteKey;
-Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Tasks: association;  Flags: UninsDeleteKey;
+Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
+Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: UninsDeleteKey;
 Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: UninsDeleteKey;
-Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,3"; Tasks: association;  Flags: UninsDeleteKey;
+Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,3"; Flags: UninsDeleteKey;
 
 ; Startup File
 ;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: "{userdocs}\Workspace\My Projects\Welcome.c"; Flags: UninsDeleteKey; 
@@ -151,8 +170,7 @@ begin
   S := S + MemoGroupInfo + Newline + Newline;
   S := S + MemoDirInfo + Newline + Newline;
   S := S + 'Propeller-GCC folder:' + Newline + Space + ExpandConstant('{app}\{#compiler}') + NewLine + NewLine;
-  S := S + 'SimpleIDE Workspace folder:' + NewLine + Space + 'Will copy to the user Documents\SimpleIDE folder on first SimpleIDE start.' + NewLine;
-  S := S + Space + 'Remove the user Documents\SimpleIDE folder first to get a new workspace.' + NewLine;
+  S := S + 'SimpleIDE Workspace folder:' + NewLine + Space + 'SimpleIDE will guide user choosing location.' + NewLine;
   Result := S;
 end;
 

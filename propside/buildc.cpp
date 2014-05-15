@@ -750,6 +750,7 @@ int  BuildC::runCompiler(QStringList copts)
         // This means we don't search the existing folder for libraries.
         // If we search the existing folder for libraries and autolib
         // is enabled, then we can end up with the wrong library.
+
         libadd = getLibraryList(newList,this->projectFile);
         foreach(QString s, libadd) {
             bool contains = false;
@@ -1372,12 +1373,18 @@ QStringList BuildC::getLibraryList(QStringList &ILlist, QString projFile)
         ilist.append(ILlist.at(n)+" "+ILlist.at(n+1));
     }
     QString projectPath = projFile;
-    projectPath = projectPath.left(projectPath.lastIndexOf("/"));
+    if(projectFile.indexOf("/") > -1)
+        projectPath = projFile.left(projFile.lastIndexOf("/"));
+    else
+        projectPath = ".";
+
     /* invalidate cache each time we build */
-    //incHash.clear();
+    filesHash.clear();
+
     foreach(QString srcFile, srcList) {
         autoAddLib(projectPath, srcFile, libdir, ilist, &newList);
     }
+
     newList.removeDuplicates();
     return newList;
 }
@@ -1386,16 +1393,20 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
 {
     QApplication::processEvents();
     QString include("#include ");
-    QStringList findlist = Directory::findList(projectPath+"/"+srcFile, include);
+
+    QString includedStr = projectPath+"/"+srcFile;
+    if(filesHash.contains(includedStr)) return newList->count();
+
+    QStringList findlist = Directory::findCSourceList(projectPath+"/"+srcFile, include);
+    filesHash[includedStr] = includedStr;
+
     foreach(QString inc, findlist) {
         inc = inc.mid(inc.indexOf(include)+include.length());
         inc = inc.trimmed();
-        if(inc.at(0) == '<')
-            continue;
-        if(inc.endsWith('>'))
-            continue;
-        if(inc.at(0) == '"') inc = inc.mid(1); // " or <>
-        if(inc.endsWith('"'))inc = inc.left(inc.count()-1);
+        //if(inc.at(0) == '<') continue;
+        //if(inc.endsWith('>'))continue;
+        if(inc.at(0) == '"' || inc.at(0) == '<') inc = inc.mid(1);
+        if(inc.endsWith('"') || inc.at(0) == '>')inc = inc.left(inc.count()-1);
         inc = inc.trimmed();
         inc = "lib"+inc;
         inc = inc.mid(0,inc.indexOf(".h"));
