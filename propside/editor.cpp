@@ -237,7 +237,7 @@ int Editor::autoEnterColumnC()
         stop = slcm;
     }
     if(stop < 0 && text.lastIndexOf("{") == text.length()-1) {
-        indent = this->tabStopWidth()/10;;
+        indent = this->tabStopWidth()/10;
     }
 
     qDebug() << text;
@@ -357,7 +357,7 @@ int Editor::braceMatchColumn()
     int position = this->textCursor().positionInBlock();
     int indent = this->tabStopWidth()/10;
 
-    if(position <= indent)
+    if(position < indent)
         return 0;
 
     QTextCursor cur = this->textCursor();
@@ -373,16 +373,38 @@ int Editor::braceMatchColumn()
 
     // find out if there is a brace mismatch
     QString s = this->toPlainText();
-    QStringList sl = this->toPlainText().split(QRegExp("/\\*.*\\*/"));
-    s = sl.join("\n");
-    sl = s.split("\n",QString::SkipEmptyParts);
+
+    //QStringList sl = this->toPlainText().split(QRegExp("/\\*.*\\*/"));
+    //qDebug() << s;
+    //s = sl.join("\n");
+    //qDebug() << s;
+    QStringList sl = s.split("\n",QString::SkipEmptyParts);
     int length = sl.length();
 
     int braceo = 0;
     int bracec = 0;
 
+    bool blockComment = false;
+
     for(int n = 0; n < length; n++) {
         QString s = sl.at(n);
+        if(s.contains("/*") && s.contains("*/")) {
+            QString t = s.mid(s.indexOf("*/")+2);
+            s = s.mid(0, s.indexOf("/*"));
+            s += t;
+        }
+        if(blockComment && s.contains("*/")) {
+            s = s.mid(s.indexOf("*/")+2);
+            blockComment = false;
+        }
+        if(blockComment)
+            continue;
+        if(s.contains("/*") && !s.contains("*/")) {
+            s = s.mid(0, s.indexOf("/*"));
+            blockComment = true;
+        }
+        //qDebug() << "BMATCH" << s;
+
         if(s.contains("{")) {
             braceo++;
         }
@@ -391,9 +413,11 @@ int Editor::braceMatchColumn()
         }
     }
 
+    // if all braces match exit
     if(braceo == bracec) {
         return 0;
     }
+    qDebug() << "Brace Mismatch";
 
     // if brace mismatch, set closing brace
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
@@ -411,13 +435,14 @@ int Editor::braceMatchColumn()
 
     /* start a single undo/redo operation */
     cur.beginEditBlock();
-
+    //qDebug() << "POS" << (position-indent);
     for(int n = 0; n < position-indent; n++) {
         cur.insertText(" ");
     }
     cur.insertText("}");
 
-    this->setTextCursor(cur);
+    setTextCursor(cur);
+
     /* end a single undo/redo operation */
     cur.endEditBlock();
 

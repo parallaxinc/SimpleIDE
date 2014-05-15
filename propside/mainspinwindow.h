@@ -60,6 +60,8 @@ public:
 
     enum DumpType { DumpNormal, DumpReadSizes, DumpCat, DumpOff };
 
+    void openFileStringTab(QString fileName, QString data);
+
 signals:
     void highlightCurrentLine(QColor lineColor);
     void doPortEnumerate();
@@ -226,6 +228,8 @@ public slots:
     void statusNone();
     void statusFailed();
     void statusPassed();
+
+    void updateWorkspace();
 
 private:
     QString pathDiff(QString s2, QString s1);

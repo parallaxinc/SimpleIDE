@@ -370,6 +370,7 @@ void Console::update(char ch)
     {
         case PCMD_CURPOS_X: {
                 pcmdx = ch;
+                qDebug() << "CURPOS_X " << pcmdx;
 #if 0
                 cur.movePosition(QTextCursor::Start,QTextCursor::MoveAnchor);
                 cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,pcmdy);
@@ -377,7 +378,7 @@ void Console::update(char ch)
 #endif
 #if 1
                 int j = cur.block().length();
-                for(; j < pcmdx; j++) {
+                for(; j <= pcmdx; j++) {
                     cur.movePosition(QTextCursor::EndOfLine,QTextCursor::MoveAnchor);
                     cur.insertText(" ");
                 }
@@ -386,11 +387,13 @@ void Console::update(char ch)
                 if(pcmdx > 0) cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor,pcmdx);
                 setTextCursor(cur);
                 pcmd = PCMD_NONE;
+                qDebug() << "CURPOS_X Column" << cur.columnNumber();
             }
             break;
 
         case PCMD_CURPOS_Y: {
                 pcmdy = ch;
+                qDebug() << "CURPOS_Y " << pcmdy;
                 int j = this->blockCount();
                 for(; j <= pcmdy; j++) {
                     cur.movePosition(QTextCursor::End);
@@ -405,40 +408,43 @@ void Console::update(char ch)
                 setTextCursor(cur);
 #endif
                 pcmd = PCMD_NONE;
+                qDebug() << "CURPOS_Y Column" << cur.columnNumber();
             }
             break;
 
         case PCMD_CURPOS_XY: {
-                if(pcmdlen == 2) {
-                    pcmdx = ch;
-                }
-                else if(pcmdlen == 1) {
-                    pcmdy = ch;
-                    int j = this->blockCount();
-                    for(; j <= pcmdy; j++) {
-                        cur.movePosition(QTextCursor::End);
-                        cur.insertBlock();
-                    }
-                    cur.movePosition(QTextCursor::Start,QTextCursor::MoveAnchor);
-                    if(pcmdy > 0)
-                        cur.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pcmdy);
-
-                    j = cur.block().length();
-                    for(; j < pcmdx; j++) {
-                        cur.movePosition(QTextCursor::EndOfLine,QTextCursor::MoveAnchor);
-                        cur.insertText(" ");
-                    }
-                    cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-                    if(pcmdx > 0)
-                        cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor,pcmdx);
-                    setTextCursor(cur);
-                }
-                pcmdlen--;
-                if(pcmdlen < 1) {
-                    pcmd = PCMD_NONE;
-                }
+#if 1
+            if(pcmdlen == 2) {
+                pcmdx = ch;
             }
-            break;
+            else if(pcmdlen == 1) {
+                pcmdy = ch;
+                int j = this->blockCount();
+                for(; j <= pcmdy; j++) {
+                    cur.movePosition(QTextCursor::End);
+                    cur.insertBlock();
+                }
+                cur.movePosition(QTextCursor::Start,QTextCursor::MoveAnchor);
+                if(pcmdy > 0)
+                    cur.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pcmdy);
+
+                j = cur.block().length();
+                for(; j <= pcmdx; j++) {
+                    cur.movePosition(QTextCursor::EndOfLine,QTextCursor::MoveAnchor);
+                    cur.insertText(" ");
+                }
+                cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+                if(pcmdx > 0)
+                    cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor,pcmdx);
+                setTextCursor(cur);
+            }
+            pcmdlen--;
+            if(pcmdlen < 1) {
+                pcmd = PCMD_NONE;
+            }
+#endif
+        }
+        break;
 
         default: {
 
@@ -520,57 +526,71 @@ void Console::update(char ch)
                 }
                 break;
 
-            case EN_MoveCursorLeft: {
-                    if(this->enableMoveCursorLeft) {
-                        if(cur.columnNumber() > 0) {
-                            cur.movePosition(QTextCursor::Left,QTextCursor::MoveAnchor);
+                case EN_MoveCursorLeft: {
+                        if(this->enableMoveCursorLeft) {
+                            if(cur.columnNumber() > 0) {
+                                cur.movePosition(QTextCursor::Left,QTextCursor::MoveAnchor);
+                                setTextCursor(cur);
+                            }
+                        }
+                    }
+                    break;
+
+                case EN_MoveCursorRight: {
+                        if(this->enableMoveCursorRight) {
+                            if(cur.columnNumber() >= cur.block().length()-1)
+                                cur.insertText(" ");
+                            cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor);
                             setTextCursor(cur);
                         }
                     }
-                }
-                break;
+                    break;
 
-            case EN_MoveCursorRight: {
-                    if(this->enableMoveCursorRight) {
-                        if(cur.columnNumber() >= cur.block().length()-1)
-                            cur.insertText(" ");
-                        cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor);
-                        setTextCursor(cur);
-                    }
-                }
-                break;
-
-            case EN_MoveCursorUp: {
-                    if(this->enableMoveCursorUp) {
-                        int col = cur.columnNumber();
-                        if(cur.blockNumber() > 0) {
-                            cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-                            cur.movePosition(QTextCursor::Up,QTextCursor::MoveAnchor);
-                            int j = cur.columnNumber();
-                            if(j < col) {
-                                for(;j <= col; j++) {
-                                    cur.movePosition(QTextCursor::EndOfBlock,QTextCursor::MoveAnchor);
+                case EN_MoveCursorUp: {
+                        if(this->enableMoveCursorUp) {
+                            if(cur.blockNumber() > 0) {
+                                int col = cur.columnNumber();
+                                qDebug() << "MU Column" << col;
+                                cur.movePosition(QTextCursor::Up,QTextCursor::MoveAnchor);
+                                int end = cur.block().length();
+                                for(int n = end; n <= col; n++) {
                                     cur.insertText(" ");
                                 }
-                                cur.movePosition(QTextCursor::Up,QTextCursor::MoveAnchor);
+                                cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
                                 cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor,col);
+                                setTextCursor(cur);
+                            }
+                        }
+                    }
+                    break;
+
+                case EN_MoveCursorDown: {
+                        if(this->enableMoveCursorDown) {
+                            int col = cur.columnNumber();
+                            int row = cur.blockNumber();
+                            int cnt = this->blockCount();
+                            int end = cur.block().length();
+                            qDebug() << "MD Column" << col;
+                            if(row+1 < cnt) {
+                                cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor);
+                                end = cur.block().length();
+                                for(int n = end; n <= col; n++) {
+                                    cur.insertText(" ");
+                                    cur.movePosition(QTextCursor::EndOfLine,QTextCursor::MoveAnchor);
+                                }
+                                end = cur.block().length();
+                                cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
+                                cur.movePosition(QTextCursor::Right,QTextCursor::MoveAnchor, col);
+                            } else {
+                                cur.insertBlock();
+                                for(int n = 1; n < col; n++) {
+                                    cur.insertText(" ");
+                                }
                             }
                             setTextCursor(cur);
                         }
                     }
-                }
-                break;
-
-            case EN_MoveCursorDown: {
-                    if(this->enableMoveCursorDown) {
-                        if(cur.blockNumber()+1 < this->blockCount())
-                            cur.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor);
-                        else
-                            cur.insertBlock();
-                        setTextCursor(cur);
-                    }
-                }
-                break;
+                    break;
 
             case EN_BeepSpeaker: {
                     if(this->enableBeepSpeaker) {

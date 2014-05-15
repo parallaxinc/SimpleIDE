@@ -88,6 +88,7 @@ protected:
     QString         outputFile;
 
     QHash<QString, QString> incHash;
+    QHash<QString, QString> filesHash;
 };
 
 #endif // BUILD_H

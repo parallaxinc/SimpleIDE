@@ -14,9 +14,11 @@ TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 DEFINES += SPINSIDE
 
+CONFIG  += exceptions
+
 # include quazip
-SUBDIRS += ../quazip-0.5/quazip
-INCLUDEPATH += ../quazip-0.5/quazip
+#SUBDIRS += ../quazip-0.5/quazip
+#INCLUDEPATH += ../quazip-0.5/quazip
 INCLUDEPATH += $$[QT_INSTALL_PREFIX]/src/3rdparty/zlib
 
 # Turn off SPIN features for EDU release
@@ -38,7 +40,8 @@ DEFINES += ENABLE_AUTO_ENTER
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=48
+DEFINES += FIXVERSION=51
+VERSION = IDEVERSION"."MINVERSION"."FIXVERSION
 SOURCES += mainspin.cpp \
     PortConnectionMonitor.cpp \
     PropellerID.cpp \

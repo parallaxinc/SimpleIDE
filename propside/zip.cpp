@@ -419,8 +419,12 @@ void ZipPrivate::fillFileInfo(int index, ZipReader::FileInfo &fileInfo) const
     fileInfo.filePath = QString::fromLocal8Bit(header.file_name);
     const quint32 mode = (qFromLittleEndian<quint32>(&header.h.external_file_attributes[0]) >> 16) & 0xFFFF;
     fileInfo.isDir = S_ISDIR(mode);
-    fileInfo.isFile = S_ISREG(mode);
+    if(fileInfo.filePath.endsWith("/"))
+        fileInfo.isDir = 1;
+    if(fileInfo.filePath.endsWith("\\"))
+        fileInfo.isDir = 1;
     fileInfo.isSymLink = S_ISLNK(mode);
+    fileInfo.isFile = S_ISREG(mode);
     fileInfo.permissions = modeToPermissions(mode);
     fileInfo.crc32 = readUInt(header.h.crc_32);
     fileInfo.size = readUInt(header.h.uncompressed_size);
@@ -921,16 +925,16 @@ bool ZipReader::extractAll(const QString &destinationDir) const
     // create directories first
     QList<FileInfo> allFiles = fileInfoList();
     foreach (FileInfo fi, allFiles) {
-        const QString absPath = destinationDir + QDir::separator() + fi.filePath;
+        const QString absPath = destinationDir + "/" + fi.filePath;
         if (fi.isDir) {
             if (!baseDir.mkpath(fi.filePath))
                 return false;
-            if (!QFile::setPermissions(absPath, fi.permissions))
-                return false;
+            //if (!QFile::setPermissions(absPath, fi.permissions)) return false;
         }
     }
 
     // set up symlinks
+#if 0
     foreach (FileInfo fi, allFiles) {
         const QString absPath = destinationDir + QDir::separator() + fi.filePath;
         if (fi.isSymLink) {
@@ -948,10 +952,11 @@ bool ZipReader::extractAll(const QString &destinationDir) const
             */
         }
     }
+#endif
 
     foreach (FileInfo fi, allFiles) {
-        const QString absPath = destinationDir + QDir::separator() + fi.filePath;
-        if (fi.isFile) {
+        const QString absPath = destinationDir + "/" + fi.filePath;
+        if (!fi.isDir) {
             QFile f(absPath);
             if (!f.open(QIODevice::WriteOnly))
                 return false;
