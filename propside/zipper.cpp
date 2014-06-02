@@ -25,10 +25,78 @@ bool Zipper::zipit(QString fileName, QString folder)
     return retval;
 }
 
-bool Zipper::unzipAll(QString fileName, QString folder)
+bool Zipper::zipFileList(QString source, QStringList list, QString dstZipFile)
 {
+    bool retval = true;
+    ZipWriter zip(dstZipFile);
+    if(!zip.isWritable())
+        return false;
+
+    foreach(QString entry, list) {
+        if(entry.compare(".") == 0) continue;
+        if(entry.compare("..") == 0) continue;
+        if(entry.endsWith("/")) {
+            zip.addDirectory(entry);
+        } else {
+            QFile file(source+"/"+entry);
+            if(file.open(QFile::ReadOnly)) {
+                zip.addFile(entry, file.readAll());
+                file.close();
+            }
+            else {
+                retval = false;
+                break;
+            }
+        }
+    }
+    zip.close();
+    return retval;
+}
+
+#include "directory.h"
+
+bool Zipper::unzipAll(QString fileName, QString folder, QString notone)
+{
+    bool rc = false;
     ZipReader zipr(fileName);
-    return zipr.extractAll(folder);
+    QList<ZipReader::FileInfo> info = zipr.fileInfoList();
+    bool onefolder = true;
+    QString s = info.at(0).filePath;
+    QString first;
+    QString sep = "/";
+    if(s.indexOf(sep) > 0) {
+        first = s.left(s.indexOf(sep));
+    }
+    else if(s.indexOf("\\") > 0) {
+        sep = "\\";
+        first = s.left(s.indexOf(sep));
+    }
+    for(int n = 0; n < info.count(); n++) {
+        s = info[n].filePath;
+        if(first.compare(s.left(s.indexOf(sep)))) {
+            onefolder = false;
+            break;
+        }
+    }
+    if(onefolder == false) {
+        rc = zipr.extractAll(folder);
+    }
+    else {
+        QString tmp = QDir::tempPath()+"/SimpleIDE_TempZip";
+        QDir tmpd(QDir::tempPath());
+        tmpd.mkdir(tmp);
+        rc = zipr.extractAll(tmp);
+        if(rc) {
+            if(first.compare(notone) == 0) {
+                Directory::recursiveCopyDir(tmp+"/"+first, folder);
+            }
+            else {
+                Directory::recursiveCopyDir(tmp+"/"+first, folder);
+            }
+            Directory::recursiveRemoveDir(tmp);
+        }
+    }
+    return rc;
 }
 
 QString Zipper::unzipFirstFile(QString zipName, QString *fileName)

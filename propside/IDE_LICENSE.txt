@@ -1,6 +1,6 @@
 
 SimpleIDE
-Copyright (c) 2012-2013 Parallax Inc.
+Copyright (c) 2012-2014 Parallax Inc.
 SimpleIDE repository: propside.googlecode.com
 Repository includes SimpleIDE, icons, and ctags sources.
 Propeller-GCC repository: propgcc.googlecode.com

@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-51"
+#define MyAppVersion "0-9-55"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -170,7 +170,7 @@ begin
   S := S + MemoGroupInfo + Newline + Newline;
   S := S + MemoDirInfo + Newline + Newline;
   S := S + 'Propeller-GCC folder:' + Newline + Space + ExpandConstant('{app}\{#compiler}') + NewLine + NewLine;
-  S := S + 'SimpleIDE Workspace folder:' + NewLine + Space + 'SimpleIDE will guide user choosing location.' + NewLine;
+  { S := S + 'SimpleIDE Workspace folder:' + NewLine + Space + 'SimpleIDE will guide user choosing location.' + NewLine; }
   Result := S;
 end;
 

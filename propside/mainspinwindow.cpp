@@ -106,7 +106,8 @@ void myMessageOutput(QtMsgType type, const char *msg)
 }
 #endif
 
-MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent), compileStatusClickEnable(false)
+MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
+    compileStatusClickEnable(false), tabChangeDisable(false), fileChangeDisable(false)
 {
 #if defined(IDEDEBUG)
     debugStatus = new QPlainTextEdit(this);
@@ -276,10 +277,16 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent), compileSt
         setCurrentPort(ndx);
     }
 
+    /* Before window shows:
+     * Create new workspace from package
+     *   or
+     * Replace an existing one that's out of date.
+     */
+    propDialog->replaceLearnWorkspace();
+
     this->show();
     QApplication::processEvents();
 
-    propDialog->replaceLearnWorkspace();
 
     QString workspace;
 
@@ -291,12 +298,20 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent), compileSt
                 QVariant wrkv = settings->value(gccWorkspaceKey);
                 if(wrkv.canConvert(QVariant::String)) {
                     workspace = wrkv.toString();
-                    openProject(workspace+"My Projects/Welcome.side");
+                    QString tmp = workspace+"My Projects/Welcome.side";
+                    if(QFile::exists(tmp)) {
+                        openProject(tmp);
+                    }
+                    else {
+                        QMessageBox::critical(this,tr("File not found"),
+                            tr("The SimpleIDE workspace default project is not available.")+" "+
+                            tr("Program will start without a file and project."));
+                    }
                 }
             }
             else {
                 QString fileName = lastfilev.toString();
-                if(fileName.length() > 0 && QFile::exists(fileName)) {
+                if(fileName.length() > 0) {
     #ifndef SPIN
                     if(fileName.mid(fileName.lastIndexOf(".")+1).contains("spin",Qt::CaseInsensitive)) {
                         QMessageBox::critical(
@@ -306,8 +321,15 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent), compileSt
                         return;
                     }
     #endif
-                    openFileName(fileName);
-                    setProject(); // last file is always first project
+                    if(QFile::exists(fileName)) {
+                        openFileName(fileName);
+                        setProject(); // last file is always first project
+                    }
+                    else {
+                        QMessageBox::critical(this,tr("File not found"),
+                            tr("The last opened file has disappeared.")+" "+
+                            tr("Program will start without a file and project."));
+                    }
                 }
             }
         }
@@ -846,6 +868,8 @@ void MainSpinWindow::addTab()
         return;
     }
 
+    tabChangeDisable = true;
+
     QString ftype = selectedFilter;
     filename = filterAsFilename(filename, ftype);
 
@@ -884,6 +908,7 @@ void MainSpinWindow::addTab()
         setEditorTab(tab, filename, tipname, data);
         saveFile();
     }
+    tabChangeDisable = false;
 }
 
 /*
@@ -910,6 +935,8 @@ void MainSpinWindow::openTab()
         QMessageBox::information(this, tr("Can't Open Tab"), tr("Can't Open Tab to project from outside the current project folder."));
         return;
     }
+
+    tabChangeDisable = true;
 
     while(tabIndexByFileName(filename) > -1) {
         int index = tabIndexByFileName(filename);
@@ -946,6 +973,7 @@ void MainSpinWindow::openTab()
         }
         addProjectListFile(relfile);
     }
+    tabChangeDisable = false;
 }
 
 void MainSpinWindow::newFile()
@@ -954,6 +982,7 @@ void MainSpinWindow::newFile()
     int tab = setupEditor();
     editorTabs->addTab(editors->at(tab),(const QString&)untitledstr);
     editorTabs->setCurrentIndex(tab);
+    connect(editorTabs,SIGNAL(currentChanged(int)),this,SLOT(currentTabChanged()));
     Editor *ed = editors->at(tab);
     ed->setFocus();
     fileChangeDisable = false;
@@ -1027,7 +1056,46 @@ bool MainSpinWindow::isFileUTF16(QFile *file)
 void MainSpinWindow::openFileName(QString fileName)
 {
     QString data;
-    if (!fileName.isEmpty()) {
+    if (fileName == NULL || fileName.isEmpty()) {
+        return;
+    }
+    QString s = fileName;
+
+    if(s.endsWith(SIDE_EXTENSION, Qt::CaseInsensitive)) {
+        openFile(fileName);
+    }
+    //if(s.endsWith(".zip",Qt::CaseInsensitive)) ... ugh, how exactly do we deal with that?
+    else if(s.endsWith(".zip",Qt::CaseInsensitive)) {
+        Zipper  zip;
+        QString fileName;
+        QString data;
+        if(zip.unzipFileCount(s) > 0) {
+            QString folder = s.mid(0,s.lastIndexOf(".zip"));
+            QString projName = folder;
+            projName = projName.mid(projName.lastIndexOf("/")+1);
+            QString projFile = projName+".side";
+            if(!zip.unzipFileExists(s,projFile)) {
+                projFile = projName+"/"+projName+".side";
+            }
+            if(zip.unzipFileExists(s,projFile)) {
+                QString pathName = QDir::tempPath()+"/SimpleIDE_"+projName;
+                while(pathName.indexOf("\\") > -1)
+                    pathName = pathName.replace("\\","/");
+                QDir dst(pathName);
+                if(!dst.exists())
+                    dst.mkdir(pathName);
+                zip.unzipAll(s,pathName);
+                openProject(pathName+"/"+projFile);
+            }
+            else {
+                data = zip.unzipFirstFile(s, &fileName);
+            }
+        }
+        if(fileName.length() && data.length()) {
+            openFileStringTab(fileName, data);
+        }
+    }
+    else {
         QFile file(fileName);
         if (file.open(QFile::ReadOnly))
         {
@@ -1042,6 +1110,10 @@ void MainSpinWindow::openFileName(QString fileName)
             // remove tab to space conversion for now.
             data = data.replace('\t',"    ");
 #endif
+#ifndef TODO
+            openFileStringTab(fileName, data);
+#else
+            // remove this after testing
             QString sname = this->shortFileName(fileName);
             if(editorTabs->count()>0) {
                 for(int n = editorTabs->count()-1; n > -1; n--) {
@@ -1057,6 +1129,7 @@ void MainSpinWindow::openFileName(QString fileName)
             }
             newFile();
             setEditorTab(tabIndexByShortName(untitledstr), sname, fileName, data);
+#endif
         }
     }
 }
@@ -1087,8 +1160,9 @@ void MainSpinWindow::openFileStringTab(QString fileName, QString data)
 void MainSpinWindow::closeFile()
 {
     int tab = editorTabs->currentIndex();
-    if(tab > -1)
+    if(tab > -1) {
         closeTab(tab);
+    }
 }
 
 /*
@@ -1107,6 +1181,7 @@ void MainSpinWindow::closeAll()
     for(int tab = editorTabs->count()-1; tab > -1; tab--)
         closeTab(tab);
     projectFile = "";
+    projectTree->hide();
 }
 
 QString MainSpinWindow::getNewProjectDialog(QString workspace, QStringList filters)
@@ -2740,6 +2815,7 @@ void MainSpinWindow::flattenDstProject(QString path, QString project)
  */
 void MainSpinWindow::zipProject()
 {
+    compileStatus->setPlainText("");
     if(projectFile.isEmpty() || projectModel == NULL) {
         QMessageBox::critical(this, tr("Empty Project"),
             tr("Can't archive an empty project.")+"\n"+
@@ -2837,7 +2913,7 @@ void MainSpinWindow::zipProject()
     /*
      * 3. create a new archive project folder
      */
-    dstPath += dstName+"/";
+    dstPath += dstName;
 
     /*
      * Don't allow users to zip to the source
@@ -2963,7 +3039,7 @@ void MainSpinWindow::zipProject()
             if(fileList.at(n).indexOf(">") != 0)
                 compileStatus->appendPlainText(tr("Adding ") + fileList.at(n));
         }
-        zip.zipit(dTmpPath, dstName+".zip");
+        zip.zipFileList(dTmpPath, fileList, dstPath+".zip");
     }
 #ifdef SPIN
     else if(this->isSpinProject()) {
@@ -2975,7 +3051,7 @@ void MainSpinWindow::zipProject()
     if(dTmpPath.endsWith("/"))
         dTmpPath = dTmpPath.left(dTmpPath.lastIndexOf("/"));
     //QFile::copy(dTmpPath+".zip", dstPath+".zip");
-    //QFile::remove(dTmpPath+".zip");
+    QFile::remove(dTmpPath+".zip");
 
 #ifdef ENABLE_KEEP_ZIP_FOLDER
     // and remove folder if save zip folder is not checked
@@ -4520,10 +4596,14 @@ void MainSpinWindow::propertiesAccepted()
  */
 void MainSpinWindow::updateWorkspace()
 {
+    // link was:
+    //"<a href=http://learn.parallax.com/propeller-c-set-simpleide/update-your-learn-folder>Parallax Learn</a>"+
+
     int rc = QMessageBox::question(this, tr("Update SimpleIDE Workspace?"),
        tr("This updates the SimpleIDE workspace folder's examples, libraries, and documentation. ")+
-       tr("Get the latest workspace from the [link] Parallax Learn [/link] site, ")+
-       tr("then click Update to find and select that archive.")+"\n"+
+       tr("Get the latest workspace from the ")+
+       "<a href=http://learn.parallax.com/propeller-c-set-simpleide/update-simpleide-workspace>Parallax Learn</a>"+
+       tr(" site, ")+tr("then click Update to find and select that archive.")+"\n"+
        tr("Current workspace folder will be backed up."),"Update","Cancel");
     //tr("To update the SimpleIDE workspace, please answer yes, and choose a Workspace .zip file."));
     if(rc == 0) {
@@ -4743,7 +4823,8 @@ void MainSpinWindow::setupHelpMenu()
     QMenu *helpMenu = new QMenu(tr("&Help"), this);
 
     aboutLanding = "<html><body><br/>"+tr("Visit ") +
-        "<a href=\"http://www.parallax.com/propellergcc/\">"+
+        //"<a href=\"http://www.parallax.com/propellergcc/\">"+
+        "<a href=\"http://learn.parallax.com/propeller-c-set-simpleide\">"+
         ASideGuiKey+"</a>"+
         tr(" for more information.")+"<br/>"+
         tr("Email bug reports to")+" <a href=\"mailto:SimpleIDE@parallax.com\">SimpleIDE@parallax.com</a>"+
@@ -5295,6 +5376,7 @@ void MainSpinWindow::closeTab(int tab)
     editorTabs->removeTab(tab);
 
     fileChangeDisable = false;
+    currentTabChanged();
 }
 
 void MainSpinWindow::saveTab(int tab, bool ask)
@@ -5344,6 +5426,7 @@ void MainSpinWindow::editorTabMenu(QPoint pt)
         openFile(file);
 }
 
+
 void MainSpinWindow::changeTab(bool checked)
 {
     /* checked is a QAction menu state.
@@ -5357,6 +5440,62 @@ void MainSpinWindow::changeTab(bool checked)
         editorTabs->setCurrentIndex(n+1);
     else
         editorTabs->setCurrentIndex(0);
+}
+
+QStringList MainSpinWindow::projectList(QString projFile)
+{
+    QString projstr = "";
+    QStringList list;
+
+    QFile file(projFile);
+    if(file.exists()) {
+        if(file.open(QFile::ReadOnly | QFile::Text)) {
+            projstr = file.readAll();
+            file.close();
+        }
+        list = projstr.split("\n");
+    }
+    return list;
+}
+
+void MainSpinWindow::currentTabChanged()
+{
+    // Disable for now.
+    //return;
+
+    //qDebug() << "currentTabChanged";
+    if(tabChangeDisable) return;
+    if(fileChangeDisable) return;
+    int n = editorTabs->currentIndex();
+    //qDebug() << "currentTabChanged tab" << n;
+    if(n < 0) return;
+    QString file = editorTabs->tabToolTip(n);
+    QString proj = file.left(file.lastIndexOf("."));
+    qDebug() << "currentTabChanged" << file << simpleViewType << proj;
+
+    // There is some concern that this won't be productive with Open Tab or Add Tab
+    // If project list contains the tab and tab doesn't match the project, don't change the project.
+
+    QStringList plist = projectList(projectFile);
+    QString pbase = projectFile;
+    pbase = pbase.left(pbase.lastIndexOf("."));
+    if(plist.contains(shortFileName(file)) && proj != pbase) {
+        return;
+    }
+
+    // if simpleview mode, change the project
+    // if the file is a main project file.
+    // A project file name is the same as
+    // the program file excluding the suffix.
+    //
+    if(this->simpleViewType && proj.length() > 0) {
+        tabChangeDisable = true;
+        proj += SIDE_EXTENSION;
+        if(QFile::exists(proj)) {
+            openFile(proj);
+        }
+        tabChangeDisable = false;
+    }
 }
 
 void MainSpinWindow::clearTabHighlight()
@@ -5419,7 +5558,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
     projectTree->setMinimumWidth(PROJECT_WIDTH);
     projectTree->setMaximumWidth(PROJECT_WIDTH);
     projectTree->setToolTip(tr("Current Project"));
-    connect(projectTree, SIGNAL(clicked(QModelIndex)),this,SLOT(projectTreeClicked(QModelIndex)));
+    connect(projectTree, SIGNAL(clicked(QModelIndex)),this,SLOT(projectTreeClicked()));
     connect(projectTree, SIGNAL(activated(QModelIndex)),this,SLOT(projectTreeClicked()));
     connect(projectTree, SIGNAL(deleteProjectItem()),this,SLOT(deleteProjectFile()));
     connect(projectTree, SIGNAL(showPopup()),this,SLOT(showProjectPopup()));
@@ -7184,13 +7323,14 @@ void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, 
     disconnect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
     editor->setPlainText(text);
     editor->setHighlights(shortName);
-    connect(editor,SIGNAL(textChanged()),this,SLOT(fileChanged()));
-    connect(this, SIGNAL(copyAvailable(bool)), this, SLOT(copyFromFile()));
+    connect(editor, SIGNAL(textChanged()),this,SLOT(fileChanged()));
+    connect(editor, SIGNAL(copyAvailable(bool)), this, SLOT(copyFromFile()));
     QApplication::restoreOverrideCursor();
     fileChangeDisable = false;
     editorTabs->setTabText(num,shortName);
     editorTabs->setTabToolTip(num,fileName);
     editorTabs->setCurrentIndex(num);
+    currentTabChanged();
     qDebug() << "setEditorTab" << fileName << num << "Total Tabs" << editorTabs->count() << "Total Editors" << editors->count();
 }
 
@@ -7624,6 +7764,7 @@ void MainSpinWindow::toggleSimpleView()
      action->setText(this->simpleViewType ? tr(ProjectView) : tr(SimpleView));
      action->setIcon(this->simpleViewType ? projectViewIcon : simpleViewIcon);
      showSimpleView(simpleViewType);
+     currentTabChanged();
 }
 
 /*

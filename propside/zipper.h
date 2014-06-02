@@ -20,8 +20,9 @@ public:
     bool makeSpinZip(QString fileName, QStringList fileTree, QString libPath, StatusDialog *stat);
     // any zip
     bool zipit(QString fileName, QString folder);
+    bool zipFileList(QString source, QStringList list, QString dstZipFile);
 
-    bool unzipAll(QString fileName, QString folder);
+    bool unzipAll(QString fileName, QString folder, QString notone = "");
     QString unzipFirstFile(QString zipName, QString *fileName);
     QString unzipFile(QString zipName, QString fileName);
     bool unzipFileExists(QString zipName, QString fileName);

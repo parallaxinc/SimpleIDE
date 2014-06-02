@@ -1,13 +1,20 @@
 # -------------------------------------------------
-# Project created by QtCreator 2011-11-19T08:29:49
+# Project originally created by QtCreator 2011-11-19T08:29:49
 # -------------------------------------------------
-# Windows builds must use library 4.8.0 otherwise QuaZip fails.
-# Same goes for QuaZip build.
-QT += core
-QT -= gui
-QT += widgets
 
-QT += printsupport
+# These define the version number in Menu->About
+DEFINES += IDEVERSION=0
+DEFINES += MINVERSION=9
+DEFINES += FIXVERSION=55
+VERSION = IDEVERSION"."MINVERSION"."FIXVERSION
+
+QT += core
+QT += gui
+greaterThan(QT_MAJOR_VERSION, 4): {
+    QT -= gui
+    QT += widgets
+    QT += printsupport
+}
 
 TARGET = SimpleIDE
 TEMPLATE = app
@@ -16,9 +23,7 @@ DEFINES += SPINSIDE
 
 CONFIG  += exceptions
 
-# include quazip
-#SUBDIRS += ../quazip-0.5/quazip
-#INCLUDEPATH += ../quazip-0.5/quazip
+# no more quazip
 INCLUDEPATH += $$[QT_INSTALL_PREFIX]/src/3rdparty/zlib
 
 # Turn off SPIN features for EDU release
@@ -37,11 +42,7 @@ DEFINES += ENABLE_AUTOLIB
 # DEFINES += GDBENABLE
 # ENABLE_AUTO_ENTER turns on AUTO-INDENT
 DEFINES += ENABLE_AUTO_ENTER
-# These define the version number in Menu->About
-DEFINES += IDEVERSION=0
-DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=51
-VERSION = IDEVERSION"."MINVERSION"."FIXVERSION
+
 SOURCES += mainspin.cpp \
     PortConnectionMonitor.cpp \
     PropellerID.cpp \
@@ -83,7 +84,8 @@ SOURCES += mainspin.cpp \
     directory.cpp \
     zip.cpp \
     zipper.cpp \
-    StatusDialog.cpp
+    StatusDialog.cpp \
+    workspacedialog.cpp
 HEADERS += mainspinwindow.h \
     PortConnectionMonitor.h \
     PropellerID.h \
@@ -130,7 +132,8 @@ HEADERS += mainspinwindow.h \
     zipreader.h \
     zipwriter.h \
     zlib.h \
-    StatusDialog.h
+    StatusDialog.h \
+    workspacedialog.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \
@@ -140,7 +143,6 @@ RESOURCES += resources.qrc
 # linux quazip doesn't need version, but windows does
 unix { 
     SOURCES += qextserialport_unix.cpp
-    #LIBS += -lquazip
     LIBS += -lz
 }
 
@@ -155,7 +157,6 @@ macx {
         IOKit \
         -framework \
         CoreFoundation
-    #LIBS   += -L../quazip-0.5/quazip -lquazip
     LIBS += -lz
 }
 win32 { 
@@ -166,6 +167,5 @@ win32 {
     SOURCES += qextserialenumerator_win.cpp
     DEFINES += WINVER=0x0501 # needed for mingw to pull in appropriate dbt business...probably a better way to do this
     LIBS += -lsetupapi
-    #LIBS += -lquazip1
     LIBS += -L$$PWD -lzlib1
 }

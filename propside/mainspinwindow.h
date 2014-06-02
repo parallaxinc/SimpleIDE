@@ -60,6 +60,7 @@ public:
 
     enum DumpType { DumpNormal, DumpReadSizes, DumpCat, DumpOff };
 
+    void openFileName(QString fileName);
     void openFileStringTab(QString fileName, QString data);
 
 signals:
@@ -109,6 +110,8 @@ public slots:
     void saveTab(int index = 0, bool ask = true);
     void editorTabMenu(QPoint);
     void changeTab(bool trig);
+    QStringList projectList(QString projFile);
+    void currentTabChanged();
     void clearTabHighlight();
     void sdCardDownloadEnable();
     void setCurrentBoard(int index);
@@ -267,7 +270,6 @@ private:
     int  buildResult(int exitStatus, int exitCode, QString progName, QString result);
 
     bool isFileUTF16(QFile *file);
-    void openFileName(QString fileName);
     void checkAndSaveFiles();
     int  setupEditor();
     void setupFileMenu();
@@ -353,6 +355,7 @@ private:
     QVector<Editor*> *editors;
     QFont           editorFont;
     bool            fileChangeDisable;
+    bool            tabChangeDisable;
     QMenu           *edpopup;
 
     QPlainTextEdit  *compileStatus;

@@ -33,6 +33,7 @@
 
 #include "propertycolor.h"
 #include "StatusDialog.h"
+#include "workspacedialog.h"
 
 #include <QWidget>
 #include <QDialog>
@@ -120,7 +121,10 @@ public:
     bool getAutoLib();
 
     void saveUpdateFile(QString name, QString timestamp);
+    bool workspaceSane(QString pkwrk, QString mywrk);
     bool replaceLearnWorkspace();
+    bool createPackageWorkspace(QString pkwrk, QString mywrk, QString updateFile, QString timestamp, QString &mylib);
+    bool updatePackageWorkspace(QString pkwrk, QString mywrk, QString updateFile, QString timestamp);
     bool updateLearnWorkspace();
 
 signals:
@@ -164,6 +168,8 @@ private:
     void setupHighlight();
 
     void fileStringProperty(QVariant *var, QLineEdit *ledit, const char *key, QString *value);
+
+    WorkspaceDialog wsdialog;
 
     QTabWidget  tabWidget;
     QString     mypath;
