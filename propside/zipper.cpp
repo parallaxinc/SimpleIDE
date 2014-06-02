@@ -55,7 +55,7 @@ bool Zipper::zipFileList(QString source, QStringList list, QString dstZipFile)
 
 #include "directory.h"
 
-bool Zipper::unzipAll(QString fileName, QString folder, QString notone)
+bool Zipper::unzipAll(QString fileName, QString folder, QString special)
 {
     bool rc = false;
     ZipReader zipr(fileName);
@@ -87,8 +87,8 @@ bool Zipper::unzipAll(QString fileName, QString folder, QString notone)
         tmpd.mkdir(tmp);
         rc = zipr.extractAll(tmp);
         if(rc) {
-            if(first.compare(notone) == 0) {
-                Directory::recursiveCopyDir(tmp+"/"+first, folder);
+            if(first.compare(special) == 0) {
+                Directory::recursiveCopyDir(tmp+"/"+first, folder+"/"+special);
             }
             else {
                 Directory::recursiveCopyDir(tmp+"/"+first, folder);

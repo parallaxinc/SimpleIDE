@@ -22,7 +22,7 @@ public:
     bool zipit(QString fileName, QString folder);
     bool zipFileList(QString source, QStringList list, QString dstZipFile);
 
-    bool unzipAll(QString fileName, QString folder, QString notone = "");
+    bool unzipAll(QString fileName, QString folder, QString special = "");
     QString unzipFirstFile(QString zipName, QString *fileName);
     QString unzipFile(QString zipName, QString fileName);
     bool unzipFileExists(QString zipName, QString fileName);
