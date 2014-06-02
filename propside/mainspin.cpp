@@ -59,6 +59,10 @@ int main(int argc, char *argv[])
         QString s = QString(argv[1]);
         while(s.indexOf("\\") > -1)
             s = s.replace("\\","/");
+#ifndef TODO
+        w.openFileName(s);
+#else
+        // remove this after testing
         if(s.endsWith(".zip",Qt::CaseInsensitive)) {
             Zipper  zip;
             QString fileName;
@@ -109,8 +113,8 @@ int main(int argc, char *argv[])
                 w.closeTab(0);
             w.openFile(QString(argv[1]));
         }
+#endif
     }
-
     w.show();
 
     return a.exec();

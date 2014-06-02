@@ -955,9 +955,17 @@ bool ZipReader::extractAll(const QString &destinationDir) const
 #endif
 
     foreach (FileInfo fi, allFiles) {
-        const QString absPath = destinationDir + "/" + fi.filePath;
+        const QString absFile = destinationDir + "/" + fi.filePath;
+        QString absPath = destinationDir + "/" + fi.filePath;
+        if(absPath.endsWith("/") == false) {
+            absPath = absPath.left(absPath.lastIndexOf("/")+1);
+            QDir absDir(absPath);
+            if(absDir.exists() == false) {
+                absDir.mkpath(absPath);
+            }
+        }
         if (!fi.isDir) {
-            QFile f(absPath);
+            QFile f(absFile);
             if (!f.open(QIODevice::WriteOnly))
                 return false;
             f.write(fileData(fi.filePath));

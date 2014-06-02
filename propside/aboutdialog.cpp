@@ -15,7 +15,7 @@ AboutDialog::AboutDialog(QString landing, QWidget *parent) :
     layout->addWidget(new QLabel(""));
     QString version = QString("%1 Version %2.%3.%4").arg(ASideGuiKey)
             .arg(IDEVERSION).arg(MINVERSION).arg(FIXVERSION);
-    layout->addWidget(new QLabel(version+"\n"+tr("Copyright (C) 2012-2013, Parallax, Inc.")));
+    layout->addWidget(new QLabel(version+"\n"+tr("Copyright (C) 2012-2014, Parallax, Inc.")));
 
     QLabel *landingLabel = new QLabel(landing);
     landingLabel->setOpenExternalLinks(true);
