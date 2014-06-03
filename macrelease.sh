@@ -1,11 +1,16 @@
 #!/bin/sh -x
 #
-# to use this release script, QtSDK Desktop qmake must be in your PATH
+# To use this release script,
+#
+# Using sudo ./macrelease.sh is strongly recommended.
+# Qt qmake for the target Qt version must be in your path.
 #
 NAME=SimpleIDE
 APP=${NAME}.app
 PKG=${NAME}.zip
 PROPGCC=/opt/parallax
+APPGCC=${NAME}.app/Contents/propeller-gcc
+APPWRK=${NAME}.app/Contents/Workspace
 
 if [ -e ${PKG} ]; then
    rm -rf ${PKG}
@@ -16,6 +21,9 @@ fi
 #
 if [ 1 == 1 ]; then
 
+#
+# Build the IDE first
+#
 mkdir -p release
 cp -r propside/* release
 cd release
@@ -44,7 +52,11 @@ if test $? != 0; then
    exit 1
 fi
 
+#######################################################################
+# go to ./SimpleIDE folder
+#
 cd ${NAME}
+
 rm -rf ${NAME}.app
 cp -r ../release/${NAME}.app .
 if test $? != 0; then
@@ -64,26 +76,27 @@ if test $? != 0; then
    exit 1
 fi
 
-rm -rf parallax
-cp -r ${PROPGCC} .
+rm -rf ${APPGCC}
+mkdir -p ${APPGCC}
+cp -r ${PROPGCC}/* ${APPGCC}
 if test $? != 0; then
    echo "copy ${PROPGCC} failed."
    exit 1
 fi
 
-cp ../SimpleIDE-User-Guide.pdf ./parallax/bin
+cp ../SimpleIDE-User-Guide.pdf ${APPGCC}/bin
 if test $? != 0; then
    echo "copy User Guide failed."
    exit 1
 fi
 
-cp ../boards.txt ./parallax/propeller-load
+cp ../boards.txt ${APPGCC}/propeller-load
 if test $? != 0; then
    echo "copy boards.txt filter failed."
    exit 1
 fi
 
-cp ../ctags-5.8/ctags ./parallax/bin
+cp ../ctags-5.8/ctags ${APPGCC}/bin
 if test $? != 0; then
    echo "copy ctags failed."
    exit 1
@@ -98,26 +111,26 @@ fi
 #
 # copy workspace
 #
-cp -r ../Workspace .
+cp -r ../Workspace ${APPWRK}
 if test $? != 0; then
    echo "copy Workspace failed."
    exit 1
 fi
-rm -rf Workspace/.hg
+rm -rf ${APPWRK}/.hg
 
 #
 # remove workspace if any from parallax folder
 #
-rm -rf parallax/Workspace
+rm -rf ${APPGCC}/Workspace
 
 #
 # move Workspace
 #
-mv Workspace parallax
-if test $? != 0; then
-   echo "mv Workspace failed."
-   exit 1
-fi
+#mv Workspace parallax
+#if test $? != 0; then
+#   echo "mv Workspace failed."
+#   exit 1
+#fi
 
 mkdir -p license
 
@@ -154,12 +167,12 @@ fi
 #
 # remove license if any from parallax folder
 #
-rm -rf parallax/license
+rm -rf ${APPGCC}/license
 
 #
 # move license
 #
-mv license parallax
+mv license ${APPGCC}
 if test $? != 0; then
    echo "mv license failed."
    exit 1
