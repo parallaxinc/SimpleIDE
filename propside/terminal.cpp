@@ -79,7 +79,9 @@ void Terminal::init()
     butLayout->addWidget(cbEchoOn);
     butLayout->addWidget(buttonBox);
     setLayout(termLayout);
+#if !defined(Q_OS_MAC)
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+#endif
     setWindowIcon(QIcon(":/images/console.png"));
     //resize(400,300); // just use default size
 }

@@ -120,6 +120,8 @@ QString Properties::getApplicationWorkspace()
     QString pkwrk;
 #if defined(Q_OS_WIN32)
     pkwrk = QApplication::applicationDirPath()+"/";
+#elif defined(Q_OS_MAC)
+    pkwrk = QApplication::applicationDirPath()+"/";
 #else
     QVariant compv  = settings.value(gccCompilerKey, pkwrk);
     if(compv.canConvert(QVariant::String)) {
@@ -257,16 +259,16 @@ void Properties::setupPropGccCompiler()
 
 #elif defined(Q_OS_MAC)
     // if macos
-    QDir gcc("/opt/parallax/bin");
-    if(gcc.exists()) {
+    apath += "/../propeller-gcc/";
+    QDir gcc("/opt/parallax");
+    QDir relative(apath);
+    if(relative.exists()) {
+        mypath = apath;
+    }
+    else if(gcc.exists()) {
         mypath = "/opt/parallax/";
     }
-    else {
-        QString apath = QApplication::applicationFilePath();
-        mypath = apath+"/parallax/";
-    }
     mygcc = mypath+"bin/propeller-elf-gcc";
-
 #else
     // if linux
     QDir gcc("/opt/parallax/bin");
