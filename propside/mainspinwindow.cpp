@@ -7324,7 +7324,6 @@ void MainSpinWindow::setEditorTab(int num, QString shortName, QString fileName, 
     editor->setPlainText(text);
     editor->setHighlights(shortName);
     connect(editor, SIGNAL(textChanged()),this,SLOT(fileChanged()));
-    connect(editor, SIGNAL(copyAvailable(bool)), this, SLOT(copyFromFile()));
     QApplication::restoreOverrideCursor();
     fileChangeDisable = false;
     editorTabs->setTabText(num,shortName);
