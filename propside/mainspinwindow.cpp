@@ -1062,7 +1062,7 @@ void MainSpinWindow::openFileName(QString fileName)
     QString s = fileName;
 
     if(s.endsWith(SIDE_EXTENSION, Qt::CaseInsensitive)) {
-        openFile(fileName);
+        openProject(fileName);
     }
     //if(s.endsWith(".zip",Qt::CaseInsensitive)) ... ugh, how exactly do we deal with that?
     else if(s.endsWith(".zip",Qt::CaseInsensitive)) {
