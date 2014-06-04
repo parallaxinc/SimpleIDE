@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-56"
+#define MyAppVersion "0-9-57"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -147,6 +147,10 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 
 ; File Association. Doesn't work without ChangesAssociations=yes
 Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
+;Root: HKCR; Subkey: ".c"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
+;Root: HKCR; Subkey: ".cpp"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
+;Root: HKCR; Subkey: ".cogc"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
+;Root: HKCR; Subkey: ".h"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
 Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: UninsDeleteKey;
 Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: UninsDeleteKey;
 Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,3"; Flags: UninsDeleteKey;
