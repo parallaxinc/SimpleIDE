@@ -633,14 +633,17 @@ int  BuildC::runAR(QStringList copts, QString libname)
 #else
     compstr = aSideCompiler;
 #endif
-    compstr = compstr.replace("gcc","ar");
+    QString arpath = sourcePath(compstr);
+    QString ar = shortFileName(compstr);
+    ar = ar.replace("gcc","ar");
+    compstr = arpath+ar;
 
     /* remove old archive */
     if(QFile::exists(sourcePath(projectFile)+libname))
         QFile::remove(sourcePath(projectFile)+libname);
 
     /* this runs the archiver */
-    rc = startProgram(compstr,sourcePath(projectFile),args);
+    rc = startProgram(ar,sourcePath(projectFile),args);
     return rc;
 }
 
