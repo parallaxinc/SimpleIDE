@@ -107,5 +107,8 @@
         <file>images/SimpleIDE-16.ico</file>
         <file>images/SimpleIDE.icns</file>
         <file>images/SimpleIDE-all.ico</file>
+        <file>images/Target.png</file>
+        <file>images/update.png</file>
+        <file>images/Target2.png</file>
     </qresource>
 </RCC>

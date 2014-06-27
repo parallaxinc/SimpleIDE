@@ -24,6 +24,8 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
     //QStringList list = settings.allKeys();
     settings.setValue(useKeys,1);
 
+    statDialog = new StatusDialog(this);
+
     setupFolders(); // always call this before setupSpinFolders();
     setupSpinFolders();
     setupGeneral();
@@ -304,6 +306,18 @@ void Properties::setupPropGccCompiler()
     settings.setValue(gccCompilerKey,mygcc);
 }
 
+void Properties::showStatusDialog(QString title, const QString text)
+{
+    QApplication::changeOverrideCursor(Qt::WaitCursor);
+    statDialog->init(title, text);
+}
+
+void Properties::stopStatusDialog()
+{
+    QApplication::restoreOverrideCursor();
+    statDialog->stop(4);
+}
+
 void Properties::saveUpdateFile(QString name, QString timestamp)
 {
     // create a timestamp file
@@ -324,13 +338,14 @@ bool Properties::createPackageWorkspace(QString pkwrk, QString mywrk, QString up
     QString wrk = mywrk;
     qDebug() << "createLearnWorkspace" << mywrk;
     if(wsdialog.replaceDialog(mywrk, wrk)) {
-        QApplication::changeOverrideCursor(Qt::WaitCursor);
+        showStatusDialog("Create Workspace", "Creating new SimpleIDE workspace.");
+
         mywrk = wrk;
         mylib = wrk+LEARNLIB;
         Directory::recursiveCopyDir(pkwrk, mywrk);
         saveUpdateFile(mywrk+updateFile, timestamp);
-        QApplication::restoreOverrideCursor();
 
+        stopStatusDialog();
         QMessageBox::information(this,
             tr("SimpleIDE Workspace Folder Created"),
             tr("The SimpleIDE workspace was created:\n")+mywrk);
@@ -378,8 +393,7 @@ bool Properties::updatePackageWorkspace(QString pkwrk, QString mywrk, QString up
         backdir = backdir.left(backdir.lastIndexOf("/"))+"/SimpleIDE_Backups/";
         QString zipback = backdir+"Workspace_"+timestamp+".zip";
 
-        QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        QApplication::processEvents(); // show wait cursor
+        showStatusDialog("Install Workspace", "Installing packaged SimpleIDE workspace.");
 
         QDir wrkd(mywrk);
         if(!wrkd.exists(backdir)) {
@@ -399,21 +413,17 @@ bool Properties::updatePackageWorkspace(QString pkwrk, QString mywrk, QString up
         if(!rc) {
 
             Directory::recursiveCopyDir(mywrk, temp);
-            QApplication::processEvents();
-
             Directory::recursiveCopyDir(pkwrk, mywrk);
-            QApplication::processEvents();
 
             saveUpdateFile(mywrk+updateFile, timestamp);
 
             QSettings settings(publisherKey, ASideGuiKey);
             settings.setValue(keepOldWorkspaceKey, true);
 
-            QApplication::restoreOverrideCursor();
+            stopStatusDialog();
 
             QMessageBox::information(this, tr("SimpleIDE Workspace Updated"),
                  tr("Workspace updated. A copy of the old workspace was saved as:")+"\n"+zipback);
-            QApplication::restoreOverrideCursor();
             retval = true;
         }
     }
@@ -667,8 +677,7 @@ bool Properties::updateLearnWorkspace()
             QString backdir = mywrk+"SimpleIDE_Backups/";
             QString zipback = backdir+"Workspace_"+timestamp+".zip";
 
-            QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-            //QApplication::processEvents(); // show wait cursor
+            showStatusDialog("Update Workspace", "Updating user's SimpleIDE workspace.");
 
             if(!wrkd.exists(backdir)) {
                 wrkd.mkdir(backdir);
@@ -677,7 +686,7 @@ bool Properties::updateLearnWorkspace()
             if(wrkd.exists(mywrk) == true) {
                 rc |= zip.zipit(ws, zipback) ? 0 : 1;
                 if(rc) {
-                    QApplication::restoreOverrideCursor();
+                    stopStatusDialog();
                     QMessageBox::information(this,tr("Workspace Backup Error"),
                         tr("Could not backup SimpleIDE workspace to:")+"\n"+
                         zipback);
@@ -686,7 +695,7 @@ bool Properties::updateLearnWorkspace()
             if(!rc) {
                 rc |= zip.unzipAll(fileName, ws, "Learn") ? 0 : 2;
                 if(rc) {
-                    QApplication::restoreOverrideCursor();
+                    stopStatusDialog();
                     QMessageBox::information(this,tr("Workspace Update Error"),
                         tr("Could not update SimpleIDE workspace with:")+"\n"+
                         fileName);
@@ -695,20 +704,20 @@ bool Properties::updateLearnWorkspace()
             if(!rc) {
                 saveUpdateFile(ws+updateFile, timestamp);
                 if(rc) {
-                    QApplication::restoreOverrideCursor();
+                    stopStatusDialog();
                     QMessageBox::information(this,tr("Workspace Update Error"),
                         tr("Could not write SimpleIDE workspace update file:")+"\n"+
                         ws+updateFile);
                 }
             }
             if(!rc) {
-                QApplication::restoreOverrideCursor();
+                stopStatusDialog();
                 QMessageBox::information(this,tr("Workspace Update Complete"),
                     tr("The SimpleIDE workspace update is done.")+"\n"+
                     tr("The old workspace has been saved as: ")+"\n"+
                     zipback);
             }
-            QApplication::restoreOverrideCursor();
+            stopStatusDialog();
         }
     }
     return rc == 0;

@@ -7,7 +7,7 @@ StatusDialog::StatusDialog(QWidget *parent) : QDialog(parent, 0)
 
     for(int j = 0; j < 5; j++) {
         QLabel *r = new QLabel();
-        r->setPixmap(QPixmap(":/images//status.png"));
+        r->setPixmap(QPixmap(":/images//Target2.png"));
         //r->setBackgroundRole(QPalette::Base);
         r->setEnabled(false);
         bump.append(r);
@@ -21,8 +21,11 @@ StatusDialog::StatusDialog(QWidget *parent) : QDialog(parent, 0)
     vlayout->addWidget(messageLabel);
     vlayout->addLayout(hlayout);
 
-    connect(&thread, SIGNAL(nextBump()), this, SLOT(nextBump()));
-    connect(&thread, SIGNAL(hideit()), this, SLOT(hide()));
+    //connect(&thread, SIGNAL(nextBump()), this, SLOT(nextBump()));
+    //connect(&thread, SIGNAL(hideit()), this, SLOT(hide()));
+
+    displayTimer = new QTimer(this);
+    connect(displayTimer, SIGNAL(timeout()), this, SLOT(animate()));
 
     this->setWindowTitle("Status Message Dialog");
     this->setStyleSheet("QDialog { background-color: white; }");
@@ -49,12 +52,13 @@ void StatusDialog::init(const QString title, const QString message)
     messageLabel->setText(message);
 
     this->setWindowFlags(Qt::Tool);
-    this->show();
-
-    QApplication::processEvents();
 
     index = 0;
-    thread.startit();
+    //thread.startit();
+    displayTimer->start(100);
+
+    this->show();
+    QApplication::processEvents();
 }
 
 void StatusDialog::addMessage(const QString message)
@@ -74,7 +78,9 @@ QString StatusDialog::getMessage()
 
 void StatusDialog::stop(int count)
 {
-    thread.stop(count);
+    //thread.stop(count);
+    displayTimer->stop();
+    hide();
 }
 
 void StatusDialog::nextBump()
@@ -85,6 +91,13 @@ void StatusDialog::nextBump()
     index = (index+1) % bump.count();
     bump[index]->setEnabled(true);
 }
+
+void StatusDialog::animate()
+{
+    nextBump();
+    QApplication::processEvents();
+}
+
 
 StatusDialogThread::StatusDialogThread(QObject *parent) : QThread(parent)
 {

@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-57"
+#define MyAppVersion "0-9-60"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -114,7 +114,7 @@ Source: "{#MyEduLibPath}\*"; DestDir: "{app}\Workspace"; Flags: ignoreversion re
 ; Stephanie says not to include the Spin folder with all docs - this one trims the docs.
 Source: "{#MySpinPath}\*"; DestDir: "{app}\propeller-gcc\spin"; Flags: ignoreversion recursesubdirs createallsubdirs
 
-Source: "..\ctags-5.8\ctags.exe"; DestDir: "{app}\propeller-gcc\bin"; Flags: ignoreversion
+;Source: "..\ctags-5.8\ctags.exe"; DestDir: "{app}\propeller-gcc\bin"; Flags: ignoreversion
 Source: "{#MyGccMingwPath}\bin\libi*"; DestDir: "{app}\propeller-gcc\bin"; Flags: ignoreversion
 Source: "{#MyTranslations}\SimpleIDE_es.qm"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
 Source: "{#MyTranslations}\SimpleIDE_fr.qm"; DestDir: {app}/translations; Flags: IgnoreVersion recursesubdirs createallsubdirs; 
@@ -146,11 +146,15 @@ Root: HKCU; SubKey: Software\{#MyAppPublisher}\SimpleIDE\*; Flags: DeleteKey Uni
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata}"; Check: NeedPropGccBinPath();
 
 ; File Association. Doesn't work without ChangesAssociations=yes
+Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: DeleteKey;
 Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
 ;Root: HKCR; Subkey: ".c"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
 ;Root: HKCR; Subkey: ".cpp"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
 ;Root: HKCR; Subkey: ".cogc"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
 ;Root: HKCR; Subkey: ".h"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
+Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: DeleteKey;
+Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: DeleteKey;
+Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,3"; Flags: DeleteKey;
 Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: UninsDeleteKey;
 Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: UninsDeleteKey;
 Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,3"; Flags: UninsDeleteKey;

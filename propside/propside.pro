@@ -5,7 +5,7 @@
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=58
+DEFINES += FIXVERSION=60
 VERSION = IDEVERSION"."MINVERSION"."FIXVERSION
 
 QT += core
@@ -169,3 +169,7 @@ win32 {
     LIBS += -lsetupapi
     LIBS += -L$$PWD -lzlib1
 }
+
+OTHER_FILES += \
+    images/progress-redorange.gif \
+    images/update.png
