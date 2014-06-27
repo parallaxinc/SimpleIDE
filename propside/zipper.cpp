@@ -72,6 +72,7 @@ bool Zipper::unzipAll(QString fileName, QString folder, QString special)
         first = s.left(s.indexOf(sep));
     }
     for(int n = 0; n < info.count(); n++) {
+        QApplication::processEvents();
         s = info[n].filePath;
         if(first.compare(s.left(s.indexOf(sep)))) {
             onefolder = false;
@@ -117,6 +118,7 @@ QString Zipper::unzipFile(QString zipName, QString fileName)
     ZipReader zipr(zipName);
     QList<ZipReader::FileInfo> info = zipr.fileInfoList();
     for(int n = 0; n < info.count(); n++) {
+        QApplication::processEvents();
         if(info.at(n).filePath.compare(fileName) == 0) {
             bytes = zipr.fileData(fileName);
             break;
@@ -131,6 +133,7 @@ bool Zipper::unzipFileExists(QString zipName, QString fileName)
     ZipReader zipr(zipName);
     QList<ZipReader::FileInfo> info = zipr.fileInfoList();
     for(int n = 0; n < info.count(); n++) {
+        QApplication::processEvents();
         file = info.at(n).filePath;
         qDebug() << file;
         if(!file.compare(fileName)) {
@@ -340,6 +343,7 @@ QStringList Zipper::directoryTreeList(QString folder)
     QStringList list;
     QDir dir(folder);
     foreach(QString entry, dir.entryList(QDir::AllEntries, QDir::DirsFirst)) {
+        QApplication::processEvents();
         if(entry.compare(".") == 0) continue;
         if(entry.compare("..") == 0) continue;
         QString name = dir.path()+"/"+entry;
@@ -366,6 +370,7 @@ bool Zipper::createFolderZip(QString source, QString dstZipFile)
 
     QStringList list = directoryTreeList(source);
     foreach(QString entry, list) {
+        QApplication::processEvents();
         if(entry.compare(".") == 0) continue;
         if(entry.compare("..") == 0) continue;
         if(entry.endsWith("/")) {

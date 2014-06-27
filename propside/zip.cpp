@@ -52,6 +52,7 @@
 #include <qdir.h>
 
 #include <zlib.h>
+#include <QApplication>
 
 #if defined(Q_OS_WIN)
 #  undef S_IFREG
@@ -925,6 +926,7 @@ bool ZipReader::extractAll(const QString &destinationDir) const
     // create directories first
     QList<FileInfo> allFiles = fileInfoList();
     foreach (FileInfo fi, allFiles) {
+        QApplication::processEvents();
         const QString absPath = destinationDir + "/" + fi.filePath;
         if (fi.isDir) {
             if (!baseDir.mkpath(fi.filePath))
@@ -955,6 +957,7 @@ bool ZipReader::extractAll(const QString &destinationDir) const
 #endif
 
     foreach (FileInfo fi, allFiles) {
+        QApplication::processEvents();
         const QString absFile = destinationDir + "/" + fi.filePath;
         QString absPath = destinationDir + "/" + fi.filePath;
         if(absPath.endsWith("/") == false) {

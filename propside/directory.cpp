@@ -1,4 +1,5 @@
 #include "directory.h"
+#include <QApplication>
 
 Directory::Directory()
 {
@@ -42,6 +43,8 @@ void Directory::recursiveCopyDir(QString srcdir, QString dstdir, QString notlist
     if(dstdir.length() < 1)
         return;
 
+    QApplication::processEvents();
+
     QStringList list;
     if(notlist.isEmpty() == false)
         list = notlist.split(" ", QString::SkipEmptyParts);
@@ -67,8 +70,13 @@ void Directory::recursiveCopyDir(QString srcdir, QString dstdir, QString notlist
             break;
         if(file.compare("..") == 0)
             break;
-        if(isInFilterList(file,list) == false)
+        QApplication::processEvents();
+        if(isInFilterList(file,list) == false) {
+            if(QFile::exists(dstdir+file)) {
+                QFile::remove(dstdir+file);
+            }
             QFile::copy(srcdir+file, dstdir+file);
+        }
     }
     slist = spath.entryList(QDir::AllDirs, QDir::DirsLast);
     foreach(file, slist) {
@@ -161,6 +169,8 @@ void Directory::recursiveRemoveDir(QString dir)
     if(dir.length() < 1)
         return;
 
+    QApplication::processEvents();
+
     if(dir.at(dir.length()-1) != '/')
         dir += '/';
 
@@ -170,6 +180,7 @@ void Directory::recursiveRemoveDir(QString dir)
             continue;
         if(file.compare("..") == 0)
             continue;
+        QApplication::processEvents();
         QFile::remove(dir+file);
     }
     dlist = dpath.entryList(QDir::AllDirs, QDir::DirsLast);

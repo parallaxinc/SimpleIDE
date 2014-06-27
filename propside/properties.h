@@ -120,6 +120,8 @@ public:
     bool getKeepZipFolder();
     bool getAutoLib();
 
+    void showStatusDialog(QString title, const QString text);
+    void stopStatusDialog();
     void saveUpdateFile(QString name, QString timestamp);
     bool workspaceSane(QString pkwrk, QString mywrk);
     bool replaceLearnWorkspace();
@@ -253,6 +255,8 @@ private:
     QComboBox   hlBlockComColor;
 
     QVector<PColor*> propertyColors;
+
+    StatusDialog *statDialog;
 };
 
 

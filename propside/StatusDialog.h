@@ -2,6 +2,7 @@
 #define STATUSDIALOG_H
 
 #include <QtWidgets>
+#include <QTimer>
 
 class StatusDialogThread : public QThread
 {
@@ -37,6 +38,7 @@ public:
     void stop(int count = 0);
 
 public slots:
+    void animate();
     void nextBump();
 
 private:
@@ -44,6 +46,7 @@ private:
     StatusDialogThread thread;
     QLabel  *messageLabel;
     QList<QLabel*> bump;
+    QTimer *displayTimer;
 };
 
 #endif // STATUSDIALOG_H

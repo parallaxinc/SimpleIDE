@@ -41,6 +41,7 @@
 #include "PropellerID.h"
 #include "PortConnectionMonitor.h"
 #include "zipper.h"
+#include "StatusDialog.h"
 
 #define untitledstr "Untitled"
 

@@ -118,6 +118,7 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
      */
     QStringList inclist;
     for(int n = 1; rc == 0 && n < list.length(); n++) {
+        QApplication::processEvents();
         progress->setValue(100*n/maxprogress);
         QString name = list[n];
         if(name.length() == 0)
@@ -239,6 +240,7 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     /* add library .a files to the end of the list
      */
     for(int n = 0; n < list.length(); n++) {
+        QApplication::processEvents();
         progress->setValue(100*n/maxprogress);
         QString name = list[n];
         if(name.length() == 0)
@@ -756,6 +758,7 @@ int  BuildC::runCompiler(QStringList copts)
 
         libadd = getLibraryList(newList,this->projectFile);
         foreach(QString s, libadd) {
+            QApplication::processEvents();
             bool contains = false;
             QString ms = s.mid(s.lastIndexOf("/")+1);
 
@@ -1357,6 +1360,7 @@ QStringList BuildC::getLibraryList(QStringList &ILlist, QString projFile)
 
     QStringList srcList;
     for(int n = files.count()-1; n > -1; n--) {
+        QApplication::processEvents();
         QString s = files.at(n);
         if(s.indexOf("-I") == 0 ||
            s.indexOf("-L") == 0 ||
@@ -1373,6 +1377,7 @@ QStringList BuildC::getLibraryList(QStringList &ILlist, QString projFile)
 
     QStringList ilist;
     for(int n = 0; n < ILlist.count(); n+=2) {
+        QApplication::processEvents();
         ilist.append(ILlist.at(n)+" "+ILlist.at(n+1));
     }
     QString projectPath = projFile;
@@ -1404,6 +1409,7 @@ int  BuildC::autoAddLib(QString projectPath, QString srcFile, QString libdir, QS
     filesHash[includedStr] = includedStr;
 
     foreach(QString inc, findlist) {
+        QApplication::processEvents();
         inc = inc.mid(inc.indexOf(include)+include.length());
         inc = inc.trimmed();
         //if(inc.at(0) == '<') continue;

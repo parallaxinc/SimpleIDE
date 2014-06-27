@@ -134,6 +134,8 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
         this->restoreGeometry(geo);
     }
 
+    statusDialog = new StatusDialog(this);
+
     /* setup properties dialog */
     propDialog = new Properties(this);
     connect(propDialog,SIGNAL(accepted()),this,SLOT(propertiesAccepted()));
@@ -4604,9 +4606,10 @@ void MainSpinWindow::updateWorkspace()
        tr("Get the latest workspace from the ")+
        "<a href=http://learn.parallax.com/propeller-c-set-simpleide/update-simpleide-workspace>Parallax Learn</a>"+
        tr(" site, ")+tr("then click Update to find and select that archive.")+"\n"+
-       tr("Current workspace folder will be backed up."),"Update","Cancel");
-    //tr("To update the SimpleIDE workspace, please answer yes, and choose a Workspace .zip file."));
+       tr("Current workspace folder will be backed up.")+" "+
+       tr("All open files will be closed before update."),"Update","Cancel");
     if(rc == 0) {
+        closeAll();
         propDialog->updateLearnWorkspace();
     }
 }
@@ -5088,6 +5091,9 @@ int  MainSpinWindow::runBuild(QString option)
         QMessageBox::critical(this, tr("Can't Build"), tr("A project must be loaded to build programs."));
         return 1;
     }
+
+    statusDialog->init("Build", "Building Program");
+
     checkAndSaveFiles();
     selectBuilder();
 
@@ -5134,7 +5140,11 @@ int  MainSpinWindow::runBuild(QString option)
     int maxw = fs.width() - status->x()-100;
     status->setMaximumWidth(maxw);
 
-    return builder->runBuild(option, projectFile, aSideCompiler);
+    statusDialog->init("Build", "Building Propeller application.");
+    int rc = builder->runBuild(option, projectFile, aSideCompiler);
+    statusDialog->stop();
+
+    return rc;
 }
 
 void MainSpinWindow::resizeEvent(QResizeEvent *event)
@@ -7470,7 +7480,7 @@ void MainSpinWindow::setupFileMenu()
     toolsMenu->addSeparator();
     // added for simple view, not necessary anymore
     //toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(reloadBoardTypes()));
-    toolsMenu->addAction(tr("Update Workspace"), this, SLOT(updateWorkspace()));
+    toolsMenu->addAction(QIcon(":/images/update.png"), tr("Update Workspace"), this, SLOT(updateWorkspace()));
     toolsMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
 #ifdef ENABLE_AUTO_PORT
     toolsMenu->addAction(tr("Identify Propeller"), this, SLOT(findChip()), Qt::Key_F7);
