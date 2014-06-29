@@ -13,6 +13,7 @@ Terminal::Terminal(QWidget *parent) : QDialog(parent), portListener(NULL)
 void Terminal::init()
 {
     QVBoxLayout *termLayout = new QVBoxLayout();
+    termLayout->setContentsMargins(4,4,4,4);
     termEditor->setReadOnly(false);
 
     QAction *copyAction = new QAction(tr("Copy"),this);

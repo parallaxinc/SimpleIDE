@@ -56,6 +56,8 @@
 #define useKeys             "SimpleIDE_UseKeys"
 #define packageKey          "SimpleIDE_Package"
 #define simpleViewKey       "SimpleIDE_SimpleViewType"
+#define allowProjectViewKey "SimpleIDE_AllowProjectView"
+#define autoLibIncludeKey   "SimpleIDE_AutoLibInclude"
 #define oldViewBoxKey       "SimpleIDE_OldViewBoxReminder"
 #define ASideGuiGeometry    "SimpleIDE_WindowGeometry"
 #define helpStartupKey      "SimpleIDE_ShowHelpStart"
@@ -157,6 +159,8 @@ public slots:
     QString getSpinWorkspaceStr()   { return leditSpinWorkspace->text(); }
     QString getLoaderStr()          { return leditLoader->text(); }
 
+    void allowProjects();
+
 private:
 
     void setupFolders();
@@ -187,6 +191,8 @@ private:
     QString     tabSpacesStr;
     QString     loadDelayStr;
     Reset       resetTypeEnum;
+
+    bool        useAutoLib;
 
     bool         hlNumStyleBool;
     bool         hlNumWeightBool;
@@ -225,6 +231,7 @@ private:
     QComboBox   resetType;
     QCheckBox   keepZipFolder;
     QCheckBox   autoLibCheck;
+    QCheckBox   projectsCheck;
 
     QLineEdit   leditAltTerminal;
 

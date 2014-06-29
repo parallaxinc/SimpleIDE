@@ -1276,6 +1276,22 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
         }
     }
 
+    /* check for changes to linker libs */
+    foreach(QString s, copts) {
+        if(s.left(2).compare("-L")==0) {
+            QString libname = s.mid(s.lastIndexOf("lib"));
+            if(libname.length() > 0) {
+                libname = libname.mid(3);
+                if(libname.length() > 0) {
+                    libname = "-l"+libname;
+                    if(libs.contains(libname) == false) {
+                        libs.append(libname);
+                    }
+                }
+            }
+        }
+    }
+
     /* append libs lib count times */
     for(int n = libs.count(); n > 0; n--) {
         foreach(QString s, libs) {
