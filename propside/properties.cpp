@@ -661,15 +661,15 @@ bool Properties::updateLearnWorkspace()
         QDir dldir(homedl);
         if(dldir.exists()) dirname = homedl;
 
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Workspace Zip"), dirname, "Workspace Zip (*.zip);;");
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Choose Workspace Archive"), dirname, "Workspace Archive (*.zip *.zipside);;");
         if(fileName.length() < 1) {
-            QMessageBox::information(this,tr("Can't Update"), tr("A Workspace Zip file was not selected.")+"\n"+tr("Workspace will not be updated."));
+            QMessageBox::information(this,tr("Can't Update"), tr("A Workspace Archive was not selected.")+"\n"+tr("Workspace will not be updated."));
             return false;
         }
 
         QDir wrkd(mywrk);
         if(!QFile::exists(fileName)) {
-            QMessageBox::information(this,tr("No Zip File"),tr("Hmm, the zip file has disappeared."));
+            QMessageBox::information(this,tr("No Archive"),tr("Hmm, the Archive has disappeared."));
             rc = 0;
         }
         else {
@@ -966,11 +966,36 @@ void Properties::setupGeneral()
 #ifdef ENABLE_AUTOLIB
     autoLibCheck.setText(tr("Auto Include Simple Libraries"));
     autoLibCheck.setChecked(true);
-    tlayout->addWidget(&autoLibCheck, row++, 0);
+    tlayout->addWidget(&autoLibCheck, row, 0);
+
+    var = settings.value(autoLibIncludeKey);
+    if(var.canConvert(QVariant::Bool)) {
+        QString s = var.toString();
+        autoLibCheck.setChecked(var.toBool());
+    }
 #endif
 
+    projectsCheck.setText(tr("Projects"));
+
+    var = settings.value(allowProjectViewKey);
+    if(!var.isNull() && var.canConvert(QVariant::Int)) {
+        if(var.toInt() != 0) {
+            projectsCheck.setChecked(true);
+        }
+        else {
+            projectsCheck.setChecked(false);
+        }
+    }
+    else {
+        projectsCheck.setChecked(false);
+    }
+    tlayout->addWidget(&projectsCheck, row, 1);
+    connect(&projectsCheck, SIGNAL(clicked()), this, SLOT(allowProjects()));
+
+    row++;
+
 #ifdef ENABLE_KEEP_ZIP_FOLDER
-    keepZipFolder.setText(tr("Keep Zip Folder"));
+    keepZipFolder.setText(tr("Keep Archive Folder"));
     keepZipFolder.setChecked(false);
     tlayout->addWidget(&keepZipFolder, row++, 0);
 #endif
@@ -987,6 +1012,34 @@ void Properties::setupGeneral()
     gbGeneral->setLayout(tlayout);
     glayout->addWidget(gbLoader);
     glayout->addWidget(gbGeneral);
+}
+
+void Properties::allowProjects()
+{
+    QSettings settings(publisherKey, ASideGuiKey);
+    settings.setValue(allowProjectViewKey,0);
+
+    if(projectsCheck.isChecked()) {
+
+        QString s = QInputDialog::getText(this,
+            tr("BRIDGEKEEPER"),
+            tr("Hee hee heh. Stop! What... is your name?"),
+            QLineEdit::Normal, "******");
+
+        if(s.compare("Arthur") == 0) {
+            projectsCheck.setChecked(true);
+            settings.setValue(allowProjectViewKey,1);
+            settings.setValue(simpleViewKey, 0);
+            QMessageBox::information(this,
+                tr("Restart IDE"), tr("Please restart the IDE to enter Project View."));
+        }
+        else {
+            projectsCheck.setChecked(false);
+        }
+    }
+    else {
+        projectsCheck.setChecked(false);
+    }
 }
 
 void Properties::setupOptional()
@@ -1597,6 +1650,7 @@ void Properties::accept()
     settings.setValue(spinWorkspaceKey,leditSpinWorkspace->text());
     settings.setValue(configFileKey,leditLoader->text());
 
+    settings.setValue(autoLibIncludeKey,autoLibCheck.isChecked());
     settings.setValue(tabSpacesKey,tabSpaces.text());
     settings.setValue(loadDelayKey,loadDelay.text());
     settings.setValue(resetTypeKey,resetType.currentIndex());
@@ -1642,6 +1696,7 @@ void Properties::reject()
     leditSpinWorkspace->setText(spinWorkspaceStr);
     leditLoader->setText(loaderStr);
 
+    autoLibCheck.setChecked(useAutoLib);
     tabSpaces.setText(tabSpacesStr);
     loadDelay.setText(loadDelayStr);
     resetType.setCurrentIndex(resetTypeEnum);
@@ -1680,6 +1735,7 @@ void Properties::showProperties()
     spinWorkspaceStr = leditSpinWorkspace->text();
     loaderStr = leditLoader->text();
 
+    useAutoLib = autoLibCheck.isChecked();
     tabSpacesStr = tabSpaces.text();
     loadDelayStr = loadDelay.text();
     resetTypeEnum = (Reset)resetType.currentIndex();

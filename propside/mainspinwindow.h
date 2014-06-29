@@ -453,6 +453,8 @@ private:
     StatusDialog    *statusDialog;
     Zipper          zipper;
 
+    bool            allowProjectView;
+
 public slots:
     void ideDebugShow();
 private:

@@ -107,7 +107,7 @@ void myMessageOutput(QtMsgType type, const char *msg)
 #endif
 
 MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
-    compileStatusClickEnable(false), tabChangeDisable(false), fileChangeDisable(false)
+    compileStatusClickEnable(true), tabChangeDisable(false), fileChangeDisable(false)
 {
 #if defined(IDEDEBUG)
     debugStatus = new QPlainTextEdit(this);
@@ -143,9 +143,19 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
 
     /* detect user's startup view */
     simpleViewType = true;
-    QVariant viewv = settings->value(simpleViewKey);
-    if(viewv.canConvert(QVariant::Bool)) {
-        simpleViewType = viewv.toBool();
+
+    QVariant viewv = settings->value(allowProjectViewKey);
+    allowProjectView = false;
+    if(viewv.isNull() == false) {
+        if(viewv.canConvert(QVariant::Int)) {
+            allowProjectView = viewv.toInt() != 0;
+        }
+        if(allowProjectView) {
+            QVariant viewv = settings->value(simpleViewKey);
+            if(viewv.canConvert(QVariant::Bool)) {
+                simpleViewType = viewv.toBool();
+            }
+        }
     }
 
     /* setup user's editor font */
@@ -324,8 +334,10 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
                     }
     #endif
                     if(QFile::exists(fileName)) {
+                        //tabChangeDisable = true;
                         openFileName(fileName);
                         setProject(); // last file is always first project
+                        //tabChangeDisable = false;
                     }
                     else {
                         QMessageBox::critical(this,tr("File not found"),
@@ -650,11 +662,23 @@ void MainSpinWindow::addLib()
     if(path.isEmpty())
         return;
 
-    libname = path.mid(path.lastIndexOf('/')+1);
-    QString s = libname;
-    s = s.left(3);
-    if(s.compare("lib") == 0)
-        libname = libname.mid(3);
+    QString s;
+
+    for(;;) {
+        if(path.isEmpty() || path.lastIndexOf("/") < 0) {
+            QMessageBox::information(this, tr("Can't find Library"),
+                tr("Library not found in\n")+libname);
+            return;
+        }
+        s= path.mid(path.lastIndexOf("/")+1);
+        s = s.left(3);
+        if(s.compare("lib") == 0) {
+            libname = path.mid(path.lastIndexOf("/")+1);
+            libname = libname.mid(3);
+            break;
+        }
+        path = path.left(path.lastIndexOf("/"));
+    }
 
     QString linkOptions = projectOptions->getLinkOptions();
     QStringList liblist = linkOptions.split(" ",QString::SkipEmptyParts);
@@ -1066,7 +1090,6 @@ void MainSpinWindow::openFileName(QString fileName)
     if(s.endsWith(SIDE_EXTENSION, Qt::CaseInsensitive)) {
         openProject(fileName);
     }
-    //if(s.endsWith(".zip",Qt::CaseInsensitive)) ... ugh, how exactly do we deal with that?
     else if(s.endsWith(".zip",Qt::CaseInsensitive)) {
         Zipper  zip;
         QString fileName;
@@ -3503,6 +3526,11 @@ void MainSpinWindow::openRecentProject()
 
 void MainSpinWindow::setCurrentFile(const QString &fileName)
 {
+    if(this->simpleViewType) {
+        // don't show files in simpleview
+        return;
+    }
+
     QStringList files = settings->value(recentFilesKey).toStringList();
     files.removeAll(fileName);
     files.prepend(fileName);
@@ -3524,6 +3552,11 @@ void MainSpinWindow::setCurrentFile(const QString &fileName)
 
 void MainSpinWindow::updateRecentFileActions()
 {
+    if(this->simpleViewType) {
+        // don't show files in simpleview
+        return;
+    }
+
     QStringList files = settings->value(recentFilesKey).toStringList();
 
     int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
@@ -4276,7 +4309,12 @@ void MainSpinWindow::replaceInFile()
  */
 void MainSpinWindow::findSymbolHelp(QString text)
 {
-    helpDialog->show(aSideDocPath, text);
+    QVariant lib = settings->value(gccWorkspaceKey);
+    // settings->value(spinLibraryKey); nothing for spin really
+    QString s = lib.toString()+"Learn/";
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    helpDialog->show(s, text);
+    QApplication::restoreOverrideCursor();
 }
 
 void MainSpinWindow::findDeclaration(QPoint point)
@@ -4601,13 +4639,27 @@ void MainSpinWindow::updateWorkspace()
     // link was:
     //"<a href=http://learn.parallax.com/propeller-c-set-simpleide/update-your-learn-folder>Parallax Learn</a>"+
 
-    int rc = QMessageBox::question(this, tr("Update SimpleIDE Workspace?"),
+    int rc = 0;
+#if 1
+    /*
+     * Click Browse to select the library or workspace archive you downloaded.
+     *
+     * All open files will be closed and the current workspace will be backed up before the update.
+     *                        [ Browse ]    [ Cancel ]
+     */
+    rc = QMessageBox::question(this, tr("Update SimpleIDE Workspace?"),
+       tr("Click Browse to select the library or workspace archive you downloaded.")+"\n\n"+
+       tr("All open files will be closed and the current workspace will be backed up before the update."),
+       "Browse","Cancel");
+#else
+    rc = QMessageBox::question(this, tr("Update SimpleIDE Workspace?"),
        tr("This updates the SimpleIDE workspace folder's examples, libraries, and documentation. ")+
        tr("Get the latest workspace from the ")+
        "<a href=http://learn.parallax.com/propeller-c-set-simpleide/update-simpleide-workspace>Parallax Learn</a>"+
        tr(" site, ")+tr("then click Update to find and select that archive.")+"\n"+
        tr("Current workspace folder will be backed up.")+" "+
        tr("All open files will be closed before update."),"Update","Cancel");
+ #endif
     if(rc == 0) {
         closeAll();
         propDialog->updateLearnWorkspace();
@@ -5479,13 +5531,20 @@ void MainSpinWindow::currentTabChanged()
     int n = editorTabs->currentIndex();
     //qDebug() << "currentTabChanged tab" << n;
     if(n < 0) return;
+
     QString file = editorTabs->tabToolTip(n);
+    if(file.length() == 0) {
+        return;
+    }
     QString proj = file.left(file.lastIndexOf("."));
     qDebug() << "currentTabChanged" << file << simpleViewType << proj;
 
     // There is some concern that this won't be productive with Open Tab or Add Tab
     // If project list contains the tab and tab doesn't match the project, don't change the project.
 
+    if(projectFile.compare("none") == 0) {
+        projectFile = proj+SIDE_EXTENSION;
+    }
     QStringList plist = projectList(projectFile);
     QString pbase = projectFile;
     pbase = pbase.left(pbase.lastIndexOf("."));
@@ -6188,6 +6247,9 @@ void MainSpinWindow::addProjectIncPath(const QString &inpath)
 
     QDir path(projectFile.mid(0,projectFile.lastIndexOf("/")));
     fileName = path.relativeFilePath(fileName);
+    QDir test(path.path()+"/"+fileName);
+    if(test.exists() && fileName.mid(2).compare("./") != 0)
+        fileName = "./"+fileName;
     lastPath = sourcePath(fileName);
 
     QString s = QDir::fromNativeSeparators(fileName);
@@ -6228,6 +6290,9 @@ void MainSpinWindow::addProjectLibPath(const QString &inpath)
 
     QDir path(projectFile.mid(0,projectFile.lastIndexOf("/")));
     fileName = path.relativeFilePath(fileName);
+    QDir test(path.path()+"/"+fileName);
+    if(test.exists() && fileName.mid(2).compare("./") != 0)
+        fileName = "./"+fileName;
     lastPath = sourcePath(fileName);
 
     QString s = QDir::fromNativeSeparators(fileName);
@@ -7445,11 +7510,12 @@ void MainSpinWindow::setupFileMenu()
     simpleViewIcon = QIcon(":/images/ViewSimple.png");
     projectViewIcon = QIcon(":/images/ViewProject.png");
 
-    QString viewstr = this->simpleViewType ? tr(ProjectView) : tr(SimpleView);
-    toolsMenu->addAction(this->simpleViewType ? projectViewIcon : simpleViewIcon,
-                         viewstr,this,SLOT(toggleSimpleView()));
-
-    toolsMenu->addSeparator();
+    if(allowProjectView) {
+        QString viewstr = this->simpleViewType ? tr(ProjectView) : tr(SimpleView);
+        toolsMenu->addAction(this->simpleViewType ? projectViewIcon : simpleViewIcon,
+                             viewstr,this,SLOT(toggleSimpleView()));
+        toolsMenu->addSeparator();
+    }
 
     if(ctags->enabled()) {
         toolsMenu->addAction(QIcon(":/images/back.png"),tr("Go &Back"), this, SLOT(prevDeclaration()), QKeySequence::Back);
@@ -7599,10 +7665,12 @@ void MainSpinWindow::setupToolBars()
     /*
      * Add the AddLib button to project
      */
+#ifdef USE_ADDLIB_BUTTON
     btnProjectAddLib = new QAction(this);
     addToolBarAction(projToolBar, btnProjectAddLib, QString(":/images/addlib.png"));
     btnProjectAddLib->setToolTip(tr("Add Simple Library"));
     connect(btnProjectAddLib,SIGNAL(triggered()),this,SLOT(addLib()));
+#endif
 
     /*
      * Add Tools Toobar ... add tab, add lib
