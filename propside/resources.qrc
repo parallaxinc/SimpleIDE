@@ -110,5 +110,6 @@
         <file>images/Target.png</file>
         <file>images/update.png</file>
         <file>images/Target2.png</file>
+        <file>images/helpfunction.css</file>
     </qresource>
 </RCC>
