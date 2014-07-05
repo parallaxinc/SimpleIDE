@@ -1027,7 +1027,9 @@ void MainSpinWindow::openFile(const QString &path)
             lastPath = sourcePath(fileName);
     }
 #if 1
-    if(fileName.indexOf(SIDE_EXTENSION) > 0) {
+    // if side file and not the project file, open
+    if(fileName.indexOf(SIDE_EXTENSION) > 0 &&
+       fileName.compare(projectFile) != 0) {
         // save old project options before loading new one
         saveProjectOptions();
         // load new project
@@ -1088,7 +1090,9 @@ void MainSpinWindow::openFileName(QString fileName)
     QString s = fileName;
 
     if(s.endsWith(SIDE_EXTENSION, Qt::CaseInsensitive)) {
-        openProject(fileName);
+        if(s.compare(projectFile) != 0) {
+            openProject(fileName);
+        }
     }
     else if(s.endsWith(".zip",Qt::CaseInsensitive)) {
         Zipper  zip;
@@ -3633,34 +3637,35 @@ void MainSpinWindow::updateRecentProjectActions()
 
 void MainSpinWindow::saveFile()
 {
-        bool saveas = false;
-        int n = this->editorTabs->currentIndex();
-        QString fileName = editorTabs->tabToolTip(n);
-        QString data = editors->at(n)->toPlainText();
-        if(fileName.isEmpty()) {
-            fileName = fileDialog.getSaveFileName(this, tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
-            saveas = true;
+    bool saveas = false;
+    int n = this->editorTabs->currentIndex();
+    QString fileName = editorTabs->tabToolTip(n);
+    QString data = editors->at(n)->toPlainText();
+    if(fileName.isEmpty()) {
+        fileName = fileDialog.getSaveFileName(this, tr("Save As File"), lastPath, tr(SOURCE_FILE_TYPES));
+        saveas = true;
+    }
+    if (fileName.isEmpty())
+        return;
+    if(fileName.length() > 0)
+        lastPath = sourcePath(fileName);
+    editorTabs->setTabText(n,shortFileName(fileName));
+    editorTabs->setTabToolTip(n,fileName);
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        QTextStream os(&file);
+        os.setCodec("UTF-8"); // for now save everything as UTF-8
+        if (file.open(QFile::WriteOnly)) {
+            os << data;
+            file.close();
         }
-        if (fileName.isEmpty())
-            return;
-        if(fileName.length() > 0)
-            lastPath = sourcePath(fileName);
-        editorTabs->setTabText(n,shortFileName(fileName));
-        editorTabs->setTabToolTip(n,fileName);
-        if (!fileName.isEmpty()) {
-            QFile file(fileName);
-            QTextStream os(&file);
-            os.setCodec("UTF-8"); // for now save everything as UTF-8
-            if (file.open(QFile::WriteOnly)) {
-                os << data;
-                file.close();
-            }
-            if(saveas) {
-                this->closeTab(n);
-                this->openFileName(fileName);
-            }
+        if(saveas) {
+            this->closeTab(n);
+            this->openFileName(fileName);
         }
-        saveProjectOptions();
+    }
+    saveProjectOptions();
+    openProjectFileMatch(fileName);
 }
 
 void MainSpinWindow::saveEditor()
@@ -5146,10 +5151,16 @@ int  MainSpinWindow::runBuild(QString option)
 
     statusDialog->init("Build", "Building Program");
 
+    int index = editorTabs->currentIndex();
+    QString file = editorTabs->tabText(index);
+    if(file.endsWith("*")) {
+        saveFile();
+    }
+
     checkAndSaveFiles();
     selectBuilder();
 
-    int index = editorTabs->currentIndex();
+    index = editorTabs->currentIndex();
     if(index > -1) {
         QString tabname = this->editorTabs->tabText(index);
         QString mainFile;
@@ -5532,15 +5543,31 @@ void MainSpinWindow::currentTabChanged()
     //qDebug() << "currentTabChanged tab" << n;
     if(n < 0) return;
 
-    QString file = editorTabs->tabToolTip(n);
+    QString file = editorTabs->tabText(n);
+    if(file.endsWith("*")) {
+        // file being edited, don't load another copy.
+        return;
+    }
+    file = editorTabs->tabToolTip(n);
     if(file.length() == 0) {
         return;
     }
     QString proj = file.left(file.lastIndexOf("."));
     qDebug() << "currentTabChanged" << file << simpleViewType << proj;
 
+    openProjectFileMatch(file);
+}
+
+/**
+ * @brief openProjectFileMatch allows opening a project with the same base file name.
+ * @param file
+ */
+void MainSpinWindow::openProjectFileMatch(QString file)
+{
     // There is some concern that this won't be productive with Open Tab or Add Tab
     // If project list contains the tab and tab doesn't match the project, don't change the project.
+
+    QString proj = file.left(file.lastIndexOf("."));
 
     if(projectFile.compare("none") == 0) {
         projectFile = proj+SIDE_EXTENSION;
@@ -7071,6 +7098,8 @@ void MainSpinWindow::enumeratePortsEvent()
     QApplication::processEvents();
     int len = this->cbPort->count();
 
+    QString lastPort = term->getLastConnectedPortName();
+
     // need to check if the port we are using disappeared.
     if(this->btnConnected->isChecked()) {
         bool notFound = true;
@@ -7078,13 +7107,32 @@ void MainSpinWindow::enumeratePortsEvent()
         for(int n = this->cbPort->count()-1; n > -1; n--) {
             QString name = cbPort->itemText(n);
             if(!name.compare(plPortName)) {
+                // if port found, set cbport name
+                cbPort->setCurrentIndex(n);
                 notFound = false;
             }
         }
         if(notFound) {
+            // disable port which saves last port
             btnConnected->setChecked(false);
-            //connectButton();
             term->setPortEnabled(false);
+            // close port separately because of different OS requirements
+            portListener->close();
+            // don't use connectButton() because it hides the terminal
+        }
+    }
+    else if(lastPort.length() > 0) {
+        for(int n = this->cbPort->count()-1; n > -1; n--) {
+            QString name = cbPort->itemText(n);
+            if(!name.compare(lastPort)) {
+                // old port found
+                cbPort->setCurrentIndex(n);
+                // make sure we are using lastport
+                portListener->init(lastPort,portListener->getBaudRate());
+                // reopen port with connect button
+                btnConnected->setChecked(true);
+                connectButton();
+            }
         }
     }
     else if(len > 1) {

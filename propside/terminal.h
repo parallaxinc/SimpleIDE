@@ -26,6 +26,8 @@ public:
     bool setBaudRate(int baud);
     void setEchoOn(bool echoOn);
 
+    QString getLastConnectedPortName();
+
 signals:
     void enablePortCombo();
     void disablePortCombo();
@@ -56,6 +58,8 @@ private:
 private:
     QPushButton     *buttonEnable;
     PortListener    *portListener;
+
+    QString lastConnectedPortName;
 };
 
 #endif // TERMINAL_H
