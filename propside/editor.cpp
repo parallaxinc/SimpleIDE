@@ -183,9 +183,9 @@ void Editor::mouseMoveEvent (QMouseEvent *e)
 
 void Editor::mousePressEvent (QMouseEvent *e)
 {
-    if(ctrlPressed) {
+    if(ctrlPressed || (QApplication::keyboardModifiers() & Qt::CTRL) != 0) {
         static_cast<MAINWINDOW*>(mainwindow)->findDeclaration(e->pos());
-        //qDebug() << "mousePressEvent ctrlPressed";
+        qDebug() << "mousePressEvent ctrlPressed" << ctrlPressed << (QApplication::keyboardModifiers() & Qt::CTRL);
         ctrlPressed = false;
     }
     QPlainTextEdit::mousePressEvent(e);
@@ -224,7 +224,8 @@ int Editor::autoEnterColumnC()
     int stop = -1;
     int indent = -1;
     int star = -1;
-    int slcm = text.indexOf("//");
+    int slcm = -1; // disable single line comment
+    // int slcm = text.indexOf("//");
 
     // don't indent under closed comment
     if(text.indexOf("*/") > -1) {
@@ -338,16 +339,25 @@ bool Editor::isCommentOpen(int line)
     int como = 0;
     int comc = 0;
 
+    int lpos = -1;
+    int cpos = -1;
+
     for(int n = 0; n < length; n++) {
-        QString s = sl.at(n);
+        s = sl.at(n);
         if(s.contains("/*")) {
             como++;
         }
         if(s.contains("*/")) {
             comc++;
         }
-        if(line == n && como > comc)
-            return true;
+        cpos = s.lastIndexOf("*");
+        if(line == n && como > comc) {
+            if(lpos > -1 && cpos == lpos) {
+                return true;
+            }
+        }
+        lpos = cpos;
+
     }
     return !(como == comc);
 }
