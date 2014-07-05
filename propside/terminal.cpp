@@ -4,7 +4,7 @@
 #define TERM_ENABLE_BUTTON
 //#endif
 
-Terminal::Terminal(QWidget *parent) : QDialog(parent), portListener(NULL)
+Terminal::Terminal(QWidget *parent) : QDialog(parent), portListener(NULL), lastConnectedPortName("")
 {
     termEditor = new Console(parent);
     init();
@@ -229,15 +229,19 @@ void Terminal::toggleEnable()
 #endif
 }
 
+/* don't open/close port here because different OS have different requirements.
+ */
 void Terminal::setPortEnabled(bool value)
 {
     if(value) {
+        QString plName = portListener->getPortName();
 #ifdef TERM_ENABLE_BUTTON
         buttonEnable->setText("Disable");
 #endif
         termEditor->setPortEnable(true);
         portLabel.setEnabled(true);
-        this->portLabel.setText(portListener->getPortName());
+        lastConnectedPortName = plName;
+        this->portLabel.setText(plName);
     }
     else {
 #ifdef TERM_ENABLE_BUTTON
@@ -245,9 +249,15 @@ void Terminal::setPortEnabled(bool value)
 #endif
         termEditor->setPortEnable(false);
         portLabel.setEnabled(false);
+        lastConnectedPortName = getPortName();
         this->portLabel.setText("NONE");
     }
     QApplication::processEvents();
+}
+
+QString Terminal::getLastConnectedPortName()
+{
+    return lastConnectedPortName;
 }
 
 void Terminal::copyFromFile()

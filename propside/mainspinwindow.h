@@ -91,6 +91,7 @@ public slots:
     void newProject();
     void newProjectAccepted();
     void openProject(const QString &path = QString());
+    void openProjectFileMatch(QString file);
     void saveProject();
     QStringList saveAsProjectNewList(QStringList projList, QString projFolder, QString projFile, QString dstPath, QString dstProjFile);
     int  copyProjectAs(QString srcProjFile, QString dstProjFile, QString mainFile);
