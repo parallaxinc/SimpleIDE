@@ -10,6 +10,7 @@ VERSION = IDEVERSION"."MINVERSION"."FIXVERSION
 
 QT += core
 QT += gui
+
 greaterThan(QT_MAJOR_VERSION, 4): {
     QT -= gui
     QT += widgets
@@ -172,4 +173,5 @@ win32 {
 
 OTHER_FILES += \
     images/progress-redorange.gif \
-    images/update.png
+    images/update.png \
+    images/helpfunction.css
