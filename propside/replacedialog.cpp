@@ -4,6 +4,7 @@
  */
 
 #include <QtWidgets>
+#include <QMargins>
 #include "replacedialog.h"
 
 #define USE_REGEX 0
@@ -14,6 +15,8 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
     int col = 0;
     int span = 1;
 
+    findForward = true;
+
     QLabel *findLabel = new QLabel(tr("Find text:"));
     findEdit = new QLineEdit;
     // don't connect find text, it causes unnecessary changes in editors
@@ -21,19 +24,24 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
     QLabel *replaceLabel = new QLabel(tr("Replace with:"));
     replaceEdit = new QLineEdit;
 
+    int bwd = 35;
     findNextButton = new QToolButton();
     findNextButton->setIcon(QIcon(":/images/next.png"));
+    findNextButton->setMinimumWidth(bwd);
     findNextButton->setToolTip(tr("Find Next"));
     findPrevButton = new QToolButton();
     findPrevButton->setIcon(QIcon(":/images/previous.png"));
+    findPrevButton->setMinimumWidth(bwd);
     findPrevButton->setToolTip(tr("Find Previous"));
     findText = "";
 
     replaceNextButton = new QToolButton();
     replaceNextButton->setIcon(QIcon(":/images/next.png"));
+    replaceNextButton->setMinimumWidth(bwd);
     replaceNextButton->setToolTip(tr("Replace and Find Next"));
     replacePrevButton = new QToolButton();
     replacePrevButton->setIcon(QIcon(":/images/previous.png"));
+    replacePrevButton->setMinimumWidth(bwd);
     replacePrevButton->setToolTip(tr("Replace and Find Previous"));
     replaceText = "";
     replaceAllButton = new QPushButton(tr("Replace All"));
@@ -41,11 +49,13 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
     wholeWordButton = new QToolButton(this);
     wholeWordButton->setToolTip(tr("Whole Word"));
     wholeWordButton->setIcon(QIcon(":/images/word.png"));
+    wholeWordButton->setMinimumWidth(bwd);
     wholeWordButton->setCheckable(true);
 
     caseSensitiveButton = new QToolButton(this);
     caseSensitiveButton->setToolTip(tr("Case Sensitive"));
     caseSensitiveButton->setIcon(QIcon(":/images/case.png"));
+    caseSensitiveButton->setMinimumWidth(bwd);
     caseSensitiveButton->setCheckable(true);
 
 #if USE_REGEX
@@ -57,15 +67,16 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
 
     QHBoxLayout *optLayout = new QHBoxLayout();
 
-    okButton = new QPushButton(tr("&Cancel"));
+    okButton = new QPushButton(tr("Find"), this);
 
     layout = new QGridLayout();
     layout->addWidget(findLabel,row,col,span,span);
     layout->addWidget(findEdit,row,++col,span,span);
+    col++;
     layout->addWidget(findPrevButton,row,++col,span,span);
     layout->addWidget(findNextButton,row,++col,span,span);
 
-    QLabel *label = new QLabel(tr("Use Up/Down arrows to find/replace. Other buttons filter."));
+    QLabel *label      = new QLabel(tr("Use Up/Down arrows to find/replace. Other small buttons filter."));
 
     optLayout->addWidget(wholeWordButton);
     optLayout->addWidget(caseSensitiveButton);
@@ -78,27 +89,39 @@ ReplaceDialog::ReplaceDialog(QWidget *parent) : QDialog(parent)
     col= 0;
     layout->addWidget(replaceLabel,row,col,span,span);
     layout->addWidget(replaceEdit,row,++col,span,span);
+    col++;
     layout->addWidget(replacePrevButton,row,++col,span,span);
     layout->addWidget(replaceNextButton,row,++col,span,span);
+
     layout->addWidget(replaceAllButton,row,++col,span,span);
     row+=2;
+    layout->addWidget(label,row,0,span,5);
     layout->addWidget(okButton,row,col,span,span);
-    layout->addWidget(label,row,0,span,4);
     okButton->setDefault(true);
 
     setLayout(layout);
     setMinimumWidth(500);
 
-    setWindowTitle(tr("Find and Replace Text"));
+    setWindowTitle(tr("Find/Replace Text"));
     connect(findNextButton, SIGNAL(clicked()), this, SLOT(findNextClicked()));
     connect(findPrevButton, SIGNAL(clicked()), this, SLOT(findPrevClicked()));
     connect(replaceNextButton, SIGNAL(clicked()), this, SLOT(replaceNextClicked()));
     connect(replacePrevButton, SIGNAL(clicked()), this, SLOT(replacePrevClicked()));
     connect(replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAllClicked()));
-    connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(okButton, SIGNAL(clicked()), this, SLOT(findDirection()));
 
     editor = NULL;
     findPosition = 0;
+}
+
+void ReplaceDialog::findDirection()
+{
+    if(findForward) {
+        findNextClicked();
+    }
+    else {
+        findPrevClicked();
+    }
 }
 
 QTextDocument::FindFlag ReplaceDialog::getFlags(int prev)
@@ -162,6 +185,7 @@ void ReplaceDialog::findNextClicked()
     if(editor == NULL)
         return;
 
+    findForward = true;
     int count = 0;
     QString text = findEdit->text();
     QString edtext = editor->toPlainText();
@@ -211,6 +235,7 @@ void ReplaceDialog::findPrevClicked()
     if(editor == NULL)
         return;
 
+    findForward = false;
     int count = 0;
     QString text = findEdit->text();
     QString edtext = editor->toPlainText();
@@ -256,7 +281,7 @@ void ReplaceDialog::findPrevClicked()
         QTextCursor cur = editor->textCursor();
         int len = cur.selectedText().length();
         cur.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor);
-        cur.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor);
+        //cur.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor);
         cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor,len);
         editor->setTextCursor(cur);
         findPosition = editor->textCursor().position();
@@ -363,6 +388,8 @@ void ReplaceDialog::replaceAllClicked()
 
     QMessageBox::information(this, tr("Replace Done"),
         tr("Replaced %1 instances of \"%2\".").arg(count).arg(text));
+
+    okButton->setFocus(); // focus back to find
 }
 
 QString ReplaceDialog::getReplaceText()
@@ -400,12 +427,6 @@ bool ReplaceDialog::showEndMessage(QString type)
     cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor);
     editor->setTextCursor(cur);
     return true;
-}
-
-void ReplaceDialog::accept()
-{
-    //findNextClicked();
-    hide();
 }
 
 void ReplaceDialog::setEditor(QPlainTextEdit *ed)

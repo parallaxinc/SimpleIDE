@@ -29,13 +29,13 @@ public:
 public slots:
     void findChanged(QString text);
     void findClicked();
+    void findDirection();
     void findNextClicked();
     void findPrevClicked();
     void replaceClicked();
     void replaceNextClicked();
     void replacePrevClicked();
     void replaceAllClicked();
-    void accept();
 
 private:
     QPlainTextEdit *editor;
@@ -50,6 +50,7 @@ private:
     QLineEdit   *replaceEdit;
     QString     replaceText;
 
+    bool        findForward;
     QPushButton *okButton;
 
     QToolButton *caseSensitiveButton;
