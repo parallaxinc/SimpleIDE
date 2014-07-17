@@ -5,7 +5,7 @@
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=62
+DEFINES += FIXVERSION=63
 VERSION = IDEVERSION"."MINVERSION"."FIXVERSION
 
 QT += core
@@ -86,7 +86,8 @@ SOURCES += mainspin.cpp \
     zip.cpp \
     zipper.cpp \
     StatusDialog.cpp \
-    workspacedialog.cpp
+    workspacedialog.cpp \
+    rescuedialog.cpp
 HEADERS += mainspinwindow.h \
     PortConnectionMonitor.h \
     PropellerID.h \
@@ -134,7 +135,8 @@ HEADERS += mainspinwindow.h \
     zipwriter.h \
     zlib.h \
     StatusDialog.h \
-    workspacedialog.h
+    workspacedialog.h \
+    rescuedialog.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \
