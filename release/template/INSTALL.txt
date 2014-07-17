@@ -41,7 +41,9 @@ INSTALL
    a. On first run simpleide will ask to install SimpleIDE files.
    b. If this is an update, the SimpleIDE files will be updated as required.
 
-  5. Previous users should remove the ~/.config/ParallaxInc/SimpleIDE.conf file.
+  5. Current users should remove the following:
+   a. ~/.config/ParallaxInc/SimpleIDE.conf file.
+   b. ~/Documents/SimpleIDE/Learn/Simple Libraries/Text Devices
 
   6. Users may add a shortcut to /usr/bin/simpleide on the desktop for easy access.
 
