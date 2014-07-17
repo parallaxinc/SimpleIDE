@@ -30,6 +30,15 @@ LIBAUDIO="/usr/lib/libaudio.so.2"
 LIBAUDIO2="/usr/lib/x86_64-linux-gnu/libaudio.so.2"
 SPINLIB="./spin"
 
+QMAKE=`which qmake`
+QT5QMAKE=`echo ${QMAKE} | grep -i 'Qt5'`
+grep -i 'Qt5' ${QMAKE}
+if test $? != 0 ; then
+	echo "The qmake program may not be a Qt5 vintage."
+	echo "Please adjust PATH to include a Qt5 build if necessary."
+	sleep 5
+fi
+
 CLEAN=$1
 
 if [ ! -e ./Workspace ]
@@ -75,9 +84,9 @@ fi
 
 if [ x$CLEAN != xnoclean ]; then
     make clean
+    make ${JOBS}
 fi
 
-make ${JOBS}
 
 if test $? != 0; then
    echo "make failed."

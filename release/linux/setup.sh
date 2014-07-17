@@ -28,12 +28,13 @@ usage()
 {
 	echo "Usage: setup.sh [action [target]]"
 	echo "Action:"
-	echo  "  install	Install target"
-	echo "  uninstall	Uninstall target"
+	echo "  help            Show this message"
+	echo "  install         Install target"
+	echo "  uninstall       Uninstall target"
 	echo ""
 	echo "Targets:"
-	echo "  propellergcc	Set target to only Propeller GCC"
-	echo "  simpleide	Set target to only SimpleIDE"
+	echo "  propellergcc    Set target to only Propeller GCC"
+	echo "  simpleide       Set target to only SimpleIDE"
 	echo ""
 	echo "If the target is not given, the default is both Propeller GCC and SimpleIDE"
 }
@@ -62,11 +63,11 @@ install_propgcc()
 	uninstall_propgcc
 	if [ -e $PROPGCC_DIR ]; then
 		echo "Warning: Using pre-existing Propeller GCC"
+	else
+		mkdir -p $PROPGCC_DIR
+		echo "Installing Propeller GCC"
+		cp -R parallax/* $PROPGCC_DIR
 	fi
-
-	echo "Installing Propeller GCC"
-	mkdir -p $PROPGCC_DIR
-	cp -R parallax/* $PROPGCC_DIR
 }
 
 # Uninstall SimpleIDE function
@@ -93,15 +94,23 @@ install_simpleide()
 	uninstall_simpleide
 	if [ -e $SIMPLEIDE_DIR ]; then
 		echo "Warning: Using pre-existing Simple IDE"
+	else
+		if [ -e ~/.config/ParallaxInc/SimpleIDE.conf ]; then
+			echo "Removing old properties"
+			rm -f ~/.config/ParallaxInc/SimpleIDE.conf
+		fi
+		if [ -e ~/Documents/SimpleIDE/Learn/Simple\ Libraries/Text\ Devices ] ; then
+			echo "Removing old Documents/SimpleIDE Text Devices library"
+			rm -rf ~/Documents/SimpleIDE/Learn/Simple\ Libraries/Text\ Devices
+		fi
+		echo "Installing SimpleIDE"
+		mkdir -p $SIMPLEIDE_DIR
+		cp -R bin demos license translations $SIMPLEIDE_DIR
+		cp $SIMPLEIDE_DIR/bin/simpleide.sh /usr/bin/simpleide
+
+		# do this if simpleide.sh file permissions don't carry.
+		# chmod 755 /usr/bin/simpleide
 	fi
-
-	echo "Installing SimpleIDE"
-	mkdir -p $SIMPLEIDE_DIR
-	cp -R bin demos license translations $SIMPLEIDE_DIR
-	cp $SIMPLEIDE_DIR/bin/simpleide.sh /usr/bin/simpleide
-
-	# do this if simpleide.sh file permissions don't carry.
-	# chmod 755 /usr/bin/simpleide
 }
 
 # Verify the user is root function
@@ -168,12 +177,14 @@ case $1 in
 	help)
 		usage
 		exit
+	;;
 
 	# Instructions unclear, show usage
 	?*)
 		echo Action \"$1\" not recognized
 		usage
 		exit
+	;;
 esac
 
 # No instructions, install everything
