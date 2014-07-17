@@ -6443,6 +6443,15 @@ void MainSpinWindow::deleteProjectFile()
             file.write(projstr.toLatin1());
             file.close();
         }
+        else {
+            qDebug() << "Project file is read only:" << file.fileName();
+            file.setPermissions(QFileDevice::WriteGroup|QFileDevice::WriteOwner|QFileDevice::WriteUser);
+            if(file.open(QFile::WriteOnly | QFile::Text)) {
+                file.write(projstr.toLatin1());
+                file.close();
+            }
+        }
+
     }
     updateProjectTree(sourcePath(projectFile)+mainFile);
 
