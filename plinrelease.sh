@@ -26,7 +26,6 @@ SIDERSH="./release/linux/simpleide.sh"
 # we only provide SimpleIDE, PropellerGCC, ctags, qt libs, spin source, and workspace in this packager
 #
 CTAGS="./ctags-5.8"
-LIBS="/usr/lib/libQtGui.so.4 /usr/lib/libQtCore.so.4"
 LIBAUDIO="/usr/lib/libaudio.so.2"
 LIBAUDIO2="/usr/lib/x86_64-linux-gnu/libaudio.so.2"
 SPINLIB="./spin"
@@ -150,14 +149,17 @@ if [ ${LIBAUDIO}X != X ]; then
    fi
 fi
 
-MYLDD=`ldd ${BUILD}/${NAME} | grep quazip | awk '{print $3}'`
-QUAZIP=`echo $MYLDD`
-
-cp ${QUAZIP} ${VERSION}/bin
-if test $? != 0; then
-   echo "copy ${QUAZIP} failed."
-   exit 1
-fi
+#
+# Quazip no longer needed
+#
+#MYLDD=`ldd ${BUILD}/${NAME} | grep quazip | awk '{print $3}'`
+#QUAZIP=`echo $MYLDD`
+#
+#cp ${QUAZIP} ${VERSION}/bin
+#if test $? != 0; then
+#   echo "copy ${QUAZIP} failed."
+#   exit 1
+#fi
 
 cd ${CTAGS}
 ./configure

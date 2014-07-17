@@ -7,9 +7,9 @@ Linux Packaging:
 
 Linux packages are primitive at the moment and will be changed to use the
 typical packager tools for the platform. The current package includes a
-setup script and supporting shared libraries. If you are items missing from
+setup script and supporting shared libraries. If you are missing items from
 the system required by SimpleIDE you can use the ldd tool to find out what
-you need, I.E. $ ldd SimpleIDE
+you need, I.E. $ ldd /opt/simpleide/bin/SimpleIDE
 
 The general Linux install procedure is this:
 
@@ -20,8 +20,8 @@ If /opt/parallax already exists, step 1 below can be skipped.
 Debian packages are known to work on Ubuntu.
 
 In the instruction below SimpleIDE-packagename.bz2 refers to the package
-such as SimpleIDE-0-6-2-i686-linux.bz2. SimpleIDE-version refers to the
-SimpleIDE version such as SimpleIDE-0-6-2.
+such as SimpleIDE-1-0-0-i686-linux.bz2. SimpleIDE-version refers to the
+SimpleIDE version such as SimpleIDE-1-0-0.
 
 INSTALL
 
@@ -30,8 +30,8 @@ INSTALL
 3. Setup with $ sudo ./setup.sh $USER (or use root $ ./setup.sh username)
    (Note that setup.sh will add /usr/bin/simpleide, /opt/parallax, and /opt/simpleide.)
 4. SimpleIDE workspace:
- a. Remove ~/Documents/SimpleIDE to get a new copy of the workspace.
- b. On first run simpleide will install ~/Documents/SimpleIDE files.
+ a. On first run simpleide will ask to install SimpleIDE files.
+ b. If this is an update, the SimpleIDE files will be updated as required.
 5. Previous users should remove the ~/.config/ParallaxInc/SimpleIDE.conf file.
 
 RUN
@@ -56,13 +56,17 @@ Propeller-C Tutorial site: http://learn.parallax.com/propeller-c
 PropellerGCC site address is: http://www.parallax.com/propellergcc
 PropellerGCC source site address is: http://www.parallax.com/propgcc
 SimpleIDE source site address is: https://code.google.com/p/propside
+The SimplieIDE workspace source site address is: https://code.google.com/p/propsideworkspace
 
+SimpleIDE is an OpenSource project built on the Qt libraries and used in
+  accordance with the Qt OpenSource license.
 PropellerGCC is a GNU GCC OpenSource project released according to GPLV3.
 PropellerGCC does not require your application to be GPL.
 
+The SimpleIDE package license directory contains all applicable license information.
 
 +---------------------------------------------------------------------
-| Copyright (C) 2012-2013 Parallax, Inc.
+| Copyright (C) 2012-2014 Parallax, Inc.
 +---------------------------------------------------------------------
 | TERMS OF USE: MIT License
 +---------------------------------------------------------------------
