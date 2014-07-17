@@ -11,11 +11,9 @@ setup script and supporting shared libraries. If you are missing items from
 the system required by SimpleIDE you can use the ldd tool to find out what
 you need, I.E. $ ldd /opt/simpleide/bin/SimpleIDE
 
-The general Linux install procedure is this:
-
-This Linux SimpleIDE package may contain only the SimpleIDE.
-If package > 60MB, it contains Propeller-GCC, and step 1 below can be skipped.
-If /opt/parallax already exists, step 1 below can be skipped.
+This Linux SimpleIDE package may contain only the SimpleIDE. If package > 60MB,
+it contains Propeller-GCC. If /opt/parallax already exists, the installer will
+give an option to replace it.
 
 Debian packages are known to work on Ubuntu.
 
@@ -23,27 +21,45 @@ In the instruction below SimpleIDE-packagename.bz2 refers to the package
 such as SimpleIDE-1-0-0-i686-linux.bz2. SimpleIDE-version refers to the
 SimpleIDE version such as SimpleIDE-1-0-0.
 
+Please note the $ sign is a standard symbol for a command prompt in Linux.
+If you see "$ command", it means enter command in your command terminal window.
+
+
+The general Linux install and run procedures are::
+
 INSTALL
 
-1. Unpack SimpleIDE with $ tar -xjf SimpleIDE-packagename.bz2
-2. Change directory $ cd SimpleIDE-version.
-3. Setup with $ sudo ./setup.sh $USER (or use root $ ./setup.sh username)
-   (Note that setup.sh will add /usr/bin/simpleide, /opt/parallax, and /opt/simpleide.)
-4. SimpleIDE workspace:
- a. On first run simpleide will ask to install SimpleIDE files.
- b. If this is an update, the SimpleIDE files will be updated as required.
-5. Previous users should remove the ~/.config/ParallaxInc/SimpleIDE.conf file.
+  1. Unpack SimpleIDE with $ tar -xjf SimpleIDE-packagename.bz2
+
+  2. Change directory $ cd SimpleIDE-version.
+
+  3. Setup with $ sudo ./setup.sh (or use root $ ./setup.sh)
+   a. A target can be used with setup.sh. For help use $ ./setup.sh help
+   b. Note that setup.sh will add /usr/bin/simpleide, /opt/parallax, and /opt/simpleide.
+
+  4. SimpleIDE workspace:
+   a. On first run simpleide will ask to install SimpleIDE files.
+   b. If this is an update, the SimpleIDE files will be updated as required.
+
+  5. Previous users should remove the ~/.config/ParallaxInc/SimpleIDE.conf file.
+
+  6. Users may add a shortcut to /usr/bin/simpleide on the desktop for easy access.
 
 RUN
 
-1. From any directory, run with the command $ simpleide
-   (Do not use "./simpleide". The one installed in /usr/bin/simpleide should work.)
-   (The $ sign is a standard symbol for a command prompt in Linux.)
-2. The SimpleIDE Compiler Properties should have:
- a. Compiler /opt/parallax/bin
- b. Loader path /opt/parallax/propeller-load
- c. Workspace ~/Documents/SimpleIDE
-3. The SimpleIDE program should start with the Welcome.c demo
+  1. From any directory, run with the command $ simpleide
+   a. Do not use $ ./simpleide; it will not work.
+   b. Typing $ simpleide starts /usr/bin/simpleide which properly sets the environment.
+   c. Alternatively use $ simpleide & (makes the program run in the background).
+
+  2. Typical SimpleIDE Properties will have:
+   a. GCC Folders: GCC Compiler /opt/parallax/bin
+   b. GCC Folders: Library Folder ~/Documents/SimpleIDE/Learn/Simple Libraries/
+   c. GCC Folders: Workspace Folder ~/Documents/SimpleIDE/
+   d. General: Loader Folder /opt/parallax/propeller-load
+
+  3. The SimpleIDE program should start with the Welcome.c demo
+
 
 Documentation
 

@@ -165,6 +165,11 @@ case $1 in
 	;;
 
 	# Instructions unclear, show usage
+	help)
+		usage
+		exit
+
+	# Instructions unclear, show usage
 	?*)
 		echo Action \"$1\" not recognized
 		usage
