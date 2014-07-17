@@ -1,5 +1,5 @@
 SimpleIDE
-Copyright (c) 2012 Parallax, Inc.
+Copyright (c) 2012-2014 Parallax, Inc.
 
 +---------------------------------------------------------------------
 | TERMS OF USE: MIT License
@@ -23,23 +23,9 @@ Repository includes SimpleIDE, icons, and ctags58 sources.
 Propeller-GCC repository: www.propgcc.googlecode.com
 +---------------------------------------------------------------------
 
-SimpleIDE built with Qt Creator under LGPL license 2.1 (file LGPL_2_1.txt).
+SimpleIDE built with qmake/make or Qt Creator under LGPL license 2.1 (file LGPL_2_1.txt).
 
-About QtCreator:
----
-Qt Creator 2.0.1 
-Based on Qt 4.7.0 (32 bit)
-
-Built on Aug 24 2010 at 11:00:55
-
-From revision 97d831e3de
-
-Copyright 2008-2010 Nokia Corporation. All rights reserved.
-
-The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
----
-
-Qt Libraries QtCored4.dll and QtGuid4.dll are used according to the License Exception (file LGPL_EXCEPTION.txt).
+Qt5 Libraries are used according to the LGPL license 2.1 and License Exception (file LGPL_EXCEPTION.txt).
 +---------------------------------------------------------------------
 
 Most Toolbar Icons are from the www.aha-soft.com 24x24-freeapplication-icons pack.
