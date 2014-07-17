@@ -972,7 +972,7 @@ bool ZipReader::extractAll(const QString &destinationDir) const
             if (!f.open(QIODevice::WriteOnly))
                 return false;
             f.write(fileData(fi.filePath));
-            f.setPermissions(fi.permissions);
+            //f.setPermissions(fi.permissions);
             f.close();
         }
     }
