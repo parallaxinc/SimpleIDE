@@ -146,18 +146,27 @@ Root: HKCU; SubKey: Software\{#MyAppPublisher}\SimpleIDE\*; Flags: DeleteKey Uni
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata}"; Check: NeedPropGccBinPath();
 
 ; File Association. Doesn't work without ChangesAssociations=yes
-Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: DeleteKey;
-Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
 ;Root: HKCR; Subkey: ".c"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
 ;Root: HKCR; Subkey: ".cpp"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
 ;Root: HKCR; Subkey: ".cogc"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
 ;Root: HKCR; Subkey: ".h"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
+Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: DeleteKey;
+Root: HKCR; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
 Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: DeleteKey;
 Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: DeleteKey;
 Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,3"; Flags: DeleteKey;
 Root: HKCR; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: UninsDeleteKey;
 Root: HKCR; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: UninsDeleteKey;
 Root: HKCR; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,3"; Flags: UninsDeleteKey;
+
+Root: HKCU; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: DeleteKey;
+Root: HKCU; Subkey: ".side"; ValueType: string; ValueData: "SimpleIDE"; Flags: UninsDeleteKey;
+Root: HKCU; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: DeleteKey;
+Root: HKCU; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: DeleteKey;
+Root: HKCU; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,3"; Flags: DeleteKey;
+Root: HKCU; SubKey: "SimpleIDE"; ValueType: string; ValueData: "SimpleIDE Application"; Flags: UninsDeleteKey;
+Root: HKCU; Subkey: "SimpleIDE\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\SimpleIDE.exe"" ""%1""";  Flags: UninsDeleteKey;
+Root: HKCU; SubKey: "SimpleIDE\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\SimpleIDE.exe,3"; Flags: UninsDeleteKey;
 
 ; Startup File
 ;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_LastFileName; ValueData: "{userdocs}\Workspace\My Projects\Welcome.c"; Flags: UninsDeleteKey; 

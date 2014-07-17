@@ -15,6 +15,8 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
 {
     int rc = 0;
 
+    incHash.clear();
+
     projectFile = projfile;
     aSideCompiler = compiler;
     aSideCompilerPath = sourcePath(compiler);
