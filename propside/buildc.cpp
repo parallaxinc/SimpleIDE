@@ -61,6 +61,32 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
 
     compileStatus->setPlainText(tr("Project Directory: ")+sourcePath(projectFile)+"\n");
     compileStatus->moveCursor(QTextCursor::End);
+
+    QString version = QString("%1 Version %2.%3.%4").arg(ASideGuiKey)
+            .arg(IDEVERSION).arg(MINVERSION).arg(FIXVERSION);
+    compileStatus->appendPlainText(version);
+
+    QString library = properties->getGccLibraryStr();
+    compileStatus->appendPlainText(library);
+
+    QString workspace = properties->getGccWorkspaceStr();
+    if(workspace.length() > 0) {
+        QString wrkup(workspace+"Updated.txt");
+        if(QFile::exists(wrkup)) {
+            QFile upd(wrkup);
+            if(upd.open(QFile::ReadOnly)) {
+                QString sd = upd.readAll();
+                if(sd.contains("_")) {
+                    sd = sd.left(sd.indexOf("_"));
+                }
+                workspace += " Updated on: "+sd;
+                upd.close();
+            }
+        }
+        compileStatus->appendPlainText(workspace+"\n");
+    }
+
+
     status->setText(tr("Building ..."));
 
     showCompilerVersion();

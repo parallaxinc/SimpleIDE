@@ -42,6 +42,7 @@
 #include "PortConnectionMonitor.h"
 #include "zipper.h"
 #include "StatusDialog.h"
+#include "rescuedialog.h"
 
 #define untitledstr "Untitled"
 
@@ -235,6 +236,7 @@ public slots:
     void statusPassed();
 
     void updateWorkspace();
+    void buildRescueShow();
 
 private:
     QString pathDiff(QString s2, QString s1);
@@ -455,6 +457,8 @@ private:
     Zipper          zipper;
 
     bool            allowProjectView;
+
+    RescueDialog    *rescueDialog;
 
 public slots:
     void ideDebugShow();
