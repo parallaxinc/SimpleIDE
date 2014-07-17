@@ -5177,10 +5177,16 @@ int  MainSpinWindow::runBuild(QString option)
         }
         bool inlist = false;
         for(int n = 0; n < list.length(); n++) {
-            if(list[n].contains(tabname))
+            if(list[n].contains(tabname)) {
                 inlist = true;
+                break;
+            }
         }
 
+        // Don't complain about Untitled being open
+        if(editorTabs->tabText(index).compare("Untitled") == 0) {
+            inlist = true;
+        }
         if(!inlist) {
             HintDialog::hint("NotInProject", tr("The file being displayed is not part of the project. It will not be included in the program being built. Use the project button to check the project contents."), this);
         }
