@@ -36,7 +36,7 @@ usage()
 	echo "  propellergcc    Set target to only Propeller GCC"
 	echo "  simpleide       Set target to only SimpleIDE"
 	echo ""
-	echo "If the target is not given, the default is both Propeller GCC and SimpleIDE"
+	echo "If the target is not given, both Propeller GCC and SimpleIDE will be installed."
 }
 
 # Uninstall Propeller GCC function
@@ -50,7 +50,7 @@ uninstall_propgcc()
 			Y|y|YES|Yes|yes) echo "Removing Propeller GCC"
 				rm -r $PROPGCC_DIR
 			;;
-			*) echo "Not modifying Propeller GCC"
+			*) echo "Not removing Propeller GCC"
 		esac
 	else
 		echo "Propeller GCC not installed"
@@ -60,14 +60,9 @@ uninstall_propgcc()
 # Install Propeller GCC function
 install_propgcc()
 {
-	uninstall_propgcc
-	if [ -e $PROPGCC_DIR ]; then
-		echo "Warning: Using pre-existing Propeller GCC"
-	else
-		mkdir -p $PROPGCC_DIR
-		echo "Installing Propeller GCC"
-		cp -R parallax/* $PROPGCC_DIR
-	fi
+	mkdir -p $PROPGCC_DIR
+	echo "Installing Propeller GCC"
+	cp -R parallax/* $PROPGCC_DIR
 }
 
 # Uninstall SimpleIDE function
@@ -81,7 +76,7 @@ uninstall_simpleide()
 				rm -r $SIMPLEIDE_DIR
 				rm /usr/bin/simpleide
 			;;
-			*) echo "Not modifying Simple IDE"
+			*) echo "Not removing Simple IDE"
 		esac
 	else
 		echo "Simple IDE not installed"
@@ -91,26 +86,23 @@ uninstall_simpleide()
 # Install SimpleIDE function
 install_simpleide()
 {
-	uninstall_simpleide
-	if [ -e $SIMPLEIDE_DIR ]; then
-		echo "Warning: Using pre-existing Simple IDE"
-	else
-		if [ -e ~/.config/ParallaxInc/SimpleIDE.conf ]; then
-			echo "Removing old properties"
-			rm -f ~/.config/ParallaxInc/SimpleIDE.conf
-		fi
-		if [ -e ~/Documents/SimpleIDE/Learn/Simple\ Libraries/Text\ Devices ] ; then
-			echo "Removing old Documents/SimpleIDE Text Devices library"
-			rm -rf ~/Documents/SimpleIDE/Learn/Simple\ Libraries/Text\ Devices
-		fi
-		echo "Installing SimpleIDE"
-		mkdir -p $SIMPLEIDE_DIR
-		cp -R bin demos license translations $SIMPLEIDE_DIR
-		cp $SIMPLEIDE_DIR/bin/simpleide.sh /usr/bin/simpleide
-
-		# do this if simpleide.sh file permissions don't carry.
-		# chmod 755 /usr/bin/simpleide
+	if [ -e ~/.config/ParallaxInc/SimpleIDE.conf ]; then
+		echo "Removing old properties"
+		rm -f ~/.config/ParallaxInc/SimpleIDE.conf
 	fi
+
+	if [ -e ~/Documents/SimpleIDE/Learn/Simple\ Libraries/Text\ Devices ] ; then
+		echo "Removing old Documents/SimpleIDE Text Devices library"
+		rm -rf ~/Documents/SimpleIDE/Learn/Simple\ Libraries/Text\ Devices
+	fi
+
+	echo "Installing SimpleIDE"
+	mkdir -p $SIMPLEIDE_DIR
+	cp -R bin demos license translations $SIMPLEIDE_DIR
+	cp $SIMPLEIDE_DIR/bin/simpleide.sh /usr/bin/simpleide
+
+	# do this if simpleide.sh file permissions don't carry.
+	chmod 755 /usr/bin/simpleide
 }
 
 # Verify the user is root function
