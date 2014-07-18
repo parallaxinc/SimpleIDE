@@ -19,8 +19,10 @@ NAME=SimpleIDE
 PKG=${NAME}.zip
 PROPGCC=/opt/parallax
 BUILD=build
-SETUPSH="./release/linux/setup.sh"
-SIDERSH="./release/linux/simpleide.sh"
+SETUP="setup.sh"
+SIDE="simpleide.sh"
+SETUPSH="./release/linux/${SETUP}"
+SIDERSH="./release/linux/${SIDE}"
 
 #
 # we only provide SimpleIDE, PropellerGCC, ctags, qt libs, spin source, and workspace in this packager
@@ -248,6 +250,9 @@ fi
 
 cp ${SETUPSH} ${VERSION}
 cp ${SIDERSH} ${VERSION}/bin
+
+chmod u+x ${VERSION}/${SETUP}
+chmod 755 ${VERSION}/bin/${SIDE}
 
 # pack-up a bzip tarball for distribution
 tar -cjf ${VERSION}.${UARCH}.${UNAME}-linux.tar.bz2 ${VERSION}
