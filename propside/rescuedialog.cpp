@@ -6,7 +6,7 @@ RescueDialog::RescueDialog(QWidget *parent) :
     setWindowTitle(tr("Rescue Me!"));
     setWindowFlags(Qt::Tool);
     layout = new QVBoxLayout(this);;
-    label = new QLabel(tr("Copy/Paste this information so someone can help."));
+    label = new QLabel(tr("Copy and paste this information to a place where someone can help."));
     edit  = new QPlainTextEdit();
     layout->addWidget(label);
     layout->addWidget(edit);

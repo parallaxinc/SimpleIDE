@@ -4900,7 +4900,7 @@ void MainSpinWindow::setupHelpMenu()
     helpMenu->addAction(QIcon(":/images/CTutorials.png"), tr("Propeller C Tutorials (Online)"), this, SLOT(tutorialShow()));
     helpMenu->addAction(QIcon(":/images/SimpleLibrary.png"), tr("Simple Library Reference"), this, SLOT(simpleLibraryShow()));
     helpMenu->addAction(QIcon(":/images/Reference.png"), tr("PropGCC &Reference (Online)"), this, SLOT(referenceShow()));
-    helpMenu->addAction(QIcon(":/images/UserHelp.png"), tr("&Build Status Rescue"), this, SLOT(buildRescueShow()));
+    helpMenu->addAction(QIcon(":/images/UserHelp.png"), tr("&Build Error Rescue"), this, SLOT(buildRescueShow()));
     helpMenu->addAction(QIcon(":/images/about.png"), tr("&About"), this, SLOT(aboutShow()));
     helpMenu->addAction(QIcon(":/images/Credits.png"), tr("&Credits"), this, SLOT(creditShow()));
     //helpMenu->addAction(QIcon(":/images/Library.png"), tr("&Library"), this, SLOT(libraryShow()));
@@ -4949,8 +4949,11 @@ void MainSpinWindow::buildRescueShow()
 {
     if(compileStatus->toPlainText().length() > 0) {
         rescueDialog->setEditText(compileStatus->toPlainText());
-        rescueDialog->show();
     }
+    else {
+        rescueDialog->setEditText(tr("Build rescue information not available.")+"\n"+tr("Build with hammer first before opening this window."));
+    }
+    rescueDialog->show();
 }
 
 void MainSpinWindow::libraryShow()
