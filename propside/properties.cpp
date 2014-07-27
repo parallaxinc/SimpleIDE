@@ -965,14 +965,19 @@ void Properties::setupGeneral()
 
 #ifdef ENABLE_AUTOLIB
     autoLibCheck.setText(tr("Auto Include Simple Libraries"));
+    autoLibCheck.setToolTip(tr("This feature is purposefully always on after application restart."));
     autoLibCheck.setChecked(true);
     tlayout->addWidget(&autoLibCheck, row, 0);
 
+    // no more save autolib check
+    autoLibCheck.setChecked(true);
+/*
     var = settings.value(autoLibIncludeKey);
     if(var.canConvert(QVariant::Bool)) {
         QString s = var.toString();
         autoLibCheck.setChecked(var.toBool());
     }
+ */
 #endif
 
     projectsCheck.setText(tr("Projects"));
@@ -1020,7 +1025,9 @@ void Properties::allowProjects()
     settings.setValue(allowProjectViewKey,0);
 
     if(projectsCheck.isChecked()) {
-
+/*
+ * No more password.
+ *
         QString s = QInputDialog::getText(this,
             tr("BRIDGEKEEPER"),
             tr("Hee hee heh. Stop! What... is your name?"),
@@ -1036,9 +1043,12 @@ void Properties::allowProjects()
         else {
             projectsCheck.setChecked(false);
         }
+ */
+        emit enableProjectView(true);
     }
     else {
         projectsCheck.setChecked(false);
+        emit enableProjectView(false);
     }
 }
 
@@ -1650,7 +1660,7 @@ void Properties::accept()
     settings.setValue(spinWorkspaceKey,leditSpinWorkspace->text());
     settings.setValue(configFileKey,leditLoader->text());
 
-    settings.setValue(autoLibIncludeKey,autoLibCheck.isChecked());
+    //settings.setValue(autoLibIncludeKey,autoLibCheck.isChecked());
     settings.setValue(tabSpacesKey,tabSpaces.text());
     settings.setValue(loadDelayKey,loadDelay.text());
     settings.setValue(resetTypeKey,resetType.currentIndex());
@@ -1696,7 +1706,7 @@ void Properties::reject()
     leditSpinWorkspace->setText(spinWorkspaceStr);
     leditLoader->setText(loaderStr);
 
-    autoLibCheck.setChecked(useAutoLib);
+    //autoLibCheck.setChecked(useAutoLib);
     tabSpaces.setText(tabSpacesStr);
     loadDelay.setText(loadDelayStr);
     resetType.setCurrentIndex(resetTypeEnum);

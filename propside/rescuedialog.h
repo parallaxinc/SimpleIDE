@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QPushButton>
 #include <QLabel>
 #include <QPlainTextEdit>
 #include <QString>
@@ -17,9 +19,12 @@ public:
 signals:
 
 public slots:
+    void copyText();
 
 private:
     QVBoxLayout *layout;
+    QHBoxLayout *hlayout;
+    QPushButton *copyBtn;
     QLabel *label;
     QPlainTextEdit *edit;
 };

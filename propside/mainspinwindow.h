@@ -237,6 +237,7 @@ public slots:
 
     void updateWorkspace();
     void buildRescueShow();
+    void enableProjectView(bool enable);
 
 private:
     QString pathDiff(QString s2, QString s1);

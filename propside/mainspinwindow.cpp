@@ -4951,7 +4951,7 @@ void MainSpinWindow::buildRescueShow()
         rescueDialog->setEditText(compileStatus->toPlainText());
     }
     else {
-        rescueDialog->setEditText(tr("Build rescue information not available.")+"\n"+tr("Build with hammer first before opening this window."));
+        rescueDialog->setEditText(tr("Build rescue information not available yet.")+"\n"+tr("Build with hammer first before opening this window."));
     }
     rescueDialog->show();
 }
@@ -7588,12 +7588,18 @@ void MainSpinWindow::setupFileMenu()
     simpleViewIcon = QIcon(":/images/ViewSimple.png");
     projectViewIcon = QIcon(":/images/ViewProject.png");
 
-    if(allowProjectView) {
-        QString viewstr = this->simpleViewType ? tr(ProjectView) : tr(SimpleView);
-        toolsMenu->addAction(this->simpleViewType ? projectViewIcon : simpleViewIcon,
-                             viewstr,this,SLOT(toggleSimpleView()));
-        toolsMenu->addSeparator();
-    }
+    //
+    // SimpleView/ProjectView must be the first item in the toolsMenu!
+    //
+    QString viewstr = this->simpleViewType ? tr(ProjectView) : tr(SimpleView);
+    toolsMenu->addAction(this->simpleViewType ? projectViewIcon : simpleViewIcon,
+                         viewstr,this,SLOT(toggleSimpleView()));
+
+    toolsMenu->addSeparator();
+    enableProjectView(allowProjectView);
+
+    // connect projects check-box to our enable.
+    connect(propDialog,SIGNAL(enableProjectView(bool)),this,SLOT(enableProjectView(bool)));
 
     if(ctags->enabled()) {
         toolsMenu->addAction(QIcon(":/images/back.png"),tr("Go &Back"), this, SLOT(prevDeclaration()), QKeySequence::Back);
@@ -7690,6 +7696,13 @@ void MainSpinWindow::setupFileMenu()
     edpopup->addAction(QIcon(":/images/paste.png"),tr("Paste"),this,SLOT(pasteToFile()));
 }
 
+void MainSpinWindow::enableProjectView(bool enable)
+{
+    QList<QAction*> list = toolsMenu->actions();
+    QAction *action = list.at(0);
+    action->setEnabled(enable);
+    action->setVisible(enable);
+}
 
 void MainSpinWindow::setupToolBars()
 {
