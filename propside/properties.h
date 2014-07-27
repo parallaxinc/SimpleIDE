@@ -134,6 +134,7 @@ public:
 signals:
 
     void clearAndExit();
+    void enableProjectView(bool enable);
 
 public slots:
 
