@@ -1,12 +1,14 @@
 #ifndef HELP_H
 #define HELP_H
 
-#include <QtWidgets>
 #include <QTextBrowser>
 #include <QVBoxLayout>
 #include <QToolBar>
 #include <QDialog>
 #include <QObject>
+#include <QToolButton>
+#include <QLineEdit>
+#include <QComboBox>
 
 class Help : public QDialog
 {

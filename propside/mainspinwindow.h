@@ -5,11 +5,11 @@
 #ifndef MAINSPINWINDOW_H
 #define MAINSPINWINDOW_H
 
+#include "qtversion.h"
+
 #include <QWidget>
 #include <QIcon>
 #include <QMainWindow>
-#include <QtPrintSupport/QPrinter>
-#include <QtPrintSupport/QPrintDialog>
 #include <iostream>
 #include <exception>
 #include "stdio.h"
@@ -43,6 +43,11 @@
 #include "zipper.h"
 #include "StatusDialog.h"
 #include "rescuedialog.h"
+
+#ifdef QT5
+#include <QtPrintSupport/QPrinter>
+#include <QtPrintSupport/QPrintDialog>
+#endif
 
 #define untitledstr "Untitled"
 

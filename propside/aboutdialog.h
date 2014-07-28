@@ -1,8 +1,9 @@
 #ifndef ABOUTDIALOG_H
 #define ABOUTDIALOG_H
 
+#include "qtversion.h"
+
 #include <QDialog>
-#include <QtWidgets>
 
 class AboutDialog : public QDialog
 {

@@ -3,7 +3,8 @@
 
 class Terminal;
 
-#include <QtWidgets>
+#include "qtversion.h"
+
 #include "console.h"
 #include "PortListener.h"
 #include "loader.h"

@@ -1,7 +1,8 @@
 #ifndef BUILDSTATUS_H
 #define BUILDSTATUS_H
 
-#include <QtWidgets>
+#include "qtversion.h"
+
 #include "highlightbuild.h"
 
 class BuildStatus : public QPlainTextEdit

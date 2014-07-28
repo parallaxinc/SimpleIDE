@@ -1,6 +1,7 @@
 #include "zipper.h"
 
-#include <QtWidgets>
+#include "qtversion.h"
+
 #include <QtCore>
 #include "zipreader.h"
 #include "zipwriter.h"

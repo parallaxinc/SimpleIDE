@@ -1,5 +1,6 @@
+#include "qtversion.h"
+
 #include "cbuildtree.h"
-#include <QtWidgets>
 
 CBuildTree::CBuildTree(const QString &shortFileName, QObject *parent)
     : TreeModel(shortFileName, parent)

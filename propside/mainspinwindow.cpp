@@ -1245,6 +1245,7 @@ QString MainSpinWindow::getNewProjectDialog(QString workspace, QStringList filte
     QString ftype = dialog.selectedNameFilter();
     QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
     dstName = dstName.mid(0,dstName.lastIndexOf("."));
+    dstName = dstName.trimmed();
     dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
     dstPath += dstName;
 
@@ -1404,6 +1405,7 @@ void MainSpinWindow::newProject()
 
         QString ftype = dialog.selectedNameFilter();
         QString dstName = dstPath.mid(dstPath.lastIndexOf("/")+1);
+        dstName = dstName.trimmed();
         dstName = dstName.mid(0,dstName.lastIndexOf("."));
         dstPath = dstPath.mid(0,dstPath.lastIndexOf("/")+1);
         dstPath += dstName+"/";
@@ -6460,7 +6462,7 @@ void MainSpinWindow::deleteProjectFile()
         }
         else {
             qDebug() << "Project file is read only:" << file.fileName();
-            file.setPermissions(QFileDevice::WriteGroup|QFileDevice::WriteOwner|QFileDevice::WriteUser);
+            file.setPermissions(QFile::WriteGroup|QFile::WriteOwner|QFile::WriteUser);
             if(file.open(QFile::WriteOnly | QFile::Text)) {
                 file.write(projstr.toLatin1());
                 file.close();

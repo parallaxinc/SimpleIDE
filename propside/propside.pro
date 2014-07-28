@@ -5,7 +5,7 @@
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=0
 DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=65
+DEFINES += FIXVERSION=66
 VERSION = IDEVERSION"."MINVERSION"."FIXVERSION
 
 QT += core
@@ -15,6 +15,7 @@ greaterThan(QT_MAJOR_VERSION, 4): {
     QT -= gui
     QT += widgets
     QT += printsupport
+    DEFINES += QT5
 }
 
 TARGET = SimpleIDE
@@ -136,7 +137,8 @@ HEADERS += mainspinwindow.h \
     zlib.h \
     StatusDialog.h \
     workspacedialog.h \
-    rescuedialog.h
+    rescuedialog.h \
+    qtversion.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \

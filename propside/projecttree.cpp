@@ -1,10 +1,16 @@
+#include "qtversion.h"
+
 #include "projecttree.h"
 
 ProjectTree::ProjectTree(QWidget *parent) : QTreeView(parent)
 {
     this->mouseRightClick = false;
+#ifdef QT5
     this->header()->setStretchLastSection(false);
     this->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+#else
+    this->header()->setStretchLastSection(true);
+#endif
 }
 
 ProjectTree::~ProjectTree()

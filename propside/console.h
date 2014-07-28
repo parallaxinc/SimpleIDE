@@ -1,7 +1,7 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#include <QtWidgets>
+#include "qtversion.h"
 #include "qextserialport.h"
 
 class Console : public QPlainTextEdit
