@@ -1,10 +1,10 @@
+#include "qtversion.h"
+
 #include "buildc.h"
 #include "Sleeper.h"
 #include "properties.h"
 #include "asideconfig.h"
 #include "hintdialog.h"
-
-#include <QtWidgets>
 
 BuildC::BuildC(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb, Properties *p)
     : Build(projopts, compstat, stat, progsize, progbar, cb, p)

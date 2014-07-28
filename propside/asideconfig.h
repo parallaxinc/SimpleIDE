@@ -1,7 +1,8 @@
 #ifndef ASIDECONFIG_H
 #define ASIDECONFIG_H
 
-#include <QtWidgets>
+#include "qtversion.h"
+
 #include "asideboard.h"
 
 #define GENERIC_BOARD "GENERIC"

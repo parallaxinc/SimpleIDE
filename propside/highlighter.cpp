@@ -45,7 +45,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include "qtversion.h"
 
 #include "highlighter.h"
 

@@ -3,7 +3,8 @@
  * TODO: put findNext in find and __findNext in replace and try replace up/down.
  */
 
-#include <QtWidgets>
+#include "qtversion.h"
+
 #include <QMargins>
 #include "replacedialog.h"
 

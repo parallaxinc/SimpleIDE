@@ -4,7 +4,6 @@
 #ifndef PORTLISTENER_H_
 #define PORTLISTENER_H_
 
-#include <QtWidgets>
 #include "console.h"
 #include "qextserialport.h"
 

@@ -1,7 +1,7 @@
 #ifndef PROJECTTREE_H
 #define PROJECTTREE_H
 
-#include <QtWidgets>
+#include "qtversion.h"
 
 class ProjectTree : public QTreeView
 {

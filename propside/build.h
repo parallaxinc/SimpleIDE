@@ -1,7 +1,6 @@
 #ifndef BUILD_H
 #define BUILD_H
 
-#include <QtWidgets>
 #include "blinker.h"
 #include "properties.h"
 #include "projectoptions.h"

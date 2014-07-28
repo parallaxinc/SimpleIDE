@@ -1,7 +1,6 @@
 #ifndef BUILDC_H
 #define BUILDC_H
 
-#include <QtWidgets>
 #include "build.h"
 
 class BuildC : public Build

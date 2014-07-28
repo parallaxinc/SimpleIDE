@@ -1,3 +1,5 @@
+#include "qtversion.h"
+
 #include "asideboard.h"
 
 #include <string>

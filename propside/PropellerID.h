@@ -1,7 +1,6 @@
 #ifndef PROPELLERID_H
 #define PROPELLERID_H
 
-#include <QtWidgets>
 #include <QThread>
 #include "qextserialport.h"
 

@@ -29,6 +29,7 @@
  *
  */
 
+#include "qtversion.h"
 #include "PropellerID.h"
 
 PropellerID::PropellerID(QObject *parent) : QThread(parent)

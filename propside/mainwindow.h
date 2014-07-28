@@ -5,7 +5,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtWidgets>
+#include "qtversion.h"
+
 #include <QIcon>
 #include <QMainWindow>
 #include <iostream>

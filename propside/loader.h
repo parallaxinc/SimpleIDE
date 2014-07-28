@@ -1,7 +1,7 @@
 #ifndef LOADER_H
 #define LOADER_H
 
-#include <QtWidgets>
+#include "qtversion.h"
 
 class Loader : public QPlainTextEdit
 {

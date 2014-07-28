@@ -1,5 +1,3 @@
-#include <QtWidgets>
-#include <QtWidgets>
 #include "mainspinwindow.h"
 
 int main(int argc, char *argv[])

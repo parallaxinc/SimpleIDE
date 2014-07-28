@@ -45,7 +45,7 @@
     models.
 */
 
-#include <QtWidgets>
+#include "qtversion.h"
 
 #include "treeitem.h"
 #include "treemodel.h"

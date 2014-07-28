@@ -1,10 +1,11 @@
 #ifndef WORKSPACEDIALOG_H
 #define WORKSPACEDIALOG_H
 
+#include "qtversion.h"
+
 #include <QDialog>
 #include <QObject>
 #include <QString>
-#include <QtWidgets>
 
 class WorkspaceDialog : public QDialog
 {
