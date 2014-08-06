@@ -1,0 +1,111 @@
+SimpleIDE Linux Installation
+
+The Simple IDE is designed for building Propeller-GCC programs.
+SimpleIDE is distributed for Mac, Linux, and Windows.
+
+Linux Packaging:
+
+Linux packages are primitive at the moment and will be changed to use the
+typical packager tools for the platform. The current package includes a
+setup script and supporting shared libraries. If you are missing items from
+the system required by SimpleIDE you can use the ldd tool to find out what
+you need, I.E. $ ldd /opt/simpleide/bin/SimpleIDE
+
+This Linux SimpleIDE package may contain only the SimpleIDE. If package > 60MB,
+it contains Propeller-GCC. If /opt/parallax already exists, the installer will
+give an option to replace it.
+
+Debian packages are known to work on Ubuntu.
+
+In the instruction below SimpleIDE-packagename.bz2 refers to the package
+such as SimpleIDE-1-0-0-i686-linux.bz2. SimpleIDE-version refers to the
+SimpleIDE version such as SimpleIDE-1-0-0.
+
+Please note the $ sign is a standard symbol for a command prompt in Linux.
+If you see "$ command", it means enter command in your command terminal window.
+
+
+The general Linux install and run procedures are::
+
+INSTALL
+
+  1. Unpack SimpleIDE with $ tar -xjf SimpleIDE-packagename.bz2
+
+  2. Change directory $ cd SimpleIDE-version.
+
+  3. Setup with $ sudo ./setup.sh (or use root $ ./setup.sh)
+   a. A target can be used with setup.sh. For help use $ ./setup.sh help
+   b. Note that setup.sh will add /usr/bin/simpleide, /opt/parallax, and /opt/simpleide.
+
+  4. SimpleIDE workspace:
+   a. On first run simpleide will ask to install SimpleIDE files.
+   b. If this is an update, the SimpleIDE files will be updated as required.
+
+  5. Current users should remove the following:
+   a. ~/.config/ParallaxInc/SimpleIDE.conf file.
+   b. ~/Documents/SimpleIDE/Learn/Simple Libraries/Text Devices
+
+  6. Users may add a shortcut to /usr/bin/simpleide on the desktop for easy access.
+
+RUN
+
+  1. From any directory, run with the command $ simpleide
+   a. Do not use $ ./simpleide; it will not work.
+   b. Typing $ simpleide starts /usr/bin/simpleide which properly sets the environment.
+   c. Alternatively use $ simpleide & (makes the program run in the background).
+
+  2. Typical SimpleIDE Properties will have:
+   a. GCC Folders: GCC Compiler /opt/parallax/bin
+   b. GCC Folders: Library Folder ~/Documents/SimpleIDE/Learn/Simple Libraries/
+   c. GCC Folders: Workspace Folder ~/Documents/SimpleIDE/
+   d. General: Loader Folder /opt/parallax/propeller-load
+
+  3. The SimpleIDE program should start with the Welcome.c demo
+
+
+Documentation
+
+The SimpleIDE User Guide can be found in Program Help Menu.
+The SimpleIDE Simple Libraray help can be found in Program Help Menu.
+
+Parallax Education site: http://learn.parallax.com
+Propeller-C Tutorial site: http://learn.parallax.com/propeller-c
+
+PropellerGCC site address is: http://www.parallax.com/propellergcc
+PropellerGCC source site address is: http://www.parallax.com/propgcc
+SimpleIDE source site address is: https://code.google.com/p/propside
+The SimplieIDE workspace source site address is: https://code.google.com/p/propsideworkspace
+
+SimpleIDE is an OpenSource project built on the Qt libraries and used in
+  accordance with the Qt OpenSource license.
+PropellerGCC is a GNU GCC OpenSource project released according to GPLV3.
+PropellerGCC does not require your application to be GPL.
+
+The SimpleIDE package license directory contains all applicable license information.
+
++---------------------------------------------------------------------
+| Copyright (C) 2012-2014 Parallax, Inc.
++---------------------------------------------------------------------
+| TERMS OF USE: MIT License
++---------------------------------------------------------------------
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
++---------------------------------------------------------------------
+| End of License Agreement.
++---------------------------------------------------------------------
+
