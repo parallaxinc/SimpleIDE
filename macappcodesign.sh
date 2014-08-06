@@ -10,7 +10,7 @@
 # ./macappcodesign -s "Developer ID Application" -a SimpleIDE/SimpleIDE.app
 #
 # defaults 
-IDENTITY="Developer ID Application: Dennis Gately"
+IDENTITY="Developer ID Application"
 APPNAME=SimpleIDE
 
 usage()
