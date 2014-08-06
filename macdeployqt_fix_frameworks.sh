@@ -13,11 +13,12 @@
 #
 # Assumes the app bundle is within a directory with the app's base name 
 #
-# Example usage:
-# ./macdeployqt_fix_frameworks.sh -p ~/Qt/5.3/clang_64/lib -n MyProgram.app
+# Using sudo ./macdeploy_fix_frameworks.sh is strongly recommended
 #
-# my defaults 
-#QT_LIBS_DIR=/Volumes/Developer/Qt/5.3/clang_64/lib
+# Example usage:
+# sudo ./macdeployqt_fix_frameworks.sh -p ~/Qt/5.3/clang_64/lib -n SimpleIDE
+#
+# defaults 
 NAME=SimpleIDE
 
 usage()
