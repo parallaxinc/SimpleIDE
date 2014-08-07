@@ -586,8 +586,8 @@ bool Properties::replaceLearnWorkspace()
         QDateTime ptime = pinfo.lastModified();
         QDateTime wtime = winfo.lastModified();
 
-        qDebug() << "pkwrk" << ptime.date() << ptime.time() << ptime.toMSecsSinceEpoch();
-        qDebug() << "mywrk" << wtime.date() << wtime.time() << wtime.toMSecsSinceEpoch();
+        qDebug() << "pkwrk" << ptime.date() << ptime.time() << ptime.toTime_t()*1000;
+        qDebug() << "mywrk" << wtime.date() << wtime.time() << wtime.toTime_t()*1000;
 
         bool keepwrk = false;
         QVariant keep = settings.value(keepOldWorkspaceKey, false);
