@@ -214,7 +214,7 @@ int Editor::autoEnterColumnC()
     }
 
     int line = cur.blockNumber();
-    int col  = cur.positionInBlock();
+    int col  = cur.columnNumber();
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
     cur.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,col);
     QString text = cur.selectedText();
@@ -279,7 +279,7 @@ int Editor::autoEnterColumnSpin()
         return 0;
     }
 
-    int col = cur.positionInBlock();
+    int col = cur.columnNumber();
 
     cur.movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
     cur.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,col);
@@ -364,7 +364,7 @@ bool Editor::isCommentOpen(int line)
 
 int Editor::braceMatchColumn()
 {
-    int position = this->textCursor().positionInBlock();
+    int position = this->textCursor().columnNumber();
     int indent = this->tabStopWidth()/10;
 
     if(position < indent)
