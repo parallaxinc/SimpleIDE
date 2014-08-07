@@ -1,4 +1,4 @@
-#!/bin/sh -- 
+#!/bin/sh --
 #
 # The purpose of this script is to create a signed Mac deployment package.
 # The package will be created as ./SimpleIDE.pkg
@@ -31,16 +31,16 @@ This script builds a signed SimpleIDE installation package.
 OPTIONS:
     -h  show usage
     -r  requireRestart
-    -d  DeveloperID     (required parameter)
-    -v  version         (required parameter)
+    -s  identity developer certificate key   - example: -s "Developer ID Installer" (default)
+    -v  version                              - example: -v 0.9.66 (required parameter)
 EOF
 }
 
 VERSION=
 RESTART=
-DEVELOPERID=
+IDENTITY=
 
-while getopts "h:r:d:v:i" OPTION
+while getopts "h:r:s:v:i" OPTION
 do
     case $OPTION in
         h)
@@ -50,8 +50,8 @@ do
         r)
             RESTART=$OPTARG
             ;;
-        d)
-            DEVELOPERID=$OPTARG
+        s)
+            IDENTITY=$OPTARG
             ;;
         v)
             VERSION=$OPTARG
@@ -63,30 +63,20 @@ do
     esac
 done
 
-#if [[ -z $DEVELOPERID ]] || [[ -z $VERSION ]]
-#then
-#     usage
-#     exit 1
-#fi
-
-#VERSION=$1
-#SIGNATUREID=$2
-
-#echo restart: ${RESTART}
-#echo signatureID: ${DEVELOPERID}
-#echo version: ${VERSION}
+if [[ -z $IDENTITY ]] || [[ -z $VERSION ]]
+then
+     usage
+     exit 1
+fi
 
 SIMPLEIDE=SimpleIDE/SimpleIDE.app
 FTDIDRIVER=FTDIUSBSerialDriver.kext
+IDENTIFIER=com.test.Parallax
+
 SRC_WORKSPACE=propsideworkspace
 
 DIST_SRC=Distribution.xml
 DIST_DST=dist.xml
-
-if [ ${2}X != X ]
-then
-    RESTART=$2
-fi
 
 # validate requirements
 if [ ${VERSION}X == X ]
@@ -96,7 +86,9 @@ then
   exit 1
 fi
 
+#
 # a properly signed app will contain a _CodeSignature directory and CodeResource file
+#
 echo "Validating parameters..."
 if [[ -e ${SIMPLEIDE}/Contents/_CodeSignature/CodeResources ]]
 then
@@ -114,7 +106,9 @@ else
   exit 1
 fi
 
-# verify that th FTDIUSBDriver.kext is available for copying into the app package
+#
+# verify that the FTDIUSBDriver.kext is available for copying into the app package
+#
 if [ -e ${FTDIDRIVER} ]
 then
   echo " Found FTDI chip driver, continuing..."
@@ -123,26 +117,45 @@ else
   exit 1
 fi
 
-# verify that th propsideworkspace is available for copying into the app package
-if [ -e ${SRC_WORKSPACE} ]
+#
+# use security utility to determine if the identity is valid
+#
+SECUREID=`security find-certificate -c "$IDENTITY" | grep labl`
+if [[ -n ${SECUREID} ]]
 then
-  echo " Found workspace directory, continuing..."
+    echo "  Identity: \"${IDENTITY}\" found..."
 else
-  echo "[Error] workspace directory missing. Please read macsignedpack.sh comments."
-  exit 1
+    echo "[Error] Identity: \"${IDENTITY}\" does not exist!"
+    echo
+    usage
+    exit 1
 fi
-
-#exit 1
-
-echo `sed "s/IDENTIFIER/${ID}/g" ${DIST_SRC}` | sed "s/RESTART/${RESTART}/g" > ./${DIST_DST}
-cat ./${DIST_DST}
 
 touch *
 
-pkgbuild --root ${FTDIDRIVER} --identifier com.test.Parallax.FTDIUSBSerialDriver.kext --install-location /Library/Extensions/FTDIUSBSerialDriver.kext FTDIUSBSerialDriver.pkg
+pkgbuild --identifier ${IDENTIFIER}.${FTDIDRIVER} --root ${FTDIDRIVER} --install-location /Library/Extensions/${FTDIDRIVER} --sign "$IDENTITY" FTDIUSBSerialDriver.pkg
 
-pkgbuild --root ${SIMPLEIDE} --identifier com.test.Parallax.SimpleIDE --install-location /Applications/SimpleIDE.app SimpleIDE.pkg
+pkgbuild --root ${SIMPLEIDE} --identifier ${IDENTIFIER}.SimpleIDE.app --sign "$IDENTITY" --install-location /Applications/SimpleIDE.app SimpleIDE.pkg
 
-productbuild --distribution ./${DIST_DST} --resources ./ --package-path . ./SimpleIDE-${VERSION}-MacOS.pkg
+productbuild --synthesize --sign "$IDENTITY" --package SimpleIDE.pkg --package FTDIUSBSerialDriver.pkg ./${DIST_SRC}
+
+# modify the created Distribution.xml if requiredRestart is requested (for .kext installation)
+#echo ${RESTART}..............
+#if [[ ${RESTART} == "requiredRestart"  ]]
+#then
+#    echo no request for "requiredRestart"
+#    productbuild --distribution ${DIST_SRC} --sign "$IDENTITY" --package-path . ./SimpleIDE-${VERSION}-MacOS.pkg
+#else
+#    echo `sed "s/\"none\"\>FTDI/\”${RESTART}\"\>FTDI\"/g" ${DIST_SRC}` > ./${DIST_DST}
+#    cat ./${DIST_DST}
+#    productbuild --distribution ${DIST_DST} --sign "$IDENTITY" --package-path . ./SimpleIDE-${VERSION}-MacOS.pkg
+#fi
+
+############## ORIGINAL sed ##################################################################
+#echo `sed "s/IDENTIFIER/${ID}/g" ${DIST_SRC}` | sed "s/\"none\"/${RESTART}/g" > ./${DIST_DST}
+#cat ./${DIST_DST}
+##############################################################################################
+
+productbuild --distribution ./${DIST_SRC} --sign "$IDENTITY" --package-path . ./SimpleIDE-${VERSION}-MacOS.pkg
 
 exit 0
