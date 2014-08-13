@@ -255,6 +255,7 @@ private:
     bool isSpinProject();
     bool isCProject();
     void selectBuilder();
+    int  makeBuildProjectFile(QString fileName);
     int  runBuild(QString option);
 #ifdef KEEP_CTOOLS
     int  runCOGC(QString filename, QString outext);

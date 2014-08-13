@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "0-9-64"
+#define MyAppVersion "0-9-66"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -41,7 +41,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 OutputDir=..\propside-build-desktop
-OutputBaseFilename=Simple-IDE_{#MyAppVersion}_Setup
+OutputBaseFilename=Simple-IDE_{#MyAppVersion}_Windows_Setup
 Compression=lzma/Max
 SolidCompression=true
 AlwaysShowDirOnReadyPage=true

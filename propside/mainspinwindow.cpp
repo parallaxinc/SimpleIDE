@@ -5159,6 +5159,109 @@ void MainSpinWindow::selectBuilder()
         builder = buildC;
 }
 
+/**
+ * @brief makeBuildProjectFile
+ * Creates a project file for .c or .cpp files with main.
+ * @param fileName is the file name of the tab currently visible.
+ * @return 0 if project file not created.
+ */
+int  MainSpinWindow::makeBuildProjectFile(QString fileName)
+{
+    int rc = 0; // if return zero, the function did not create a project file
+    if(!(fileName.endsWith(".c") || fileName.endsWith(".cpp"))) {
+        return rc;
+    }
+
+    QString text;
+    QString orgText;
+
+    QFile file(fileName);
+    if (file.open(QFile::ReadOnly))
+    {
+        QTextStream in(&file);
+        if(this->isFileUTF16(&file))
+            in.setCodec("UTF-16");
+        else
+            in.setCodec("UTF-8");
+
+        text = in.readAll();
+        orgText = text;
+        file.close();
+
+        if(text.length() == 0) {
+            return rc;
+        }
+    }
+    else {
+        return rc;
+    }
+
+    /* if we get here, text has valid C or C++ file content */
+    QRegExp mainr("main[ \\t\\r\\n]*\\(");
+    QRegExp blkc("\\/\\*.*\\*\\/");
+    QRegExp comm("\/\/");
+
+    while(text.indexOf(blkc) > -1) {
+        text = text.replace(blkc,"");
+    }
+
+    QStringList list = text.split("\n");
+    for(int n = 0; n < list.length(); n++) {
+        QString s = list[n];
+        if(s.contains(comm)) {
+            list[n] = s.mid(0,s.indexOf(comm));
+        }
+    }
+    QString t = list.join("\n");
+    if(t.indexOf(mainr) > -1) {
+        qDebug() << "Got main" + t;
+    }
+    else {
+        return rc;
+    }
+
+    int question = QMessageBox::question(this,tr("Create Project?"), tr("A project is required to compile the file")+"\n"+fileName+
+                          "\n\n"+tr("Would you like to create a project now?"),QMessageBox::Yes,QMessageBox::No);
+    if(question != QMessageBox::Yes) {
+        return rc;
+    }
+
+    QString projName(fileName);
+    projName = projName.mid(0,projName.lastIndexOf("."));
+    projName += ".side";
+
+    QString workspace = propDialog->getApplicationWorkspace();
+
+    if(fileName.endsWith(".c")) {
+        workspace = workspace + "My Projects/Blank Simple Project.side";
+    }
+    else if(fileName.endsWith(".cpp")) {
+        workspace = workspace + "My Projects/Blank Simple C++ Project.side";
+    }
+
+    if(QFile::exists(workspace)) {
+        if(copyProjectAs(workspace, projName, fileName) < 0) {
+            QMessageBox::information(this,tr("Project Error"), tr("Error creating a project for the file")+"\n"+fileName);
+            return rc; // error, don't open bad project
+        }
+
+        if (file.open(QFile::WriteOnly)) {
+            file.write(orgText.toUtf8());
+            file.close();
+        }
+
+        this->openProject(projName);
+        rc = 1;
+    }
+    else {
+        QMessageBox::critical(this, tr("Project Not Found"),
+            tr("Blank Simple Project was not found."));
+        return rc;
+    }
+
+    return rc;
+}
+
 int  MainSpinWindow::runBuild(QString option)
 {
     if(projectModel == NULL || projectFile.isEmpty()) {
@@ -5177,6 +5280,9 @@ int  MainSpinWindow::runBuild(QString option)
     checkAndSaveFiles();
     selectBuilder();
 
+    /*
+     * If we have a file that has an associated project, choose that project.
+     */
     index = editorTabs->currentIndex();
     if(index > -1) {
         QString tabname = this->editorTabs->tabText(index);
@@ -5200,12 +5306,17 @@ int  MainSpinWindow::runBuild(QString option)
             }
         }
 
-        // Don't complain about Untitled being open
+        // Don't worry about Untitled files.
         if(editorTabs->tabText(index).compare("Untitled") == 0) {
             inlist = true;
         }
+
         if(!inlist) {
-            HintDialog::hint("NotInProject", tr("The file being displayed is not part of the project. It will not be included in the program being built. Use the project button to check the project contents."), this);
+            /* A .c or .c++ file that has a qualified main() and no project should have a project created. */
+            inlist |= makeBuildProjectFile(this->editorTabs->tabToolTip(index));
+            if(!inlist) {
+                HintDialog::hint("NotInProject", tr("The file being displayed is not part of the project. It will not be included in the program being built. Use the project button to check the project contents."), this);
+            }
         }
         else if(!mainFile.contains(tabname)) {
             HintDialog::hint("NotProjectMainFile", tr("The file being displayed is not the main project file. It may not represent the program to build. Use the project button to check the project name if necessary. For making a main file for building, press F4 to set the project."), this);
