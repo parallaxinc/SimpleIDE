@@ -4918,8 +4918,9 @@ void MainSpinWindow::aboutShow()
 
 void MainSpinWindow::creditShow()
 {
-    QString license(ASideGuiKey+tr(" was developed by Steve Denson for Parallax Inc.<br/><br/>")+ASideGuiKey+tr(" is an MIT Licensed Open Source IDE developed with Qt (Qt License) and Qt shared libraries (LGPLv2.1).<br/><br/>"));
-    QString propgcc(ASideGuiKey+tr(" uses <a href=\"http://propgcc.googlecode.com\">Propeller GCC tool chain</a> based on GCC 4.6.1 under GPLv3. ")+"<p>");
+    QString license(ASideGuiKey+tr(" was developed by Steve Denson for Parallax Inc.<br/><br/>")+ASideGuiKey+
+                    tr(" is an open source GNU GPL V3 Licensed IDE (see package file COPYING3 or http://www.gnu.org/licenses) developed with Qt and uses Qt shared libraries (LGPLv2.1).<br/><br/>"));
+    QString propgcc(ASideGuiKey+tr(" uses <a href=\"http://propgcc.googlecode.com\">Propeller GCC tool chain</a> based on GCC 4.6.1 (GPLV3). ")+"<p>");
     QString ctags(tr("It uses the <a href=\"http://ctags.sourceforge.net\">ctags</a> binary program built from sources under GPLv2 for source browsing. ")+"<p>");
     QString icons(tr("Most icons used are from <a href=\"http://www.small-icons.com/packs/24x24-free-application-icons.htm\">www.aha-soft.com 24x24 Free Application Icons</a> " \
                      "and used according to Creative Commons Attribution 3.0 License.<br/><br/>"));
@@ -7242,6 +7243,7 @@ void MainSpinWindow::enumeratePortsEvent()
     int len = this->cbPort->count();
 
     QString lastPort = term->getLastConnectedPortName();
+    bool terminalOpen= term->isVisible();
 
     // need to check if the port we are using disappeared.
     if(this->btnConnected->isChecked()) {
@@ -7267,7 +7269,7 @@ void MainSpinWindow::enumeratePortsEvent()
     else if(lastPort.length() > 0) {
         for(int n = this->cbPort->count()-1; n > -1; n--) {
             QString name = cbPort->itemText(n);
-            if(!name.compare(lastPort)) {
+            if(!name.compare(lastPort) && terminalOpen) {
                 // old port found
                 cbPort->setCurrentIndex(n);
                 // make sure we are using lastport
@@ -7279,12 +7281,15 @@ void MainSpinWindow::enumeratePortsEvent()
         }
     }
     else if(len > 1) {
+        // parallax always wants to see a popup for additional ports
+        if(!this->isActiveWindow())
+            QApplication::setActiveWindow(this);
         if(this->isActiveWindow())
             this->cbPort->showPopup();
-        term->setPortEnabled(true);
+        if(terminalOpen) term->setPortEnabled(true);
     }
     else if(len > 0) {
-        term->setPortEnabled(true);
+        if(terminalOpen) term->setPortEnabled(true);
     }
 
 }
