@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+
+<!-- THIS FILE REQUIRED FOR PACKAGE-SIGNING -->
+<!-- DO NOT EDIT OR REMOVE!                 -->
+
+<installer-gui-script minSpecVersion="1">
+
+    <!-- Define install parameters -->
+    <title>SimpleIDE</title>
+    <organization>com.Parallax</organization>
+    
+    <!-- Allow module installs, no scripts & only install on boot vol -->
+    <options customize="allow" require-scripts="false" rootVolumeOnly="true" allow-external-scripts="no" />
+
+    <!-- Must quit the IDE, if it is running -->
+    <pkg-ref id="com.Parallax.SimpleIDE.app">
+        <must-close>
+            <app id="com.Parallax.SimpleIDE"/>
+        </must-close>
+    </pkg-ref>
+    
+    <!-- Define documents displayed at various steps -->
+    <welcome    file="welcome.html"         mime-type="text/html" />
+    <license    file="license.html"         mime-type="text/html" />
+    <background file="splash620x418.png"    mime-type="image/png" />
+    <conclusion file="conclusion.html"      mime-type="text/html" />
+
+    <choices-outline>
+        <line choice="default">
+            <line choice="com.Parallax.SimpleIDE.app"/>
+        </line>
+    </choices-outline>
+
+    <!-- Default complete package install -->
+    <choice
+        id="default"
+        visible="true"
+        title="SimpleIDE"
+        description="SimpleIDE installation">
+    </choice>
+
+    <!-- SimpleIDE App pkg -->
+    <choice
+        id="com.Parallax.SimpleIDE.app" 
+        visible="true"
+        title="SimpleIDE Application"
+        description="SimpleIDE, the Parallax Propeller IDE application">
+        <pkg-ref id="com.Parallax.SimpleIDE.app"/>
+    </choice>
+    
+    <pkg-ref
+        id="com.Parallax.SimpleIDE.app"
+        onConclusion="none">SimpleIDE.pkg
+    </pkg-ref>
+    
+</installer-gui-script>
