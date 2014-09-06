@@ -1,0 +1,7 @@
+hello.c
+>compiler=C
+>memtype=cmm compact
+>optimize=-Os
+>-fno-exceptions
+>-ltiny
+>BOARD::HUB

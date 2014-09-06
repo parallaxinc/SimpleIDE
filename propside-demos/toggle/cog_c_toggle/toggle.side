@@ -1,0 +1,10 @@
+toggle.c
+toggle.h
+toggle_fw.cogc
+toggle.h
+>compiler=C
+>memtype=lmm large
+>optimize=-Os
+>-fno-exceptions
+>-Dprintf=__simple_printf
+>BOARD::HUB

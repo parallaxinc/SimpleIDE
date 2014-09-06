@@ -1,0 +1,11 @@
+Package: simpleide
+Version:  VERSION
+Architecture: CPU
+Depends: libqtgui4, libqtcore4, zlib1g, libftdi1
+Pre-Depends:
+Recommends:
+Maintainer: parallax.com
+Conflicts:
+Replaces:
+Description: Parallax SimpleIDE for Propeller C Programming
+ The Parallax SimpleIDE is used for programming the Parallax Propeller P8x32a multi-core MicroController with PropellerGCC. For more information, please see: http://learn.parallax.com/propeller-c

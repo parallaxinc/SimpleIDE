@@ -1,0 +1,51 @@
++---------------------------------------------------------------------
+| SimpleIDE Terms of use
++---------------------------------------------------------------------
+
+SimpleIDE is an application used for creating Propeller programs.
+
+Copyright (C) 2014-2014 Parallax Incorporated
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
++---------------------------------------------------------------------
+| End of SimpleIDE terms of use license agreement.
++---------------------------------------------------------------------
+
+
+License information for works included in this package:
+
+All SimpleIDE demo programs are MIT licensed unless otherwise stated.
+
+SimpleIDE repository: www.propside.googlecode.com
+Repository includes SimpleIDE, icons, and ctags58 sources.
+
+Propeller-GCC repository: www.propgcc.googlecode.com
++---------------------------------------------------------------------
+
+SimpleIDE built with qmake/make or Qt Creator under LGPL license 2.1 (file LGPL_2_1.txt).
+SimpleIDE sources licensed according to GPL v3.0 or GPL compatible licenses.
+
+Qt4 and Qt5.3.1 libraries are used according to the LGPL license 2.1 and License Exception (file LGPL_EXCEPTION.txt).
++---------------------------------------------------------------------
+
+Most Toolbar Icons are from the www.aha-soft.com 24x24-freeapplication-icons pack.
+Icons are used according to the Creative Commons 3.0 license (file aha-soft-license.txt)
++---------------------------------------------------------------------
+
+Program "ctags" unmodified binary is used according to GPLv2 (file ctags-license.txt) Program information for ctags is in file ctags-readme.txt.
++---------------------------------------------------------------------
+
+Propeller-GCC is used according to GPLv3.0 (file LICENSE.txt and COPYING*.txt in the propgcc install folder). GPLv3.0 EXCEPTION allows users to produce original works with GCC tools without requiring the work to be GPL licensed.
++---------------------------------------------------------------------

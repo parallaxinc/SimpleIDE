@@ -1,0 +1,108 @@
+/* Styles for detailed member documentation */
+.memtemplate {
+  /*
+  font-size: 80%;
+  color: #4665A2;
+  font-weight: normal;
+  margin-left: 9px;*/
+}
+.memnav {
+  /*
+  border-style: solid;
+  border-color: #A3B4D7;
+  text-align: center;
+  margin: 2px;
+  margin-right: 15px;
+  padding: 2px;*/
+}
+.memitem {
+  /*
+  padding: 0;
+  border-style: solid;
+  border-color: #A3B4D7;
+  margin-bottom: 10px;
+  margin-right: 5px;
+  width: 100%;*/
+}
+.memname {
+  font-weight: bold;
+}
+.memname td {
+  vertical-align: bottom;
+}
+.memproto, div dl.reflist dt {
+  background-color: #A3B4D7;
+  padding: 10px;
+  font-weight: bold;
+}
+.memdoc, p {
+  background-color: #E2E8F2;
+  font-size: large;/*
+  border-style: solid;*/
+  padding: 10px;
+}
+.memdoc, dl.reflist dd {/*
+  background-color: #E2E8F2;*/
+  padding: 10px;
+}
+dl.reflist dt {
+  padding: 5px;
+}
+dl.reflist dd {
+  margin: 0px 0px 10px 0px;
+  padding: 5px;
+}
+.paramkey {
+  text-align: right;
+}
+.paramtype {
+  white-space: nowrap;
+}
+.paramname {
+  color: #602020;
+}
+.paramname em {
+  font-style: normal;
+}
+.paramname code {
+  line-height: 14px;
+}
+.params, .retval, .exception, .tparams {
+  margin-left: 0px;
+  padding-left: 0px;
+}
+.params .paramname, .retval .paramname {
+  font-weight: bold;
+  vertical-align: top;
+}
+.params .paramtype {
+  font-style: italic;
+  vertical-align: top;
+}
+.params .paramdir {
+  font-family: "courier new",courier,monospace;
+  vertical-align: top;
+}
+table.mlabels {
+  border-spacing: 0px;
+}
+td.mlabels-left {
+  width: 100%;
+  padding: 0px;
+}
+td.mlabels-right {
+  vertical-align: bottom;
+  padding: 0px;
+  white-space: nowrap;
+}
+span.mlabels {
+  margin-left: 8px;
+}
+span.mlabel {
+  border-style: solid;
+  border-color: #5373B4;
+  /* #C4CFE5 */ color: white;
+  margin-right: 4px;
+  padding: 2px 3px;
+  font-size: 7pt;
+}

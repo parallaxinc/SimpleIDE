@@ -1,0 +1,61 @@
+|===========================================================================|
+Objects : -
+toggle
+
+Object Address : 0010 : Object Name : toggle
+
+Binary Image Information :
+PBASE : 0010
+VBASE : 0078
+DBASE : 0080
+PCURR : 0070
+DCURR : 0088
+|===========================================================================|
+|===========================================================================|
+Object toggle
+Object Base is 0010
+|===========================================================================|
+Object Constants
+|===========================================================================|
+|===========================================================================|
+Object DAT Blocks
+|===========================================================================|
+0018(0000)             | dat             org 0
+0018(0000)             | pasm
+0018(0000) F0 21 BC A0 |                 mov      mailbox_ptr,par         ' save the pointer to the STATIC parameter (HUB) memory area
+001C(0001) 10 24 BC 08 |                 rdlong   waitdelay, mailbox_ptr  ' read the wait delay from HUB - it is initialized by the C program
+0020(0002) 04 20 FC 80 |                 add      mailbox_ptr,#4          ' point to the next LONG in HUB
+0024(0003) 10 22 BC 08 |                 rdlong   pins,mailbox_ptr        ' the caller's PIN mask  as initialized in the C program
+0028(0004) 04 20 FC 80 |                 add      mailbox_ptr, #4         ' point to the next LONG (4 bytes each)
+002C(0005) 10 26 BC 08 |                 rdlong   loopcounter,mailbox_ptr ' set the loop count as provided by the C program
+0030(0006) 04 20 FC 80 |                 add      mailbox_ptr, #4         ' point to the next LONG which is the semaphore we are setting when done
+0034(0007) 11 EC BF A0 |                 mov      dira, pins              ' set pins provided by C program to OUTPUT
+0038(0008) 12 2A BC A0 |                 mov      nextcnt, waitdelay
+003C(0009) F1 2B BC 80 |                 add      nextcnt, cnt            ' best to add cnt last
+0040(000A)             | :loop
+0040(000A) 11 E8 BF 6C |                 xor      outa, pins              ' toggle pins
+0044(000B) 12 2A BC F8 |                 waitcnt  nextcnt, waitdelay      ' wait for user specified delay
+0048(000C) 0A 26 FC E4 |                 djnz     loopcounter,#:loop      ' loop until the C provided counter hits zero
+004C(000D) 01 28 FC A0 |                 mov      done_flag,#1            ' set the semaphore to one
+0050(000E) 10 28 3C 08 |                 wrlong   done_flag, mailbox_ptr  ' and save it back into hub memory via the ptr provided by the C program
+0054(000F) 0F 00 7C 5C |                 jmp     #$                       ' to infinity and BEYOND!!
+0058(0010) 00 00 00 00 | mailbox_ptr     long    0                       ' working ptr into the HUB area - reload from PAR if needed
+005C(0011) 00 00 00 00 | pins            long    0                       ' local copy of the user's PIN mask
+0060(0012) 00 00 00 00 | waitdelay       long    0                       ' local copy of the user's delay
+0064(0013) 00 00 00 00 | loopcounter     long    0                       ' local copy of the user's loop counter
+0068(0014) 00 00 00 00 | done_flag       long    0                       ' local copy of the semaphore to return to the C program
+006C(0015) 00 00 00 00 | nextcnt         long    0                       ' local variable to save target value from waitcnt
+|===========================================================================|
+|===========================================================================|
+Spin Block start with 1 Parameters and 0 Extra Stack Longs. Method 1
+pub start(pinptr)                                                  
+
+Local Parameter DBASE:0000 - Result
+Local Parameter DBASE:0004 - pinptr
+|===========================================================================|
+34                          cognew(@pasm, pinptr)
+Addr : 0070:             34  : Constant 0 $FFFFFFFF
+Addr : 0071:          C7 08  : Memory Op Long PBASE + ADDRESS Address = 0008
+Addr : 0073:             64  : Variable Operation Local Offset - 1 Read
+Addr : 0074:             2C  : CogInit(Id, Addr, Ptr)
+Addr : 0075:             32  : Return        
