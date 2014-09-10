@@ -7269,23 +7269,43 @@ void MainSpinWindow::enumeratePortsEvent()
     else if(lastPort.length() > 0) {
         for(int n = this->cbPort->count()-1; n > -1; n--) {
             QString name = cbPort->itemText(n);
-            if(!name.compare(lastPort) && terminalOpen) {
-                // old port found
-                cbPort->setCurrentIndex(n);
-                // make sure we are using lastport
-                portListener->init(lastPort,portListener->getBaudRate());
-                // reopen port with connect button
-                btnConnected->setChecked(true);
-                connectButton();
+            if(!name.compare(lastPort)) {
+                if(terminalOpen) {
+                    // old port found
+                    cbPort->setCurrentIndex(n);
+                    // make sure we are using lastport
+                    portListener->init(lastPort,portListener->getBaudRate());
+                    // reopen port with connect button
+                    btnConnected->setChecked(true);
+                    connectButton();
+                }
+                else {
+                    lastPort = "";
+                    // parallax always wants to see a popup for additional ports
+                    // force it ... "hundred ways to die" the Qt way.
+                    QApplication::setActiveWindow(this);
+                    activateWindow();
+                    raise();
+                    setFocus(Qt::ActiveWindowFocusReason);
+                    QApplication::processEvents();
+
+                    // force it
+                    this->cbPort->showPopup();
+                }
             }
         }
     }
     else if(len > 1) {
         // parallax always wants to see a popup for additional ports
-        if(!this->isActiveWindow())
-            QApplication::setActiveWindow(this);
-        if(this->isActiveWindow())
-            this->cbPort->showPopup();
+        // force it ... "hundred ways to die" the Qt way.
+        QApplication::setActiveWindow(this);
+        activateWindow();
+        raise();
+        setFocus(Qt::ActiveWindowFocusReason);
+        QApplication::processEvents();
+
+        // force it
+        this->cbPort->showPopup();
         if(terminalOpen) term->setPortEnabled(true);
     }
     else if(len > 0) {
