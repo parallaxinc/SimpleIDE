@@ -486,6 +486,8 @@ private:
 
     RescueDialog    *rescueDialog;
 
+    QString         lastCbPort;
+
 public slots:
     void ideDebugShow();
 private:

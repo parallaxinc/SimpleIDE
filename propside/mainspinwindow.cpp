@@ -5038,6 +5038,7 @@ void MainSpinWindow::setCurrentPort(int index)
             portListener->init(portName, term->getBaud());  // signals get hooked up internally
         }
     }
+    lastCbPort = portName;
 }
 
 void MainSpinWindow::checkAndSaveFiles()
@@ -7242,8 +7243,18 @@ void MainSpinWindow::enumeratePortsEvent()
     QApplication::processEvents();
     int len = this->cbPort->count();
 
-    QString lastPort = term->getLastConnectedPortName();
+    QString lastTermPort = term->getLastConnectedPortName();
     bool terminalOpen= term->isVisible();
+
+    bool lastCbPortFound = false;
+    for(int n = this->cbPort->count()-1; n > -1; n--) {
+        QString name = this->cbPort->itemText(n);
+        if(!name.compare(lastCbPort)) {
+            lastCbPortFound = true;
+            break;
+        }
+    }
+    //if(!lastCbPortFound) lastCbPort = plPortName;
 
     // need to check if the port we are using disappeared.
     if(this->btnConnected->isChecked()) {
@@ -7254,6 +7265,8 @@ void MainSpinWindow::enumeratePortsEvent()
             if(!name.compare(plPortName)) {
                 // if port found, set cbport name
                 cbPort->setCurrentIndex(n);
+                // always reselect the last port set
+                lastCbPort = plPortName;
                 notFound = false;
             }
         }
@@ -7266,46 +7279,55 @@ void MainSpinWindow::enumeratePortsEvent()
             // don't use connectButton() because it hides the terminal
         }
     }
-    else if(lastPort.length() > 0) {
+    else if(lastTermPort.length() > 0) {
         for(int n = this->cbPort->count()-1; n > -1; n--) {
             QString name = cbPort->itemText(n);
-            if(!name.compare(lastPort)) {
+            if(!name.compare(lastTermPort)) {
                 if(terminalOpen) {
                     // old port found
                     cbPort->setCurrentIndex(n);
-                    // make sure we are using lastport
-                    portListener->init(lastPort,portListener->getBaudRate());
+                    // always reselect the last port set
+                    lastCbPort = lastTermPort;
+                    // make sure we are using lastTermport
+                    portListener->init(lastTermPort,portListener->getBaudRate());
                     // reopen port with connect button
                     btnConnected->setChecked(true);
                     connectButton();
                 }
                 else {
-                    lastPort = "";
-                    // parallax always wants to see a popup for additional ports
-                    // force it ... "hundred ways to die" the Qt way.
-                    QApplication::setActiveWindow(this);
-                    activateWindow();
-                    raise();
-                    setFocus(Qt::ActiveWindowFocusReason);
-                    QApplication::processEvents();
-
-                    // force it
-                    this->cbPort->showPopup();
+                    if(lastCbPort.length() > 0) {
+                        for(int n = this->cbPort->count()-1; n > -1; n--) {
+                            QString name = this->cbPort->itemText(n);
+                            if(!name.compare(lastCbPort)) {
+                                cbPort->setCurrentIndex(n);
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        if(this->isActiveWindow() && !lastCbPort.length()) {
+                            this->cbPort->showPopup();
+                        }
+                    }
                 }
             }
         }
     }
     else if(len > 1) {
-        // parallax always wants to see a popup for additional ports
-        // force it ... "hundred ways to die" the Qt way.
-        QApplication::setActiveWindow(this);
-        activateWindow();
-        raise();
-        setFocus(Qt::ActiveWindowFocusReason);
-        QApplication::processEvents();
-
-        // force it
-        this->cbPort->showPopup();
+        if(lastCbPort.length() > 0) {
+            for(int n = this->cbPort->count()-1; n > -1; n--) {
+                QString name = this->cbPort->itemText(n);
+                if(!name.compare(lastCbPort)) {
+                    cbPort->setCurrentIndex(n);
+                    break;
+                }
+            }
+        }
+        else {
+            if(this->isActiveWindow() && !lastCbPort.length()) {
+                this->cbPort->showPopup();
+            }
+        }
         if(terminalOpen) term->setPortEnabled(true);
     }
     else if(len > 0) {
@@ -7316,6 +7338,8 @@ void MainSpinWindow::enumeratePortsEvent()
 
 void MainSpinWindow::enumeratePorts()
 {
+    disconnect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
+
     if(cbPort != NULL) cbPort->clear();
 
     friendlyPortName.clear();
@@ -7378,6 +7402,8 @@ void MainSpinWindow::enumeratePorts()
     else {
         btnConnected->setCheckable(true);
     }
+    connect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
+
 }
 
 void MainSpinWindow::connectButton()
@@ -8032,7 +8058,6 @@ void MainSpinWindow::setupToolBars()
     cbPort->setToolTip(tr("Serial Port Select"));
     cbPort->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
-    connect(cbPort,SIGNAL(clicked()),this,SLOT(enumeratePorts()));
 
     btnConnected = new QAction(this);
     btnConnected->setToolTip(tr("SimpleIDE Terminal")+tr(" resets port if AUTO."));
