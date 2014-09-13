@@ -1,0 +1,259 @@
+SimpleIDE User Guide Notes:
+
+  The Simple IDE is designed for building Propeller-GCC programs. Simple should mean simple and easy for users. In some ways simple also means easy for the programmer.
+
+SimpleIDE is distributed as a Windows InnoIDE install package, a Mac OSX disk image (.dmg), Linux i686, Debian x86_64, Fedora x86_64, and is available as open source to be compiled with Qt 4.7 or 4.8 mingw GCC.
+
+This User Guide is not comprehensive, but it describes using basic features where necessary.
+
+
+Simple IDE features:
+
+- Menu Bar with File, Project, Edit, Tools, Debug, and Help
+- Tool Bar with most Menu Bar operations
+- Project manager menu and area for project file settings
+- Compiler area for setting build attributes
+- Tabbed text editor
+- Ctrl+Left-Click find declarations
+- Project build status pane
+- Status bar showing compile size, brief messages, and build progress
+- Board type and COM port selector
+
+
+Windows Installer:
+
+  The windows installer is about 76MB and contains the Propeller-GCC tool-chain, Simple IDE, and Propeller Demo programs installed in the user’s selected workspace. The installer will ask the user for directories and other info for setup. The installer makes the package ready to use in one simple process.
+
+A properties dialog will open the first time, and the Compiler tab should always have the correct information for windows – just click OK to get started. 
+
+
+Mac OSX Disk Image:
+
+  The SimpleIDE.dmg is about 60MB and contains the Propeller-GCC tool-chain, Simple IDE, and Propeller Demo programs in the disk image. Once the disk image is downloaded and opened, click on the app icon to start SimpleIDE. 
+
+A properties dialog will open the first time, and the Compiler tab should always have the correct information except for the user workspace. You should browse for a workspace folder and make one if necessary then click OK to get started. Some other details may need to be changed later. 
+
+
+Linux Packaging:
+
+Linux packages are primitive at the moment and will be changed to use the typical packager tools for the platform. The current package includes a setup script and supporting shared libraries. If you are items missing from the system required by SimpleIDE you can use the ldd tool to find out what you need, I.E. $ ldd SimpleIDE
+
+The general Linux install procedure is this:
+
+This Linux SimpleIDE package contains only the SimpleIDE.
+It does not contain the Propeller-GCC tool-chain.
+Debian packages are known to work on Ubuntu.
+
+In the instruction below SimpleIDE-packagename.bz2 refers to the package such as SimpleIDE-0-6-2-i686-linux.bz2
+SimpleIDE-version refers to the SimpleIDE version such as SimpleIDE-0-6-2
+
+1. Download and install Propeller-GCC to /opt/parallax
+2. Unpack SimpleIDE with $ tar -xjf SimpleIDE-packagename.bz2
+3. Change directory $ cd SimpleIDE-version.
+4. Setup with $ ./setup.sh
+5. Run with $ ./simpleide
+6. In SimpleIDE Compiler Properties:
+ a. Choose the compiler from /opt/parallax/bin
+ b. Choose the loader path as /opt/parallax/propellerl-load
+ c. Choose a workspace for new projects.
+7. Open the hello demo from SimpleIDE-version/demos/hello/hello.side
+
+
+Running the IDE for the first time:
+
+  At first startup a dialog window titled SimpleIDE Properties will appear. It allows setting critical Folders, General properties, and Highlights.
+
+In most cases, the Folders tab will already have the fields properly set. Please take note of the fields and click Ok when ready. These properties may be changed to allow using another compiler directory by clicking the tool-bar wrench. If you click OK to save/close the window and it comes back, that means that the critical Compiler or Loader Folder information is not correctly set. In most cases this will not be a problem, but if it is you can use the Browse buttons to find the propeller-elf-gcc compiler program and propeller-load folder. 
+
+Some General property details may need to be changed for different boards. For example, some USB serial devices do not have DTR for controlling Propeller reset and should use RTS instead. You can change the Reset Signal in SimpleIDE Properties -> General from DTR to RTS if necessary. This can be changed at any time.
+
+The Highlight properties tab can be used to change editor syntax colors. At this time only a select set of system colors is available.
+
+The SimpleIDE Properties dialog window controls are the same regardless of the O/S where the IDE is installed.
+ 
+
+Running the Hello Demo:
+
+  For Windows users a "Hello" demo should be loaded the first time the program starts. 
+
+To run the Hello demo, you must select a suitable board type, have the right COM port selected, and have a Propeller board connected. The demo should start with a simple board type like "HUB".
+
+You can click "Run Console" (blue "Play" button) to rebuild, load the program, and start the serial port console terminal window. The terminal will show "Hello World ..." after the program starts.
+
+
+Board Types:
+
+The "HUB" board type will be good enough for most 80MHz (5MHz + PLL16x) Propeller board tests. A SPINSTAMP board type is available for 10MHz PLL8x boards.
+
+If the top-right combo box near the refresh and terminal symbols is blank, insert your Propeller USB connected board and click refresh.
+
+Some default board types are available such as C3 or QUICKSTART in the board type combo box. RCFAST and RCSLOW board types are also available but should not be selected for programs using the serial port console.
+If you have a Propeller board with special clock needs, you can make your own board type and set the clock frequency (typically crystal frequency times PLLx mode). Assuming C:\propgcc is your installation directory:
+
+1. Copy the C:propgcc\propeller-load\hub.cfg to propgcc\propeller-load\yourboard.cfg
+2. Change clock frequency in yourboard.cfg, and save the file.
+3. Click the Jigsaw puzzle piece button near to reload the board types.
+4. Choose YOURBOARD from the combobox.
+
+
+Creating a new project:
+
+There are two ways to start a new project:
+
+Option 1: New Project
+
+1. Choose Menu->Project->New Project or click the New Project button.
+2. Click the folder browse button to select a new folder.
+3. Enter your project name. The name will be added to the folder path.
+
+When you press OK to finish the New Project dialog the folder/project name will be created for you if does not exist already. A main program template will be added for your new project.
+
+Option 2: Close All, start new.
+
+1. Choose Menu->File->Close all to close all editors and the project.
+2. Fill in new main program with code below (please do not copy/paste the [code] tags).
+3. Choose Menu->File->Save As to rename the "untitled" editor tab to "blinker.c".
+4. Choose Menu->Project->Set Project
+5. Select Memory Model LMM or COG from the project options. 
+
+[code]
+#include <propeller.h>
+
+int main(int argc, char* argv[])
+{
+    int mask = 0x3fffffff;
+    DIRA = mask;
+    for(;;) {
+        OUTA ^= DIRA;
+        waitcnt(CLKFREQ/2+CNT);
+    } 
+    return 0;
+}
+[/code]
+
+Using Menu->Project->Set Project will set the project name to the editor tab filename. Set Project saves the project properties to the current state.
+
+Click the hammer button to build your program after setting up your project. There should be no warnings or errors. If you see a warning or error, click on that line in the build output and it will take you to the problem area in the editor in most cases. Check your code there for typos. 
+
+If you did copy/paste the [code] tags for example you might see the message below. Click the error message and remove the line from the editor panel.
+
+blink.c:1:1: error: expected identifier or '(' before '[' token
+Using the IDE:
+
+  Many of the features of the IDE will be familiar to new users. Some features need a little explanation.
+
+  File Menu:
+
+  - New: Creates a new file called "untitled" in the tabbed editor space.
+  - Open: Opens an existing file in the tabbed editor space.
+  - Save: Saves the tab editor text to the filename in shown on the tab.
+  - Save As: Saves the current tabbed editor text to another filename.
+  - Close: Closes the currently visible tabbed editor.
+  - Close All: Closes all files and projects.
+  - Print: Prints the current document to a selected printing device.
+  - Previous file names: Lists the last 5 opened files.
+  - Exit: Asks to save any unsaved files and exits the program.
+
+
+  Project Menu:
+
+  - New Project: Opens a dialog for creating a new project in "folder/name" selected by user. Project name will be added to the folder by the program from the user's project name. If the folder/name does not exist, it is created.
+  - Open Project: Opens an existing project file with extention .side
+  - Save and Close Project: projects are always saved before they are closed.
+  - Set Project. The function of the set project button (F4 or Project->Set Project) has been discussed in the example above. Please review that section if you haven't already.
+  - Previous project names: Lists the last 5 opened projects.
+  - Properties. This item or associated button will open the SimpleIDE properties menu which was discussed in the first time use section.
+
+
+  Edit Menu:
+
+  - Copy: Copies selected editor text to the clip-board.
+  - Cut: Copies selected editor text to the clip-board and deletes text.
+  - Paste: Pastes text from clipboard to the editor at cursor.
+  - Find and Replace: Opens a dialog with find and replace tools that allows for optional whole word and case sensitive find and replace.
+  - Go Back: this goes back to the file place where a find function started.
+  - Find Declaration: Used to find a global variable or function implementation from a function call. This and Go Back make up a source browser.
+  - Redo: Undoes the last undo.
+  - Undo: Reverses the last edit.
+
+
+  Tools Menu:
+
+- Send File to Target SD Card: If the board-type has SDLOAD or SDXMMC in the name, this button can be used to send any file to the SD Card. Typically clicking this button will also compile the project to an AUTORUN.PEX image that can be used when Propeller boots up.
+- Go Back: When not greyed, this button will let you browse back from Browse Declaration.
+- Browse Declaration: Allows zooming to a user defined function or global variable declaration. Library functions such as printf that are not in the project file-list can’t be browsed.
+- Font: Allows selecting an editor font.
+- Bigger Font: Increases the editor font by %20.
+- Smaller Font: Decreases the editor font by %20.
+- Next Tab: Lets user scroll to the next tab in the editors.
+  
+
+Debug Menu:
+
+  - Run Console: Build, load, and run program on Propeller RAM (or external memory for XMM). It opens a serial port console terminal window.
+  - Build: Build program only.
+  - Burn: Build and load program to Propeller EEPROM (and external flash for XMM). Board types with SDLOAD or SDXMMC in their name will have program saved to SD card first.
+  - Run: Build, load, and run program on Propeller RAM (or external flash for XMM). Board types with SDLOAD or SDXMMC in their name will have program saved to SD card first.
+
+
+Top Right-hand Side GUI Elements:
+
+  - Board Type: This is the combo box on the left side of the green puzzle piece. It lets you choose the board type to use with your program. Board types with SDLOAD or SDXMMC are special and when selected tell the IDE that certain functions will be performed.
+  - Reload Board Type: This puzzle piece button will read all C:\propgcc\propeller-load\*.cfg files and load the names into the Board Type combo box. The selected board type is saved in the .side project file.
+  - Serial Port: This is the combo box on the right of the puzzle piece. It lets you choose the port to use where your board is attached.
+  - Rescan. You must click the rescan button every time you change port connections.
+  - Port Reset: This red “power switch” button lets you reset the board.
+  - Serial Port Console: This is a "display" button. Press to show and connect terminal window to the selected port. If pressed (square around the button), it is connected and you can disconnect by pressing the button again.
+
+
+Project Pane:
+
+  The project pane is blank if no project is set. If a project is set, the project name with .side will be displayed. All projects are .side projects. The first indented entry is the main program. It should have the main startup function.
+
+To see a file, left click on the file-name. Clicking the .side file does nothing.
+
+To add new files to the project, right click on the main program filename (or another if listed). When you add a file to the project, it must already exist somewhere on your computer. You can make a new file in the editor and save-as for example. If you choose a file outside of the project directory, the file will be copied to the directory. File names are added in alphabetical order except the main project file.
+
+To delete a file from the project, right click on the file and choose delete. Do not delete the top file - it has a special meaning. If you want another top file, create it and set the project.
+
+You can look at the Propeller-GCC assembly if you right click the filename and click Show Assembly.
+
+
+Compiler Pane:
+
+  The compiler pane lets you choose typical Propeller-GCC compile options. These options are automatically saved in the .side project file.
+
+  - Compiler Type: C compiles C programs and can compile very simple C++ programs such as the C++_toggle demo. C programs needing std namespace and libraries, etc... will need to use the C++ compiler. Typially a full C++ program will need an external memory to be useful.
+
+  - Memory Model: Many programs use LMM, but some programs use COG or XMMC. The C-VGA demo is a COG only program. To compile that, use the COG memory mode. Some programs are too big for LMM and can be run on external memory modes like XMMC. The included graphics demo can run on LMM, but it can also run on XMMC with board type EEPROM selected (64KB or more EEPROM should be used). XMM-SINGLE should be used for RAM based external memory devices. XMM-SPLIT is the same as XMM and should be used where external memory is split into code and data where code can live in Flash and data can live in RAM – XMM is originally used on boards like C3.
+
+  - Optimization: Typically we want to optimize for size, but there are some programs that we want to optimize for speed at the cost of a larger program. Use -O2 for speed optimizations.
+
+  - Math Lib: Must be checked if you are using float or double in your program. The program will compile without this, but it will not run correctly unless the library is included.
+
+  - Pthread Lib: Must be checked if you are using Pthreads for running multiple threaded programs in one COG or many COGs. The number of threads available is limited by memory. XMM/XMMC programs will run all threads on the main program cog. LMM programs can run M*N threads on N COGS.
+
+  - Simple Printf: GCC's default printf is very big (12KB or more). Simple printf provides most of the default printf features and is fine for most programs although it is not completely standard compliant. Simple printf programs using integers only can be as small as about 7KB so there is great advantage in using it on Propeller most of the time. There are cases though when the normal printf can be slightly smaller than simple printf.
+
+  - All Warnings: Tells compiler to generate all possible warnings on issues in code that can cause trouble.
+
+  - No Fcache: This tells compiler to not use Fast Cache (fcache). Fcache generally improves performance but it can be disabled.
+
+  - Exceptions: This should be enabled for C++ programs that use try/catch exceptions. Using exceptions may cause bigger programs.
+
+  - 32bit Doubles: Use 32bit doubles for floating point double variables. The default is 64bit doubles, and may be too big for most LMM programs.
+
+  - Strip ELF: Use this check box if you don’t need debug symbols in the final program file.
+ 
+  - Other Compiler Options Box: This lets you add -D flags for programs that may need them. For example the dry11 demo needs "-DLOOP=50000" (without quotes) to compile correctly. Use that flag for building dry11. There are other flags that can be added here when using libraries. One may need –I <path-to-library-headers> for using prebuilt libraries. 
+
+  - Other Linker Options Box: This lets you add linker specific options. For example “-l name” may be added for using a prebuilt library. One can also add special linker scripts here if a board does not fit a built-in memory layout.
+  
+
+Miscellaneous notes:
+
+  The editor will convert "tabs" to spaces. The built-in setting for tabs is 4 spaces. The number of spaces can be set in the General tab of SimpleIDE Properties. If you really need tabs, you can use another editor.
+
+There have been many enhancements and bug fixes since last update. In the future, bug fixes will be tracked here. For the time being look at propside.googlecode.com for bug fixes.
+
+File new bug reports at:  http://code.google.com/p/propside/issues/list

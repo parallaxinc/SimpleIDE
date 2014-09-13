@@ -1,0 +1,6 @@
+toggle.c
+>compiler=C
+>memtype=xmmc
+>optimize=-Os
+>-fno-exceptions
+>BOARD::EEPROM

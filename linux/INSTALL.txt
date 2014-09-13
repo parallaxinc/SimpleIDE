@@ -1,0 +1,115 @@
+SimpleIDE Linux Installation
+
+INTRODUCTION
+
+The Parallax SimpleIDE is designed for building Propeller C programs.
+SimpleIDE is distributed for Mac, Linux, and Windows.
+
+Linux Packaging:
+
+Linux packages are offered in two ways: 
+1. Debian binary .deb package (Debian, Mint, Ubuntu)
+  This package should be used by current libqtgui(N) and libqtcore(N) users.
+  Fedora, Suse, and other packages are not available yet.
+2. Stand-alone package (Linux distribution type in package name).
+  This package should be used in systems that do not have any Qt libraries.
+
+In the instruction below SimpleIDE-packagename.bz2 refers to the package
+such as SimpleIDE-1-0-i686-linux.bz2. SimpleIDE-version refers to the
+SimpleIDE version such as SimpleIDE-1-0.
+
+Please note the $ sign is a standard symbol for a command prompt in Linux.
+If you see "$ command", it means enter command in your command terminal window.
+
+INSTALLATION
+
+Installation requires using the Linux Terminal with root access.
+Prefix commands below with sudo if necessary (sudo is recommended, or login as root).
+
+INSTALL for Debian binary .deb only (should work with Debian, Mint, Ubuntu)
+
+  Installation requires using the Linux Terminal with root access.
+  Prefix commands below with sudo if necessary (sudo is recommended, or login as root).
+
+  1. Download the appropriate .deb package (i386 for 32 bit systems, or amd64 for 64 bit systems)
+  2. Set packagename if you like for example$ export PACKAGENAME=simpleide-1.0-i386.deb
+  3. Go to the download directory and type$ dpkg -i $PACKAGENAME
+  4. Enter$ apt-get install -f
+  5. Answer Y and enter as required to install dependencies. Take a short break.
+  6. Return to the user account (don't use sudo) and enter simpleide from the terminal.
+
+  To remove the package, use$ apt-get remove simpleide
+
+INSTALL for Stand-alone package (only)
+
+  1. Unpack SimpleIDE with the linux distribution's archive tool or$
+     tar -xjf SimpleIDE-packagename.bz2
+
+  2. Change directory$ cd SimpleIDE-version.
+
+  3. Setup as root with$ sudo ./setup.sh (or root$ ./setup.sh)
+   a. The setup.sh can also remove SimpleIDE with$ sudo ./setup.sh remove
+   b. Note that setup.sh will add /usr/bin/simpleide and /opt/simpleide.
+
+  4. SimpleIDE workspace:
+   a. Spin library files are saved in /opt/simpleide/spin
+   b. Demos or other files to be edited must be copied from there to a p
+
+  5. For the installer will remove this property file:
+   ~/.config/ParallaxInc/SimpleIDE.conf file.
+
+  6. Users may add a shortcut to /usr/bin/simpleide on the desktop for easy access.
+
+RUN
+
+  1. From any directory, run with the command $ simpleide
+   a. Do not use$ ./simpleide; it will not work.
+   b. Typing$ simpleide starts /usr/bin/simpleide which properly sets the environment.
+   c. Alternatively use$ simpleide & (makes the program run in the background).
+
+  2. The SimpleIDE program should start with: ~Documents/Welcome.spin
+
+
+DOCUMENTATION
+
+The SimpleIDE User Guide can be found in Program Help Menu.
+The SimpleIDE Simple Libraray help can be found in Program Help Menu.
+
+Parallax Education site: http://learn.parallax.com
+Propeller-C Tutorial site: http://learn.parallax.com/propeller-c
+
+SimpleIDE source site address is: https://code.google.com/p/propside
+The SimpleIDE spin library is kept in the propside repository.
+The SimpleIDE current branch is qt5side$ hg update qt5side
+
+SimpleIDE is an OpenSource project built on the Qt libraries and used in
+  accordance with the Qt OpenSource license.
+
+The SimpleIDE package license directory contains all applicable license information.
+
++---------------------------------------------------------------------
+| Copyright (C) 2014 Parallax, Inc.
++---------------------------------------------------------------------
+| TERMS OF USE: MIT License
++---------------------------------------------------------------------
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
++---------------------------------------------------------------------
+| End of License Agreement.
++---------------------------------------------------------------------
+
