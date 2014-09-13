@@ -16,6 +16,47 @@ if [ -e ${PKG} ]; then
    rm -rf ${PKG}
 fi
 
+QMAKE=`which qmake`
+QT5QMAKE=`echo ${QMAKE} | grep -i 'Qt5'`
+grep -i 'Qt5' ${QMAKE}
+if test $? != 0 ; then
+	echo "The qmake program may not be a Qt5 vintage."
+	echo "Please adjust PATH to include a Qt5 build if necessary."
+	sleep 5
+fi
+
+if [ ! -e ${PROPGCC}/bin/openspin ]
+then
+    echo "Propeller GCC bin/openspin not found. Openspin is in github:"
+    echo "git clone https://github.com/reltham/OpenSpin.git openspin"
+    echo "cd openspin;make;cp openspin /opt/parallax/bin"
+    exit 1
+fi
+
+if [ ! -e ./Workspace ]
+then
+    echo "SimpleIDE Workspace not found. Add it with this command:"
+    echo "hg clone https://code.google.com/p/propsideworkspace/ Workspace"
+    exit 1
+fi
+
+#
+# update workspace
+#
+rm -rf ${VERSION}/parallax/Workspace
+cd Workspace
+hg pull
+if test $? != 0; then
+   echo "workspace pull failed."
+   exit 1
+fi
+hg update
+if test $? != 0; then
+   echo "workspace update failed."
+   exit 1
+fi
+cd ..
+
 #
 # useful for script debug
 #
@@ -134,33 +175,41 @@ rm -rf ${APPGCC}/Workspace
 
 mkdir -p license
 
+pwd
+
 cp -r ../propside/IDE_LICENSE.txt license
 if test $? != 0; then
    echo "copy propside-demos failed."
    exit 1
 fi
 
-cp -r ../../propside/icons/24x24-free-application-icons/readme.txt license/aha-soft-readme.txt
+cp -r ../icons/24x24-free-application-icons/readme.txt license/aha-soft-readme.txt
 if test $? != 0; then
    echo "copy aha-soft license failed."
    exit 1
 fi
 
-cp -r ../../propside/ctags-5.8/COPYING license/ctags-COPYING.txt
+cp -r ../ctags-5.8/COPYING license/ctags-COPYING.txt
 if test $? != 0; then
    echo "copy ctags copying failed."
    exit 1
 fi
 
-cp -r ../../propside/ctags-5.8/README license/ctags-README.txt
+cp -r ../ctags-5.8/README license/ctags-README.txt
 if test $? != 0; then
    echo "copy ctags readme failed."
    exit 1
 fi
 
-cp -r ../../propgcc/LICENSE.txt license/propgcc-license.txt
+cp -r ${PROPGCC}/propeller-elf/lib/COPYING* license
 if test $? != 0; then
    echo "copy propgcc license failed."
+   exit 1
+fi
+
+cp -r ${PROPGCC}/propeller-elf/lib/LIB_LICENSE.txt* license
+if test $? != 0; then
+   echo "copy propgcc lib license failed."
    exit 1
 fi
 
