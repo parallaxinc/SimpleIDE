@@ -279,6 +279,11 @@ QString Terminal::getLastConnectedPortName()
     return lastConnectedPortName;
 }
 
+void Terminal::setLastConnectedPortName(QString name)
+{
+    lastConnectedPortName = name;
+}
+
 void Terminal::copyFromFile()
 {
     termEditor->copy();
