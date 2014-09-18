@@ -7245,7 +7245,7 @@ void MainSpinWindow::enumeratePortsEvent()
 
     QString lastTermPort = term->getLastConnectedPortName();
     bool terminalOpen= term->isVisible();
-
+#if 0
     bool lastCbPortFound = false;
     for(int n = this->cbPort->count()-1; n > -1; n--) {
         QString name = this->cbPort->itemText(n);
@@ -7255,7 +7255,7 @@ void MainSpinWindow::enumeratePortsEvent()
         }
     }
     //if(!lastCbPortFound) lastCbPort = plPortName;
-
+#endif
     // need to check if the port we are using disappeared.
     if(this->btnConnected->isChecked()) {
         bool notFound = true;
@@ -7300,14 +7300,15 @@ void MainSpinWindow::enumeratePortsEvent()
                             QString name = this->cbPort->itemText(n);
                             if(!name.compare(lastCbPort)) {
                                 cbPort->setCurrentIndex(n);
+                                // make sure we are using lastCbPort
+                                portListener->init(lastCbPort,portListener->getBaudRate());
+                                term->setLastConnectedPortName(lastCbPort);
                                 break;
                             }
                         }
                     }
-                    else {
-                        if(this->isActiveWindow() && !lastCbPort.length()) {
-                            this->cbPort->showPopup();
-                        }
+                    if(this->isActiveWindow()) {
+                        this->cbPort->showPopup();
                     }
                 }
             }
@@ -7323,10 +7324,8 @@ void MainSpinWindow::enumeratePortsEvent()
                 }
             }
         }
-        else {
-            if(this->isActiveWindow() && !lastCbPort.length()) {
-                this->cbPort->showPopup();
-            }
+        if(this->isActiveWindow()) {
+            this->cbPort->showPopup();
         }
         if(terminalOpen) term->setPortEnabled(true);
     }
