@@ -47,6 +47,7 @@ public:
     void setEchoOn(bool echoOn);
 
     QString getLastConnectedPortName();
+    void setLastConnectedPortName(QString name);
 
 signals:
     void enablePortCombo();
