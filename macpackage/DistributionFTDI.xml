@@ -20,7 +20,7 @@
     </pkg-ref>
     
     <!-- Define documents displayed at various steps -->
-    <welcome    file="welcome.html"         mime-type="text/html" />
+    <welcome    file="welcomeFTDI.html"     mime-type="text/html" />
     <license    file="license.html"         mime-type="text/html" />
     <background file="splash620x418.png"    mime-type="image/png" />
     <conclusion file="conclusion.html"      mime-type="text/html" />
