@@ -62,10 +62,15 @@ FTDIDRIVER=FTDIUSBSerialDriver
 FTDIDRIVER_KEXT=${FTDIDRIVER}.kext
 
 #
-# Mdified temporary distro xml
+# Modified temporary distro xml
 #
 # note: will contain copied or sed-modified version of template DistributionXXXX.xml
 DIST_DST=DistributionMOD.xml
+
+#
+# Location of the propside project files
+#
+PROPSIDE_PROJ_DIR="../propside/"
 
 #
 # initialize input options with default values
@@ -126,16 +131,36 @@ do
             fi
             ;;
         v)
-            VERSION=$OPTARG ;;
+            VERSION=$OPTARG
+            echo "overriding package version from the propside.pro project file with: \"${VERSION}\""
+            ;;
         ?)
             usage; exit  ;;
     esac
 done
 
+#
+# If no app version was declared, extract it from the propside.pro file
+#
 if [[ -z $VERSION ]]
 then
-     usage
-     exit 1
+#
+#   Attempt to extract app version from propside.pro project file
+#
+    if [[ -e ${PROPSIDE_PROJ_DIR}propside.pro ]]
+    then
+        SEDCMD=`sed -n 's/VERSION=.*$/&/p' ${PROPSIDE_PROJ_DIR}propside.pro | cut -d"=" -f3`
+        VERSION=`echo ${SEDCMD}`
+        VERSION=`echo ${VERSION} | sed 's/ /./g'`
+        VERSION=`echo ${VERSION} | sed 's/\r//g'`
+        echo "Extracted app version: ${VERSION} from the latest propside.pro file"
+    else
+        echo "[ERROR] no version option was declared and there is no propside.pro file to extract from"
+        echo "        Please verify that the ${PROPSIDE_PROJ_DIR}propside.pro file exists and retry"
+        echo
+        usage
+        exit 1
+    fi
 fi
 
 #
