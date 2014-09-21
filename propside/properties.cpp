@@ -999,7 +999,8 @@ void Properties::setupGeneral()
  */
 #endif
 
-    projectsCheck.setText(tr("Projects"));
+    projectsCheck.setText(tr("View Mode"));
+    projectsCheck.setToolTip(tr("Allow switching between Simple View and Project View modes."));
 
     var = settings.value(allowProjectViewKey);
     if(!var.isNull() && var.canConvert(QVariant::Int)) {
@@ -1063,6 +1064,7 @@ void Properties::allowProjects()
             projectsCheck.setChecked(false);
         }
  */
+        settings.setValue(allowProjectViewKey,1);
         emit enableProjectView(true);
     }
     else {
