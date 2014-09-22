@@ -81,5 +81,5 @@ int AboutDialog::exec()
     if(helpStartup.canConvert(QVariant::Bool)) {
         showSplashStartCheckBox->setChecked(helpStartup.toBool());
     }
-    QDialog::exec();
+    return QDialog::exec();
 }
