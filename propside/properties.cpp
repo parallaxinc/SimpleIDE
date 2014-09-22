@@ -244,9 +244,47 @@ void Properties::setupPropGccWorkspace()
     }
 #endif
 
+    QVariant wrkrv = settings.value(gccWorkspaceKey);
+    QString wrkreg;
+
+    if(wrkrv.canConvert(QVariant::String)) {
+        wrkreg = wrkrv.toString();
+    }
+
+    if(wrkreg.length() > 0) {
+        mywrk = QDir::fromNativeSeparators(wrkreg);
+        qDebug() << "My workspace reassigned:";
+        qDebug() << mywrk;
+    }
+    else if(QFile::exists(mywrk)) {
+        qDebug() << "Found Default workspace:";
+        qDebug() << mywrk;
+    }
+    else {
+        qDebug() << "Default workspace path not found.";
+    }
+
+
+    QVariant librv = settings.value(gccLibraryKey);
+    QString libreg;
+
     QString mylib;
-    if(QFile::exists(mywrk+LEARNLIB)) {
+
+    if(librv.canConvert(QVariant::String)) {
+        libreg = librv.toString();
+    }
+
+    if(libreg.length() > 0) {
+        mylib = QDir::fromNativeSeparators(libreg);
+        qDebug() << "My simple library path reassigned:";
+        qDebug() << mylib;
+    }
+    else if(QFile::exists(mywrk)) {
+        qDebug() << "Found Default simple library path:";
         mylib = mywrk+LEARNLIB;
+    }
+    else {
+        qDebug() << "Default simple library path not found.";
     }
 
     QVariant libv  = settings.value(gccLibraryKey, mylib);
@@ -254,6 +292,9 @@ void Properties::setupPropGccWorkspace()
 
     fileStringProperty(&wrkv,  leditGccWorkspace, gccWorkspaceKey, &mywrk);
     fileStringProperty(&libv,  leditGccLibrary,   gccLibraryKey,   &mylib);
+
+    QString ledLib = leditGccLibrary->text();
+    QString ledWrk = leditGccWorkspace->text();
 
     settings.setValue(gccLibraryKey,leditGccLibrary->text());
     settings.setValue(gccWorkspaceKey,leditGccWorkspace->text());
@@ -305,21 +346,24 @@ void Properties::setupPropGccCompiler()
 #endif
 
     QVariant compv = settings.value(gccCompilerKey);
+    QString gccreg;
 
-    if(QFile::exists(mygcc)) {
+    if(compv.canConvert(QVariant::String)) {
+        gccreg = compv.toString();
+    }
+
+    if(gccreg.length() > 0) {
+        mygcc = QDir::fromNativeSeparators(gccreg);
+        mypath = mygcc.mid(0,mygcc.lastIndexOf("/bin")+1);
+        qDebug() << "Mypath reassigned:";
+        qDebug() << mypath;
+    }
+    else if(QFile::exists(mygcc)) {
         qDebug() << "Found Default GCC Compiler:";
         compv = mygcc;
     }
     else {
-        if(compv.canConvert(QVariant::String)) {
-            QString s = compv.toString();
-            if(s.length() > 0) {
-                mygcc = QDir::fromNativeSeparators(s);
-                mypath = mygcc.mid(0,mygcc.lastIndexOf("/bin")+1);
-                qDebug() << "Mypath reassigned:";
-                qDebug() << mypath;
-            }
-        }
+        qDebug() << "Propeller GCC compiler path not found.";
     }
     fileStringProperty(&compv, leditGccCompiler,  gccCompilerKey,  &mygcc);
     settings.setValue(gccCompilerKey,mygcc);
@@ -562,6 +606,16 @@ bool Properties::replaceLearnWorkspace()
     QVariant libv  = settings.value(gccLibraryKey, mylib);
     QVariant wrkv  = settings.value(gccWorkspaceKey, mywrk);
 
+    QString libs = libv.toString();
+    QString wrks = wrkv.toString();
+
+    if(libs.length() > 0) {
+        mylib = libs;
+    }
+    if(wrks.length() > 0) {
+        mywrk = wrks;
+    }
+
     // We could use the old workspace name, but that seems to not work very well.
     // Just stick with the default unless the user changes it.
 #if 0
@@ -590,7 +644,9 @@ bool Properties::replaceLearnWorkspace()
             return false;
         }
 
-        mylib = mywrk+LEARNLIB;
+        if(mylib.length() < 1) {
+            mylib = mywrk+LEARNLIB;
+        }
 
         if(!workspaceSane(pkwrk, mywrk)) {
             updatePackageWorkspace(pkwrk, mywrk, updateFile, timestamp);
