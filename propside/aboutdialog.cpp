@@ -20,8 +20,8 @@
 #include "aboutdialog.h"
 #include "properties.h"
 
-AboutDialog::AboutDialog(QString landing, QWidget *parent) :
-    QDialog(parent)
+AboutDialog::AboutDialog(QString landing, QWidget *parent)
+    : QDialog(parent)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     QLabel *splash = new QLabel(this);
@@ -81,5 +81,5 @@ int AboutDialog::exec()
     if(helpStartup.canConvert(QVariant::Bool)) {
         showSplashStartCheckBox->setChecked(helpStartup.toBool());
     }
-    QDialog::exec();
+    return QDialog::exec();
 }
