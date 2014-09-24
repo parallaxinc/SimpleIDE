@@ -38,7 +38,7 @@ OPTIONS:
         - example: -s "Developer Identity" (default is "Developer ID Installer")
     -v  version
         - example: -v 0.9.66 (required parameter)
-    -d  use deployment identifier (default is: com.test.Parallax, deploy is: com.Parallax)
+    -d  use deployment identifier (default is: com.test.ParallaxInc, deploy is: com.Parallax.Inc)
 
     example: ./macsignedpack.sh -r -f -s "Developer ID Installer" -v 0.9.66 -d
 
@@ -241,14 +241,14 @@ echo "OPT: Developer certificate identity: \"${IDENTITY}\""
 #
 if [[ $DEPLOY == true ]]
 then
-    PARALLAX_IDENTIFIER=com.Parallax
-#   Will get modified to: "com.Parallax.SimpleIDE" below
+    PARALLAX_IDENTIFIER=com.ParallaxInc
+#   Will get modified to: "com.ParallaxInc.SimpleIDE" below
     FTDI_IDENTIFIER=com.FTDI.driver
 #   Will get modified to: "com.FTDI.driver.FTDIUSBSerialDriver" below
     echo "OPT: Package CFBundleIdentifiers will be set for deployment"
 else
-    PARALLAX_IDENTIFIER=com.test.Parallax
-#   Will get modified to: "com.test.Parallax.SimpleIDE" below
+    PARALLAX_IDENTIFIER=com.test.ParallaxInc
+#   Will get modified to: "com.test.ParallaxInc.SimpleIDE" below
     FTDI_IDENTIFIER=com.test.FTDI.driver
 #   Will get modified to: "com.test.FTDI.driver.FTDIUSBSerialDriver" below
     echo "OPT: Package CFBundleIdentifiers will be set for testing"
