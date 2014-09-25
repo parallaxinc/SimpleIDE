@@ -7,15 +7,15 @@
 
     <!-- Define install parameters -->
     <title>SimpleIDE</title>
-    <organization>com.Parallax</organization>
+    <organization>com.ParallaxInc</organization>
     
     <!-- Allow module installs, no scripts -->
     <options customize="allow" require-scripts="false" rootVolumeOnly="false" allow-external-scripts="no" />
 
     <!-- Must quit the IDE, if it is running -->
-    <pkg-ref id="com.Parallax.SimpleIDE.app">
+    <pkg-ref id="com.ParallaxInc.SimpleIDE.app">
         <must-close>
-            <app id="com.Parallax.SimpleIDE"/>
+            <app id="com.ParallaxInc.SimpleIDE"/>
         </must-close>
     </pkg-ref>
     
@@ -27,7 +27,7 @@
 
     <choices-outline>
         <line choice="default">
-            <line choice="com.Parallax.SimpleIDE.app"/>
+            <line choice="com.ParallaxInc.SimpleIDE.app"/>
             <line choice="com.FTDI.driver.FTDIUSBSerialDriver"/>
         </line>
     </choices-outline>
@@ -42,15 +42,15 @@
 
     <!-- SimpleIDE App pkg -->
     <choice
-        id="com.Parallax.SimpleIDE.app"
+        id="com.ParallaxInc.SimpleIDE.app"
         visible="true"
         title="SimpleIDE Application"
         description="SimpleIDE, the Parallax Propeller IDE application">
-        <pkg-ref id="com.Parallax.SimpleIDE.app"/>
+        <pkg-ref id="com.ParallaxInc.SimpleIDE.app"/>
     </choice>
     
     <pkg-ref
-        id="com.Parallax.SimpleIDE.app"
+        id="com.ParallaxInc.SimpleIDE.app"
         onConclusion="none">SimpleIDE.pkg
     </pkg-ref>
 
