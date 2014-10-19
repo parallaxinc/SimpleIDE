@@ -22,7 +22,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-#if defined(IDEDEBUG)
+#if defined(IDEDEBUG) && !defined(QT5)
     MainSpinWindow w;
 #endif
 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     qDebug() << "Temp directory";
     qDebug() << QDir::toNativeSeparators(QDir::tempPath());
 
-#if !defined(IDEDEBUG)
+#if !defined(IDEDEBUG) || defined(QT5)
     MainSpinWindow w;
 #endif
 
@@ -76,61 +76,16 @@ int main(int argc, char *argv[])
         QString s = QString(argv[1]);
         while(s.indexOf("\\") > -1)
             s = s.replace("\\","/");
-#ifndef TODO
-        w.openFileName(s);
-#else
-        // remove this after testing
-        if(s.endsWith(".zip",Qt::CaseInsensitive)) {
-            Zipper  zip;
-            QString fileName;
-            QString data;
-            if(zip.unzipFileCount(s) > 0) {
-                QString folder = s.mid(0,s.lastIndexOf(".zip"));
-                QString projName = folder;
-                projName = projName.mid(projName.lastIndexOf("/")+1);
-                QString projFile = projName+".side";
-                if(!zip.unzipFileExists(s,projFile)) {
-                    projFile = projName+"/"+projName+".side";
-                }
-                if(zip.unzipFileExists(s,projFile)) {
-                    QString pathName = QDir::tempPath()+"/SimpleIDE_"+projName;
-                    while(pathName.indexOf("\\") > -1)
-                        pathName = pathName.replace("\\","/");
-                    QDir dst(pathName);
-                    if(!dst.exists())
-                        dst.mkdir(pathName);
-                    zip.unzipAll(s,pathName);
-                    w.openProject(pathName+"/"+projFile);
-                }
-                else {
-                    data = zip.unzipFirstFile(s, &fileName);
-                }
-            }
-            if(fileName.length() && data.length()) {
-                w.openFileStringTab(fileName, data);
-            }
-#if 0
-        if(s.contains(QDir::toNativeSeparators(QDir::tempPath())) &&
-           s.endsWith(".zip",Qt::CaseInsensitive)) {
-#if 1
-            Zipper zip;
-            QString fileName;
-            QString data = zip.unzipFirstFile(s, &fileName);
-            w.openFileStringTab(fileName, data);
-#else
-            QMessageBox::critical(&w, w.tr("Cannot Open from Zip"),
-                w.tr("The file is in a zipped archive. Unzip to")+"\n"+
-                w.tr("a folder first, and open from there instead."));
-#endif
-#endif
+        if (s.endsWith(".side") && s.startsWith(QDir::tempPath()) &&
+            s.left(s.lastIndexOf("/")).endsWith(".zip")) {
+            qDebug() << s;
+            qDebug() << "The .side file is in a temporary directory. It will not work.";
+            QMessageBox::critical(&w, ("Can't Open File"), ("Can't open a .side file from within a .zip file.\nPlease open the .zip file from within SimpleIDE."));
         }
         else {
-            s = s.mid(s.lastIndexOf("."));
-            if(s.contains(".side",Qt::CaseInsensitive))
-                w.closeTab(0);
-            w.openFile(QString(argv[1]));
+            qDebug() << "Opening" << s;
+            w.openFileName(s);
         }
-#endif
     }
     w.show();
 

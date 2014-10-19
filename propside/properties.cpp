@@ -394,7 +394,7 @@ void Properties::saveUpdateFile(QString name, QString timestamp)
     }
 }
 
-bool Properties::createPackageWorkspace(QString pkwrk, QString mywrk, QString updateFile, QString timestamp, QString &mylib)
+bool Properties::createPackageWorkspace(QString pkwrk, QString &mywrk, QString updateFile, QString timestamp, QString &mylib)
 {
     bool retval = false;
 

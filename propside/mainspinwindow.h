@@ -274,6 +274,7 @@ private:
     bool isSpinProject();
     bool isCProject();
     void selectBuilder();
+    QString getUnzipTempPath(QString zFile);
     int  makeBuildProjectFile(QString fileName);
     int  runBuild(QString option);
 #ifdef KEEP_CTOOLS
@@ -487,6 +488,7 @@ private:
     RescueDialog    *rescueDialog;
 
     QString         lastCbPort;
+    QPrinter        printer;
 
 public slots:
     void ideDebugShow();

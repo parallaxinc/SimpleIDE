@@ -40,9 +40,6 @@ StatusDialog::StatusDialog(QWidget *parent) : QDialog(parent, 0)
     vlayout->addWidget(messageLabel);
     vlayout->addLayout(hlayout);
 
-    //connect(&thread, SIGNAL(nextBump()), this, SLOT(nextBump()));
-    //connect(&thread, SIGNAL(hideit()), this, SLOT(hide()));
-
     displayTimer = new QTimer(this);
     connect(displayTimer, SIGNAL(timeout()), this, SLOT(animate()));
 
@@ -73,7 +70,6 @@ void StatusDialog::init(const QString title, const QString message)
     this->setWindowFlags(Qt::Tool);
 
     index = 0;
-    //thread.startit();
     displayTimer->start(100);
 
     this->show();
@@ -97,7 +93,6 @@ QString StatusDialog::getMessage()
 
 void StatusDialog::stop(int count)
 {
-    //thread.stop(count);
     displayTimer->stop();
     hide();
 }
@@ -117,7 +112,12 @@ void StatusDialog::animate()
     QApplication::processEvents();
 }
 
+bool StatusDialog::isRunning()
+{
+    return displayTimer->isActive();
+}
 
+#ifdef REMOVE_UNUSED_StatusDialogThread
 StatusDialogThread::StatusDialogThread(QObject *parent) : QThread(parent)
 {
     nextDelay = 300;
@@ -143,4 +143,4 @@ void StatusDialogThread::run()
     }
     emit hideit();
 }
-
+#endif

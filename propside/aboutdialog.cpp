@@ -23,6 +23,7 @@
 AboutDialog::AboutDialog(QString landing, QWidget *parent)
     : QDialog(parent)
 {
+
     QVBoxLayout *layout = new QVBoxLayout(this);
     QLabel *splash = new QLabel(this);
     splash->setPixmap(QPixmap(":/images/SimpleIDE-Splash3.png"));
