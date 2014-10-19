@@ -44,6 +44,7 @@ public:
 
     bool unzipAll(QString fileName, QString folder, QString special = "");
     QString unzipFirstFile(QString zipName, QString *fileName);
+    QString unzipTopTypeFile(QString zipName, QString type);
     QString unzipFile(QString zipName, QString fileName);
     bool unzipFileExists(QString zipName, QString fileName);
     int  unzipFileCount(QString zipName);
@@ -59,6 +60,7 @@ private:
 
     QString spinLibPath;
     StatusDialog *statusDialog;
+    QString newProjectFolder;
 
 signals:
 

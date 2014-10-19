@@ -132,6 +132,31 @@ QString Zipper::unzipFirstFile(QString zipName, QString *fileName)
     return QString(bytes);
 }
 
+QString Zipper::unzipTopTypeFile(QString zipName, QString type)
+{
+    QString fileName;
+    ZipReader zipr(zipName);
+    QList<ZipReader::FileInfo> info = zipr.fileInfoList();
+    if(info.count() > 0) {
+        QString name;
+        for(int n = 0; n < info.count(); n++) {
+            name = info.at(n).filePath;
+            qDebug() << "unzipTopTypeFile" << name;
+            if(name.contains("library/")) continue;
+            if(name.endsWith(type)) {
+                if(name.indexOf("/") > -1) {
+                    int pos = name.indexOf("/") + 1;
+                    name = name.mid(pos);
+                }
+                fileName = name;
+                break;
+            }
+        }
+    }
+    qDebug() << "unzipTopTypeFile" << zipName << fileName;
+    return fileName;
+}
+
 QString Zipper::unzipFile(QString zipName, QString fileName)
 {
     QByteArray bytes;

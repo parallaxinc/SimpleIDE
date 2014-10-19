@@ -23,6 +23,7 @@
 #include "qtversion.h"
 #include <QTimer>
 
+#ifdef REMOVE_UNUSED_StatusDialogThread
 class StatusDialogThread : public QThread
 {
     Q_OBJECT
@@ -37,10 +38,11 @@ signals:
     void nextBump();
     void hideit();
 
-private:
+public:
     int running;
     int nextDelay;
 };
+#endif
 
 class StatusDialog : public QDialog
 {
@@ -56,13 +58,17 @@ public:
 
     void stop(int count = 0);
 
+    bool isRunning();
+
 public slots:
     void animate();
     void nextBump();
 
 private:
     int index;
+#ifdef REMOVE_UNUSED_StatusDialogThread
     StatusDialogThread thread;
+#endif
     QLabel  *messageLabel;
     QList<QLabel*> bump;
     QTimer *displayTimer;

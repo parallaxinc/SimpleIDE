@@ -127,7 +127,7 @@ public:
     void saveUpdateFile(QString name, QString timestamp);
     bool workspaceSane(QString pkwrk, QString mywrk);
     bool replaceLearnWorkspace();
-    bool createPackageWorkspace(QString pkwrk, QString mywrk, QString updateFile, QString timestamp, QString &mylib);
+    bool createPackageWorkspace(QString pkwrk, QString &mywrk, QString updateFile, QString timestamp, QString &mylib);
     bool updatePackageWorkspace(QString pkwrk, QString mywrk, QString updateFile, QString timestamp);
     bool updateLearnWorkspace();
 

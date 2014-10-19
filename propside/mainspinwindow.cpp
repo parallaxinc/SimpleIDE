@@ -57,7 +57,11 @@
 #define PROJECT_WIDTH 300
 
 #define SOURCE_FILE_SAVE_TYPES "C (*.c);; C++ (*.cpp);; C Header (*.h);; COG C (*.cogc);; ECOG C (*.ecogc);; ESPIN (*.espin);; SPIN (*.spin);; Any (*)"
-#define SOURCE_FILE_TYPES "Source Files (*.c *.cogc *.cpp *.ecogc *.espin *.h *.spin);; Any (*)"
+#ifdef ENABLE_OPEN_ALLZIPS
+#define SOURCE_FILE_TYPES "Source Files (*.c *.cogc *.cpp *.ecogc *.espin *.h *.spin *.side *.zip *.zipside);; Any (*)"
+#else
+#define SOURCE_FILE_TYPES "Source Files (*.c *.cogc *.cpp *.ecogc *.espin *.h *.spin *.side;; Any (*)"
+#endif
 #define PROJECT_FILE_FILTER "SIDE Project (*.side);; All (*)"
 
 #define GDB_TABNAME "GDB Output"
@@ -99,10 +103,19 @@
 QPlainTextEdit *debugStatus;
 
 #if defined(IDEDEBUG)
+#include "qapplication.h"
+
+#ifdef QT5
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    debugStatus->appendPlainText(msg);
+}
+#else
 void myMessageOutput(QtMsgType type, const char *msg)
 {
     debugStatus->appendPlainText(msg);
 }
+#endif
 #endif
 
 MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
@@ -112,7 +125,11 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
     debugStatus = new QPlainTextEdit(this);
     debugStatus->setLineWrapMode(QPlainTextEdit::NoWrap);
     debugStatus->setReadOnly(true);
+#ifdef QT5
+    qInstallMessageHandler(myMessageOutput);
+#else
     qInstallMsgHandler(myMessageOutput);
+#endif
 #endif
 
     /* setup application registry info */
@@ -546,7 +563,16 @@ void MainSpinWindow::exitSave()
 
 void MainSpinWindow::closeEvent(QCloseEvent *event)
 {
-    if(event->type()) {}; // silence compiler
+    if(statusDialog->isRunning()) {
+        int rc = QMessageBox::critical(this,tr("The IDE Is Busy"),
+            tr("Quitting the program now may cause a program error.")+"\n\n"+
+            tr("Exit the program anyway?"),
+            QMessageBox::Yes, QMessageBox::No);
+        if(rc == QMessageBox::No) {
+            event->ignore();
+            return;
+        }
+    }
     quitProgram();
 }
 
@@ -576,6 +602,7 @@ void MainSpinWindow::quitProgram()
     programStopBuild();
 
     exitSave(); // find
+
     QString fileName = "";
 
     if(settings->value(useKeys).toInt() == 1) {
@@ -1021,9 +1048,7 @@ void MainSpinWindow::openFile(const QString &path)
     QString fileName = path;
 
     if (fileName.isNull()) {
-//        fileName = fileDialog.getOpenFileName(this, tr("Open File"), lastPath, tr(SOURCE_FILE_TYPES));
-//#endif
-        fileName = QFileDialog::getOpenFileName(this, tr("Open File"), lastPath, SOURCE_FILE_TYPES); //"All (*)");
+        fileName = QFileDialog::getOpenFileName(this, tr("Open File"), lastPath, SOURCE_FILE_TYPES);
         fileName = fileName.trimmed();
         if(fileName.length() > 0)
             lastPath = sourcePath(fileName);
@@ -1083,6 +1108,26 @@ bool MainSpinWindow::isFileUTF16(QFile *file)
     return false;
 }
 
+QString MainSpinWindow::getUnzipTempPath(QString zFile)
+{
+    QString pathName = QDir::tempPath()+"/SimpleIDE_";
+    while(pathName.indexOf("\\") > -1)
+        pathName = pathName.replace("\\","/");
+    while(zFile.indexOf("\\") > -1)
+        zFile = zFile.replace("\\","/");
+    qDebug() << "getUnzipTempPath" << pathName;
+    if(zFile.indexOf("/") > 0) {
+        int pos = zFile.lastIndexOf("/")+1;
+        int len = zFile.lastIndexOf(".")-pos;
+        pathName += zFile.mid(pos, len);
+    }
+    else {
+        pathName += zFile.left(zFile.lastIndexOf("."));
+    }
+    qDebug() << "getUnzipTempPath" << pathName;
+    return pathName;
+}
+
 void MainSpinWindow::openFileName(QString fileName)
 {
     QString data;
@@ -1091,11 +1136,108 @@ void MainSpinWindow::openFileName(QString fileName)
     }
     QString s = fileName;
 
+
     if(s.endsWith(SIDE_EXTENSION, Qt::CaseInsensitive)) {
         if(s.compare(projectFile) != 0) {
             openProject(fileName);
         }
     }
+#ifdef ENABLE_OPEN_ALLZIPS
+    else if(s.endsWith(".zip",Qt::CaseInsensitive) || s.endsWith(".zipside",Qt::CaseInsensitive)) {
+        Zipper  zip;
+        QString zFile;
+        if(zip.unzipFileCount(s) > 0) {
+            QString folder = s.mid(0,s.lastIndexOf(".zip"));
+            QString projName = folder;
+            projName = projName.mid(projName.lastIndexOf("/")+1);
+            QString projFile = projName+".side";
+
+            statusDialog->init("Open File", fileName);
+
+            if(!zip.unzipFileExists(s,projFile)) {
+                projFile = projName+"/"+projName+".side";
+            }
+
+            if(zip.unzipFileExists(s,projFile)) {
+                QString pathName = getUnzipTempPath(projName);
+/*
+                QString pathName = QDir::tempPath()+"/SimpleIDE_"+projName;
+                while(pathName.indexOf("\\") > -1)
+                    pathName = pathName.replace("\\","/");
+*/
+                QDir dst(pathName);
+                if(!dst.exists())
+                    dst.mkdir(pathName);
+
+                statusDialog->init("Unzip", "Unzipping project: "+projFile+"\n"+pathName);
+                zip.unzipAll(s,pathName);
+                statusDialog->stop(4);
+                openProject(pathName+"/"+projFile);
+            }
+            else {
+                //data = zip.unzipFirstFile(s, &zFile);
+                statusDialog->init("Unzip", "Finding zip files.\n"+s);
+                zFile = zip.unzipTopTypeFile(s, ".side");
+                statusDialog->stop(4);
+                if(zFile.endsWith(".side")) {
+                    QString pathName = getUnzipTempPath(zFile);
+                    QDir dst(pathName);
+                    if(!dst.exists())
+                        dst.mkdir(pathName);
+
+                    statusDialog->init("Unzip", "Unzipping .side project: "+zFile+"\n"+pathName);
+                    zip.unzipAll(s,pathName);
+                    statusDialog->stop(4);
+                    openProject(pathName+"/"+zFile);
+                }
+                else {
+                    int unzip = 0;
+                    zFile = zip.unzipTopTypeFile(s, ".c");
+                    if(zFile.endsWith(".c")) {
+                        unzip++;
+                    }
+                    else {
+                        zFile = zip.unzipTopTypeFile(s, ".cpp");
+                        if(zFile.endsWith(".cpp")) {
+                            unzip++;
+                        }
+                        else {
+                            zFile = zip.unzipTopTypeFile(s, ".spin");
+                            if(zFile.endsWith(".spin")) {
+                                unzip++;
+                            }
+                        }
+                    }
+
+                    if(unzip)
+                    {
+                        QString pathName = getUnzipTempPath(zFile);
+                        QDir dst(pathName);
+                        if(!dst.exists())
+                            dst.mkdir(pathName);
+                        statusDialog->init("Unzip", "Unzipping file: "+zFile+"\n"+pathName);
+                        zip.unzipAll(s,pathName);
+                        statusDialog->stop(4);
+
+                        QFile file(pathName+"/"+zFile);
+                        if (file.open(QFile::ReadOnly))
+                        {
+                            QTextStream in(&file);
+                            if(this->isFileUTF16(&file))
+                                in.setCodec("UTF-16");
+                            else
+                                in.setCodec("UTF-8");
+                            data = in.readAll();
+                            file.close();
+                            openFileStringTab(pathName+"/"+zFile, data);
+                        }
+                    }
+                }
+            }
+            statusDialog->stop(4);
+        }
+    }
+#else
     else if(s.endsWith(".zip",Qt::CaseInsensitive)) {
         Zipper  zip;
         QString fileName;
@@ -1126,6 +1268,7 @@ void MainSpinWindow::openFileName(QString fileName)
             openFileStringTab(fileName, data);
         }
     }
+#endif
     else {
         QFile file(fileName);
         if (file.open(QFile::ReadOnly))
@@ -4171,8 +4314,6 @@ void MainSpinWindow::fileChanged()
 
 void MainSpinWindow::printFile()
 {
-    QPrinter printer;
-
     int tab = editorTabs->currentIndex();
     Editor *ed = editors->at(tab);
     QString name = editorTabs->tabText(tab);
@@ -4180,19 +4321,25 @@ void MainSpinWindow::printFile()
 
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
     printer.setDocName(name);
+    printer.setOutputFormat(QPrinter::NativeFormat);
 #else
     printer.setOutputFormat(QPrinter::PdfFormat);
     printer.setOutputFileName(this->lastPath+name+".pdf");
 #endif
 
-    QPrintDialog *dialog = new QPrintDialog(&printer, this);
+    QPrintDialog *dialog = new QPrintDialog(this);
+    qDebug() << "QPrintDialog" << dialog;
+
     dialog->setWindowTitle(tr("Print Document"));
-    if (ed->textCursor().hasSelection())
-        dialog->addEnabledOption(QAbstractPrintDialog::PrintSelection);
+    //if (ed->textCursor().hasSelection()) dialog->addEnabledOption(QAbstractPrintDialog::PrintSelection);
     int rc = dialog->exec();
 
+    qDebug() << "QPrintDialog rc" << rc;
     if(rc == QDialog::Accepted) {
-        ed->print(&printer);
+        ed->print(dialog->printer());
+    }
+    else {
+        qDebug() << "QPrintDialog rc != Accepted" << rc;
     }
     delete dialog;
 }
@@ -4670,8 +4817,11 @@ void MainSpinWindow::updateWorkspace()
        tr("All open files will be closed before update."),"Update","Cancel");
  #endif
     if(rc == 0) {
+        QString projFileSave = projectFile;
         closeAll();
         propDialog->updateLearnWorkspace();
+        this->openProject(projFileSave);
+        //projectFile = projFileSave;
     }
 }
 
@@ -5169,7 +5319,7 @@ void MainSpinWindow::selectBuilder()
 int  MainSpinWindow::makeBuildProjectFile(QString fileName)
 {
     int rc = 0; // if return zero, the function did not create a project file
-    if(!(fileName.endsWith(".c") || fileName.endsWith(".cpp"))) {
+    if(!(fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".spin"))) {
         return rc;
     }
 
@@ -5197,30 +5347,32 @@ int  MainSpinWindow::makeBuildProjectFile(QString fileName)
         return rc;
     }
 
-    /* if we get here, text has valid C or C++ file content */
-    QRegExp mainr("main[ \\t\\r\\n]*\\(");
-    QRegExp blkc("\\/\\*.*\\*\\/");
-    QRegExp comm("\/\/");
 
-    while(text.indexOf(blkc) > -1) {
-        text = text.replace(blkc,"");
-    }
+    if(fileName.endsWith(".c") || fileName.endsWith(".cpp")) {
+        /* if we get here, text has valid C or C++ file content */
+        QRegExp mainr("main[ \\t\\r\\n]*\\(");
+        QRegExp blkc("\\/\\*.*\\*\\/");
+        QRegExp comm("\/\/");
 
-    QStringList list = text.split("\n");
-    for(int n = 0; n < list.length(); n++) {
-        QString s = list[n];
-        if(s.contains(comm)) {
-            list[n] = s.mid(0,s.indexOf(comm));
+        while(text.indexOf(blkc) > -1) {
+            text = text.replace(blkc,"");
+        }
+
+        QStringList list = text.split("\n");
+        for(int n = 0; n < list.length(); n++) {
+            QString s = list[n];
+            if(s.contains(comm)) {
+                list[n] = s.mid(0,s.indexOf(comm));
+            }
+        }
+        QString t = list.join("\n");
+        if(t.indexOf(mainr) > -1) {
+            qDebug() << "Got main" + t;
+        }
+        else {
+            return rc;
         }
     }
-    QString t = list.join("\n");
-    if(t.indexOf(mainr) > -1) {
-        qDebug() << "Got main" + t;
-    }
-    else {
-        return rc;
-    }
-
     int question = QMessageBox::question(this,tr("Create Project?"), tr("A project is required to compile the file")+"\n"+fileName+
                           "\n\n"+tr("Would you like to create a project now?"),QMessageBox::Yes,QMessageBox::No);
     if(question != QMessageBox::Yes) {
@@ -5233,11 +5385,25 @@ int  MainSpinWindow::makeBuildProjectFile(QString fileName)
 
     QString workspace = propDialog->getApplicationWorkspace();
 
+    int rctype = 0;
     if(fileName.endsWith(".c")) {
         workspace = workspace + "My Projects/Blank Simple Project.side";
+        rctype = 1;
     }
     else if(fileName.endsWith(".cpp")) {
         workspace = workspace + "My Projects/Blank Simple C++ Project.side";
+        rctype = 2;
+    }
+    else if(fileName.endsWith(".spin")) {
+        workspace = workspace + "My Projects/Blank Spin Project.side";
+        QFile spin(workspace);
+        if(spin.exists() == false) {
+            if(spin.open(QFile::WriteOnly)) {
+                spin.write("Blank Spin File.spin\r\n>compiler=SPIN");
+                spin.close();
+            }
+        }
+        rctype = 3;
     }
 
     if(QFile::exists(workspace)) {
@@ -5245,6 +5411,7 @@ int  MainSpinWindow::makeBuildProjectFile(QString fileName)
             QMessageBox::information(this,tr("Project Error"), tr("Error creating a project for the file")+"\n"+fileName);
             return rc; // error, don't open bad project
         }
+        projectFile = projName;
 
         if (file.open(QFile::WriteOnly)) {
             file.write(orgText.toUtf8());
@@ -5252,7 +5419,7 @@ int  MainSpinWindow::makeBuildProjectFile(QString fileName)
         }
 
         this->openProject(projName);
-        rc = 1;
+        rc = rctype;
     }
     else {
         QMessageBox::critical(this, tr("Project Not Found"),
@@ -5299,25 +5466,36 @@ int  MainSpinWindow::runBuild(QString option)
             list = projstr.split("\n");
             mainFile = list[0];
         }
-        bool inlist = false;
+
+        int inlist = 0;
         for(int n = 0; n < list.length(); n++) {
             if(list[n].contains(tabname)) {
-                inlist = true;
+                inlist = 1;
                 break;
             }
         }
 
         // Don't worry about Untitled files.
         if(editorTabs->tabText(index).compare("Untitled") == 0) {
-            inlist = true;
+            inlist = 1;
         }
 
         if(!inlist) {
             /* A .c or .c++ file that has a qualified main() and no project should have a project created. */
-            inlist |= makeBuildProjectFile(this->editorTabs->tabToolTip(index));
+            inlist = makeBuildProjectFile(this->editorTabs->tabToolTip(index));
             if(!inlist) {
                 HintDialog::hint("NotInProject", tr("The file being displayed is not part of the project. It will not be included in the program being built. Use the project button to check the project contents."), this);
             }
+            else if(inlist == 1) {
+                builder = this->buildC;
+            }
+            else if(inlist == 2) {
+                builder = this->buildC;
+            }
+            else if(inlist == 3) {
+                builder = this->buildSpin;
+            }
+
         }
         else if(!mainFile.contains(tabname)) {
             HintDialog::hint("NotProjectMainFile", tr("The file being displayed is not the main project file. It may not represent the program to build. Use the project button to check the project name if necessary. For making a main file for building, press F4 to set the project."), this);
