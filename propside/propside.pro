@@ -3,9 +3,9 @@
 # -------------------------------------------------
 
 # These define the version number in Menu->About
-DEFINES += IDEVERSION=0
-DEFINES += MINVERSION=9
-DEFINES += FIXVERSION=78
+DEFINES += IDEVERSION=1
+DEFINES += MINVERSION=0
+DEFINES += FIXVERSION=0
 VERSION = IDEVERSION"."MINVERSION"."FIXVERSION
 
 QT += core
@@ -38,7 +38,7 @@ DEFINES += ENABLE_AUTOLIB
 # IDEDEBUG define sends qDebug() output to a Debug TAB.
 # This is most useful with windows as console output is not available there.
 # Don't use IDEDEBUG in release! It BREAKS Translations!
-DEFINES += IDEDEBUG
+# DEFINES += IDEDEBUG
 
 # EVENT_DRIVEN QEXTSERIALPORT is no longer used.
 # GDBENABLE is not ready, and will only be used for development testing
