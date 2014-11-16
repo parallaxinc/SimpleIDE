@@ -23,7 +23,6 @@
 AboutDialog::AboutDialog(QString landing, QWidget *parent)
     : QDialog(parent)
 {
-
     QVBoxLayout *layout = new QVBoxLayout(this);
     QLabel *splash = new QLabel(this);
     splash->setPixmap(QPixmap(":/images/SimpleIDE-Splash3.png"));
@@ -33,7 +32,7 @@ AboutDialog::AboutDialog(QString landing, QWidget *parent)
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
     layout->addWidget(splash);
     layout->addWidget(new QLabel(""));
-    QString version = QString("%1 Version %2.%3.%4").arg(ASideGuiKey)
+    QString version = QString("%1 Version %2.%3.%4 (RC1)").arg(ASideGuiKey)
             .arg(IDEVERSION).arg(MINVERSION).arg(FIXVERSION);
     layout->addWidget(new QLabel(version+"\n"+tr("Copyright (C) 2012-2014, Parallax, Inc.")+" "+
             tr("See credits for license information.")));

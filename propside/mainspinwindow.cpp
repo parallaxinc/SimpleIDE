@@ -7561,7 +7561,14 @@ void MainSpinWindow::enumeratePorts()
 #else
         name = ports.at(i).physName;
         friendlyPortName.append(ports.at(i).friendName);
+        // ttyUSBn
         if(name.indexOf("usb",0,Qt::CaseInsensitive) > 0)
+            cbPort->insertItem(0,name);
+        // ttyACMn
+        else if(name.indexOf("acm",0,Qt::CaseInsensitive) > 0)
+            cbPort->insertItem(0,name);
+        // ttyAMAn
+        else if(name.indexOf("ama",0,Qt::CaseInsensitive) > 0)
             cbPort->insertItem(0,name);
         else
             cbPort->addItem(name);
