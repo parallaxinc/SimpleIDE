@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-gui-script minSpecVersion="1">
+    <title>Parallax SimpleIDE</title>
+    <welcome file="welcome.html" />
+    <license file="license.html" />
+    <conclusion file="conclusion.html" />
+
+    <background file="splash.png" alignment="topleft" scaling="none" />
+
+    <pkg-ref id="IDENTIFIER.SimpleIDE"/>
+    <pkg-ref id="IDENTIFIER.FTDIUSBSerialDriver.kext"/>
+    <options customize="never" require-scripts="false"/>
+    <choices-outline>
+        <line choice="default">
+            <line choice="IDENTIFIER.SimpleIDE"/>
+            <line choice="IDENTIFIER.FTDIUSBSerialDriver.kext"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="IDENTIFIER.SimpleIDE" visible="false">
+        <pkg-ref id="IDENTIFIER.SimpleIDE"/>
+    </choice>
+    <pkg-ref id="IDENTIFIER.SimpleIDE" version="0" onConclusion="none">SimpleIDE.pkg</pkg-ref>
+    <choice id="IDENTIFIER.FTDIUSBSerialDriver.kext" visible="false">
+        <pkg-ref id="IDENTIFIER.FTDIUSBSerialDriver.kext"/>
+    </choice>
+    <pkg-ref id="IDENTIFIER.FTDIUSBSerialDriver.kext" version="0" onConclusion="RESTART">FTDIUSBSerialDriver.pkg</pkg-ref>
+</installer-gui-script>

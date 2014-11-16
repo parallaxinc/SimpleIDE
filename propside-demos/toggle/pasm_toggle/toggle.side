@@ -1,0 +1,8 @@
+toggle.c
+toggle.spin
+>compiler=C
+>memtype=lmm large
+>optimize=-Os
+>-fno-exceptions
+>-Dprintf=__simple_printf
+>BOARD::HUB

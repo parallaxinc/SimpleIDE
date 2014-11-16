@@ -1,0 +1,8 @@
+toggle.c
+init.c
+>compiler=C
+>memtype=lmm
+>optimize=-Os
+>-fno-exceptions
+>-lpthread
+>BOARD::HUB

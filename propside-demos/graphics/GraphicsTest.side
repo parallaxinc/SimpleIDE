@@ -1,0 +1,14 @@
+GraphicsTest.c
+Graphics.c
+GraphicsFont.c
+tv.c
+Graphics.h
+tv.h
+TV.spin
+Graphics.spin
+init.c
+>compiler=C
+>memtype=lmm
+>optimize=-Os
+>-fno-exceptions
+>BOARD::C3
