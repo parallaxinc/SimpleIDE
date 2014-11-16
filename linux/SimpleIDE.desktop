@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SimpleIDE
+Comment=Parallax Propeller-C Simple IDE
+Exec=/usr/bin/simpleide
+Icon=/usr/share/pixmaps/SimpleIDE.png
+terminal=false
+Categories=Development;

@@ -3,7 +3,7 @@
 # create a .deb package
 #
 
-FOLDERS=`echo "simpleide simpleide/usr simpleide/usr/bin simpleide/opt simpleide/opt/simpleide simpleide/opt/simpleide/bin"`
+FOLDERS=`echo "simpleide simpleide/usr simpleide/usr/bin simpleide/opt simpleide/opt/simpleide simpleide/opt/simpleide/bin simpleide/usr/share/pixmaps simpleide/usr/share/applications"`
 
 # Show usage
 usage()
@@ -55,6 +55,20 @@ build()
   cp ${SRC_PACKAGE}/bin/SimpleIDE simpleide/opt/simpleide/bin
   if [ $? -ne 0 ]; then
     echo "Failure copying SimpleIDE"
+    exit 1
+  fi
+
+  echo "Copy SimpleIDE.desktop"
+  cp ./SimpleIDE.desktop simpleide/usr/share/applications
+  if [ $? -ne 0 ]; then
+    echo "Failure copying SimpleIDE.desktop"
+    exit 1
+  fi
+
+  echo "Copy SimpleIDE.png"
+  cp ./SimpleIDE.png simpleide/usr/share/pixmaps
+  if [ $? -ne 0 ]; then
+    echo "Failure copying SimpleIDE.png"
     exit 1
   fi
 
