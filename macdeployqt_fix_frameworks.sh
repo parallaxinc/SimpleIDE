@@ -84,8 +84,11 @@ do
 #   split-out the framework's name from its path
     FRAMEWORK_NAME=$(basename ${APP_QT_FWRK_PATH})
 
-#   Create a Qt framework Resources directory if none exists in the app's bundle 
-    if [ ! -d ${APP_QT_FWRK_PATH}/Resources ]
+#   Only copy Info.plist files if we are sure the framework is a directory
+    if [ -d ${APP_QT_FWRK_PATH} ]
+    then
+#       Create a Qt framework Resources directory if none exists in the app's bundle 
+        if [ ! -d ${APP_QT_FWRK_PATH}/Resources ]
         then
             mkdir -p ${APP_QT_FWRK_PATH}/Resources            
             if [ "$?" != "0" ]; then
@@ -93,10 +96,10 @@ do
                 exit 1
             fi
             echo "created: ${APP_QT_FWRK_PATH}/Resources"
-    fi
+        fi
 
-#   copy the Info.plist from from Qt SDK's libraries to the framework's Resource directory within the app bundle
-    if [ -f ${QT_LIBS_DIR}/${FRAMEWORK_NAME}/Contents/Info.plist ]
+#       copy the Info.plist from from Qt SDK's libraries to the framework's Resource directory within the app bundle
+        if [ -f ${QT_LIBS_DIR}/${FRAMEWORK_NAME}/Contents/Info.plist ]
         then
             echo "copying: ${FRAMEWORK_NAME} Info.plist to: ${APP_QT_FWRK_PATH}/Resources"
             cp ${QT_LIBS_DIR}/${FRAMEWORK_NAME}/Contents/Info.plist ${APP_QT_FWRK_PATH}/Resources
@@ -104,9 +107,12 @@ do
                 echo "[Error] copy failed!" 1>&2
                 exit 1
             fi
-        else
-            echo "no Info.plist exists in: ${QT_LIBS_DIR}/${FRAMEWORK_NAME}/Contents/"
-            exit 1
+            else
+                echo "no Info.plist exists in: ${QT_LIBS_DIR}/${FRAMEWORK_NAME}/Contents/"
+                exit 1
+        fi
+    else
+        echo "ERROR: ${FRAMEWORK_NAME} does not belong in ${APP_FWRK_PATH}" 
     fi
 done
 exit 0
