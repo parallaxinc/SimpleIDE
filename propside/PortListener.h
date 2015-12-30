@@ -28,7 +28,7 @@ class PortListener : public QThread
 Q_OBJECT
 public:
     PortListener(QObject *parent, Console *term);
-    void init(const QString &portName, BaudRateType baud);
+    void init(const QString &portName = 0, BaudRateType baud = BAUD115200, QString ipaddr = 0);
     void setDtr(bool enable);
     void setRts(bool enable);
     bool open();
@@ -43,19 +43,21 @@ public:
     BaudRateType getBaudRate();
 
 private:
-
+    bool            useSerial;
     Console         *terminal;
     QextSerialPort  *port;
+    XBeeSerialPort  *xbport;
     QPlainTextEdit  *textEditor;
 
 private slots:
     void onDsrChanged(bool status);
-    void updateReady();
     void updateReady(QextSerialPort*);
+    void updateReady(XBeeSerialPort*);
 
 signals:
     void readyRead(int length);
     void updateEvent(QextSerialPort*);
+    void updateEvent(XBeeSerialPort*);
 };
 
 

@@ -5,11 +5,12 @@
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=1
 DEFINES += MINVERSION=0
-DEFINES += FIXVERSION=2
+DEFINES += FIXVERSION=6
 VERSION = IDEVERSION"."MINVERSION"."FIXVERSION
 
 QT += core
 QT += gui
+QT += network
 
 greaterThan(QT_MAJOR_VERSION, 4): {
     QT -= gui
@@ -18,7 +19,7 @@ greaterThan(QT_MAJOR_VERSION, 4): {
     DEFINES += QT5
 }
 
-TARGET = SimpleIDE
+TARGET   = SimpleIDE
 TEMPLATE = app
 DEFINES += QEXTSERIALPORT_LIB
 DEFINES += SPINSIDE
@@ -28,9 +29,18 @@ CONFIG  += exceptions
 # no more quazip
 INCLUDEPATH += $$[QT_INSTALL_PREFIX]/src/3rdparty/zlib
 
-# Turn off SPIN features for EDU release
+# Enable WXLOADER proploader, disable propeller-load
+# Don't enable WXLOADER and PROPELLER_LOAD at the same time.
+DEFINES += ENABLE_WXLOADER
+# DEFINES += ENABLE_PROPELLER_LOAD
+
+# Disable XMM builds
+# DEFINES += ENABLE_XMM
+
+# Turn off SPIN autocomplete features for EDU release
 # DEFINES += SPIN_AUTOCOMPLETE
-DEFINES += SPIN
+# Turn off SPIN project features for WX release
+# DEFINES += SPIN
 
 # Experimental AutoLib feature
 DEFINES += ENABLE_AUTOLIB
@@ -89,7 +99,8 @@ SOURCES += mainspin.cpp \
     zipper.cpp \
     StatusDialog.cpp \
     workspacedialog.cpp \
-    rescuedialog.cpp
+    rescuedialog.cpp \
+    xbeeserialport.cpp
 HEADERS += mainspinwindow.h \
     PortConnectionMonitor.h \
     PropellerID.h \
@@ -139,7 +150,8 @@ HEADERS += mainspinwindow.h \
     StatusDialog.h \
     workspacedialog.h \
     rescuedialog.h \
-    qtversion.h
+    qtversion.h \
+    xbeeserialport.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \
@@ -180,3 +192,7 @@ OTHER_FILES += \
     images/progress-redorange.gif \
     images/update.png \
     images/helpfunction.css
+
+DISTFILES += \
+    images/rename-port1.ico \
+    images/rename-port1.png

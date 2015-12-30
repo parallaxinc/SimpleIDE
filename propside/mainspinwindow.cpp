@@ -42,6 +42,8 @@
 
 #define ENABLE_ADD_LINK
 #define APP_FOLDER_TEMPLATES
+//#define BUTTON_PORT_SCAN
+#define CBCLICK_PORT_SCAN
 
 /*
  * SIMPLE_BOARD_TOOLBAR puts Board Combo on the buttons toolbar.
@@ -160,6 +162,9 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
     /* detect user's startup view */
     simpleViewType = true;
 
+#ifdef ALWAYS_ALLOW_PROJECT_VIEW
+    allowProjectView = true;
+#else
     QVariant viewv = settings->value(allowProjectViewKey);
     allowProjectView = false;
     if(viewv.isNull() == false) {
@@ -173,6 +178,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
             }
         }
     }
+#endif
 
     /* setup user's editor font */
     QVariant fontv = settings->value(editorFontKey);
@@ -242,6 +248,14 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
     /* start a process object for the loader to use */
     process = new QProcess(this);
 
+#ifdef ENABLE_WXLOADER
+    wxProcess = new QProcess(this);
+
+    connect(wxProcess, SIGNAL(readyReadStandardOutput()),this,SLOT(wxProcReadyRead()));
+    connect(wxProcess, SIGNAL(error(QProcess::ProcessError)),this,SLOT(wxProcError(QProcess::ProcessError)));
+    connect(wxProcess, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(wxProcFinished(int,QProcess::ExitStatus)));
+#endif
+
     projectFile = "none";
 
     buildC = new BuildC(projectOptions, compileStatus, status, programSize, progress, cbBoard, propDialog);
@@ -251,7 +265,9 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
     builder = buildC;
 
     connect(buildC, SIGNAL(showCompileStatusError()), this, SLOT(showCompileStatusError()));
+#ifdef SPIN
     connect(buildSpin, SIGNAL(showCompileStatusError()), this, SLOT(showCompileStatusError()));
+#endif
 
     /* setup loader and port listener */
     /* setup the terminal dialog box */
@@ -280,6 +296,15 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
     connect(term,SIGNAL(accepted()),this,SLOT(terminalClosed()));
     connect(term,SIGNAL(rejected()),this,SLOT(terminalClosed()));
 
+
+    /* Before window shows:
+     * Create new workspace from package
+     *   or
+     * Replace an existing one that's out of date.
+     */
+    propDialog->replaceLearnWorkspace();
+
+
     /* get available ports at startup */
     enumeratePorts();
 
@@ -305,16 +330,8 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
         setCurrentPort(ndx);
     }
 
-    /* Before window shows:
-     * Create new workspace from package
-     *   or
-     * Replace an existing one that's out of date.
-     */
-    propDialog->replaceLearnWorkspace();
-
     this->show();
     QApplication::processEvents();
-
 
     QString workspace;
 
@@ -458,6 +475,7 @@ void MainSpinWindow::getApplicationSettings()
 
     if(!file.exists(aSideCompiler))
     {
+        QMessageBox::critical(this,tr("GCC Compiler Not Found"),tr("GCC Compiler not found.\n\nPlease select the propeller-elf-gcc GCC Compiler in the Properties dialog."));
         propDialog->showProperties();
     }
 
@@ -478,10 +496,17 @@ void MainSpinWindow::getApplicationSettings()
         aSideCompilerPath = aSideCompiler.mid(0,aSideCompiler.lastIndexOf('/')+1);
     }
 
-#if defined(Q_OS_WIN)
-    aSideLoader = aSideCompilerPath + "propeller-load.exe";
-#else
+#ifdef ENABLE_WXLOADER
+    aSideLoader = aSideCompilerPath + "proploader-latest-qt";
+    aSideLoader = appPath+"/proploader";
+#endif
+
+#ifdef ENABLE_PROPELLER_LOAD
     aSideLoader = aSideCompilerPath + "propeller-load";
+#endif
+
+#if defined(Q_OS_WIN)
+    aSideLoader += ".exe";
 #endif
 
     /* get the include path and config file set by user */
@@ -508,6 +533,7 @@ void MainSpinWindow::getApplicationSettings()
 
     if(!file.exists(aSideCfgFile))
     {
+        QMessageBox::critical(this,tr("Propeller Loader Path Not Found"),tr("Please select propeller-load folder in the Properties dialog."));
         propDialog->showProperties();
     }
     else
@@ -4008,6 +4034,7 @@ QString MainSpinWindow::getOpenAsFile(const QString &path)
 
 void MainSpinWindow::downloadSdCard()
 {
+#ifdef ENABLE_FILETO_SDCARD
     if(projectModel == NULL || projectFile.isNull()) {
         QMessageBox mbox(QMessageBox::Critical, tr("Error No Project"),
             "Please select a tab and press F4 to set main project file.", QMessageBox::Ok);
@@ -4095,6 +4122,7 @@ void MainSpinWindow::downloadSdCard()
         compileStatus->appendPlainText(tr("File to SD Card killed by user."));
         status->setText(status->text() + tr(" Done."));
     }
+#endif
 }
 
 void MainSpinWindow::procError(QProcess::ProcessError error)
@@ -4109,8 +4137,7 @@ void MainSpinWindow::procError(QProcess::ProcessError error)
 
 void MainSpinWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    if(procDone == true)
-        return;
+    if(procDone == true) return;
 
     procMutex.lock();
     procDone = true;
@@ -4123,6 +4150,240 @@ void MainSpinWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
     QString s = status->text().mid(len-8);
     if(s.contains("done.",Qt::CaseInsensitive) == false)
         status->setText(status->text()+" done.");
+}
+#if 1
+void MainSpinWindow::wxProcReadyLoad(void)
+{
+    QString str = wxProcess->readAllStandardOutput();
+    compileStatus->appendPlainText(str);
+
+    qDebug() << "wxProcReadyLoad" << str;
+
+    if (str.length() == 0) {
+        return;
+    }
+
+    wxPortString += str;
+}
+
+#else
+void MainSpinWindow::wxProcReadyLoad(void)
+{
+    QString str = wxProcess->readAllStandardOutput();
+    compileStatus->appendPlainText(str);
+
+    qDebug() << "wxProcReadyLoad" << str;
+
+    if (str.indexOf("No Xbee") == 0) {
+        procMutex.lock();
+        procDone = true;
+        procMutex.unlock();
+        return;
+    }
+
+    QStringList ms = str.split("========", QString::SkipEmptyParts, Qt::CaseInsensitive);
+    QRegExp ipre("ipAddr:");
+    QRegExp idre("nodeId:");
+    QRegExp mhre("macAddrHigh:");
+    QRegExp mlre("macAddrLow:");
+    QStringList fs;
+
+    foreach (QString mod, ms) {
+        WxPortInfo info;
+        info.ipAddr = "";
+        info.macUpper = "";
+        info.macAddr = "";
+        info.portName = "";
+        info.VendorName = "";
+
+        if (mod.contains("modules:")) {
+            mod = mod.mid(mod.indexOf(":")+1).trimmed();
+        }
+        if (mod.contains(ipre) && mod.contains(idre) &&
+            mod.contains(mhre) && mod.contains(mlre)) {
+            QStringList sl = mod.split("\n", QString::SkipEmptyParts);
+            foreach (QString s, sl) {
+                if (s.contains(ipre)) {
+                    fs = s.split(":", QString::SkipEmptyParts);
+                    if (fs.length() > 0) {
+                        info.ipAddr = fs[1].trimmed();
+                    }
+                }
+                else if (s.contains(idre)) {
+                    fs = s.split(":", QString::SkipEmptyParts);
+                    if (fs.length() > 0) {
+                        info.portName = fs[1].trimmed();
+                        while (info.portName.contains("'")) {
+                            info.portName = info.portName.replace("'","");
+                        }
+                        info.portName = info.portName.trimmed();
+                    }
+                }
+                else if (s.contains(mhre)) {
+                    fs = s.split(":", QString::SkipEmptyParts);
+                    if (fs.length() > 0) {
+                        fs[1] = fs[1].toUpper();
+                        info.macUpper = fs[1].trimmed();
+                    }
+                }
+                else if (s.contains(mlre)) {
+                    fs = s.split(":", QString::SkipEmptyParts);
+                    if (fs.length() > 0) {
+                        fs[1] = fs[1].toUpper();
+                        info.macAddr = fs[1].mid(2).trimmed();
+                    }
+                }
+            }
+        }
+        if (info.ipAddr.length() && info.portName.length() &&
+            info.macAddr.length() && info.macUpper.length() ) {
+
+            if (info.portName.length() > 0) {
+                //info.portName = "X-"+info.portName;
+            }
+            else {
+                QString vs;
+                QString macser = info.macAddr.mid(2).trimmed();
+                vs = info.macUpper.mid(4).trimmed();
+                vs += info.macAddr.mid(0,2).trimmed();
+                vs = vs.toLower();
+                if (vs.compare("00409d") == 0) { // One Digi vendor ID
+                    info.VendorName = "Digi";
+                    info.portName = "X-"+info.VendorName+"-"+macser;
+                }
+                else {
+                    info.portName = "X-"+info.macUpper+info.macAddr;
+                }
+            }
+            wxPorts.append(info);
+        }
+    }
+}
+#endif
+
+void MainSpinWindow::wxProcReadyRead(void)
+{
+    QVariant namev = wxProcess->property("Name");
+    QString name = namev.toString();
+    QString str;
+
+    if(procDone == true) return;
+
+    qDebug() << "wxProcReadyRead" << str;
+
+    if (name.compare(aSideLoader) == 0) {
+        wxProcReadyLoad();
+    }
+    else {
+        str = wxProcess->readAllStandardOutput();
+        compileStatus->appendPlainText(str);
+    }
+}
+
+void MainSpinWindow::wxProcError(QProcess::ProcessError error)
+{
+    QVariant name = wxProcess->property("Name");
+
+    if(procDone == true) return;
+
+    qDebug() << "wxProcError" << error;
+
+    compileStatus->appendPlainText(name.toString() + tr(" error ... (%1)").arg(error));
+    compileStatus->appendPlainText(wxProcess->readAllStandardOutput());
+
+    procMutex.lock();
+    procDone = true;
+    procMutex.unlock();
+}
+
+void MainSpinWindow::wxProcFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if(procDone == true)
+        return;
+
+    qDebug() << "wxProcFinished" << exitCode << exitStatus;
+
+    QString str = wxPortString;
+
+    if (!str.contains("========",Qt::CaseInsensitive)) {
+        procMutex.lock();
+        procDone = true;
+        procMutex.unlock();
+        return;
+    }
+
+    QStringList ms = str.split("========", QString::SkipEmptyParts, Qt::CaseInsensitive);
+    QRegExp ipre("ipAddr:");
+    QRegExp idre("nodeId:");
+    QRegExp mcre("macAddr:");
+    QStringList fs;
+
+    foreach (QString mod, ms) {
+        WxPortInfo info;
+        info.ipAddr = "";
+        info.macUpper = "";
+        info.macAddr = "";
+        info.portName = "";
+        info.VendorName = "";
+
+        if (mod.contains(ipre) && mod.contains(idre) && mod.contains(mcre)) {
+            QStringList sl = mod.split("\n", QString::SkipEmptyParts);
+            foreach (QString s, sl) {
+                if (s.contains(ipre)) {
+                    fs = s.split(":", QString::SkipEmptyParts);
+                    if (fs.length() > 0) {
+                        info.ipAddr = fs[1].trimmed();
+                    }
+                }
+                else if (s.contains(idre)) {
+                    fs = s.split(":", QString::SkipEmptyParts);
+                    if (fs.length() > 0) {
+                        fs[1] = fs[1].toUpper();
+                        info.portName = fs[1].trimmed();
+                        while (info.portName.contains("'")) {
+                            info.portName = info.portName.replace("'","");
+                        }
+                        info.portName = info.portName.trimmed();
+
+                        /*
+                        if (info.portName.length() == 0) {
+                            info.portName = "X-"+info.macUpper+"-"+info.macAddr;
+                        }
+                        */
+                    }
+                }
+                else if (s.contains(mcre)) {
+                    fs = s.split(":", QString::SkipEmptyParts);
+                    if (fs.length() > 0) {
+                        fs[1] = fs[1].toUpper();
+                        info.macUpper = fs[1].trimmed().mid(4,6);
+                        info.macAddr = fs[1].trimmed();
+                    }
+                }
+            }
+        }
+        if (info.ipAddr.length() &&
+            info.macAddr.length() &&
+            info.macUpper.length()) {
+
+            if (info.portName.length() == 0) {
+                //info.portName = "X-"+info.portName;
+                QString macser = info.macAddr.mid(10).trimmed();
+                if (info.macUpper.compare("00409d") == 0) { // One Digi vendor ID
+                    info.VendorName = "Digi";
+                    info.portName = "X-"+info.VendorName+"-"+macser;
+                }
+                else {
+                    info.portName = "X-"+info.macUpper+info.macAddr;
+                }
+            }
+            wxPorts.append(info);
+        }
+    }
+
+    procMutex.lock();
+    procDone = true;
+    procMutex.unlock();
 }
 
 /*
@@ -4150,7 +4411,8 @@ void MainSpinWindow::procReadyRead()
 #endif
 
     qDebug() << bytes;
-
+    while (QString(bytes).contains("\r\n"))
+        bytes = bytes.replace("\r\n","\n");
     // bstc doesn't return good exit status
     QString progname;
     QVariant pvar = process->property("Name");
@@ -4750,7 +5012,9 @@ void MainSpinWindow::setProject()
         projectOptions->setCompiler(SPIN_TEXT);
         this->closeFile(); // do this so spin highlighter works.
         this->openFileName(fileName);
+#ifdef ENABLE_FILETO_SDCARD
         btnDownloadSdCard->setEnabled(false);
+#endif
     }
 #endif
 }
@@ -4857,6 +5121,7 @@ void MainSpinWindow::programBurnEE()
     runLoader("-e -r");
     if(connected) {
         term->getEditor()->setPlainText("");
+        portListener->init(portName, term->getBaud(), getWxPortIpAddr(serialPort()));
         portListener->open();
         btnConnected->setChecked(true);
         term->setPortEnabled(true);
@@ -4880,6 +5145,7 @@ void MainSpinWindow::programRun()
     runLoader("-r");
     if(connected) {
         term->getEditor()->setPlainText("");
+        portListener->init(portName, term->getBaud(), getWxPortIpAddr(serialPort()));
         portListener->open();
         btnConnected->setChecked(true);
         term->setPortEnabled(true);
@@ -4894,9 +5160,8 @@ void MainSpinWindow::programDebug()
 
     if(runBuild(""))
         return;
-
 #if !defined(Q_OS_WIN)
-    portListener->init(portName, term->getBaud());
+    portListener->init(portName, term->getBaud(), getWxPortIpAddr(serialPort()));
     portListener->open();
     term->getEditor()->setPortEnable(false);
     if(runLoader("-r -t")) {
@@ -4908,7 +5173,7 @@ void MainSpinWindow::programDebug()
     btnConnected->setChecked(false);
     if(runLoader("-r -t"))
         return;
-    portListener->init(portName, term->getBaud());
+    portListener->init(portName, term->getBaud(), getWxPortIpAddr(serialPort()));
     portListener->open();
 #endif
     btnConnected->setChecked(true);
@@ -4936,6 +5201,8 @@ void MainSpinWindow::debugCompileLoad()
         return;
 
     /* compile for debug */
+    portListener->close();
+
     if(runLoader("-g -r"))
         return;
 
@@ -5148,6 +5415,7 @@ void MainSpinWindow::userguideShow()
 
 void MainSpinWindow::sdCardDownloadEnable()
 {
+#ifdef ENABLE_FILETO_SDCARD
     QString name = cbBoard->currentText();
     ASideBoard* board = aSideConfig->getBoardData(name);
     if(board != NULL) {
@@ -5162,6 +5430,7 @@ void MainSpinWindow::sdCardDownloadEnable()
     else {
         btnDownloadSdCard->setEnabled(false);
     }
+#endif
 }
 
 void MainSpinWindow::setCurrentBoard(int index)
@@ -5184,7 +5453,9 @@ void MainSpinWindow::setCurrentPort(int index)
     portName = cbPort->itemText(index);
     if(portName.length()) {
         if(portName.compare(AUTO_PORT) != 0) {
-            portListener->init(portName, term->getBaud());  // signals get hooked up internally
+#ifdef ENUM_INIT_PORTNAME
+            portListener->init(portName, term->getBaud(), getWxPortIpAddr(serialPort()));  // signals get hooked up internally
+#endif
         }
     }
     lastCbPort = portName;
@@ -5276,7 +5547,9 @@ bool MainSpinWindow::isSpinProject()
 #ifdef SPIN
     QString compiler = projectOptions->getCompiler();
     if(compiler.compare(SPIN_TEXT, Qt::CaseInsensitive) == 0) {
+#ifdef ENABLE_FILETO_SDCARD
         btnDownloadSdCard->setEnabled(false);
+#endif
         return true;
     }
 #endif
@@ -5295,8 +5568,9 @@ bool MainSpinWindow::isCProject()
         sdCardDownloadEnable();
         return true;
     }
+#ifdef ENABLE_FILETO_SDCARD
     btnDownloadSdCard->setEnabled(false);
-
+#endif
     return false;
 }
 
@@ -5549,6 +5823,11 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts, QString file)
         compileType = ProjectOptions::TAB_C_COMP;
     }
 
+#ifdef ENABLE_WXLOADER
+    QStringList args;
+#endif
+
+#ifdef ENABLE_PROPELLER_LOAD
     //portName = serialPort(); //cbPort->itemText(cbPort->currentIndex());
 
     QString bname = this->cbBoard->currentText();
@@ -5599,6 +5878,7 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts, QString file)
     }
     //args.append("-p");
     //args.append(portName);
+#endif
 
     builder->appendLoaderParameters(copts, file, &args);
 
@@ -5649,6 +5929,8 @@ int  MainSpinWindow::runLoader(QString copts)
     }
 
     QString file;
+
+#ifdef ENABLE_PROPELLER_LOAD
     QString loadtype = cbBoard->currentText();
     if(loadtype.isEmpty() || loadtype.length() == 0) {
         QMessageBox::critical(this,tr("Can't Load"),tr("Can't load an empty board type."),QMessageBox::Ok);
@@ -5683,6 +5965,7 @@ int  MainSpinWindow::runLoader(QString copts)
         file = s;
         qDebug() << loadtype << copts;
     }
+#endif
 
     QStringList args = getLoaderParameters(copts, file);
 
@@ -5691,8 +5974,28 @@ int  MainSpinWindow::runLoader(QString copts)
         compileStatus->appendPlainText("error: Propeller not found on any port.");
         return 1;
     }
+
+#ifdef ENABLE_WXLOADER
+    // picky wxloader J
+    for (int n = args.count()-1; n > -1; n--) {
+        if (args[n].length() == 0)
+            args.removeAt(n);
+    }
+    if (getWxPortIpAddr(portName).length()) {
+        //args.removeOne("-r");
+        args.append("-i");
+        args.append(getWxPortIpAddr(portName));
+    } else {
+        //args.append("-s");
+        args.append("-p");
+        args.append(portName);
+    }
+#endif
+
+#ifdef ENABLE_PROPELLER_LOAD
     args.append("-p");
     args.append(portName);
+#endif
 
     builder->showBuildStart(aSideLoader,args);
 
@@ -5710,9 +6013,30 @@ int  MainSpinWindow::runLoader(QString copts)
     procDone = false;
     procMutex.unlock();
 
-    process->start(aSideLoader,args);
+    if (copts.indexOf("-n") >= 0) {
+        // do nothing
+    }
+    else if (copts.indexOf("-R") >= 0) {
+        statusDialog->init("Reset", "Resetting Port");
+    }
+    else {
+        statusDialog->init("Loading", "Loading Program");
+    }
 
-    status->setText(status->text()+tr(" Loading ... "));
+    //portListener->close();
+
+    process->start(aSideLoader,args);
+    compileStatus->insertPlainText("\n");
+
+    if (copts.indexOf("-n") >= 0) {
+        status->setText(tr(" Renaming ... "));
+    }
+    else if (copts.indexOf("-R") >= 0) {
+        status->setText(tr(" Resetting ... "));
+    }
+    else {
+        status->setText(status->text()+tr(" Loading ... "));
+    }
 
     while(procDone == false) {
         QApplication::processEvents();
@@ -5731,6 +6055,8 @@ int  MainSpinWindow::runLoader(QString copts)
     QTextCursor cur = compileStatus->textCursor();
     cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
     compileStatus->setTextCursor(cur);
+
+    statusDialog->stop();
 
     progress->hide();
     return process->exitCode() | killed;
@@ -7466,7 +7792,9 @@ void MainSpinWindow::enumeratePortsEvent()
                     // always reselect the last port set
                     lastCbPort = lastTermPort;
                     // make sure we are using lastTermport
-                    portListener->init(lastTermPort,portListener->getBaudRate());
+#ifdef ENUM_INIT_LASTTERMPORT
+                    portListener->init(lastTermPort,portListener->getBaudRate(), getWxPortIpAddr(serialPort()));
+#endif
                     // reopen port with connect button
                     btnConnected->setChecked(true);
                     connectButton();
@@ -7478,7 +7806,9 @@ void MainSpinWindow::enumeratePortsEvent()
                             if(!name.compare(lastCbPort)) {
                                 cbPort->setCurrentIndex(n);
                                 // make sure we are using lastCbPort
-                                portListener->init(lastCbPort,portListener->getBaudRate());
+#ifdef ENUM_INIT_LASTCBPORT
+                                portListener->init(lastCbPort,portListener->getBaudRate(), getWxPortIpAddr(serialPort()));
+#endif
                                 term->setLastConnectedPortName(lastCbPort);
                                 break;
                             }
@@ -7508,17 +7838,71 @@ void MainSpinWindow::enumeratePortsEvent()
     }
     else if(len > 0) {
         if(terminalOpen) term->setPortEnabled(true);
+        if (len == 1 && cbPort->currentText().length() == 0)
+            cbPort->setCurrentIndex(0);
     }
 
 }
 
+QString MainSpinWindow::getWxPortIpAddr(QString wxname)
+{
+    foreach (WxPortInfo info, wxPorts) {
+        if(info.portName.compare(wxname) == 0) {
+            return info.ipAddr;
+        }
+    }
+    return "";
+}
+
+QList<WxPortInfo> MainSpinWindow::getWxPorts(void)
+{
+    QStringList args;
+    args.append("-X");
+
+    wxProcess->setProperty("Name", QVariant(aSideLoader));
+    wxProcess->setProperty("IsLoader", QVariant(true));
+
+    wxProcess->setProcessChannelMode(QProcess::MergedChannels);
+    //wxProcess->setWorkingDirectory(sourcePath(fileName));
+
+    procMutex.lock();
+    procDone = false;
+    procMutex.unlock();
+
+    wxPortString = "";
+    wxPorts.clear();
+
+    statusDialog->init("Searching", "Searching for ports");
+
+    qDebug() << aSideLoader << args;
+
+    wxProcess->start(aSideLoader, args);
+
+    while(procDone == false)
+        QApplication::processEvents();
+
+    statusDialog->stop();
+
+    //QString output = wxProcess->readAllStandardOutput();
+    //qDebug() << output;
+    return wxPorts;
+}
+
 void MainSpinWindow::enumeratePorts()
 {
+    int lastIndex = cbPort->currentIndex();
+
     disconnect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
 
     if(cbPort != NULL) cbPort->clear();
 
     friendlyPortName.clear();
+
+    portListener->close();
+
+    cbPort->addItem("");
+    QApplication::processEvents();
+
 #ifdef ENABLE_AUTO_PORT
     friendlyPortName.append(AUTO_PORT);
 #endif
@@ -7574,7 +7958,20 @@ void MainSpinWindow::enumeratePorts()
             cbPort->addItem(name);
 #endif
     }
-    cbPort->setCurrentIndex(0);
+
+#ifdef ENABLE_WXLOADER
+    getWxPorts();
+    foreach (WxPortInfo wx, wxPorts) {
+        if (cbPort->findText(wx.portName) > -1) {
+            continue;
+        }
+        friendlyPortName.append(wx.portName);
+        cbPort->addItem(wx.portName);
+    }
+#endif
+
+    cbPort->removeItem(0);
+    cbPort->setCurrentIndex(lastIndex);
 #ifdef ENABLE_AUTO_PORT
     cbPort->insertItem(0,AUTO_PORT);
 #endif
@@ -7585,7 +7982,7 @@ void MainSpinWindow::enumeratePorts()
     else {
         btnConnected->setCheckable(true);
     }
-    connect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
+    //connect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
 
 }
 
@@ -7603,6 +8000,7 @@ void MainSpinWindow::connectButton()
         term->setPortName(portName);
         term->activateWindow();
         term->getEditor()->setFocus();
+        portListener->init(portName, term->getBaud(), getWxPortIpAddr(serialPort()));
         portListener->open();
         cbPort->setEnabled(false);
     }
@@ -7619,6 +8017,40 @@ void MainSpinWindow::menuActionConnectButton()
     if(btnConnected->isChecked() == false) {
         btnConnected->setChecked(true);
         connectButton();
+    }
+}
+
+void MainSpinWindow::portRename()
+{
+    bool ok;
+    if (getWxPortIpAddr(cbPort->currentText()).length() == 0) {
+        QMessageBox::warning(this, tr("Can't Rename Port"), tr("Can only rename WX ports."));
+        return;
+    }
+
+    QString text = QInputDialog::getText(this,
+                       tr("Rename Port"), tr("Port Name"),
+                       QLineEdit::Normal, cbPort->currentText(), &ok);
+
+    if (ok && text.length() > 0) {
+        text = text.replace(" ", "-");
+        text = text.replace("'", "");
+
+        portListener->close();
+        runLoader("-n '"+text+"'");
+
+        QSize size = cbPort->size();
+        cbPort->setEditable(true);
+        int s = cbPort->fontInfo().pixelSize();
+        int w = text.length()*s;
+        if (size.width() < w) size.setWidth(w);
+        int ndx = cbPort->currentIndex();
+        cbPort->setItemText(ndx, text);
+        //cbPort->setCurrentText(text);
+        cbPort->setToolTip(text);
+        QApplication::processEvents();
+        cbPort->setEditable(false);
+        QApplication::processEvents();
     }
 }
 
@@ -7662,7 +8094,7 @@ void MainSpinWindow::portResetButton()
     }
 
     // We need to reopen this sucker for reset if we have 2+ ports.
-    // portListener->init(port, BAUD115200);  // signals get hooked up internally
+    // portListener->init(port, BAUD115200, getWxPortIpAddr(serialPort()));  // signals get hooked up internally
 
     QString savePortName = portListener->getPortName();
 
@@ -7670,24 +8102,38 @@ void MainSpinWindow::portResetButton()
     portName = serialPort();
 
     bool isopen = portListener->isOpen();
-    if(isopen == false)
-    {
-        if(savePortName.compare(portName) != 0) {
-            portListener->init(portName, term->getBaud());
-        }
 
-        portListener->open();
-        resetPort(rts);
+    if (getWxPortIpAddr(portName).length() > 0) {
         portListener->close();
-
-        if(savePortName.compare(portName) != 0) {
-            portListener->init(savePortName, term->getBaud());
+        runLoader("-R");
+        if (isopen) {
+            portListener->init(savePortName, term->getBaud(), getWxPortIpAddr(savePortName));
+            portListener->open();
         }
     }
     else {
-        resetPort(rts);
-    }
+        if(isopen == false)
+        {
+            if(savePortName.compare(portName) != 0) {
+#ifdef ENUM_INIT_PORTNAME
+                portListener->init(portName, term->getBaud(), getWxPortIpAddr(serialPort()));
+#endif
+            }
 
+            portListener->open();
+            resetPort(rts);
+            portListener->close();
+
+            if(savePortName.compare(portName) != 0) {
+#ifdef ENUM_INIT_PORTNAME
+                portListener->init(savePortName, term->getBaud(), getWxPortIpAddr(serialPort()));
+#endif
+            }
+        }
+        else {
+            resetPort(rts);
+        }
+    }
 }
 
 void MainSpinWindow::resetPort(bool rts)
@@ -7939,9 +8385,17 @@ void MainSpinWindow::setupFileMenu()
     // SimpleView/ProjectView must be the first item in the toolsMenu!
     //
     QString viewstr = this->simpleViewType ? tr(ProjectView) : tr(SimpleView);
+#ifdef ALWAYS_ALLOW_PROJECT_VIEW
+    if (this->simpleViewType) {
+        toolsMenu->addAction(projectViewIcon, viewstr,this,SLOT(toggleSimpleView()));
+    }
+    else {
+        toolsMenu->addAction(simpleViewIcon, viewstr,this,SLOT(toggleSimpleView()));
+    }
+#else
     toolsMenu->addAction(this->simpleViewType ? projectViewIcon : simpleViewIcon,
                          viewstr,this,SLOT(toggleSimpleView()));
-
+#endif
     toolsMenu->addSeparator();
     enableProjectView(allowProjectView);
 
@@ -7977,6 +8431,7 @@ void MainSpinWindow::setupFileMenu()
     toolsMenu->addSeparator();
     // added for simple view, not necessary anymore
     //toolsMenu->addAction(QIcon(":/images/hardware.png"), tr("Reload Board List"), this, SLOT(reloadBoardTypes()));
+    toolsMenu->addAction(QIcon(":/images/rename-port.png"), tr("Rename Port"), this, SLOT(portRename()));
     toolsMenu->addAction(QIcon(":/images/update.png"), tr("Update Workspace"), this, SLOT(updateWorkspace()));
     toolsMenu->addAction(QIcon(":/images/properties.png"), tr("Properties"), this, SLOT(properties()), Qt::Key_F6);
 #ifdef ENABLE_AUTO_PORT
@@ -8013,7 +8468,9 @@ void MainSpinWindow::setupFileMenu()
 
     programMenu->addAction(QIcon(":/images/Abort.png"), tr("Stop Build or Loader"), this, SLOT(programStopBuild()));
     programMenu->addSeparator();
+#ifdef ENABLE_FILETO_SDCARD
     programMenu->addAction(QIcon(":/images/SaveToSD.png"), tr(FileToSDCard), this, SLOT(downloadSdCard()));
+#endif
     programMenu->addAction(QIcon(":/images/console.png"), tr("Open Terminal"), this, SLOT(menuActionConnectButton()));
     programMenu->addAction(QIcon(":/images/reset.png"), tr("Reset Port"), this, SLOT(portResetButton()));
 
@@ -8176,7 +8633,7 @@ void MainSpinWindow::setupToolBars()
         btnFindDef->setToolTip(tr("Browse (Ctrl+Left Click)"));
     }
 
-#if defined(SD_TOOLS)
+#if defined(SD_TOOLS) && defined(ENABLE_FILETO_SDCARD)
     sdCardToolBar = addToolBar(tr("SD Card"));
 
     btnDownloadSdCard = new QToolButton(this);
@@ -8236,34 +8693,32 @@ void MainSpinWindow::setupToolBars()
     ctrlToolBar = addToolBar(tr("Serial Port"));
     ctrlToolBar->setLayoutDirection(Qt::RightToLeft);
     cbPort = new QPortComboBox(this);
-    cbPort->setEditable(true);
+    cbPort->setEditable(false);
     cbPort->setLayoutDirection(Qt::LeftToRight);
-    cbPort->setToolTip(tr("Serial Port Select"));
+    cbPort->setToolTip(tr("Port Select"));
     cbPort->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(cbPort,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentPort(int)));
+    connect(cbPort,SIGNAL(clicked()), this, SLOT(enumeratePortsEvent()));
 
     btnConnected = new QAction(this);
     btnConnected->setToolTip(tr("SimpleIDE Terminal")+tr(" resets port if AUTO."));
     btnConnected->setCheckable(true);
     connect(btnConnected,SIGNAL(triggered()),this,SLOT(connectButton()));
 
-#ifdef BUTTON_PORT_SCAN
-    QToolButton *btnPortScan = new QToolButton(this);
-    btnPortScan->setToolTip(tr("Rescan Serial Ports"));
-    connect(btnPortScan,SIGNAL(clicked()),this,SLOT(enumeratePorts()));
-#endif
-
     btnBoardReset = new QAction(this);
     btnBoardReset->setToolTip(tr("Reset Port"));
     connect(btnBoardReset,SIGNAL(triggered()),this,SLOT(portResetButton()));
     /* can't hide a QToolButton. Use QAction instead */
     addToolBarAction(ctrlToolBar, btnBoardReset, QString(":/images/reset.png"));
-    connect(btnBoardReset, SIGNAL(triggered()), this, SLOT(portResetButton()));
+    //connect(btnBoardReset, SIGNAL(triggered()), this, SLOT(portResetButton()));
 
     //addToolButton(ctrlToolBar, btnBoardReset, QString(":/images/reset.png"));
     addToolBarAction(ctrlToolBar, btnConnected, QString(":/images/console.png"));
 #ifdef BUTTON_PORT_SCAN
-    addToolButton(ctrlToolBar, btnPortScan, QString(":/images/refresh.png"));
+    btnPortScan = new QAction(this);
+    btnPortScan->setToolTip(tr("Rescan Ports"));
+    connect(btnPortScan,SIGNAL(triggered()),this,SLOT(enumeratePorts()));
+    addToolBarAction(ctrlToolBar, btnPortScan, QString(":/images/refresh.png"));
 #endif
     ctrlToolBar->addWidget(cbPort);
     ctrlToolBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
@@ -8322,10 +8777,15 @@ void MainSpinWindow::showSimpleView(bool simple)
         propToolBar->hide();
         btnProjectClose->setVisible(false);
         addToolsToolBar->hide();
+#ifdef ENABLE_FILETO_SDCARD
         sdCardToolBar->hide();
+#endif
         btnBoardReset->setVisible(false);
 #ifdef SIMPLE_BOARD_TOOLBAR
         btnLoadBoards->setVisible(false);
+#endif
+#ifdef BUTTON_PORT_SCAN
+        btnPortScan->setVisible(false);
 #endif
         btnConnected->setVisible(false);
         btnShowProjectPane->show();
@@ -8372,10 +8832,15 @@ void MainSpinWindow::showSimpleView(bool simple)
         propToolBar->show();
         btnProjectClose->setVisible(true);
         addToolsToolBar->show();
+#ifdef ENABLE_FILETO_SDCARD
         sdCardToolBar->show();
+#endif
         btnBoardReset->setVisible(true);
 #ifdef SIMPLE_BOARD_TOOLBAR
         btnLoadBoards->setVisible(true);
+#endif
+#ifdef BUTTON_PORT_SCAN
+        btnPortScan->setVisible(true);
 #endif
         btnConnected->setVisible(true);
         btnShowProjectPane->hide();

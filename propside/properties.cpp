@@ -1535,6 +1535,9 @@ void Properties::browseGccCompiler()
     if(compiler.length() < 1)
         compiler = mypath;
 
+    if (compiler.contains("/propeller-elf",Qt::CaseInsensitive))
+        compiler = compiler.mid(0,compiler.lastIndexOf("/")+1);
+
 #if defined(Q_OS_WIN32)
     QString fileName = QFileDialog::getOpenFileName(this,tr("Select Propeller Compiler"), compiler, "Compiler (propeller-elf-gcc.exe)");
 #else

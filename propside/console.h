@@ -22,6 +22,7 @@
 
 #include "qtversion.h"
 #include "qextserialport.h"
+#include "xbeeserialport.h"
 
 class Console : public QPlainTextEdit
 {
@@ -154,6 +155,7 @@ protected:
 
 public slots:
     void updateReady(QextSerialPort*);
+    void updateReady(XBeeSerialPort*);
     void dumphex(int ch);
     void update(char ch);
 

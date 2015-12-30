@@ -98,7 +98,9 @@ ProjectOptions::ProjectOptions(QWidget *parent, QComboBox *boardType) : QWidget(
     tabs.append(ui->tabWidget->widget(this->TAB_OPT));
     tabs.append(ui->tabWidget->widget(this->TAB_C_COMP));
     tabs.append(ui->tabWidget->widget(this->TAB_C_LIB));
+#ifdef SPIN
     tabs.append(ui->tabWidget->widget(this->TAB_SPIN_COMP));
+#endif
 
     connect(ui->comboBoxCompiler,SIGNAL(currentIndexChanged(QString)), this, SLOT(compilerChanged(QString)));
 
@@ -114,12 +116,14 @@ ProjectOptions::ProjectOptions(QWidget *parent, QComboBox *boardType) : QWidget(
         file.close();
     }
     else {
-        ui->comboBoxMemoryMode->addItem(memTypeLMM);
         ui->comboBoxMemoryMode->addItem(memTypeCMM);
+        ui->comboBoxMemoryMode->addItem(memTypeLMM);
         ui->comboBoxMemoryMode->addItem(memTypeCOG);
+#ifdef ENABLE_XMM
         ui->comboBoxMemoryMode->addItem(memTypeXMMC);
         ui->comboBoxMemoryMode->addItem(memTypeXMMSINGLE);
         ui->comboBoxMemoryMode->addItem(memTypeXMMSPLIT);
+#endif
     }
 
     ui->comboBoxOptimization->addItem("-Os Size");

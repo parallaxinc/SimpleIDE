@@ -36,6 +36,7 @@
 #include "treemodel.h"
 #include "PortListener.h"
 #include "qextserialport.h"
+#include "xbeeserialport.h"
 #include "terminal.h"
 #include "properties.h"
 #include "asideconfig.h"
@@ -73,6 +74,14 @@
 QT_BEGIN_NAMESPACE
 class QTextEdit;
 QT_END_NAMESPACE
+
+struct WxPortInfo {
+    QString portName;   ///< Port name
+    QString VendorName; ///< Vendor name
+    QString ipAddr;     ///< IP Address
+    QString macUpper;   ///< MAC Addr upper
+    QString macAddr;    ///< MAC Address
+};
 
 //! [0]
 class MainSpinWindow : public QMainWindow
@@ -145,7 +154,10 @@ public slots:
     void setCurrentPort(int index);
     void connectButton();
     void menuActionConnectButton();
+
+    void portRename();
     void portResetButton();
+
     void resetPort(bool rts);
     void terminalClosed();
     void disablePortCombo();
@@ -185,6 +197,10 @@ public slots:
 
     void findChip();
     QString serialPort();
+
+    QList<WxPortInfo> getWxPorts(void);
+    QString getWxPortIpAddr(QString wxname);
+
     void enumeratePorts();
     void enumeratePortsEvent();
     void reloadBoardTypes();
@@ -223,6 +239,11 @@ public slots:
     void procFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void procReadyRead();
     void procReadyReadCat();
+
+    void wxProcReadyRead(void);
+    void wxProcReadyLoad(void);
+    void wxProcError(QProcess::ProcessError error);
+    void wxProcFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
     void setCurrentFile(const QString &fileName);
     void updateRecentFileActions();
@@ -382,6 +403,8 @@ private:
     QPushButton     *btnShowProjectPane;
     QPushButton     *btnShowStatusPane;
 
+    QAction         *btnPortScan;
+
     QTabWidget      *editorTabs;
     QVector<Editor*> *editors;
     QFont           editorFont;
@@ -489,6 +512,10 @@ private:
 
     QString         lastCbPort;
     QPrinter        printer;
+
+    QList<WxPortInfo> wxPorts;
+    QProcess        *wxProcess;
+    QString         wxPortString;
 
 public slots:
     void ideDebugShow();

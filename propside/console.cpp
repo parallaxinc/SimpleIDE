@@ -282,8 +282,6 @@ enum { BUFFERSIZE = 64 };
 #endif
 #endif
 
-#if 1
-
 void Console::updateReady(QextSerialPort* port)
 {
     char buf[BUFFERSIZE];
@@ -313,6 +311,40 @@ void Console::updateReady(QextSerialPort* port)
 #else
         for(int n = 0; n < length; n++)
             update(buf[n]);
+#endif
+    }
+}
+
+void Console::updateReady(XBeeSerialPort* port)
+{
+    //char buf[BUFFERSIZE];
+    if(isEnabled == false)
+        return;
+
+    if(port->bytesAvailable() < 1)
+        return;
+
+    //int length = port->readLine(buf,BUFFERSIZE);
+    QByteArray ba = port->readAll();
+    int length = ba.length();
+
+    if(length < 1)
+        return;
+
+    if(hexmode != false) {
+        for(int n = 0; n < length; n++)
+            dumphex((int)ba[n]);
+    }
+    else {
+#ifdef EVENT_DRIVEN
+        while (length > 0) {
+            for(int n = 0; n < length; n++)
+                update(ba[n]);
+            length = port->readLine(buf,BUFFERSIZE);
+        }
+#else
+        for(int n = 0; n < length; n++)
+            update(ba[n]);
 #endif
     }
 }
@@ -730,298 +762,3 @@ void Console::update(char ch)
     } // end pcmd switch
     return;
 }
-
-#else
-
-void Console::updateReady(QextSerialPort* port)
-{
-    if(isEnabled == false)
-        return;
-
-    if(port->bytesAvailable() < 1)
-        return;
-
-    QByteArray ba = port->read(BUFFERSIZE);
-    int length = ba.length();
-
-    if(length < 1)
-        return;
-
-    if(maxrow != this->maximumBlockCount()) {
-        maxrow  = this->maximumBlockCount();
-        if(sbuff != NULL) {
-            delete sbuff;
-        }
-        sbuff = new char[maxrow*256];
-    }
-
-    if(hexmode != false) {
-        for(int n = 0; n < length; n++)
-            dumphex((int)ba.at(n));
-        return;
-    }
-    for(int n = 0; n < length; n++)
-        update(ba.at(n));
-
-    this->setPlainText(sbuff);
-}
-
-void Console::dumphex(int ch)
-{
-}
-
-
-void Console::update(char ch)
-{
-    int pos = pcmdy*maxcol+pcmdx;
-    int maxchars = maxrow*maxcol;
-
-    qDebug() << QString("%1 %2,%3 %4 %5").arg(pcmd,2,10,QChar('0')).arg(pcmdx,2,10,QChar('0')).arg(pcmdy,2,10,QChar('0')).arg(ch,2,10,QChar('0')).arg(ch,1,QChar('0'));
-    switch(pcmd)
-    {
-        case PCMD_CURPOS_X:
-                pcmdx = ch;
-            break;
-
-        case PCMD_CURPOS_Y:
-                pcmdy = ch;
-            break;
-
-        case PCMD_CURPOS_XY: {
-                if(pcmdlen == 2) {
-                    pcmdx = ch;
-                }
-                else if(pcmdlen == 1) {
-                    pcmdy = ch;
-                }
-                pcmdlen--;
-                if(pcmdlen < 1)
-                    pcmd = PCMD_NONE;
-            }
-            break;
-
-
-        default: {
-
-            if (ch & 0x80) {    //UTF-8 parsing and handling
-                if (utfparse == true) {
-
-                    utf8 <<= 6;
-                    utf8 |= (ch & 0x3F);
-
-                    utfbytes--;
-
-                    if (utfbytes == 0) {
-                        utfparse = false;
-                        sbuff[pos] = utf8;
-                        //cur.insertText(QChar(utf8));
-                    }
-                } else {
-                    utfparse = true;
-                    utf8 = 0;
-
-                    while (ch & 0x80) {
-                        ch <<= 1;
-                        utfbytes++;
-                    }
-
-                    ch >>= utfbytes;
-
-                    utf8 = (int)ch;
-
-                    utfbytes--;
-                }
-                return;
-            }
-
-            switch(ch)
-            {
-            case EN_ClearScreen: {
-                    if(this->enableClearScreen) {
-                        memset(sbuff,' ',maxchars);
-                    }
-                }
-                break;
-
-            case EN_ClearScreen2: {
-                    if(this->enableClearScreen16) {
-                        memset(sbuff,' ',maxchars);
-                    }
-                }
-                break;
-
-            case EN_HomeCursor: {
-                    if(this->enableHomeCursor) {
-                        pcmdx = pcmdy = 0;
-                    }
-                }
-                break;
-
-            case EN_PosCursorX: {
-                    if(this->enablePosCursorX) {
-                        pcmd = PCMD_CURPOS_X;
-                        pcmdlen  = 1;
-                    }
-                }
-                break;
-
-            case EN_PosCursorY: {
-                    if(this->enablePosCursorY) {
-                        pcmd = PCMD_CURPOS_Y;
-                        pcmdlen  = 1;
-                    }
-                }
-                break;
-
-            case EN_PosXYCursor: {
-                    if(this->enablePosXYCursor) {
-                        pcmd = PCMD_CURPOS_XY;
-                        pcmdlen  = 2;
-                    }
-                }
-                break;
-
-            case EN_MoveCursorLeft: {
-                    if(this->enableMoveCursorLeft) {
-                        pos = pcmdy*maxcol+pcmdx;
-                        pos--;
-                        if(pos > 0) {
-                            pcmdx = pos % maxcol;
-                            pcmdy = pos / maxcol;
-                        }
-                    }
-                }
-                break;
-
-            case EN_MoveCursorRight: {
-                    if(this->enableMoveCursorRight) {
-                        pos = pcmdy*maxcol+pcmdx;
-                        pos++;
-                        if(pos < maxchars) {
-                            pcmdx = pos % maxcol;
-                            pcmdy = pos / maxcol;
-                        }
-                    }
-                }
-                break;
-
-            case EN_MoveCursorUp: {
-                    if(this->enableMoveCursorUp) {
-                        pos = pcmdy*maxcol+pcmdx;
-                        pos-= maxcol;
-                        if(pos > 0) {
-                            pcmdx = pos % maxcol;
-                            pcmdy = pos / maxcol;
-                        }
-                    }
-                }
-                break;
-
-            case EN_MoveCursorDown: {
-                    if(this->enableMoveCursorDown) {
-                        pos = pcmdy*maxcol+pcmdx;
-                        pos+= maxcol;
-                        if(pos < maxchars) {
-                            pcmdx = pos % maxcol;
-                            pcmdy = pos / maxcol;
-                        }
-                    }
-                }
-                break;
-
-            case EN_BeepSpeaker: {
-                    if(this->enableBeepSpeaker) {
-                        QApplication::beep();
-                    }
-                }
-                break;
-
-            case EN_Backspace: {
-                    if(this->enableBackspace) {
-                        pos = pcmdy*maxcol+pcmdx;
-                        sbuff[pos] = ' ';
-                        pos--;
-                        if(pos > 0) {
-                            pcmdx = pos % maxcol;
-                            pcmdy = pos / maxcol;
-                        }
-                    }
-                }
-                break;
-
-            case EN_Tab: {
-                    if(this->enableTab) {
-                        int n = pos = pcmdy*maxcol+pcmdx;
-                        pos += tabsize;
-                        if(pos < maxchars) {
-                            while(n++ < pos)
-                                sbuff[n] = ' ';
-                            pcmdx = pos % maxcol;
-                            pcmdy = pos / maxcol;
-                        }
-                    }
-                }
-                break;
-
-            /* fall through case because newline and creturn can change roles
-             * the switch is just to speed things up
-             */
-            case EN_NewLine: // fall through
-            case EN_CReturn: {
-                    if(ch == newline) {
-                        if(enableNewLine) {
-                            pos = pcmdy*maxcol+pcmdx;
-                            pos += maxcol;
-                            if(pos < maxchars) {
-                                pcmdx = pos % maxcol;
-                                pcmdy = pos / maxcol;
-                            }
-                        }
-                    }
-                    else if(ch == creturn) {
-                        if(enableCReturn) {
-                            pos = pcmdy*maxcol+pcmdx;
-                            if(pos < maxchars) {
-                                pcmdx = 0;
-                                pcmdy = pos / maxcol;
-                            }
-                        }
-                    }
-                }
-                break;
-
-            case EN_ClearToEOL: {
-                    if(this->enableClearToEOL) {
-                        int n = pos = pcmdy*maxcol+pcmdx;
-                        pos+= (maxcol-pcmdx);
-                        if(pos < maxchars) {
-                            while(n < pos)
-                                sbuff[n++] = ' ';
-                        }
-                    }
-                }
-                break;
-
-            case EN_ClearLinesBelow: {
-                    if(this->enableClearLinesBelow) {
-                        int n = pcmdy*maxcol+pcmdx;
-                        pos   = maxchars;
-                        memset(&sbuff[n], ' ', pos-n);
-                    }
-                }
-                break;
-
-            default: {
-                    pos = pcmdy*maxcol+pcmdx+1;
-                    sbuff[pos] = ch;
-                }
-                break;
-            }
-
-            break;
-
-        } // end pcmd default
-    } // end pcmd switch
-}
-
-#endif

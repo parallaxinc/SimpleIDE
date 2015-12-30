@@ -1379,7 +1379,7 @@ int BuildC::ensureOutputDirectory()
 void BuildC::appendLoaderParameters(QString copts, QString file, QStringList *args)
 {
     /* if propeller-load parameters -l or -z in copts, don't append a.out */
-    if((copts.indexOf("-l") > 0 || copts.indexOf("-z") > 0) == false)
+    if((copts.indexOf("-l") > -1 || copts.indexOf("-z") > -1 || copts.indexOf("-R") > -1) == false)
         args->append(exePath);
 
     QStringList olist = copts.split(" ",QString::SkipEmptyParts);
