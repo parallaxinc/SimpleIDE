@@ -18,6 +18,7 @@
 NAME=SimpleIDE
 PKG=${NAME}.zip
 PROPGCC=/opt/parallax
+WXLOADER=../proploader-linux-build/bin/proploader
 BUILD=build
 SETUP="setup.sh"
 SIDE="simpleide.sh"
@@ -25,7 +26,7 @@ SETUPSH="./release/linux/${SETUP}"
 SIDERSH="./release/linux/${SIDE}"
 
 #
-# we only provide SimpleIDE, PropellerGCC, ctags, qt libs, spin source, and workspace in this packager
+# we provide SimpleIDE, PropellerGCC, ctags, qt libs, spin source, and workspace in this packager
 #
 CTAGS="./ctags-5.8"
 LIBAUDIO="/usr/lib/libaudio.so.2"
@@ -172,6 +173,12 @@ fi
 #   exit 1
 #fi
 
+cp ${WXLOADER} ${VERSION}/bin
+if test $? != 0; then
+   echo "COPY ${WXLOADER} failed."
+   exit 1
+fi
+
 cd ${CTAGS}
 ./configure
 if test $? != 0; then
@@ -226,12 +233,12 @@ fi
 
 rm -rf ${VERSION}/parallax/Workspace
 cd Workspace
-hg pull
+git fetch
 if test $? != 0; then
    echo "workspace pull failed."
    exit 1
 fi
-hg update
+git pull
 if test $? != 0; then
    echo "workspace update failed."
    exit 1

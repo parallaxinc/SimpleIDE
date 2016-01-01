@@ -1,9 +1,9 @@
 #ifndef XBEESERIALPORT_H
 #define XBEESERIALPORT_H
 
-#include <QObject.h>
-#include <QHostAddress.h>
-#include <QUdpSocket.h>
+#include <QObject>
+#include <QHostAddress>
+#include <QUdpSocket>
 
 #define XBEE_APP_PORT 0xBEE
 #define XBEE_SER_PORT 0x2616

@@ -112,6 +112,13 @@ if [ $(whoami) != root ]; then
 	exit
 fi
 
+# Check for arguments, show help, and exit if nothing specified.
+if [ -z $1 ]
+then
+	usage
+	exit
+fi
+
 # Execution starts here
 # Did the user provide any commands?
 case $1 in
