@@ -187,6 +187,7 @@ void ProjectOptions::clearOptions()
     ui->checkBoxWarnAll->setChecked(false);
     ui->checkBoxNoFcache->setChecked(false);
     ui->checkBoxExceptions->setChecked(false);
+    ui->checkBoxDependentBuild->setChecked(false);
     ui->checkBoxTinylib->setChecked(false);
     ui->checkBoxMathlib->setChecked(false);
     ui->checkBoxPthreadLib->setChecked(false);
@@ -197,6 +198,11 @@ void ProjectOptions::clearOptions()
     ui->lineEditCompOptions->setText("");
     ui->lineEditLinkOptions->setText("");
     ui->lineEditSpinCompOptions->setText("");
+}
+
+void ProjectOptions::enableDependentBuild(bool enable)
+{
+    ui->checkBoxDependentBuild->setVisible(enable);
 }
 
 QToolButton *ProjectOptions::getHardwareButton()
@@ -328,6 +334,10 @@ QString  ProjectOptions::getMathLib()
 QString  ProjectOptions::getPthreadLib()
 {
     return ui->checkBoxPthreadLib->isChecked() ? QString ("-lpthread") : QString ("");
+}
+QString ProjectOptions::getDependentBuild()
+{
+    return ui->checkBoxDependentBuild->isChecked() ? QString ("dependent") : QString ("");
 }
 QString  ProjectOptions::getSimplePrintf()
 {
@@ -513,6 +523,11 @@ void ProjectOptions::setPthreadLib(bool s)
 {
     ui->checkBoxPthreadLib->setChecked(s);
 }
+void ProjectOptions::setDependentBuild(bool s)
+{
+    ui->checkBoxDependentBuild->setChecked(s);
+}
+
 void ProjectOptions::setSimplePrintf(bool s)
 {
     ui->checkBoxSimplePrintf->setChecked(s);

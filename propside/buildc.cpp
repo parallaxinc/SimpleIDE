@@ -105,289 +105,306 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
         compileStatus->appendPlainText(workspace+"\n");
     }
 
+    bool rebuild = false;
 
-    status->setText(tr("Building ..."));
+    if(projectOptions->getDependentBuild().length() == 0)
+        rebuild = true;
 
-    showCompilerVersion();
+    QStringList localList = getLocalSourceList(list);
 
-    foreach(QString item, list) {
-        if(item.length() == 0) {
-            maxprogress--;
-            continue;
-        }
-
-        if(item.at(0) == '>')
-            maxprogress--;
-    }
-    maxprogress++;
-
-    /* choose some global options
-    if(this->projectOptions->getEECOG().length() > 0)
-        eecog = true;
-    */
-
-    /* remove a.out before build
-     */
-    QFile aout(exePath);
-    if(aout.exists()) {
-        if(aout.remove() == false) {
-            rc = QMessageBox::question(0,
-                tr("Can't Remove File"),
-                tr("Can't Remove output file before build.\n"\
-                   "Please close any program using the file \"") + exeName + tr("\".\n"\
-                   "Continue?"),
-                QMessageBox::No, QMessageBox::Yes);
-            if(rc == QMessageBox::No)
-                return -1;
-        }
+    if (!rebuild) {
+        rebuild = isOutdated(localList, sourcePath(projectFile), sourcePath(projectFile)+exePath);
+        status->setText(tr("Build not needed. Just loading ..."));
     }
 
-    /* remove projectFile.pex before build
-     */
-    QString pexFile = projectFile;
-    pexFile = pexFile.mid(0,pexFile.lastIndexOf("."))+".pex";
-    QFile pex(pexFile);
-    if(pex.exists()) {
-        if(pex.remove() == false) {
-            int rc = QMessageBox::question(0,
-                tr("Can't Remove File"),
-                tr("Can't Remove output file before build.\n"\
-                   "Please close any program using the file \"")+pexFile+"\".\n" \
-                   "Continue?",
-                QMessageBox::No, QMessageBox::Yes);
-            if(rc == QMessageBox::No)
-                return -1;
-        }
-    }
+    /* if a local source is out of date, rebuild all */
+    if (rebuild)
+    {
+        status->setText(tr("Building ..."));
 
-    /* Run through file list and compile according to extension.
-     * Add main file after going through the list. i.e start at list[1]
-     */
-    QStringList inclist;
-    for(int n = 1; rc == 0 && n < list.length(); n++) {
-        QApplication::processEvents();
-        progress->setValue(100*n/maxprogress);
-        QString name = list[n];
-        if(name.length() == 0)
-            continue;
-        if(name.at(0) == '>')
-            continue;
-        QString base = shortFileName(name.mid(0,name.lastIndexOf(".")));
-        if(name.contains(FILELINK)) {
-            name = name.mid(name.indexOf(FILELINK)+QString(FILELINK).length());
-            base = name.mid(0,name.lastIndexOf("."));
-            QString inc = base.mid(0,base.lastIndexOf("/"));
-            if(inclist.count() > 0) {
-                if(inclist.contains(inc,Qt::CaseInsensitive) == false)
+        showCompilerVersion();
+
+        foreach(QString item, list) {
+            if(item.length() == 0) {
+                maxprogress--;
+                continue;
+            }
+
+            if(item.at(0) == '>')
+                maxprogress--;
+        }
+        maxprogress++;
+
+        /* choose some global options
+        if(this->projectOptions->getEECOG().length() > 0)
+            eecog = true;
+        */
+
+        /* remove a.out before build
+         */
+        QFile aout(exePath);
+        if(aout.exists()) {
+            if(aout.remove() == false) {
+                rc = QMessageBox::question(0,
+                    tr("Can't Remove File"),
+                    tr("Can't Remove output file before build.\n"\
+                       "Please close any program using the file \"") + exeName + tr("\".\n"\
+                       "Continue?"),
+                    QMessageBox::No, QMessageBox::Yes);
+                if(rc == QMessageBox::No)
+                    return -1;
+            }
+        }
+
+        /* remove projectFile.pex before build
+         */
+        QString pexFile = projectFile;
+        pexFile = pexFile.mid(0,pexFile.lastIndexOf("."))+".pex";
+        QFile pex(pexFile);
+        if(pex.exists()) {
+            if(pex.remove() == false) {
+                int rc = QMessageBox::question(0,
+                    tr("Can't Remove File"),
+                    tr("Can't Remove output file before build.\n"\
+                       "Please close any program using the file \"")+pexFile+"\".\n" \
+                       "Continue?",
+                    QMessageBox::No, QMessageBox::Yes);
+                if(rc == QMessageBox::No)
+                    return -1;
+            }
+        }
+
+        /* Run through file list and compile according to extension.
+         * Add main file after going through the list. i.e start at list[1]
+         */
+        QStringList inclist;
+        for(int n = 1; rc == 0 && n < list.length(); n++) {
+            QApplication::processEvents();
+            progress->setValue(100*n/maxprogress);
+            QString name = list[n];
+            if(name.length() == 0)
+                continue;
+            if(name.at(0) == '>')
+                continue;
+            QString base = shortFileName(name.mid(0,name.lastIndexOf(".")));
+            if(name.contains(FILELINK)) {
+                name = name.mid(name.indexOf(FILELINK)+QString(FILELINK).length());
+                base = name.mid(0,name.lastIndexOf("."));
+                QString inc = base.mid(0,base.lastIndexOf("/"));
+                if(inclist.count() > 0) {
+                    if(inclist.contains(inc,Qt::CaseInsensitive) == false)
+                        inclist.append(inc);
+                }
+                else {
                     inclist.append(inc);
+                }
+            }
+
+            QString suffix = name.mid(name.lastIndexOf("."));
+            suffix = suffix.toLower();
+
+            if(suffix.compare(".spin") == 0) {
+                if(runBstc(name))
+                    rc = -1;
+                if(proj.toLower().lastIndexOf(".dat") < 0) // intermediate
+                    list.append(outputPath+shortFileName(name.mid(0,name.lastIndexOf(".spin")))+".dat");
+            }
+    #if 1 // this needs to be updated for the memory model directories
+            else if(suffix.compare(".espin") == 0) {
+                QString basepath = sourcePath(projectFile);
+                this->compileStatus->appendPlainText("Copying "+name+" to tmp.spin for spin compiler.");
+                if(QFile::exists(basepath+"tmp.spin"))
+                    QFile::remove(basepath+"tmp.spin");
+                if(QFile::copy(basepath+base+".espin",basepath+"tmp.spin") != true) {
+                    rc = -1;
+                    continue;
+                }
+                if(runBstc("tmp.spin")) {
+                    rc = -1;
+                    continue;
+                }
+                if(QFile::exists(basepath+outputPath+base+".edat"))
+                    QFile::remove(basepath+outputPath+base+".edat");
+                if(QFile::copy(basepath+outputPath+"tmp.dat",basepath+outputPath+base+".edat") != true) {
+                    rc = -1;
+                    continue;
+                }
+                if(proj.toLower().lastIndexOf(".edat") < 0) // intermediate
+                    list.append(outputPath+name.mid(0,name.lastIndexOf(".espin"))+".edat");
+            }
+    #endif
+            else if(suffix.compare(".dat") == 0) {
+                if(runObjCopy(name))
+                    rc = -1;
+                if(proj.toLower().lastIndexOf("_firmware.o") < 0)
+                    clist.append(outputPath+shortFileName(name.mid(0,name.lastIndexOf(".dat")))+"_firmware.o");
+            }
+
+    #if 1 // this needs to be updated for the memory model directories
+            else if(suffix.compare(".edat") == 0) {
+                if(runObjCopy(name))
+                    rc = -1;
+                if(runCogObjCopy(base+"_firmware.ecog", base+"_firmware.o", outputPath))
+                    rc = -1;
+                if(runObjCopyRedefineSym("_binary_"+base+"_edat_start", "_load_start_"+base+"_firmware_ecog",outputPath+base+"_firmware.o"))
+                    rc = -1;
+                if(runObjCopyRedefineSym("_binary_"+base+"_edat_end",   "_load_stop_"+base+"_firmware_ecog",outputPath+base+"_firmware.o"))
+                    rc = -1;
+                if(proj.toLower().lastIndexOf("_firmware.o") < 0)
+                    clist.append(outputPath+base+"_firmware.o");
+            }
+    #endif
+            else if(suffix.compare(".s") == 0) {
+                if(runGAS(name))
+                    rc = -1;
+                if(proj.toLower().lastIndexOf(".o") < 0)
+                    clist.append(outputPath+name.mid(0,name.lastIndexOf(".s"))+".o");
+            }
+            else if(suffix.compare(".S") == 0) {
+                if(runGAS(name))
+                    rc = -1;
+                if(proj.toLower().lastIndexOf(".o") < 0)
+                    clist.append(outputPath+name.mid(0,name.lastIndexOf(".S"))+".o");
+            }
+            /* .cogc also does COG specific objcopy */
+            else if(suffix.compare(".cogc") == 0) {
+                if(runCOGC(name,".cog"))
+                    rc = -1;
+                clist.append(outputPath+shortFileName(base)+".cog");
+            }
+            /* .cogc also does COG specific objcopy */
+            else if(suffix.compare(".ecogc") == 0) {
+                if(runCOGC(name,".ecog"))
+                    rc = -1;
+                clist.append(outputPath+shortFileName(base)+".ecog");
+            }
+            /* dont add .a yet */
+            else if(suffix.compare(".a") == 0) {
+            }
+            /* add all others */
+            else {
+                clist.append(name);
+            }
+
+        }
+
+        /* add inclist if it exists
+         */
+        for(int n = 0; n < inclist.length(); n++) {
+            clist.append("-I");
+            clist.append(inclist.at(n));
+        }
+
+        /* add main file */
+        clist.append(list[0]);
+
+        QStringList liblist;
+
+        /* add library .a files to the end of the list
+         */
+        for(int n = 0; n < list.length(); n++) {
+            QApplication::processEvents();
+            progress->setValue(100*n/maxprogress);
+            QString name = list[n];
+            if(name.length() == 0)
+                continue;
+            if(name.at(0) == '>')
+                continue;
+            if(name.contains(FILELINK))
+                name = name.mid(name.indexOf(FILELINK)+QString(FILELINK).length());
+
+            /* add .a */
+            if(name.toLower().lastIndexOf(".a") > 0) {
+                liblist.append(name);
+                clist.append(name);
+            }
+        }
+
+        QString loadtype;
+        QTextCursor cur;
+        bool runpex = false;
+
+        if(rc != 0) {
+            QVariant vname = process->property("Name");
+            QString name = "Build";
+            if(vname.canConvert(QVariant::String)) {
+                name = vname.toString();
+            }
+            buildResult(rc, rc, name, name);
+        }
+        else {
+            rc = runCompiler(clist);
+
+            cur = compileStatus->textCursor();
+
+            loadtype = cbBoard->currentText();
+            if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
+                runpex = true;
+            }
+            else
+            if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
+                runpex = true;
+            }
+            if(runpex) {
+                rc = runPexMake(exePath);
+                if(rc != 0)
+                    compileStatus->appendPlainText("Could not make AUTORUN.PEX\n");
+            }
+
+            if(rc == 0) {
+                compileStatus->appendPlainText("Done. Build Succeeded!\n");
+                cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+                compileStatus->setTextCursor(cur);
             }
             else {
-                inclist.append(inc);
-            }
-        }
-
-        QString suffix = name.mid(name.lastIndexOf("."));
-        suffix = suffix.toLower();
-
-        if(suffix.compare(".spin") == 0) {
-            if(runBstc(name))
-                rc = -1;
-            if(proj.toLower().lastIndexOf(".dat") < 0) // intermediate
-                list.append(outputPath+shortFileName(name.mid(0,name.lastIndexOf(".spin")))+".dat");
-        }
-#if 1 // this needs to be updated for the memory model directories
-        else if(suffix.compare(".espin") == 0) {
-            QString basepath = sourcePath(projectFile);
-            this->compileStatus->appendPlainText("Copying "+name+" to tmp.spin for spin compiler.");
-            if(QFile::exists(basepath+"tmp.spin"))
-                QFile::remove(basepath+"tmp.spin");
-            if(QFile::copy(basepath+base+".espin",basepath+"tmp.spin") != true) {
-                rc = -1;
-                continue;
-            }
-            if(runBstc("tmp.spin")) {
-                rc = -1;
-                continue;
-            }
-            if(QFile::exists(basepath+outputPath+base+".edat"))
-                QFile::remove(basepath+outputPath+base+".edat");
-            if(QFile::copy(basepath+outputPath+"tmp.dat",basepath+outputPath+base+".edat") != true) {
-                rc = -1;
-                continue;
-            }
-            if(proj.toLower().lastIndexOf(".edat") < 0) // intermediate
-                list.append(outputPath+name.mid(0,name.lastIndexOf(".espin"))+".edat");
-        }
-#endif
-        else if(suffix.compare(".dat") == 0) {
-            if(runObjCopy(name))
-                rc = -1;
-            if(proj.toLower().lastIndexOf("_firmware.o") < 0)
-                clist.append(outputPath+shortFileName(name.mid(0,name.lastIndexOf(".dat")))+"_firmware.o");
-        }
-
-#if 1 // this needs to be updated for the memory model directories
-        else if(suffix.compare(".edat") == 0) {
-            if(runObjCopy(name))
-                rc = -1;
-            if(runCogObjCopy(base+"_firmware.ecog", base+"_firmware.o", outputPath))
-                rc = -1;
-            if(runObjCopyRedefineSym("_binary_"+base+"_edat_start", "_load_start_"+base+"_firmware_ecog",outputPath+base+"_firmware.o"))
-                rc = -1;
-            if(runObjCopyRedefineSym("_binary_"+base+"_edat_end",   "_load_stop_"+base+"_firmware_ecog",outputPath+base+"_firmware.o"))
-                rc = -1;
-            if(proj.toLower().lastIndexOf("_firmware.o") < 0)
-                clist.append(outputPath+base+"_firmware.o");
-        }
-#endif
-        else if(suffix.compare(".s") == 0) {
-            if(runGAS(name))
-                rc = -1;
-            if(proj.toLower().lastIndexOf(".o") < 0)
-                clist.append(outputPath+name.mid(0,name.lastIndexOf(".s"))+".o");
-        }
-        else if(suffix.compare(".S") == 0) {
-            if(runGAS(name))
-                rc = -1;
-            if(proj.toLower().lastIndexOf(".o") < 0)
-                clist.append(outputPath+name.mid(0,name.lastIndexOf(".S"))+".o");
-        }
-        /* .cogc also does COG specific objcopy */
-        else if(suffix.compare(".cogc") == 0) {
-            if(runCOGC(name,".cog"))
-                rc = -1;
-            clist.append(outputPath+shortFileName(base)+".cog");
-        }
-        /* .cogc also does COG specific objcopy */
-        else if(suffix.compare(".ecogc") == 0) {
-            if(runCOGC(name,".ecog"))
-                rc = -1;
-            clist.append(outputPath+shortFileName(base)+".ecog");
-        }
-        /* dont add .a yet */
-        else if(suffix.compare(".a") == 0) {
-        }
-        /* add all others */
-        else {
-            clist.append(name);
-        }
-
-    }
-
-    /* add inclist if it exists
-     */
-    for(int n = 0; n < inclist.length(); n++) {
-        clist.append("-I");
-        clist.append(inclist.at(n));
-    }
-
-    /* add main file */
-    clist.append(list[0]);
-
-    /* add library .a files to the end of the list
-     */
-    for(int n = 0; n < list.length(); n++) {
-        QApplication::processEvents();
-        progress->setValue(100*n/maxprogress);
-        QString name = list[n];
-        if(name.length() == 0)
-            continue;
-        if(name.at(0) == '>')
-            continue;
-        if(name.contains(FILELINK))
-            name = name.mid(name.indexOf(FILELINK)+QString(FILELINK).length());
-
-        /* add .a */
-        if(name.toLower().lastIndexOf(".a") > 0) {
-            clist.append(name);
-        }
-    }
-
-    QString loadtype;
-    QTextCursor cur;
-    bool runpex = false;
-
-    if(rc != 0) {
-        QVariant vname = process->property("Name");
-        QString name = "Build";
-        if(vname.canConvert(QVariant::String)) {
-            name = vname.toString();
-        }
-        buildResult(rc, rc, name, name);
-    }
-    else {
-        rc = runCompiler(clist);
-
-        cur = compileStatus->textCursor();
-
-        loadtype = cbBoard->currentText();
-        if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdRun, Qt::CaseInsensitive)) {
-            runpex = true;
-        }
-        else
-        if(loadtype.contains(ASideConfig::UserDelimiter+ASideConfig::SdLoad, Qt::CaseInsensitive)) {
-            runpex = true;
-        }
-        if(runpex) {
-            rc = runPexMake(exePath);
-            if(rc != 0)
-                compileStatus->appendPlainText("Could not make AUTORUN.PEX\n");
-        }
-
-        if(rc == 0) {
-            compileStatus->appendPlainText("Done. Build Succeeded!\n");
-            cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
-            compileStatus->setTextCursor(cur);
-        }
-        else {
-            compileStatus->appendPlainText("Done. Build Failed!\n");
-            if(compileStatus->toPlainText().indexOf("error:",0, Qt::CaseInsensitive) > 0) {
-                compileStatus->appendPlainText("Click error or warning messages above to debug.\n");
-            }
-            if(compileStatus->toPlainText().indexOf("undefined reference",0, Qt::CaseInsensitive) > 0) {
-                QStringList ssplit = compileStatus->toPlainText().split("undefined reference to ", QString::SkipEmptyParts, Qt::CaseInsensitive);
-                if(ssplit.count() > 1) {
-                    QString msg = ssplit.at(1);
-                    QStringList msplit = msg.split("collect");
-                    if(msplit.count() > 0) {
-                        QString mstr = msplit.at(0);
-                        if(mstr.indexOf("`__") == 0) {
-                            mstr = mstr.mid(2);
-                            mstr = mstr.trimmed();
-                            mstr = mstr.mid(0,mstr.length()-1);
+                compileStatus->appendPlainText("Done. Build Failed!\n");
+                if(compileStatus->toPlainText().indexOf("error:",0, Qt::CaseInsensitive) > 0) {
+                    compileStatus->appendPlainText("Click error or warning messages above to debug.\n");
+                }
+                if(compileStatus->toPlainText().indexOf("undefined reference",0, Qt::CaseInsensitive) > 0) {
+                    QStringList ssplit = compileStatus->toPlainText().split("undefined reference to ", QString::SkipEmptyParts, Qt::CaseInsensitive);
+                    if(ssplit.count() > 1) {
+                        QString msg = ssplit.at(1);
+                        QStringList msplit = msg.split("collect");
+                        if(msplit.count() > 0) {
+                            QString mstr = msplit.at(0);
+                            if(mstr.indexOf("`__") == 0) {
+                                mstr = mstr.mid(2);
+                                mstr = mstr.trimmed();
+                                mstr = mstr.mid(0,mstr.length()-1);
+                            }
+                            compileStatus->appendPlainText("Check source for bad function call or global variable name "+mstr+"\n");
                         }
-                        compileStatus->appendPlainText("Check source for bad function call or global variable name "+mstr+"\n");
+                        else {
+                            compileStatus->appendPlainText("Check source for bad function call or global variable name "+ssplit.at(1)+"\n");
+                        }
+                        cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+                        compileStatus->setTextCursor(cur);
+                        return rc;
                     }
-                    else {
-                        compileStatus->appendPlainText("Check source for bad function call or global variable name "+ssplit.at(1)+"\n");
-                    }
+                }
+                if(compileStatus->toPlainText().indexOf("overflowed by", 0, Qt::CaseInsensitive) > 0) {
+                    compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
+                    cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+                    compileStatus->setTextCursor(cur);
+                    return rc;
+                }
+                if(compileStatus->toPlainText().indexOf("Error: Relocation overflows", 0, Qt::CaseInsensitive) > 0) {
+                    compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
                     cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
                     compileStatus->setTextCursor(cur);
                     return rc;
                 }
             }
-            if(compileStatus->toPlainText().indexOf("overflowed by", 0, Qt::CaseInsensitive) > 0) {
-                compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
-                cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
-                compileStatus->setTextCursor(cur);
-                return rc;
-            }
-            if(compileStatus->toPlainText().indexOf("Error: Relocation overflows", 0, Qt::CaseInsensitive) > 0) {
-                compileStatus->appendPlainText("Your program is too big for the memory model selected in the project.");
-                cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
-                compileStatus->setTextCursor(cur);
-                return rc;
-            }
         }
+
+        Sleeper::ms(250);
+        progress->hide();
+
+        cur = compileStatus->textCursor();
+        cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+        compileStatus->setTextCursor(cur);
     }
-
-    Sleeper::ms(250);
-    progress->hide();
-
-    cur = compileStatus->textCursor();
-    cur.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
-    compileStatus->setTextCursor(cur);
-
     return rc;
 }
 
@@ -1394,6 +1411,33 @@ void BuildC::appendLoaderParameters(QString copts, QString file, QStringList *ar
 }
 
 #include <directory.h>
+
+bool BuildC::isOutdated(QStringList srclist, QString srcpath, QString target)
+{
+    QFile outfile(target);
+    if (!QFileInfo(outfile).exists())
+        return true;
+    QDateTime outtime = QFileInfo(outfile).lastModified();
+    foreach(QString item, srclist) {
+        QFile sourcefile(srcpath+item);
+        QDateTime sourcetime = QFileInfo(sourcefile).lastModified();
+        if (outtime.secsTo(sourcetime) > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+QStringList BuildC::getLocalSourceList(QStringList &LLlist)
+{
+    QStringList list;
+    foreach(QString item, LLlist) {
+        if(item.at(0) == '>')
+            continue;
+        list.append(item);
+    }
+    return list;
+}
 
 QStringList BuildC::getLibraryList(QStringList &ILlist, QString projFile)
 {

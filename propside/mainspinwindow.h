@@ -36,7 +36,7 @@
 #include "treemodel.h"
 #include "PortListener.h"
 #include "qextserialport.h"
-#include "xbeeserialport.h"
+#include "xesp8266port.h"
 #include "terminal.h"
 #include "properties.h"
 #include "asideconfig.h"

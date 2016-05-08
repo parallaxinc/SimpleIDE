@@ -22,6 +22,8 @@
 #include "PortListener.h"
 #include <QtDebug>
 
+#define TELNET_POLL 0
+
 /*
  * We use Polling for the port because events are not
  * well behaved in the QextSerialPort library on windows.
@@ -35,61 +37,68 @@ PortListener::PortListener(QObject *parent, Console *term) : QThread(parent)
      * removed EVENT_DRIVEN code because it doesn't work on all platforms
      * and it would not be the same for serial and network ports.
      */
-    port = new QextSerialPort(QextSerialPort::Polling);
+    serialPort = new QextSerialPort(QextSerialPort::Polling);
     connect(this, SIGNAL(updateEvent(QextSerialPort*)), this, SLOT(updateReady(QextSerialPort*)));
 
-    xbport = new XBeeSerialPort();
-    connect(this, SIGNAL(updateEvent(XBeeSerialPort*)), this, SLOT(updateReady(XBeeSerialPort*)));
+    wifiPort = new XEsp8266port();
+
+    // polling doesn't work very well :)
+    //connect(this, SIGNAL(updateEvent(XEsp8266port*)), this, SLOT(updateReady(XEsp8266port*)));
+
+    // use event driven code with Telnet based Wifi
+    connect(wifiPort, SIGNAL(updateEvent(XEsp8266port*)), this, SLOT(updateReady(XEsp8266port*)));
 }
 
 void PortListener::init(const QString & portName, BaudRateType baud, QString ipaddr)
 {
-    port->setPortName("");
-    xbport->setPortName("");
+    serialPort->setPortName("");
+    wifiPort->setPortName("");
 
     if (ipaddr.length() == 0) {
         useSerial = true;
-        port->setPortName(portName);
-        port->setBaudRate(baud);
-        port->setFlowControl(FLOW_OFF);
-        port->setParity(PAR_NONE);
-        port->setDataBits(DATA_8);
-        port->setStopBits(STOP_1);
-        port->setTimeout(10);
+        serialPort->setPortName(portName);
+        serialPort->setBaudRate(baud);
+        serialPort->setFlowControl(FLOW_OFF);
+        serialPort->setParity(PAR_NONE);
+        serialPort->setDataBits(DATA_8);
+        serialPort->setStopBits(STOP_1);
+        serialPort->setTimeout(10);
     }
     else {
         useSerial = false;
-        if (portName.compare(xbport->portName()) && xbport->isOpen()) {
-            xbport->close();
+        if (portName.compare(wifiPort->getPortName()) && wifiPort->isOpen()) {
+            wifiPort->close();
         }
-        xbport->open(QHostAddress(ipaddr), baud);
-        xbport->setPortName(portName);
+        //wifiPort->open(QHostAddress(ipaddr), baud);
+        wifiPort->setPortName(portName);
+        wifiPort->setIpAddress(ipaddr);
+        wifiPort->setBaudRate(baud);
     }
 }
 
 QString PortListener::getPortName()
 {
     if (useSerial) {
-        return port->portName();
+        return serialPort->portName();
     }
     else {
-        return xbport->portName();
+        return wifiPort->getPortName();
     }
 }
 
 BaudRateType PortListener::getBaudRate()
 {
-    return (useSerial) ? port->baudRate() : (BaudRateType)xbport->baudRate();
+    return (useSerial) ? serialPort->baudRate() : (BaudRateType)wifiPort->getBaudRate();
 }
 
 void PortListener::setDtr(bool enable)
 {
-    if (useSerial) port->setDtr(enable);
+    if (useSerial) serialPort->setDtr(enable);
 }
 
 void PortListener::setRts(bool enable)
 {
-    if (useSerial) port->setRts(enable);
+    if (useSerial) serialPort->setRts(enable);
 }
 
 bool PortListener::open()
@@ -101,20 +110,20 @@ bool PortListener::open()
         return false;
 
     if (useSerial) {
-        if(port == NULL)
+        if(serialPort == NULL)
             return false;
 
-        if(port->isOpen() == true)
+        if(serialPort->isOpen() == true)
             return false;
 
-        port->open(QIODevice::ReadWrite);
+        serialPort->open(QIODevice::ReadWrite);
 
         connect(this, SIGNAL(updateEvent(QextSerialPort*)), this, SLOT(updateReady(QextSerialPort*)));
         this->start();
     }
     else {
-        connect(this, SIGNAL(updateEvent(XBeeSerialPort*)), this, SLOT(updateReady(XBeeSerialPort*)));
-        this->start();
+        connect(wifiPort, SIGNAL(updateEvent(XEsp8266port*)), this, SLOT(updateReady(XEsp8266port*)));
+        wifiPort->open(QHostAddress(wifiPort->getIpAddress()), wifiPort->getBaudRate());
     }
     return true;
 }
@@ -122,18 +131,19 @@ bool PortListener::open()
 void PortListener::close()
 {
     if (useSerial) {
-        if(port == NULL) return;
+        if(serialPort == NULL) return;
         disconnect(this, SIGNAL(updateEvent(QextSerialPort*)), this, SLOT(updateReady(QextSerialPort*)));
-        port->close();
+        serialPort->close();
     }
     else {
-        xbport->close();
+        disconnect(wifiPort, SIGNAL(updateEvent(XEsp8266port*)), this, SLOT(updateReady(XEsp8266port*)));
+        wifiPort->close();
     }
 }
 
 bool PortListener::isOpen()
 {
-    return (useSerial) ? port->isOpen() : xbport->isOpen();
+    return (useSerial) ? serialPort->isOpen() : wifiPort->isOpen();
 }
 
 void PortListener::setTerminalWindow(QPlainTextEdit *editor)
@@ -144,10 +154,10 @@ void PortListener::setTerminalWindow(QPlainTextEdit *editor)
 void PortListener::send(QByteArray &data)
 {
     if (useSerial) {
-        port->write(data.constData(),1);
+        serialPort->write(data.constData(),1);
     }
     else {
-        xbport->write(data.constData(),1);
+        wifiPort->write(data.constData(),1);
     }
 }
 
@@ -166,7 +176,7 @@ void PortListener::updateReady(QextSerialPort* port)
             terminal->updateReady(port);
 }
 
-void PortListener::updateReady(XBeeSerialPort* port)
+void PortListener::updateReady(XEsp8266port* port)
 {
     if(terminal != NULL)
         if(terminal->enabled())
@@ -188,19 +198,14 @@ void PortListener::updateReady(XBeeSerialPort* port)
 void PortListener::run()
 {
     if (useSerial) {
-        while(port->isOpen()) {
-            msleep(POLL_DELAY);
-            QApplication::processEvents();
-            if(terminal->enabled())
-                emit updateEvent(port);
-        }
-    }
-    else {
-        while(xbport->isOpen()) {
-            msleep(POLL_DELAY);
-            QApplication::processEvents();
-            if(terminal->enabled())
-                emit updateEvent(xbport);
+        while(serialPort->isOpen()) {
+            if(terminal->serialPollEnabled()) {
+                msleep(POLL_DELAY);
+                QApplication::processEvents();
+                if(terminal->enabled()) {
+                    emit updateEvent(serialPort);
+                }
+            }
         }
     }
 }

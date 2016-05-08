@@ -21,7 +21,7 @@
 #define PORTLISTENER_H_
 
 #include "console.h"
-#include "qextserialport.h"
+#include "xesp8266port.h"
 
 class PortListener : public QThread
 {
@@ -45,19 +45,19 @@ public:
 private:
     bool            useSerial;
     Console         *terminal;
-    QextSerialPort  *port;
-    XBeeSerialPort  *xbport;
+    QextSerialPort  *serialPort;
+    XEsp8266port     *wifiPort;
     QPlainTextEdit  *textEditor;
 
 private slots:
     void onDsrChanged(bool status);
     void updateReady(QextSerialPort*);
-    void updateReady(XBeeSerialPort*);
+    void updateReady(XEsp8266port *);
 
 signals:
     void readyRead(int length);
     void updateEvent(QextSerialPort*);
-    void updateEvent(XBeeSerialPort*);
+    void updateEvent(XEsp8266port*);
 };
 
 

@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "1-0-6"
+#define MyAppVersion "1-0-10"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -26,7 +26,7 @@
 ; This path contains the propeller gcc build
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;#define MyGccPath "C:\mingw\msys\1.0\opt\parallax"
-#define MyGccPath "..\..\propeller-gcc-2015-12-24"
+#define MyGccPath "..\..\propeller-gcc4-win32"
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This path must contains the mingw path used for the propeller gcc build
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -38,7 +38,8 @@
 #define MyAppBin "{app}\bin"
 #define MyBoardFilter "..\boards.txt"
 #define MyFont "..\Parallax.ttf"
-#define MyLoaderPath "..\..\proploader\build-proploader-Desktop_Qt_5_4_2_MinGW_32bit2-Release\Release"
+;#define MyLoaderPath "..\..\proploader\build-proploader-Desktop_Qt_5_4_2_MinGW_32bit2-Release\Release"
+#define MyLoaderPath "..\..\proploader\proploader-msys-build\bin"
 ;#define MyAppPath "..\build-propside-Qt_4_8_6-Release"
 #define MyAppPath "..\build-propside-Desktop_Qt_5_4_2_MinGW_32bit2-Release"
 
@@ -113,23 +114,17 @@ Source: "{#MyQtPath}\bin\Qt5PrintSupport.dll"; DestDir: "{app}\bin"; Flags: igno
 Source: "{#MyQtPath}\bin\Qt5SerialPort.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 ;Source: "{#MyQtPath}\bin\Qt5SerialPortd.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#MyQtPath}\bin\Qt5Widgets.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MyQtPath}\plugins\platforms\*"; DestDir: "{app}\bin\platforms"; Flags: ignoreversion
 Source: "zlib1.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 Source: "{#MyLoaderPath}\proploader.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 
 ; These paths are based on the mingw distribution used in building the application and should match.
-; They are probably not the same as the propeller-gcc mingw path.
-; #define MyQtMingwPath "C:\Qt\Qt5.3.0-RC1\5.3\"
 Source: "{#MyQtMingwPath}\bin\icuin53.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 Source: "{#MyQtMingwPath}\bin\icuuc53.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 Source: "{#MyQtMingwPath}\bin\icudt53.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 Source: "{#MyQtMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 Source: "{#MyQtMingwPath}\bin\libstdc++-6.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 Source: "{#MyQtMingwPath}\bin\libwinpthread-1.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
-;Source: "{#MyQtPath}\5.3\mingw482_32\bin\Qt5Core.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
-;Source: "{#MyQtPath}\5.3\mingw482_32\bin\Qt5Gui.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
-;Source: "{#MyQtPath}\5.3\mingw482_32\bin\Qt5Widgets.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
-;Source: "{#MyQtPath}\5.3\mingw482_32\bin\Qt5PrintSupport.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
-;Source: "{#MyQtPath}\5.3\mingw482_32\plugins\platforms\qwindows.dll"; DestDir: "{#MyAppBin}\platforms"; Flags: ignoreversion
 
 Source: "{#MyGccPath}\*"; DestDir: "{app}\propeller-gcc"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyQtMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}\propeller-gcc\bin"; Flags: ignoreversion

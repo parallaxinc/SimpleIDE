@@ -5,7 +5,7 @@
 # These define the version number in Menu->About
 DEFINES += IDEVERSION=1
 DEFINES += MINVERSION=0
-DEFINES += FIXVERSION=6
+DEFINES += FIXVERSION=10
 VERSION = IDEVERSION"."MINVERSION"."FIXVERSION
 
 QT += core
@@ -56,6 +56,9 @@ DEFINES += ENABLE_AUTOLIB
 # ENABLE_AUTO_ENTER turns on AUTO-INDENT
 DEFINES += ENABLE_AUTO_ENTER
 
+# File to SDCARD
+DEFINES += ENABLE_FILETO_SDCARD
+
 SOURCES += mainspin.cpp \
     PortConnectionMonitor.cpp \
     PropellerID.cpp \
@@ -100,7 +103,7 @@ SOURCES += mainspin.cpp \
     StatusDialog.cpp \
     workspacedialog.cpp \
     rescuedialog.cpp \
-    xbeeserialport.cpp
+    xesp8266port.cpp
 HEADERS += mainspinwindow.h \
     PortConnectionMonitor.h \
     PropellerID.h \
@@ -151,7 +154,7 @@ HEADERS += mainspinwindow.h \
     workspacedialog.h \
     rescuedialog.h \
     qtversion.h \
-    xbeeserialport.h
+    xesp8266port.h
 FORMS += hardware.ui \
     project.ui \
     TermPrefs.ui \

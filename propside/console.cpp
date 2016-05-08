@@ -32,6 +32,7 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
     setFont(QFont("courier"));
     isEnabled = true;
+    isSerialPollEnabled = true;
     pcmd = Console::PCMD_NONE;
     pcmdx = 0;
     pcmdy = 0;
@@ -60,6 +61,16 @@ void Console::setPortEnable(bool value)
 bool Console::enabled()
 {
     return isEnabled;
+}
+
+void Console::setSerialPollEnable(bool enable)
+{
+    isSerialPollEnabled = enable;
+}
+
+bool Console::serialPollEnabled()
+{
+    return isSerialPollEnabled;
 }
 
 void Console::clear()
@@ -288,65 +299,106 @@ void Console::updateReady(QextSerialPort* port)
     if(isEnabled == false)
         return;
 
+#if 1
+    qint64 length = port->bytesAvailable();
+    if(length < 1) return;
+
+    QByteArray ba = port->readAll();
+    length = ba.length();
+#else
     if(port->bytesAvailable() < 1)
         return;
-
     int length = port->readLine(buf,BUFFERSIZE);
     //int length = ba.length();
 
     if(length < 1)
         return;
+#endif
 
     if(hexmode != false) {
         for(int n = 0; n < length; n++)
             dumphex((int)buf[n]);
     }
     else {
-#ifdef EVENT_DRIVEN
+#if 1
+        int jcount = 200;
+        // limit amount of time spent doing event updates
+        int evlimit= 100;
+        this->setSerialPollEnable(false);
         while (length > 0) {
-            for(int n = 0; n < length; n++)
-                update(buf[n]);
-            length = port->readLine(buf,BUFFERSIZE);
+            int jj = (length > jcount) ? jcount : length;
+            while(jj > 0) {
+                extern bool g_ApplicationClosing;
+                if (g_ApplicationClosing) return;
+                for(int n = 0; n < jj; n++) {
+                    update(ba.at(n));
+                }
+                QApplication::processEvents(QEventLoop::AllEvents, evlimit);
+
+                ba.remove(0,jj);
+                length = ba.length();
+                jj = (length > jcount) ? jcount : length;
+
+                //QApplication::processEvents(QEventLoop::AllEvents, evlimit);
+            }
+            if (port->isOpen()) {
+                ba = port->readAll();
+                length = ba.length();
+            }
         }
+        this->setSerialPollEnable(true);
 #else
         for(int n = 0; n < length; n++)
             update(buf[n]);
 #endif
     }
+    QApplication::processEvents();
 }
 
-void Console::updateReady(XBeeSerialPort* port)
+void Console::updateReady(XEsp8266port* port)
 {
-    //char buf[BUFFERSIZE];
     if(isEnabled == false)
         return;
 
-    if(port->bytesAvailable() < 1)
-        return;
+    qint64 length = port->bytesAvailable();
+    if(length < 1) return;
 
-    //int length = port->readLine(buf,BUFFERSIZE);
     QByteArray ba = port->readAll();
-    int length = ba.length();
-
-    if(length < 1)
-        return;
+    length = ba.length();
 
     if(hexmode != false) {
         for(int n = 0; n < length; n++)
             dumphex((int)ba[n]);
     }
     else {
-#ifdef EVENT_DRIVEN
+        int jcount = 200;
+        // limit amount of time spent doing event updates
+        int evlimit= 100;
         while (length > 0) {
-            for(int n = 0; n < length; n++)
-                update(ba[n]);
-            length = port->readLine(buf,BUFFERSIZE);
+            int jj = (length > jcount) ? jcount : length;
+            while(jj > 0) {
+                extern bool g_ApplicationClosing;
+                if (g_ApplicationClosing) return;
+                for(int n = 0; n < jj; n++) {
+                    update(ba.at(n));
+                }
+                QApplication::processEvents(QEventLoop::AllEvents, evlimit);
+
+                ba.remove(0,jj);
+                length = ba.length();
+                jj = (length > jcount) ? jcount : length;
+
+                //QApplication::processEvents(QEventLoop::AllEvents, evlimit);
+            }
+            if (port->isOpen()) {
+                ba = port->readAll();
+                length = ba.length();
+            }
         }
-#else
-        for(int n = 0; n < length; n++)
-            update(ba[n]);
-#endif
+        // simple but very slow way
+        // for(int n = 0; n < length; n++) update(ba[n]);
     }
+    QApplication::processEvents();
 }
 
 void Console::dumphex(int ch)
@@ -383,6 +435,20 @@ void Console::dumphex(int ch)
         hexbytes++;
 
         cur.insertText(QString(" %1").arg(c,2,16,QChar('0')));
+    }
+}
+
+void Console::setCursorMode()
+{
+    QTextCursor cur = this->textCursor();
+    this->setWordWrapMode(QTextOption::WrapAnywhere);
+
+    if(wrapMode > 0) {
+        if(cur.block().length() > wrapMode)
+            cur.insertBlock();
+    }
+    else if(cur.block().length() > maxcol) {
+        cur.insertBlock();
     }
 }
 

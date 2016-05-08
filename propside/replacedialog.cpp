@@ -154,6 +154,16 @@ QTextDocument::FindFlag ReplaceDialog::getFlags(int prev)
     return (QTextDocument::FindFlag) flags;
 }
 
+void ReplaceDialog::setFindHighlight(QPlainTextEdit *ed)
+{
+    if (ed != NULL) {
+        QPalette p = editor->palette();
+        p.setColor(QPalette::Highlight, QColor(Qt::yellow));
+        //p.setColor(QPalette::HighlightedText, QColor(/*what ever you want*/);
+        ed->setPalette(p);
+    }
+}
+
 /*
  * Find text for user as typed in find line edit box.
  */
@@ -161,6 +171,7 @@ void ReplaceDialog::findChanged(QString text)
 {
     if(editor == NULL)
         return;
+
     QTextCursor cur = editor->textCursor();
     cur.beginEditBlock();
     cur.setPosition(findPosition,QTextCursor::MoveAnchor);
@@ -234,6 +245,14 @@ void ReplaceDialog::findNextClicked()
 #endif
     {
         if(editor->find(text,getFlags()) == true) {
+            /*
+            QTextCursor cur = editor->textCursor();
+            QTextCharFormat fmt;
+            QBrush findBrush(Qt::yellow);
+            fmt.setBackground(findBrush);
+            cur.mergeCharFormat(fmt);
+            cur.movePosition(QTextCursor::StartOfWord);
+            */
             count++;
         }
         else {
@@ -454,4 +473,5 @@ void ReplaceDialog::setEditor(QPlainTextEdit *ed)
     editor = ed;
     editor->clearFocus();
     findEdit->setFocus();
+    setFindHighlight(editor);
 }

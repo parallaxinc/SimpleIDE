@@ -38,7 +38,7 @@
     <string>Project Options</string>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="ProjectControl">
     <property name="toolTip">
@@ -342,7 +342,7 @@
       <rect>
        <x>140</x>
        <y>10</y>
-       <width>121</width>
+       <width>131</width>
        <height>21</height>
       </rect>
      </property>
@@ -434,6 +434,22 @@
      </property>
      <property name="checked">
       <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxDependentBuild">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>30</y>
+       <width>131</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Check to build if local source files changed (ignores library files).</string>
+     </property>
+     <property name="text">
+      <string>Dependent Build</string>
      </property>
     </widget>
    </widget>

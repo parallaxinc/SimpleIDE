@@ -40,6 +40,12 @@ void HighlightBuild::highlight()
     highlightingRules.append(rule);
     rule.pattern = QRegExp("\\b0x[0-9,a-f,A-F]*");
     highlightingRules.append(rule);
+    rule.pattern = QRegExp("\\b:[0-9,a-f,A-F][0-9,a-f,A-F]");
+    highlightingRules.append(rule);
+    rule.pattern = QRegExp("\\b[0-9,a-f,A-F][0-9,a-f,A-F]:");
+    highlightingRules.append(rule);
+    //rule.pattern = QRegExp("\\b[0-9,a-f,A-F][0-9,a-f,A-F][0-9,a-f,A-F][0-9,a-f,A-F][0-9,a-f,A-F][0-9,a-f,A-F]");
+    //highlightingRules.append(rule);
 
     /// keyword colors for module names from beginning of line to :
     keywordFormat.setForeground(hlKeyWordColor);

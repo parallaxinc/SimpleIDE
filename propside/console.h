@@ -22,7 +22,7 @@
 
 #include "qtversion.h"
 #include "qextserialport.h"
-#include "xbeeserialport.h"
+#include "xesp8266port.h"
 
 class Console : public QPlainTextEdit
 {
@@ -31,8 +31,12 @@ public:
     explicit Console(QWidget *parent = 0);
     void setPortEnable(bool value);
     bool enabled();
+    void setSerialPollEnable(bool value);
+    bool serialPollEnabled();
     void clear();
     QString eventKey(QKeyEvent* event);
+
+    void setCursorMode();
 
     void setEnableClearScreen(bool value);
     void setEnableHomeCursor(bool value);
@@ -129,6 +133,7 @@ private:
     char creturn;
     char lastchar;
 
+    bool isSerialPollEnabled;
     bool isEnabled;
     bool utfparse;
     int  utfbytes;
@@ -155,7 +160,7 @@ protected:
 
 public slots:
     void updateReady(QextSerialPort*);
-    void updateReady(XBeeSerialPort*);
+    void updateReady(XEsp8266port *);
     void dumphex(int ch);
     void update(char ch);
 

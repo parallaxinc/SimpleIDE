@@ -62,6 +62,7 @@ public:
     ~ProjectOptions();
 
     void clearOptions();
+    void enableDependentBuild(bool enable);
 
     QStringList getMemModelList();
     QString getCompiler();
@@ -78,6 +79,7 @@ public:
     QString getTinyLib();
     QString getMathLib();
     QString getPthreadLib();
+    QString getDependentBuild();
     QString getSimplePrintf();
     QString getStripElf();
     QString getCompOptions();
@@ -97,6 +99,7 @@ public:
     void setTinyLib(bool s);
     void setMathLib(bool s);
     void setPthreadLib(bool s);
+    void setDependentBuild(bool s);
     void setSimplePrintf(bool s);
     void setStripElf(bool s);
     void setCompOptions(QString s);

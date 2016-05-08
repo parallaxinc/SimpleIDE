@@ -32,7 +32,10 @@ class ReplaceDialog : public QDialog
 
 public:
     ReplaceDialog(QWidget *parent = 0);
+
     QTextDocument::FindFlag getFlags(int prev = 0);
+
+    void setFindHighlight(QPlainTextEdit *ed);
 
     QString getFindText();
     void    clearFindText();

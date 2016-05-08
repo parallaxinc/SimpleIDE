@@ -73,6 +73,8 @@ void StatusDialog::init(const QString title, const QString message)
     displayTimer->start(100);
 
     this->show();
+    this->raise();
+    this->activateWindow();
     QApplication::processEvents();
 }
 

@@ -39,7 +39,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tabAppearance">
     <attribute name="title">
@@ -194,6 +194,24 @@
        <height>27</height>
       </rect>
      </property>
+     <property name="currentText">
+      <string>32</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>32</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>64</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>128</string>
+      </property>
+     </item>
      <item>
       <property name="text">
        <string>256</string>

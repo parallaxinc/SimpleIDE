@@ -44,6 +44,7 @@
 #define APP_FOLDER_TEMPLATES
 //#define BUTTON_PORT_SCAN
 #define CBCLICK_PORT_SCAN
+#define SHOW_IDE_EARLY
 
 /*
  * SIMPLE_BOARD_TOOLBAR puts Board Combo on the buttons toolbar.
@@ -51,6 +52,8 @@
  * there isn't much point in having it visible at all times.
 #define SIMPLE_BOARD_TOOLBAR
  */
+
+#define ESP8266_MODULE
 
 #define SD_TOOLS
 #define APPWINDOW_START_HEIGHT 620
@@ -96,6 +99,13 @@
 #define SimpleView  "Set Simple View"
 
 #define FileToSDCard "File to SD Card"
+
+/**
+ * @brief g_ApplicationClosing
+ * Some events like terminal processes can cause bad behaviour if someone exits the program.
+ * Use this global to ensure we don't continue writing to terminal on exit.
+ */
+bool g_ApplicationClosing = false;
 
 /**
  * Having some global symbols may seem a little odd, but serves a purpose.
@@ -283,6 +293,20 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
         term->restoreGeometry(geo);
     }
 
+#ifdef SHOW_IDE_EARLY
+    this->show(); // show gui before about for mac
+    this->raise();
+    this->activateWindow();
+    QApplication::processEvents();
+
+    /* show help dialog */
+    QVariant helpStartup = settings->value(helpStartupKey,true);
+    if(helpStartup.canConvert(QVariant::Bool)) {
+        if(helpStartup == true)
+            aboutDialog->exec();
+    }
+#endif
+
     /* tell port listener to use terminal editor for i/o */
     portListener = new PortListener(this, termEditor);
     portListener->setTerminalWindow(termEditor);
@@ -412,6 +436,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
         ed->raise();
     }
 
+#ifndef SHOW_IDE_EARLY
     this->show(); // show gui before about for mac
     QApplication::processEvents();
 
@@ -421,7 +446,7 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
         if(helpStartup == true)
             aboutDialog->exec();
     }
-
+#endif
     rescueDialog = new RescueDialog(this);
 
 #if 0
@@ -497,7 +522,7 @@ void MainSpinWindow::getApplicationSettings()
     }
 
 #ifdef ENABLE_WXLOADER
-    aSideLoader = aSideCompilerPath + "proploader-latest-qt";
+    //aSideLoader = aSideCompilerPath + "proploader-latest-qt";
     aSideLoader = appPath+"/proploader";
 #endif
 
@@ -620,6 +645,8 @@ void MainSpinWindow::clearAndExit()
 
 void MainSpinWindow::quitProgram()
 {
+    ::g_ApplicationClosing = true;
+
     /* never leave port open */
     portListener->close();
     term->accept(); // just in case serial terminal is open
@@ -4072,8 +4099,13 @@ void MainSpinWindow::downloadSdCard()
         compileStatus->appendPlainText("Propeller not found on any port.");
         return;
     }
-    args.append("-p");
-    args.append(portName);
+    if (getWxPortIpAddr(portName).length()) {
+        args.append("-i");
+        args.append(getWxPortIpAddr(portName));
+    } else {
+        args.append("-p");
+        args.append(portName);
+    }
 
     QString s = projectOptions->getMemModel();
     if(s.contains(" "))
@@ -4151,7 +4183,7 @@ void MainSpinWindow::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
     if(s.contains("done.",Qt::CaseInsensitive) == false)
         status->setText(status->text()+" done.");
 }
-#if 1
+
 void MainSpinWindow::wxProcReadyLoad(void)
 {
     QString str = wxProcess->readAllStandardOutput();
@@ -4165,101 +4197,6 @@ void MainSpinWindow::wxProcReadyLoad(void)
 
     wxPortString += str;
 }
-
-#else
-void MainSpinWindow::wxProcReadyLoad(void)
-{
-    QString str = wxProcess->readAllStandardOutput();
-    compileStatus->appendPlainText(str);
-
-    qDebug() << "wxProcReadyLoad" << str;
-
-    if (str.indexOf("No Xbee") == 0) {
-        procMutex.lock();
-        procDone = true;
-        procMutex.unlock();
-        return;
-    }
-
-    QStringList ms = str.split("========", QString::SkipEmptyParts, Qt::CaseInsensitive);
-    QRegExp ipre("ipAddr:");
-    QRegExp idre("nodeId:");
-    QRegExp mhre("macAddrHigh:");
-    QRegExp mlre("macAddrLow:");
-    QStringList fs;
-
-    foreach (QString mod, ms) {
-        WxPortInfo info;
-        info.ipAddr = "";
-        info.macUpper = "";
-        info.macAddr = "";
-        info.portName = "";
-        info.VendorName = "";
-
-        if (mod.contains("modules:")) {
-            mod = mod.mid(mod.indexOf(":")+1).trimmed();
-        }
-        if (mod.contains(ipre) && mod.contains(idre) &&
-            mod.contains(mhre) && mod.contains(mlre)) {
-            QStringList sl = mod.split("\n", QString::SkipEmptyParts);
-            foreach (QString s, sl) {
-                if (s.contains(ipre)) {
-                    fs = s.split(":", QString::SkipEmptyParts);
-                    if (fs.length() > 0) {
-                        info.ipAddr = fs[1].trimmed();
-                    }
-                }
-                else if (s.contains(idre)) {
-                    fs = s.split(":", QString::SkipEmptyParts);
-                    if (fs.length() > 0) {
-                        info.portName = fs[1].trimmed();
-                        while (info.portName.contains("'")) {
-                            info.portName = info.portName.replace("'","");
-                        }
-                        info.portName = info.portName.trimmed();
-                    }
-                }
-                else if (s.contains(mhre)) {
-                    fs = s.split(":", QString::SkipEmptyParts);
-                    if (fs.length() > 0) {
-                        fs[1] = fs[1].toUpper();
-                        info.macUpper = fs[1].trimmed();
-                    }
-                }
-                else if (s.contains(mlre)) {
-                    fs = s.split(":", QString::SkipEmptyParts);
-                    if (fs.length() > 0) {
-                        fs[1] = fs[1].toUpper();
-                        info.macAddr = fs[1].mid(2).trimmed();
-                    }
-                }
-            }
-        }
-        if (info.ipAddr.length() && info.portName.length() &&
-            info.macAddr.length() && info.macUpper.length() ) {
-
-            if (info.portName.length() > 0) {
-                //info.portName = "X-"+info.portName;
-            }
-            else {
-                QString vs;
-                QString macser = info.macAddr.mid(2).trimmed();
-                vs = info.macUpper.mid(4).trimmed();
-                vs += info.macAddr.mid(0,2).trimmed();
-                vs = vs.toLower();
-                if (vs.compare("00409d") == 0) { // One Digi vendor ID
-                    info.VendorName = "Digi";
-                    info.portName = "X-"+info.VendorName+"-"+macser;
-                }
-                else {
-                    info.portName = "X-"+info.macUpper+info.macAddr;
-                }
-            }
-            wxPorts.append(info);
-        }
-    }
-}
-#endif
 
 void MainSpinWindow::wxProcReadyRead(void)
 {
@@ -4296,6 +4233,115 @@ void MainSpinWindow::wxProcError(QProcess::ProcessError error)
     procMutex.unlock();
 }
 
+#ifdef ESP8266_MODULE
+void MainSpinWindow::wxProcFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if(procDone == true)
+        return;
+
+    qDebug() << "wxProcFinished" << wxPortString << exitCode << exitStatus;
+
+    QString str = wxPortString;
+
+    if (!str.contains("Name:",Qt::CaseInsensitive)) {
+        procMutex.lock();
+        procDone = true;
+        procMutex.unlock();
+        return;
+    }
+
+    QStringList ms = str.split("\n", QString::SkipEmptyParts, Qt::CaseInsensitive);
+    QRegExp ipre("IP:");
+    QRegExp idre("Name:");
+    QRegExp mcre("MAC:");
+    QStringList fs;
+
+    foreach (QString mod, ms) {
+        WxPortInfo info;
+        info.ipAddr = "";
+        info.macUpper = "";
+        info.macAddr = "";
+        info.portName = "";
+        info.VendorName = "";
+
+        if (mod.contains(ipre) && mod.contains(idre)) {
+            QStringList sl = mod.split(",", QString::SkipEmptyParts);
+            foreach (QString s, sl) {
+                if (s.contains(ipre)) {
+                    fs = s.split(":", QString::SkipEmptyParts);
+                    if (fs.length() > 0) {
+                        info.ipAddr = fs[1].trimmed();
+                    }
+                }
+                else if (s.contains(idre)) {
+                    fs = s.split(":", QString::SkipEmptyParts);
+                    if (fs.length() > 0) {
+                        fs[1] = fs[1].toUpper();
+                        info.portName = fs[1].trimmed();
+                        while (info.portName.contains("'")) {
+                            info.portName = info.portName.replace("'","");
+                        }
+                        info.portName = info.portName.trimmed();
+
+                        /*
+                        if (info.portName.length() == 0) {
+                            info.portName = "X-"+info.macUpper+"-"+info.macAddr;
+                        }
+                        */
+                    }
+                }
+                else if (s.contains(mcre)) {
+                    fs = s.split(":", QString::SkipEmptyParts);
+                    if (fs.length() > 0) {
+                        fs[1] = fs[1].toUpper();
+                        info.macUpper = fs[1].trimmed()+fs[2].trimmed()+fs[3].trimmed();
+                        info.macAddr  = fs[4].trimmed()+fs[5].trimmed()+fs[6].trimmed();
+                    }
+                }
+            }
+        }
+        if (info.ipAddr.length()) {
+
+            if (info.portName.length() == 0) {
+                info.portName = "X-"+info.macAddr;
+            }
+            QString name = info.portName;
+            foreach (WxPortInfo myinfo, wxPorts) {
+                if (name.compare(myinfo.portName, Qt::CaseInsensitive) == 0) {
+                    name += "-" + info.ipAddr;
+                    info.portName = name;
+                }
+            }
+            wxPorts.append(info);
+        }
+#ifdef REMOVE
+        if (info.ipAddr.length() &&
+            info.macAddr.length() &&
+            info.macUpper.length()) {
+
+            if (info.portName.length() == 0) {
+                //info.portName = "X-"+info.portName;
+                QString macser = info.macAddr.mid(10).trimmed();
+                if (info.macUpper.compare("00409d") == 0) { // One Digi vendor ID
+                    info.VendorName = "Digi";
+                    info.portName = "X-"+info.VendorName+"-"+macser;
+                }
+                else {
+                    info.portName = "X-"+info.macUpper+info.macAddr;
+                }
+            }
+            wxPorts.append(info);
+        }
+#endif
+    }
+
+    procMutex.lock();
+    procDone = true;
+    procMutex.unlock();
+}
+#endif
+
+#ifdef XBEE_SB6_MODULE
 void MainSpinWindow::wxProcFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if(procDone == true)
@@ -4385,6 +4431,7 @@ void MainSpinWindow::wxProcFinished(int exitCode, QProcess::ExitStatus exitStatu
     procDone = true;
     procMutex.unlock();
 }
+#endif
 
 /*
  * save for cat dumps
@@ -4715,8 +4762,11 @@ void MainSpinWindow::replaceInFile()
         replaceDialog->setFindText(text);
     replaceDialog->clearReplaceText();
 
+    QPalette savePalette = editor->palette();
     replaceDialog->setEditor(editor);
     replaceDialog->exec();
+    editor->setPalette(savePalette);
+    editor->setFocus();
 }
 
 /*
@@ -5882,7 +5932,7 @@ QStringList MainSpinWindow::getLoaderParameters(QString copts, QString file)
 
     builder->appendLoaderParameters(copts, file, &args);
 
-    //qDebug() << args;
+    qDebug() << args;
     return args;
 }
 
@@ -5981,15 +6031,30 @@ int  MainSpinWindow::runLoader(QString copts)
         if (args[n].length() == 0)
             args.removeAt(n);
     }
+
+    QString loadtype = cbBoard->currentText();
+    if(!loadtype.isEmpty() && loadtype.length() > 0) {
+        args.append("-I");
+        args.append(aSideIncludes);
+        args.append("-b");
+        args.append(loadtype.toLower());
+    }
+
     if (getWxPortIpAddr(portName).length()) {
         //args.removeOne("-r");
         args.append("-i");
         args.append(getWxPortIpAddr(portName));
     } else {
-        //args.append("-s");
+        //args.append("-s"); // autodetect serial port
         args.append("-p");
         args.append(portName);
     }
+
+    // Do this if syntax is enforced. I.E. proploader [options] file
+    QString tmp = args[0];
+    args.removeAt(0);
+    args.append(tmp);
+
 #endif
 
 #ifdef ENABLE_PROPELLER_LOAD
@@ -6372,7 +6437,7 @@ void MainSpinWindow::setupProjectTools(QSplitter *vsplit)
 #if defined(IDEDEBUG)
     statusTabs->addTab(debugStatus,tr("IDE Debug Info"));
     ideDebugTabIndex = statusTabs->count()-1;
-    statusTabs->removeTab(ideDebugTabIndex);
+    //statusTabs->removeTab(ideDebugTabIndex);
     ideDebugTabIndex = 0;
     QAction *ideDebugAction = new QAction(tr("Show IDE Debug Info"), this);
     ideDebugAction->setShortcut(Qt::CTRL+Qt::ShiftModifier+Qt::Key_D);
@@ -7854,6 +7919,41 @@ QString MainSpinWindow::getWxPortIpAddr(QString wxname)
     return "";
 }
 
+#ifdef ESP8266_MODULE
+QList<WxPortInfo> MainSpinWindow::getWxPorts(void)
+{
+    QStringList args;
+    args.append("-W");
+
+    wxProcess->setProperty("Name", QVariant(aSideLoader));
+    wxProcess->setProperty("IsLoader", QVariant(true));
+
+    wxProcess->setProcessChannelMode(QProcess::MergedChannels);
+    //wxProcess->setWorkingDirectory(sourcePath(fileName));
+
+    procMutex.lock();
+    procDone = false;
+    procMutex.unlock();
+
+    wxPortString = "";
+    wxPorts.clear();
+
+    statusDialog->init("Searching", "Searching for ports");
+
+    qDebug() << aSideLoader << args;
+
+    wxProcess->start(aSideLoader, args);
+
+    while(procDone == false)
+        QApplication::processEvents();
+
+    statusDialog->stop();
+
+    //QString output = wxProcess->readAllStandardOutput();
+    //qDebug() << output;
+    return wxPorts;
+}
+#else
 QList<WxPortInfo> MainSpinWindow::getWxPorts(void)
 {
     QStringList args;
@@ -7887,6 +7987,7 @@ QList<WxPortInfo> MainSpinWindow::getWxPorts(void)
     //qDebug() << output;
     return wxPorts;
 }
+#endif
 
 void MainSpinWindow::enumeratePorts()
 {
@@ -8820,6 +8921,11 @@ void MainSpinWindow::showSimpleView(bool simple)
         if(ctags->enabled()) {
             browseToolBar->setVisible(false);
         }
+
+        //projectOptions->enableDependentBuild(false);
+        //projectOptions->setDependentBuild(false);
+
+        QApplication::processEvents();
     }
     /* project view */
     else
@@ -8875,6 +8981,8 @@ void MainSpinWindow::showSimpleView(bool simple)
         if(ctags->enabled()) {
             browseToolBar->setVisible(true);
         }
+
+        //projectOptions->enableDependentBuild(true);
 
         QApplication::processEvents();
         HintDialog::hint("FirstSimpleProjectView", tr("Welcome to Project View. Users of this view are often experienced. Parallax does not recommend Project View for beginners."), this);

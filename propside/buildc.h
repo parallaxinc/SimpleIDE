@@ -51,6 +51,8 @@ public:
     int ensureOutputDirectory();
     void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
 
+    bool isOutdated(QStringList srclist, QString srcpath, QString target);
+    QStringList getLocalSourceList(QStringList &LLlist);
     QStringList getLibraryList(QStringList &ILlist, QString projectFile);
     QString findInclude(QString projdir, QString libdir, QString include);
 

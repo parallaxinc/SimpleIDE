@@ -86,7 +86,7 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
     /*
      * this is the asynchronous method.
      */
-    showBuildStart(program,args);
+    showBuildStart(aSideCompilerPath+program,args);
 
 #if !defined(Q_OS_WIN32)
     if(program.contains(aSideCompilerPath) == false)
@@ -111,7 +111,7 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
 
     procDone = false;
     procResultError = false;
-    process->start(program,args);
+    process->start(aSideCompilerPath+program,args);
 
     this->codeSize = 0;
 
@@ -393,7 +393,7 @@ void Build::showBuildStart(QString progName, QStringList args)
     QString argstr = "";
     for(int n = 0; n < args.length(); n++)
         argstr += " "+args[n];
-    //qDebug() << progName+argstr;
+    qDebug() << progName+argstr;
     compileStatus->appendPlainText(shortFileName(progName)+argstr);
 
     while(blinker->isRunning()) {
