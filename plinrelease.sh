@@ -76,20 +76,30 @@ mkdir -p ${BUILD}
 #
 # build SimpleIDE for release
 #
-cp -r ./propside/* ${BUILD}
+#cp -r ./propside/* ${BUILD}
+
 DIR=`pwd`
+XFILES=`find propside/*`
+for XF in $XFILES ; do
+    BF=`echo $XF | sed 's/propside/build/g'`
+    if [ ! -e $BF ] ; then
+      echo $DIR/$BF
+      ln -s $DIR/$XF ${BUILD}
+    fi
+done
+
 cd ${BUILD}
+
 qmake -config ${BUILD}
 if test $? != 0; then
-   echo "qmake config failed."
-   exit 1
+    echo "qmake config failed."
+    exit 1
 fi
 
 if [ x$CLEAN != xnoclean ]; then
     make clean
-    make ${JOBS}
 fi
-
+make ${JOBS}
 
 if test $? != 0; then
    echo "make failed."
@@ -117,13 +127,20 @@ if test $? != 0; then
 fi
 
 cp -r ./release/template/* ${VERSION}
-ls ${VERSION}
 
 cp -r ${BUILD}/${NAME} ${VERSION}/bin
 if test $? != 0; then
    echo "copy ${NAME} failed."
    exit 1
 fi
+
+cp ${SETUPSH} ${VERSION}
+cp ${SIDERSH} ${VERSION}/bin
+
+chmod u+x ${VERSION}/${SETUP}
+chmod 755 ${VERSION}/bin/${SIDE}
+
+ls ${VERSION}
 
 cp -r ${BUILD}/translations ${VERSION}
 if test $? != 0; then
@@ -174,6 +191,11 @@ fi
 #fi
 
 cp ${WXLOADER} ${VERSION}/bin
+if [ ! -e $WXLOADER ] ; then
+   echo "${WXLOADER} is missing. Build it?"
+   exit 1
+fi
+
 if test $? != 0; then
    echo "COPY ${WXLOADER} failed."
    exit 1
@@ -255,13 +277,9 @@ if test $? != 0; then
    exit 1
 fi
 
-cp ${SETUPSH} ${VERSION}
-cp ${SIDERSH} ${VERSION}/bin
-
-chmod u+x ${VERSION}/${SETUP}
-chmod 755 ${VERSION}/bin/${SIDE}
-
 # pack-up a bzip tarball for distribution
-tar -cjf ${VERSION}.${UARCH}.${UNAME}-linux.tar.bz2 ${VERSION}
+if [ x$CLEAN != xnoclean ]; then
+    tar -cjf ${VERSION}.${UARCH}.${UNAME}-linux.tar.bz2 ${VERSION}
+fi
 
 exit 0

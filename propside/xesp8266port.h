@@ -1,8 +1,8 @@
 #ifndef WIFIESP8266_H
 #define WIFIESP8266_H
 
-#include <QObject.h>
-#include <QHostAddress.h>
+#include <QObject>
+#include <QHostAddress>
 #include <QTcpSocket>
 #include <QSocketNotifier>
 

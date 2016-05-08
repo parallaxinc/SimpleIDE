@@ -636,6 +636,9 @@ bool Properties::replaceLearnWorkspace()
         if(mywrk.endsWith("/") == false)
             mywrk += "/";
 
+        qDebug() << pkwrk;
+        qDebug() << LEARNLIB;
+
         if(QFile::exists(pkwrk+LEARNLIB)) {
             pklib = pkwrk+LEARNLIB;
         }

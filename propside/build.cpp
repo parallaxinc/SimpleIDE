@@ -84,14 +84,15 @@ void Build::abortProcess()
 int  Build::startProgram(QString program, QString workpath, QStringList args, DumpType dump)
 {
     /*
+     * ensure absolute path to programs
+     */
+    program = shortFileName(program);
+    program = aSideCompilerPath+program;
+
+    /*
      * this is the asynchronous method.
      */
-    showBuildStart(aSideCompilerPath+program,args);
-
-#if !defined(Q_OS_WIN32)
-    if(program.contains(aSideCompilerPath) == false)
-        program = aSideCompilerPath + program;
-#endif
+    showBuildStart(program,args);
 
     process->setProperty("Name", QVariant(program));
     process->setProperty("IsLoader", QVariant(false));
@@ -111,7 +112,7 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
 
     procDone = false;
     procResultError = false;
-    process->start(aSideCompilerPath+program,args);
+    process->start(program,args);
 
     this->codeSize = 0;
 
