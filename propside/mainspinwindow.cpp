@@ -6105,13 +6105,13 @@ int  MainSpinWindow::runLoader(QString copts)
 
     while(procDone == false) {
         QApplication::processEvents();
-        Sleeper::ms(33);
+        Sleeper::ms(20);
     }
 
     int killed = 0;
     if(process->state() == QProcess::Running) {
         process->kill();
-        Sleeper::ms(500);
+        Sleeper::ms(33);
         compileStatus->appendPlainText(tr("Loader killed by user."));
         status->setText(status->text() + tr(" Done."));
         killed = -1;

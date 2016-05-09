@@ -68,6 +68,7 @@ void PortListener::init(const QString & portName, BaudRateType baud, QString ipa
         useSerial = false;
         if (portName.compare(wifiPort->getPortName()) && wifiPort->isOpen()) {
             wifiPort->close();
+            msleep(500); // just in case the port has not been released yet.
         }
         //wifiPort->open(QHostAddress(ipaddr), baud);
         wifiPort->setPortName(portName);
@@ -139,6 +140,7 @@ void PortListener::close()
         disconnect(wifiPort, SIGNAL(updateEvent(XEsp8266port*)), this, SLOT(updateReady(XEsp8266port*)));
         wifiPort->close();
     }
+    msleep(500); // just in case the port has not been released yet.
 }
 
 bool PortListener::isOpen()
