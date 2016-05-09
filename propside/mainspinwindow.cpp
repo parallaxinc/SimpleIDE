@@ -5163,11 +5163,11 @@ void MainSpinWindow::programBurnEE()
     bool connected = this->btnConnected->isChecked();
     if(runBuild(""))
         return;
-#ifdef Q_OS_WIN
+
     portListener->close();
     btnConnected->setChecked(false);
     term->setPortEnabled(false);
-#endif
+
     runLoader("-e -r");
     if(connected) {
         term->getEditor()->setPlainText("");
@@ -5187,11 +5187,11 @@ void MainSpinWindow::programRun()
     bool connected = this->btnConnected->isChecked();
     if(runBuild(""))
         return;
-#ifdef Q_OS_WIN
+
     portListener->close();
     btnConnected->setChecked(false);
     term->setPortEnabled(false);
-#endif
+
     runLoader("-r");
     if(connected) {
         term->getEditor()->setPlainText("");
@@ -5210,6 +5210,8 @@ void MainSpinWindow::programDebug()
 
     if(runBuild(""))
         return;
+
+    portListener->close();
 #if !defined(Q_OS_WIN)
     portListener->init(portName, term->getBaud(), getWxPortIpAddr(serialPort()));
     portListener->open();
@@ -5219,7 +5221,6 @@ void MainSpinWindow::programDebug()
         return;
     }
 #else
-    portListener->close();
     btnConnected->setChecked(false);
     if(runLoader("-r -t"))
         return;
@@ -5252,6 +5253,8 @@ void MainSpinWindow::debugCompileLoad()
 
     /* compile for debug */
     portListener->close();
+    btnConnected->setChecked(false);
+    term->setPortEnabled(false);
 
     if(runLoader("-g -r"))
         return;

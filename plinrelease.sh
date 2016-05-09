@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 #
 # This script is intended for making production linux SimpleIDE packages
 # and uses an install methodology deemed appropriate by Parallax.
@@ -81,10 +81,13 @@ mkdir -p ${BUILD}
 DIR=`pwd`
 XFILES=`find propside/*`
 for XF in $XFILES ; do
-    BF=`echo $XF | sed 's/propside/build/g'`
+    BF=`echo $XF | sed 's/propside\//build\//g'`
     if [ ! -e $BF ] ; then
       echo $DIR/$BF
       ln -s $DIR/$XF ${BUILD}
+    fi
+    if [ $? -ne 0 ] ; then
+      exit 1
     fi
 done
 
@@ -202,17 +205,20 @@ if test $? != 0; then
 fi
 
 cd ${CTAGS}
-./configure
+./configure > /dev/null
 if test $? != 0; then
    echo "configure ${CTAGS} failed."
    exit 1
 fi
+echo "Make ${CTAGS}"
 make
 if test $? != 0; then
    echo "make ${CTAGS} failed."
    exit 1
 fi
 cd ..
+
+echo "Copy files ..."
 
 cp -f ${CTAGS}/ctags ${VERSION}/bin
 if test $? != 0; then
@@ -253,6 +259,8 @@ if test $? != 0; then
    exit 1
 fi
 
+echo "Git and copy workspace ..."
+
 rm -rf ${VERSION}/parallax/Workspace
 cd Workspace
 git fetch
@@ -279,7 +287,10 @@ fi
 
 # pack-up a bzip tarball for distribution
 if [ x$CLEAN != xnoclean ]; then
+    echo "Make tarball ..."
     tar -cjf ${VERSION}.${UARCH}.${UNAME}-linux.tar.bz2 ${VERSION}
 fi
+
+echo "All done."
 
 exit 0
