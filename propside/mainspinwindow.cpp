@@ -8044,20 +8044,43 @@ void MainSpinWindow::enumeratePorts()
             cbPort->addItem(name);
         }
 #else
+        QString ttys = "ttyS";
+
         name = ports.at(i).physName;
         friendlyPortName.append(ports.at(i).friendName);
+
+        qDebug() << "USB" << name.indexOf("usb",0,Qt::CaseInsensitive);
+
         // ttyUSBn
-        if(name.indexOf("usb",0,Qt::CaseInsensitive) > 0)
-            cbPort->insertItem(0,name);
+        if(name.indexOf("ttyusb",0,Qt::CaseInsensitive) > -1) {
+            cbPort->addItem(name);
+            qDebug() << "Added " << name;
+        }
         // ttyACMn
-        else if(name.indexOf("acm",0,Qt::CaseInsensitive) > 0)
-            cbPort->insertItem(0,name);
+        else if(name.indexOf("ttyacm",0,Qt::CaseInsensitive) > -1) {
+            cbPort->addItem(name);
+            qDebug() << "Added " << name;
+	}
         // ttyAMAn
-        else if(name.indexOf("ama",0,Qt::CaseInsensitive) > 0)
-            cbPort->insertItem(0,name);
+        else if(name.indexOf("ttyama",0,Qt::CaseInsensitive) > -1) {
+            cbPort->addItem(name);
+            qDebug() << "Added " << name;
+	}
+        // ttySn
+        else if(name.indexOf(ttys,0,Qt::CaseInsensitive) > -1) {
+            /* just allow ttyS0 - ttyS9 */
+            QString ttysNum = name.mid(ttys.length());
+            int ttyslen = ttysNum.length();
+            //qDebug() << "enumerateports " << name << ttysNum << ttyslen;
+            if (ttyslen > 5 && ttyslen < 7) {
+                cbPort->addItem(name);
+                qDebug() << "Added " << name;
+            }
+        }
         else
             cbPort->addItem(name);
 #endif
+        qDebug() << "enumerateports" << name;
     }
 
 #ifdef ENABLE_WXLOADER
@@ -8071,7 +8094,16 @@ void MainSpinWindow::enumeratePorts()
     }
 #endif
 
+#if 1
     cbPort->removeItem(0);
+#else
+    int cblen = cbPort->count()-1;
+    QString first = cbPort->itemText(0);
+
+    qDebug() << cblen << first;
+
+    if (first.length() > -1) cbPort->removeItem(0);
+#endif
     cbPort->setCurrentIndex(lastIndex);
 #ifdef ENABLE_AUTO_PORT
     cbPort->insertItem(0,AUTO_PORT);
