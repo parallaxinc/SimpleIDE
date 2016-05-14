@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "1-0-10"
+#define MyAppVersion "1-0-11"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -95,8 +95,8 @@ Source: "..\{#FtdiChipApp}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "IDE_LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_2_1.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LGPL_EXCEPTION.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: ..\ctags58\README; DestDir: {app}; Flags: ignoreversion; DestName: ctags-readme.txt; 
-Source: ..\ctags58\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: ctags-license.txt; 
+Source: ..\ctags-5.8\README; DestDir: {app}; Flags: ignoreversion; DestName: ctags-readme.txt; 
+Source: ..\ctags-5.8\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: ctags-license.txt; 
 Source: ..\icons\24x24-free-application-icons\readme.txt; DestDir: {app}; Flags: ignoreversion; DestName: aha-soft-license.txt; 
 Source: "{#MyBoardFilter}"; DestDir: "{app}\propeller-gcc\propeller-load\"; Flags: ignoreversion
 Source: "{#MyFont}"; DestDir: "{#MyAppBin}"; Flags: ignoreversion

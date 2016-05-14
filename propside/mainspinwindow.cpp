@@ -5212,21 +5212,18 @@ void MainSpinWindow::programDebug()
         return;
 
     portListener->close();
-#if !defined(Q_OS_WIN)
-    portListener->init(portName, term->getBaud(), getWxPortIpAddr(serialPort()));
-    portListener->open();
+
     term->getEditor()->setPortEnable(false);
+    btnConnected->setChecked(false);
+
     if(runLoader("-r -t")) {
         portListener->close();
         return;
     }
-#else
-    btnConnected->setChecked(false);
-    if(runLoader("-r -t"))
-        return;
+
     portListener->init(portName, term->getBaud(), getWxPortIpAddr(serialPort()));
     portListener->open();
-#endif
+
     btnConnected->setChecked(true);
     term->getEditor()->setPlainText("");
     term->getEditor()->setPortEnable(true);

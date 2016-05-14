@@ -107,8 +107,12 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
 
     bool rebuild = false;
 
-    if(projectOptions->getDependentBuild().length() == 0)
+    if (projectOptions->getDependentBuild().length() == 0)
         rebuild = true;
+
+    Qt::KeyboardModifiers keymods = QApplication::keyboardModifiers();
+    if ((keymods & Qt::AltModifier) != 0)
+        rebuild = false;
 
     QStringList localList = getLocalSourceList(list);
 

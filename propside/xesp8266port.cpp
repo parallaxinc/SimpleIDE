@@ -140,21 +140,26 @@ QString XEsp8266port::getIpAddress() const
 
 void XEsp8266port::socketConnected()
 {
+#ifndef Q_OS_MAC
     delete notifier;
-
+#endif
     qDebug() << "socketConnected";
 
     connected = true;
+#ifndef Q_OS_MAC
     notifier = new QSocketNotifier(socket.socketDescriptor(), QSocketNotifier::Exception, this);
     connect(notifier, SIGNAL(activated(int)), this, SLOT(socketException(int)));
+#endif
     emit sockConnected();
 }
 
 void XEsp8266port::socketConnectionClosed()
 {
     qDebug() << "socketConnectionClosed";
+#ifndef Q_OS_MAC
     delete notifier;
     notifier = 0;
+#endif
     connected = false;
     emit sockDisconnected();
 }
