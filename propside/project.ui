@@ -436,22 +436,6 @@
       <bool>false</bool>
      </property>
     </widget>
-    <widget class="QCheckBox" name="checkBoxDependentBuild">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>30</y>
-       <width>131</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="toolTip">
-      <string>Check to build if local source files changed (ignores library files).</string>
-     </property>
-     <property name="text">
-      <string>Dependent Build</string>
-     </property>
-    </widget>
    </widget>
    <widget class="QWidget" name="SpinOptions">
     <property name="toolTip">

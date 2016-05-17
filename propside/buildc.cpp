@@ -24,6 +24,7 @@
 #include "properties.h"
 #include "asideconfig.h"
 #include "hintdialog.h"
+#include "directory.h"
 
 BuildC::BuildC(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, QLabel *progsize, QProgressBar *progbar, QComboBox *cb, Properties *p)
     : Build(projopts, compstat, stat, progsize, progbar, cb, p)
@@ -40,13 +41,18 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     aSideCompiler = compiler;
     aSideCompilerPath = sourcePath(compiler);
 
-    if (ensureOutputDirectory() != 0)
-        return -1;
-
+    setMemModel(projectOptions->getMemModel());
 
     projName = shortFileName(projectFile).replace(".side", ".c");
     exeName = projName.mid(0, projName.lastIndexOf(".")) + ".elf";
+    if (option.indexOf(BUILDALL_MEMTYPE) == 0) {
+        model = option.mid(option.indexOf("=")+1);
+        setMemModel(model);
+    }
     exePath = outputPath + exeName;
+
+    if (ensureOutputDirectory() != 0)
+        return -1;
 
     QStringList clist;
     QFile file(projectFile);
@@ -105,10 +111,10 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
         compileStatus->appendPlainText(workspace+"\n");
     }
 
-    bool rebuild = false;
+    bool rebuild = true;
 
-    if (projectOptions->getDependentBuild().length() == 0)
-        rebuild = true;
+    //if (projectOptions->getDependentBuild().length() == 0)
+    //    rebuild = true;
 
     Qt::KeyboardModifiers keymods = QApplication::keyboardModifiers();
     if ((keymods & Qt::AltModifier) != 0)
@@ -118,13 +124,26 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
 
     if (!rebuild) {
         rebuild = isOutdated(localList, sourcePath(projectFile), sourcePath(projectFile)+exePath);
-        status->setText(tr("Build not needed. Just loading ..."));
+        status->setText(tr("Build not needed."));
     }
 
     /* if a local source is out of date, rebuild all */
     if (rebuild)
     {
         status->setText(tr("Building ..."));
+
+        QString model = projectOptions->getMemModel();
+        if (option.indexOf(BUILDALL_MEMTYPE) == 0) {
+            model = option.mid(option.indexOf("=")+1);
+            model = ">memtype="+model;
+            option = "";
+            for (int n = 0; n < list.length(); n++) {
+                if(list[n].contains(">memtype"))  {
+                    list[n] = model;
+                    break;
+                }
+            }
+        }
 
         showCompilerVersion();
 
@@ -1203,6 +1222,12 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
     //boardName = cbBoard->itemText(cbBoard->currentIndex());
 
     QString model = projectOptions->getMemModel();
+    QString newmodel;
+    if (copts.at(0).contains(BUILDALL_MEMTYPE)) {
+        QString mopt = copts.at(0);
+        newmodel = mopt.mid(mopt.indexOf("=")+1);
+        copts.removeAt(0);
+    }
     model = model.mid(0,model.indexOf(" ")); // anything after the first word is just description
 
     if(copts.length() > 0) {
@@ -1372,12 +1397,34 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
     if(projectOptions->getStripElf().length())
         args->append(projectOptions->getStripElf());
 
+    if (newmodel.length() > 0) {
+        for (int n = 0; n < args->length(); n++) {
+            QString item = args->at(n);
+            if (item.indexOf(model) == 0) {
+                item.replace(model,newmodel);
+                args->removeAt(n);
+                args->insert(n,item);
+            }
+        }
+    }
+
     return args->length();
+}
+
+void BuildC::setMemModel(QString model)
+{
+    memModel = model;
+}
+
+QString BuildC::getMemModel()
+{
+    return memModel;
 }
 
 int BuildC::ensureOutputDirectory()
 {
-    QString modelOption = projectOptions->getMemModel();
+    //QString modelOption = projectOptions->getMemModel();
+    QString modelOption = getMemModel();
     model = modelOption.mid(0, modelOption.indexOf(" "));
     model = model.replace("-","_");
     outputPath = model + separator;
@@ -1413,8 +1460,6 @@ void BuildC::appendLoaderParameters(QString copts, QString file, QStringList *ar
 
     //qDebug() << args;
 }
-
-#include <directory.h>
 
 bool BuildC::isOutdated(QStringList srclist, QString srcpath, QString target)
 {

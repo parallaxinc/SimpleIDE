@@ -28,6 +28,7 @@
 #define SHOW_ASM_EXTENTION ".asm"
 #define SHOW_ASMC_EXTENTION ".asmc"
 #define SHOW_MAP_EXTENTION ".map"
+#define BUILDALL_MEMTYPE "buildalltype"
 
 class Build : public QWidget
 {

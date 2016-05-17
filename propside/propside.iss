@@ -25,8 +25,8 @@
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This path contains the propeller gcc build
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;#define MyGccPath "C:\mingw\msys\1.0\opt\parallax"
-#define MyGccPath "..\..\propeller-gcc4-win32"
+#define MyGccPath "C:\mingw\msys\1.0\opt\parallax"
+;#define MyGccPath "..\..\propeller-gcc4-win32"
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This path must contains the mingw path used for the propeller gcc build
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -100,6 +100,8 @@
 
 #define FileToSDCard "File to SD Card"
 
+#define BuildAllLibraries "Build All Libraries"
+
 /**
  * @brief g_ApplicationClosing
  * Some events like terminal processes can cause bad behaviour if someone exits the program.
@@ -5139,6 +5141,70 @@ void MainSpinWindow::updateWorkspace()
     }
 }
 
+void MainSpinWindow::programBuildAllLibraries()
+{
+    compileStatus->setPlainText("Build All Libraries?");
+
+    QString workspace = propDialog->getCurrentWorkspace();
+    QStringList files;
+    if (workspace.endsWith("/") == false) workspace += "/";
+    int rc = Directory::recursiveFindFileList(workspace+"Learn/Simple Libraries", "*.side", files);
+    if (rc == 0) return;
+
+    QStringList newfiles;
+    for (int n = 0; n < files.length(); n++) {
+        QString file = files[n];
+        if (file.indexOf("simpletext") > -1) {
+            newfiles.insert(0,file);
+        }
+        else if (file.indexOf("fdserial") > -1) {
+            newfiles.insert(1,file);
+        }
+        else if (file.indexOf("Protocol") > -1) {
+            newfiles.insert(1,file);
+        }
+        else if (file.indexOf("simpletools") > -1) {
+            newfiles.append(file);
+        }
+    }
+
+    for (int n = 0; n < files.length(); n++) {
+        QString file = files[n];
+        if (file.indexOf("simpletext") > -1) {
+        }
+        else if (file.indexOf("fdserial") > -1) {
+        }
+        else if (file.indexOf("Protocol") > -1) {
+        }
+        else if (file.indexOf("simpletools") > -1) {
+        }
+        else {
+            newfiles.append(file);
+        }
+    }
+
+    for (int n = 0; n < newfiles.length(); n++) {
+        compileStatus->appendPlainText(newfiles[n]);
+    }
+
+    int question = QMessageBox::question(this,tr("Build All Libraries?"), tr("Building all libraries can take hours.")+
+                          "\n"+tr("Do you really want to build all libraries?"),QMessageBox::Yes,QMessageBox::No);
+    if(question != QMessageBox::Yes) {
+        return;
+    }
+
+    QStringList memtype;
+    memtype.append("lmm");
+    memtype.append("cmm");
+    foreach (QString model, memtype) {
+        foreach (QString file, newfiles) {
+            openProject(file);
+            int rc = runBuild(QString(BUILDALL_MEMTYPE)+"="+model);
+            if (rc > 0) return;
+        }
+    }
+}
+
 void MainSpinWindow::programStopBuild()
 {
     if(builder != NULL)
@@ -8570,7 +8636,7 @@ void MainSpinWindow::setupFileMenu()
 #ifdef ENABLE_AUTO_PORT
     toolsMenu->addAction(tr("Identify Propeller"), this, SLOT(findChip()), Qt::Key_F7);
 #endif
-    QMenu *programMenu = new QMenu(tr("&Program"), this);
+    programMenu = new QMenu(tr("&Program"), this);
     menuBar()->addMenu(programMenu);
 
 #if 1
@@ -8606,6 +8672,7 @@ void MainSpinWindow::setupFileMenu()
 #endif
     programMenu->addAction(QIcon(":/images/console.png"), tr("Open Terminal"), this, SLOT(menuActionConnectButton()));
     programMenu->addAction(QIcon(":/images/reset.png"), tr("Reset Port"), this, SLOT(portResetButton()));
+    programMenu->addAction(tr(BuildAllLibraries), this, SLOT(programBuildAllLibraries()), Qt::CTRL+Qt::ALT+Qt::Key_F12);
 
 #if defined(GDBENABLE)
     QMenu *debugMenu = new QMenu(tr("&Debug"), this);
@@ -8883,6 +8950,7 @@ void MainSpinWindow::showSimpleView(bool simple)
      */
     QList <QAction*> fileMenuList = fileMenu->actions();
     QList <QAction*> projMenuList = projMenu->actions();
+    QList <QAction*> progMenuList = programMenu->actions();
 
     /* simple view */
     if(simple)
@@ -8950,6 +9018,13 @@ void MainSpinWindow::showSimpleView(bool simple)
                    pa->setVisible(false);
             }
         }
+        foreach(QAction *pa, progMenuList) {
+            QString txt = pa->text();
+            if(txt != NULL) {
+                if(txt.contains(BuildAllLibraries))
+                   pa->setVisible(false);
+            }
+        }
         if(ctags->enabled()) {
             browseToolBar->setVisible(false);
         }
@@ -9007,6 +9082,13 @@ void MainSpinWindow::showSimpleView(bool simple)
                    txt.contains(AddFileLink) ||
                    txt.contains(AddIncludePath) ||
                    txt.contains(AddLibraryPath))
+                   pa->setVisible(true);
+            }
+        }
+        foreach(QAction *pa, progMenuList) {
+            QString txt = pa->text();
+            if(txt != NULL) {
+                if(txt.contains(BuildAllLibraries))
                    pa->setVisible(true);
             }
         }

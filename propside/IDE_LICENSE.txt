@@ -1,17 +1,19 @@
-
 +---------------------------------------------------------------------
-SimpleIDE is licensed according to the GNU GENERAL PUBLIC LICENSE V3
-(see license below).
+SimpleIDE is licensed as GNU GENERAL PUBLIC LICENSE V3 (see below).
 +---------------------------------------------------------------------
 SimpleIDE
 Copyright (c) 2012-2016 Parallax Inc.
 
-SimpleIDE repository: https://github.com/parallaxinc/propside
-Repository includes SimpleIDE, icons, and ctags sources.
-Openspin repository: https://github.com/parallaxinc/openspin
-Propeller-GCC repository: https://github.com/parallaxinc/propgcc (git checkout release_1_0)
-Proploader repository: https://github.com/dbetz/proploader
-Parallax Learn Library: https://github.com/parallaxinc/propsideworkspace
+Open Source Repository List:
+
+- SimpleIDE: https://github.com/parallaxinc/propside
+  Includes SimpleIDE, icons, and ctags sources.
+- Openspin: https://github.com/parallaxinc/openspin
+- Propeller-GCC: https://github.com/parallaxinc/propgcc
+  (git checkout release_1_0)
+- Proploader: https://github.com/dbetz/proploader
+- Parallax Learn Library:
+  https://github.com/parallaxinc/propsideworkspace
 
 +---------------------------------------------------------------------
 This package and the works contained within it is copyrighted by various owners and licensed under various terms.  Component licenses and license files are noted below.  Each component and significant portions within must be used under the corresponding license terms.

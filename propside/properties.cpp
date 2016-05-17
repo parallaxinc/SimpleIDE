@@ -1883,3 +1883,8 @@ bool Properties::getAutoLib()
 {
     return this->autoLibCheck.isChecked();
 }
+
+QString Properties::getCurrentWorkspace()
+{
+    return leditGccWorkspace->text();
+}

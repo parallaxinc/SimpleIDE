@@ -48,6 +48,8 @@ public:
 
     QStringList getCompilerParameters(QStringList copts);
     int  getCompilerParameters(QStringList copts, QStringList *args);
+    void setMemModel(QString model);
+    QString getMemModel();
     int ensureOutputDirectory();
     void appendLoaderParameters(QString copts, QString projfile, QStringList *args);
 
@@ -65,7 +67,7 @@ private:
     QString outputPath;
     QString exePath;
     QString exeName;
-
+    QString memModel;
 };
 
 #endif // BUILDC_H

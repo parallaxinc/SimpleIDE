@@ -36,6 +36,7 @@ public:
     static QStringList findCSourceList(QString file, QString find);
     static QString recursiveFind(QString dir, QString find);
     static QString recursiveFindFile(QString dir, QString file);
+    static int recursiveFindFileList(QString dir, QString findfile, QStringList &filelist);
 
 private:
     static bool isCSourceCommented(QString find, QString line, int num, QStringList lines);

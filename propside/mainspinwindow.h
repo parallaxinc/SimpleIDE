@@ -167,6 +167,7 @@ public slots:
     void properties();
     void propertiesAccepted();
 
+    void programBuildAllLibraries();
     void programStopBuild();
     void programBuild();
     void programBurnEE();
@@ -388,6 +389,7 @@ private:
     QMenu           *fileMenu;
     QMenu           *projMenu;
     QMenu           *toolsMenu;
+    QMenu           *programMenu;
 
     QSplitter       *vsplit;
     QSplitter       *leftSplit;

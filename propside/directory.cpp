@@ -403,3 +403,42 @@ QString Directory::recursiveFindFile(QString dir, QString findfile)
     }
     return QString("");
 }
+
+int Directory::recursiveFindFileList(QString dir, QString findfile, QStringList &filelist)
+{
+    QDir dpath(dir);
+    QString file;
+
+    QStringList dlist;
+    QStringList flist;
+
+    QRegExp regex(findfile,Qt::CaseInsensitive,QRegExp::Wildcard);
+
+    if(dir.length() < 1)
+        return 0;
+
+    QChar sep = dir.at(dir.length()-1);
+    if(sep != '/' && sep != '\\')
+        dir += "/";
+
+    flist = dpath.entryList(QDir::AllEntries, QDir::DirsLast);
+    foreach(file, flist) {
+        if(file.compare(".") == 0)
+            continue;
+        if(file.compare("..") == 0)
+            continue;
+        // check for find string
+        if(file.indexOf(regex) > -1) {
+            filelist.append(dir+file);
+        }
+    }
+    dlist = dpath.entryList(QDir::AllDirs, QDir::DirsLast);
+    foreach(file, dlist) {
+        if(file.compare(".") == 0)
+            continue;
+        if(file.compare("..") == 0)
+            continue;
+        recursiveFindFileList(dir+file, findfile, filelist);
+    }
+    return filelist.length();
+}

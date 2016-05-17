@@ -131,6 +131,8 @@ public:
     bool updatePackageWorkspace(QString pkwrk, QString mywrk, QString updateFile, QString timestamp);
     bool updateLearnWorkspace();
 
+    QString getCurrentWorkspace();
+
 signals:
 
     void clearAndExit();
