@@ -421,7 +421,7 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
             }
         }
 
-        Sleeper::ms(250);
+        Sleeper::ms(25);
         progress->hide();
 
         cur = compileStatus->textCursor();

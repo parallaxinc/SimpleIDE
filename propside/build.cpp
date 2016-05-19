@@ -36,6 +36,9 @@ Build::Build(ProjectOptions *projopts, QPlainTextEdit *compstat, QLabel *stat, Q
     connect(blinker, SIGNAL(statusNone()), this, SLOT(statusNone()));
     connect(blinker, SIGNAL(statusFailed()), this, SLOT(statusFailed()));
 
+    connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
+    connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
+
     separator = "/";
 }
 
@@ -86,8 +89,13 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
     /*
      * ensure absolute path to programs
      */
+    QTime ptime;
+    ptime.start();
+    qDebug() << "startProgram 0 time" << ptime.elapsed();
+
     program = shortFileName(program);
     program = aSideCompilerPath+program;
+    QApplication::processEvents();
 
     /*
      * this is the asynchronous method.
@@ -104,29 +112,36 @@ int  Build::startProgram(QString program, QString workpath, QStringList args, Du
     else {
         connect(process, SIGNAL(readyReadStandardOutput()),this,SLOT(procReadyRead()));
     }
-    connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
-    connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
+    //connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
+    //connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
 
     process->setProcessChannelMode(QProcess::MergedChannels);
     process->setWorkingDirectory(workpath);
 
     procDone = false;
     procResultError = false;
+
+    qDebug() << "startProgram 1 time" << ptime.elapsed();
+
     process->start(program,args);
+
+    qDebug() << "startProgram 2 time" << ptime.elapsed();
 
     this->codeSize = 0;
 
     /* process Qt application events until procDone
      */
     while(procDone == false) {
+        //qDebug() << "startProgram 3 time" << ptime.elapsed();
+        Sleeper::ms(50);
         QApplication::processEvents();
-        Sleeper::ms(5);
     }
+    qDebug() << "startProgram 3 time" << ptime.elapsed();
 
     int killed = 0;
     if(process->state() == QProcess::Running) {
         process->kill();
-        Sleeper::ms(500);
+        Sleeper::ms(50);
         compileStatus->appendPlainText(tr("Program killed by user."));
         status->setText(status->text() + tr(" Done."));
         killed = -1;
@@ -153,6 +168,8 @@ void Build::procError(QProcess::ProcessError error)
     procMutex.lock();
     procDone = true;
     procMutex.unlock();
+
+    //disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(procError(QProcess::ProcessError)));
 }
 
 void Build::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
@@ -173,6 +190,7 @@ void Build::procFinished(int exitCode, QProcess::ExitStatus exitStatus)
     if(s.contains("done.",Qt::CaseInsensitive) == false)
         status->setText(status->text()+" done.");
     */
+    //disconnect(process, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(procFinished(int,QProcess::ExitStatus)));
 }
 
 /*
@@ -399,6 +417,7 @@ void Build::showBuildStart(QString progName, QStringList args)
 
     while(blinker->isRunning()) {
         QApplication::processEvents();
+        Sleeper::ms(50);
     }
     statusNone();
 }

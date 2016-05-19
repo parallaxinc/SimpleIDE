@@ -6035,6 +6035,11 @@ int  MainSpinWindow::runLoader(QString copts)
         return -1;
     }
 
+    bool rename_only = false;
+    if (copts.indexOf("-n") == 0) {
+        rename_only = true;
+    }
+
     progress->show();
     progress->setValue(0);
 
@@ -6099,7 +6104,7 @@ int  MainSpinWindow::runLoader(QString copts)
     }
 
     QString loadtype = cbBoard->currentText();
-    if(!loadtype.isEmpty() && loadtype.length() > 0) {
+    if(!loadtype.isEmpty() && loadtype.length() > 0 && rename_only == false) {
         args.append("-I");
         args.append(aSideIncludes);
         args.append("-b");
@@ -6119,7 +6124,9 @@ int  MainSpinWindow::runLoader(QString copts)
     // Do this if syntax is enforced. I.E. proploader [options] file
     QString tmp = args[0];
     args.removeAt(0);
-    args.append(tmp);
+    if (rename_only == false) {
+        args.append(tmp);
+    }
 
 #endif
 
@@ -6144,7 +6151,7 @@ int  MainSpinWindow::runLoader(QString copts)
     procDone = false;
     procMutex.unlock();
 
-    if (copts.indexOf("-n") >= 0) {
+    if (rename_only) {
         // do nothing
     }
     else if (copts.indexOf("-R") >= 0) {
@@ -6154,12 +6161,12 @@ int  MainSpinWindow::runLoader(QString copts)
         statusDialog->init("Loading", "Loading Program");
     }
 
-    //portListener->close();
+    portListener->close();
 
     process->start(aSideLoader,args);
     compileStatus->insertPlainText("\n");
 
-    if (copts.indexOf("-n") >= 0) {
+    if (rename_only) {
         status->setText(tr(" Renaming ... "));
     }
     else if (copts.indexOf("-R") >= 0) {
@@ -6189,6 +6196,10 @@ int  MainSpinWindow::runLoader(QString copts)
 
     statusDialog->stop();
 
+    if (rename_only) {
+        Sleeper::ms(2000);
+        this->enumeratePorts();
+    }
     progress->hide();
     return process->exitCode() | killed;
 }
