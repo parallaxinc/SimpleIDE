@@ -14,11 +14,15 @@
 #
 #---------------------------------------------------------------
 #
-# Copyright (c) 2014 by Parallax Inc.
+# Copyright (c) 2016 by Parallax Inc.
 # TERMS OF USE: MIT License (text at end of this file).
 # 
 #---------------------------------------------------------------
 
+MYDIR=`pwd`
+MYUSER=`echo $MYDIR | awk -F'/' '{print "/"$2"/"$3}'`
+
+echo "$0 for: $MYUSER"
 
 PROPGCC_DIR=/opt/parallax
 SIMPLEIDE_DIR=/opt/simpleide
@@ -68,7 +72,7 @@ install_propgcc()
 # Uninstall SimpleIDE function
 uninstall_simpleide()
 {
-	if [ -e $SIMPLEIDE_DIR ]; then
+	if [ -e $SIMPLEIDE_DIR ] ; then
 		read -p "Remove previously installed Simple IDE? [y/N]:" response
 		case $response in
 			# Does the user really want to uninstall it?
@@ -86,14 +90,14 @@ uninstall_simpleide()
 # Install SimpleIDE function
 install_simpleide()
 {
-	if [ -e ~/.config/ParallaxInc/SimpleIDE.conf ]; then
+	if [ -e $MYUSER/.config/ParallaxInc/SimpleIDE.conf ] ; then
 		echo "Removing old properties"
-		rm -f ~/.config/ParallaxInc/SimpleIDE.conf
+		rm -f $MYUSER/.config/ParallaxInc/SimpleIDE.conf
 	fi
 
-	if [ -e ~/Documents/SimpleIDE/Learn/Simple\ Libraries/Text\ Devices ] ; then
+	if [ -e $MYUSER/Documents/SimpleIDE/Learn/Simple\ Libraries/Text\ Devices ] ; then
 		echo "Removing old Documents/SimpleIDE Text Devices library"
-		rm -rf ~/Documents/SimpleIDE/Learn/Simple\ Libraries/Text\ Devices
+		rm -rf $MYUSER/Documents/SimpleIDE/Learn/Simple\ Libraries/Text\ Devices
 	fi
 
 	echo "Installing SimpleIDE"

@@ -17,5 +17,7 @@ Items required but not included here:
   3. Learn workspace https://github.com/parallaxinc/propsideworkspace
   4. Qt5.4 libraries http://download.qt.io/archive/qt/
   5. QtCreator community edition https://www.qt.io/download-open-source/#section-2
+  6. OpenGL xorg-x11-server-devel
+  7. libz
   
 More to come ....

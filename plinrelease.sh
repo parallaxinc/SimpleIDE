@@ -33,22 +33,45 @@ LIBAUDIO="/usr/lib/libaudio.so.2"
 LIBAUDIO2="/usr/lib/x86_64-linux-gnu/libaudio.so.2"
 SPINLIB="./spin"
 
+which qmake
+if [ $? -ne 0 ]
+then
+    echo "Qt must be installed. Please install Qt5.4 from here:"
+    echo "download.qt.io./official_releases/qt/5.4/5.4.2"
+    exit 1
+fi
+
 QMAKE=`which qmake`
 QT5QMAKE=`echo ${QMAKE} | grep -i 'Qt5'`
 grep -i 'Qt5' ${QMAKE}
 if test $? != 0 ; then
-	echo "The qmake program may not be a Qt5 vintage."
-	echo "Please adjust PATH to include a Qt5 build if necessary."
-	sleep 5
+    echo "The qmake program must be Qt5.4 or higher vintage."
+    echo "Please adjust PATH to include a Qt5 build if necessary."
+    echo "Please install Qt5.4 from here if you don't have it already:"
+    echo "download.qt.io./official_releases/qt/5.4/5.4.2"
+    exit 1
 fi
 
 CLEAN=$1
 
 if [ ! -e ./Workspace ]
 then
-    echo "SimpleIDE Workspace not found. Add it with this command:"
-    echo "hg clone https://code.google.com/p/propsideworkspace/ Workspace"
-    exit 1
+    echo "SimpleIDE Workspace not found. Adding:"
+    git clone https://github.com/parallaxinc/propsideworkspace/ Workspace
+    if [ $? -ne 0 ]
+    then
+        echo "SimpleIDE Workspace git failed. Add it with this command:"
+        echo "git clone https://github.com/parallaxinc/propsideworkspace/ Workspace"
+        exit 1
+    fi
+    cd Workspace
+    git checkout SimpleIDE-WX-Updates
+    if [ $? -ne 0 ]
+    then
+        echo "SimpleIDE Workspace checkout SimpleIDE-WX-Updates failed. Giving up."
+        exit 1
+    fi
+    cd ..
 fi
 
 UARCH=`arch`
@@ -192,6 +215,19 @@ fi
 #   echo "copy ${QUAZIP} failed."
 #   exit 1
 #fi
+
+export PATH=$PROPGCC/bin:$PATH
+
+if [ ! -e $WXLOADER ] ; then
+    echo "proploader not found. Adding:"
+    git clone https://github.com/dbetz/proploader/ ../proploader
+    pushd `pwd`
+    cd ../proploader
+    export OS=linux
+    make
+    popd
+    unset OS
+fi
 
 cp ${WXLOADER} ${VERSION}/bin
 if [ ! -e $WXLOADER ] ; then
