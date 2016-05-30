@@ -141,6 +141,7 @@ signals:
 public slots:
 
     void cleanSettings();
+    void reloadDefaultSettings();
     void browseGccCompiler();
     void browseGccLibrary();
     void browseGccWorkspace();

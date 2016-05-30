@@ -20,4 +20,18 @@ Items required but not included here:
   6. OpenGL xorg-x11-server-devel
   7. libz
   
+Windows Build:
+
+Mac Build:
+
+  1. ./macrelease.sh
+  2. Copy SimpleIDE.app to macpackage (result of ./macrelease.sh)
+  3. Copy FTDIUSBSerialDriver.kext to macpackage (get from ftdichip.com website)
+  4. cd macpackage
+  5. ./macpack.sh <version> (should match version in propside/propside.pro)
+  6. Test install with macpackage SimpleIDE-<version>-MacOS.pkg
+  7. Parallax must sign for app store distribution.
+
+Linux Build:
+
 More to come ....

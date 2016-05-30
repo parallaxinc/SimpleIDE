@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 #
 # To use this release script,
 #
@@ -11,6 +11,9 @@ PKG=${NAME}.zip
 PROPGCC=/opt/parallax
 APPGCC=${NAME}.app/Contents/propeller-gcc
 APPWRK=${NAME}.app/Contents/Workspace
+APPMOS=${NAME}.app/Contents/MacOS
+
+CLEAN=$1
 
 if [ -e ${PKG} ]; then
    rm -rf ${PKG}
@@ -25,18 +28,47 @@ if test $? != 0 ; then
 	sleep 5
 fi
 
-if [ ! -e ${PROPGCC}/bin/openspin ]
+echo `pwd`
+if [ ! -e ./openspin ]
 then
-    echo "Propeller GCC bin/openspin not found. Openspin is in github:"
+    echo "Openspin not found. Openspin is in github:"
     echo "git clone https://github.com/reltham/OpenSpin.git openspin"
-    echo "cd openspin;make;cp openspin /opt/parallax/bin"
-    exit 1
+    git clone https://github.com/reltham/OpenSpin.git openspin
 fi
+
+#
+# update openspin
+#
+cd openspin
+git fetch
+if test $? != 0; then
+   echo "openspin fetch failed."
+   exit 1
+fi
+git pull
+if test $? != 0; then
+   echo "openspin pull failed."
+   exit 1
+fi
+
+make
+if test $? != 0; then
+   echo "openspin make failed."
+   exit 1
+fi
+
+cp -f build/openspin /opt/parallax/bin
+if test $? != 0; then
+   echo "copy openspin failed."
+   exit 1
+fi
+
+cd ..
 
 if [ ! -e ./Workspace ]
 then
     echo "SimpleIDE Workspace not found. Add it with this command:"
-    echo "hg clone https://code.google.com/p/propsideworkspace/ Workspace"
+    echo "git clone https://github.com/parallaxinc/propsideworkspace/ Workspace"
     exit 1
 fi
 
@@ -45,16 +77,44 @@ fi
 #
 rm -rf ${VERSION}/parallax/Workspace
 cd Workspace
-hg pull
+git fetch
+if test $? != 0; then
+   echo "workspace fetch failed."
+   exit 1
+fi
+git pull
 if test $? != 0; then
    echo "workspace pull failed."
    exit 1
 fi
-hg update
+
+cd ..
+
+if [ ! -e ./proploader ]
+then
+    echo "proploader not found. Add it with this command:"
+    echo "git clone https://github.com/dbetz/proploader"
+    git clone https://github.com/dbetz/proploader proploader
+fi
+
+cd proploader
+git fetch
 if test $? != 0; then
-   echo "workspace update failed."
+   echo "proploader fetch failed."
    exit 1
 fi
+git pull
+if test $? != 0; then
+   echo "proploader pull failed."
+   exit 1
+fi
+
+make OS=macosx
+if test $? != 0; then
+   echo "proploader make failed."
+   exit 1
+fi
+
 cd ..
 
 #
@@ -66,7 +126,21 @@ if [ 1 == 1 ]; then
 # Build the IDE first
 #
 mkdir -p release
-cp -r propside/* release
+#cp -r propside/* release
+
+DIR=`pwd`
+XFILES=`find propside/*`
+for XF in $XFILES ; do
+    BF=`echo $XF | sed 's/propside\//release\//g'`
+    if [ ! -e $BF ] ; then
+      echo $DIR/$BF
+      ln -s $DIR/$XF release
+    fi
+    if [ $? -ne 0 ] ; then
+      exit 1
+    fi
+done
+
 cd release
 qmake -config release
 if test $? != 0; then
@@ -74,9 +148,11 @@ if test $? != 0; then
    exit 1
 fi
 
-rm -rf ${APP}
-make clean
-make -j 5
+if [ x$CLEAN != xnoclean ]; then
+   rm -rf ${APP}
+   make clean
+fi
+make -j 8
 if test $? != 0; then
    echo "make failed."
    exit 1
@@ -137,11 +213,28 @@ if test $? != 0; then
    exit 1
 fi
 
+if [ ! -e ../ctags-5.8/ctags ]
+then
+   pushd `pwd`
+   cd ../ctags-5.8
+   ./configure
+   make
+   popd
+fi
+
 cp ../ctags-5.8/ctags ${APPGCC}/bin
 if test $? != 0; then
    echo "copy ctags failed."
    exit 1
 fi
+
+PROPLOADER=../proploader-macosx-build/bin/proploader
+if [ ! -e $PROPLOADER ]
+then
+    echo "$PROPLOADER not found."
+    exit 1
+fi
+cp $PROPLOADER $APPMOS
 
 #cp -r ../propside-demos/ demos
 #if test $? != 0; then
@@ -157,7 +250,6 @@ if test $? != 0; then
    echo "copy Workspace failed."
    exit 1
 fi
-rm -rf ${APPWRK}/.hg
 
 #
 # remove workspace if any from parallax folder

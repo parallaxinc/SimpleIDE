@@ -5119,7 +5119,9 @@ void MainSpinWindow::updateWorkspace()
      * All open files will be closed and the current workspace will be backed up before the update.
      *                        [ Browse ]    [ Cancel ]
      */
-    rc = QMessageBox::question(this, tr("Update SimpleIDE Workspace?"),
+    rc = QMessageBox::question(this, tr("Update SimpleIDE Properties and Workspace?"),
+       tr("This clears SimpleIDE properties which improves the user experience, and ")+
+       tr("updates the SimpleIDE workspace folder's examples, libraries, and documentation.")+"\n\n"+
        tr("Click Browse to select the library or workspace archive you downloaded.")+"\n\n"+
        tr("All open files will be closed and the current workspace will be backed up before the update."),
        "Browse","Cancel");

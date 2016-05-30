@@ -80,6 +80,15 @@ void Properties::cleanSettings()
     settings.setValue(useKeys,0);
 }
 
+void Properties::reloadDefaultSettings()
+{
+    cleanSettings();
+    setupPropGccCompiler();
+    setupPropGccWorkspace();
+    getApplicationWorkspace();
+    setupHighlight();
+}
+
 void Properties::setupFolders()
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -1089,7 +1098,8 @@ void Properties::setupGeneral()
     tlayout->addWidget(lclear,row,0);
     QPushButton *clearSettings = new QPushButton(tr("Clear Settings"),this);
     clearSettings->setToolTip(tr("Clear settings for exit."));
-    connect(clearSettings,SIGNAL(clicked()),this,SLOT(cleanSettings()));
+    //connect(clearSettings,SIGNAL(clicked()),this,SLOT(cleanSettings()));
+    connect(clearSettings,SIGNAL(clicked()),this,SLOT(reloadDefaultSettings()));
     tlayout->addWidget(clearSettings,row,1);
 #endif
 
