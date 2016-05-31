@@ -171,27 +171,6 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
     connect(propDialog,SIGNAL(accepted()),this,SLOT(propertiesAccepted()));
     connect(propDialog,SIGNAL(clearAndExit()),this,SLOT(clearAndExit()));
 
-    /* detect user's startup view */
-    simpleViewType = true;
-
-#ifdef ALWAYS_ALLOW_PROJECT_VIEW
-    allowProjectView = true;
-#else
-    QVariant viewv = settings->value(allowProjectViewKey);
-    allowProjectView = false;
-    if(viewv.isNull() == false) {
-        if(viewv.canConvert(QVariant::Int)) {
-            allowProjectView = viewv.toInt() != 0;
-        }
-        if(allowProjectView) {
-            QVariant viewv = settings->value(simpleViewKey);
-            if(viewv.canConvert(QVariant::Bool)) {
-                simpleViewType = viewv.toBool();
-            }
-        }
-    }
-#endif
-
     /* setup user's editor font */
     QVariant fontv = settings->value(editorFontKey);
     if(fontv.canConvert(QVariant::String)) {
@@ -295,6 +274,10 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
         term->restoreGeometry(geo);
     }
 
+    /* Start with simpleview; detect user's startup view later. */
+    simpleViewType = true;
+    this->showSimpleView(simpleViewType);
+
 #ifdef SHOW_IDE_EARLY
     this->show(); // show gui before about for mac
     this->raise();
@@ -355,6 +338,24 @@ MainSpinWindow::MainSpinWindow(QWidget *parent) : QMainWindow(parent),
         }
         setCurrentPort(ndx);
     }
+
+#ifdef ALWAYS_ALLOW_PROJECT_VIEW
+    allowProjectView = true;
+#else
+    QVariant viewv = settings->value(allowProjectViewKey);
+    allowProjectView = false;
+    if(viewv.isNull() == false) {
+        if(viewv.canConvert(QVariant::Int)) {
+            allowProjectView = viewv.toInt() != 0;
+        }
+        if(allowProjectView) {
+            QVariant viewv = settings->value(simpleViewKey);
+            if(viewv.canConvert(QVariant::Bool)) {
+                simpleViewType = viewv.toBool();
+            }
+        }
+    }
+#endif
 
     this->show();
     QApplication::processEvents();
@@ -5119,9 +5120,8 @@ void MainSpinWindow::updateWorkspace()
      * All open files will be closed and the current workspace will be backed up before the update.
      *                        [ Browse ]    [ Cancel ]
      */
-    rc = QMessageBox::question(this, tr("Update SimpleIDE Properties and Workspace?"),
-       tr("This clears SimpleIDE properties which improves the user experience, and ")+
-       tr("updates the SimpleIDE workspace folder's examples, libraries, and documentation.")+"\n\n"+
+    rc = QMessageBox::question(this, tr("Update SimpleIDE Workspace?"),
+       tr("This updates the SimpleIDE workspace folder's examples, libraries, and documentation.")+"\n\n"+
        tr("Click Browse to select the library or workspace archive you downloaded.")+"\n\n"+
        tr("All open files will be closed and the current workspace will be backed up before the update."),
        "Browse","Cancel");
@@ -5138,6 +5138,7 @@ void MainSpinWindow::updateWorkspace()
         QString projFileSave = projectFile;
         closeAll();
         propDialog->updateLearnWorkspace();
+        propDialog->reloadDefaultSettings();
         this->openProject(projFileSave);
         //projectFile = projFileSave;
     }
@@ -8249,20 +8250,21 @@ void MainSpinWindow::portRename()
         text = text.replace("'", "");
 
         portListener->close();
-        runLoader("-n '"+text+"'");
-
-        QSize size = cbPort->size();
-        cbPort->setEditable(true);
-        int s = cbPort->fontInfo().pixelSize();
-        int w = text.length()*s;
-        if (size.width() < w) size.setWidth(w);
-        int ndx = cbPort->currentIndex();
-        cbPort->setItemText(ndx, text);
-        //cbPort->setCurrentText(text);
-        cbPort->setToolTip(text);
-        QApplication::processEvents();
-        cbPort->setEditable(false);
-        QApplication::processEvents();
+        int rc = runLoader("-n '"+text+"'");
+        if (rc == 0) {
+            QSize size = cbPort->size();
+            cbPort->setEditable(true);
+            int s = cbPort->fontInfo().pixelSize();
+            int w = text.length()*s;
+            if (size.width() < w) size.setWidth(w);
+            int ndx = cbPort->currentIndex();
+            cbPort->setItemText(ndx, text);
+            //cbPort->setCurrentText(text);
+            cbPort->setToolTip(text);
+            QApplication::processEvents();
+            cbPort->setEditable(false);
+            QApplication::processEvents();
+        }
     }
 }
 

@@ -465,7 +465,11 @@ bool Properties::updatePackageWorkspace(QString pkwrk, QString mywrk, QString up
         backdir = backdir.left(backdir.lastIndexOf("/"))+"/SimpleIDE_Backups/";
         QString zipback = backdir+"Workspace_"+timestamp+".zip";
 
-        showStatusDialog("Install Workspace", "Installing packaged SimpleIDE workspace.");
+        showStatusDialog("Install Workspace", "Installing packaged SimpleIDE workspace and resetting properties.");
+
+        /* Do this to clear old properties that can cause trouble.
+         */
+        reloadDefaultSettings();
 
         QDir wrkd(mywrk);
         if(!wrkd.exists(backdir)) {
