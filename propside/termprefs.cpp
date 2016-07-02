@@ -549,8 +549,8 @@ void TermPrefs::readSettings()
     /*
      * read wrap. if wrap = 0, then wrap to window, else wrap to page.
      */
-    int wrap = 0;
-    var = settings->value(termKeyWrapMode, QVariant(0));
+    int wrap = 1;
+    var = settings->value(termKeyWrapMode, QVariant(wrap));
     if(var.canConvert(QVariant::Int)) {
         wrap = var.toInt();
         ui->comboBoxWrapMode->setCurrentIndex(wrap);
@@ -560,7 +560,7 @@ void TermPrefs::readSettings()
      * read page length. wrap = page if wrap not set to window.
      */
     int page = 0;
-    var = settings->value(termKeyPageLineSize, QVariant(32));
+    var = settings->value(termKeyPageLineSize, QVariant(80));
     if(var.canConvert(QVariant::Int)) {
         page = var.toInt();
         ui->spinBoxPageWrap->setValue(page);
@@ -572,9 +572,9 @@ void TermPrefs::readSettings()
     /*
      * read number of lines for buffer
      */
-    int lineindex = 0;
-    int lines = 512;
-    var = settings->value(termKeyBufferLines,QVariant(0));
+    int lineindex = 6;
+    int lines = 2048;
+    var = settings->value(termKeyBufferLines,QVariant(6));
     if(var.canConvert(QVariant::Int)) {
         lineindex = var.toInt();
         ui->comboBoxBufferLines->setCurrentIndex(lineindex);

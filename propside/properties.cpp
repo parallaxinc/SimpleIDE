@@ -80,12 +80,15 @@ void Properties::cleanSettings()
     settings.setValue(useKeys,0);
 }
 
+int highlightIndex = 0;
+
 void Properties::reloadDefaultSettings()
 {
     cleanSettings();
     setupPropGccCompiler();
     setupPropGccWorkspace();
     getApplicationWorkspace();
+    tabWidget.removeTab(highlightIndex);
     setupHighlight();
 }
 
@@ -1220,6 +1223,7 @@ void Properties::setupHighlight()
     QFrame *hlbox = new QFrame();
     hlbox->setLayout(hlayout);
     tabWidget.addTab(hlbox,tr("Highlight"));
+    highlightIndex = tabWidget.count()-1;
 
     propertyColors.insert(PColor::Black, new PColor(tr("Black"), "Black", Qt::black));
     propertyColors.insert(PColor::DarkGray, new PColor(tr("Dark Gray"), "Dark Gray", Qt::darkGray));
