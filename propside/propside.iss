@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "1-0-12"
+#define MyAppVersion "1-0-51"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -13,20 +13,19 @@
 
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ---- IMPORTANT!!! ---- Set this to your QtPath
-; Qt5 library versions have trouble with printing, so we digressed to Qt4.8
-; The Qt5.3 mingw path is the compiler used to build the app. 
+; The Qt5 mingw path is the compiler used to build the app. 
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#define MyQtPath "C:\Qt5.5\5.4\mingw491_32"
+#define MyQtPath "C:\Qt\Qt5.4.2\5.4\mingw491_32"
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This path will need to be changed to match the path containing mingw
 ; It should be the same path used in building the application.
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#define MyQtMingwPath "C:\Qt5.5\5.4\mingw491_32"
+#define MyQtMingwPath "C:\Qt\Qt5.4.2\5.4\mingw491_32"
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This path contains the propeller gcc build
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#define MyGccPath "C:\mingw\msys\1.0\opt\parallax"
-;#define MyGccPath "..\..\propeller-gcc4-win32"
+;#define MyGccPath "C:\mingw\msys\1.0\opt\parallax"
+#define MyGccPath "..\..\propeller-gcc"
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This path must contains the mingw path used for the propeller gcc build
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,9 +38,9 @@
 #define MyBoardFilter "..\boards.txt"
 #define MyFont "..\Parallax.ttf"
 ;#define MyLoaderPath "..\..\proploader\build-proploader-Desktop_Qt_5_4_2_MinGW_32bit2-Release\Release"
-#define MyLoaderPath "..\..\proploader\proploader-msys-build\bin"
+#define MyLoaderPath "..\..\proploader-msys-build\bin"
 ;#define MyAppPath "..\build-propside-Qt_4_8_6-Release"
-#define MyAppPath "..\build-propside-Desktop_Qt_5_4_2_MinGW_32bit2-Release"
+#define MyAppPath "..\build-propside-Desktop_Qt_5_4_2_MinGW_32bit-Release"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
