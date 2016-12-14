@@ -45,6 +45,8 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
     for(int n = 0; n < maxhex; n++)
         hexbyte[n] = 0;
     sbuff = NULL;
+    // experimenting with wraps ... just turn it off.
+    this->setLineWrapMode(QPlainTextEdit::NoWrap);
 }
 
 void Console::setPortEnable(bool value)

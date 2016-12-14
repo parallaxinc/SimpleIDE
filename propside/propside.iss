@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "1-0-51"
+#define MyAppVersion "1-0-53"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -15,16 +15,15 @@
 ; ---- IMPORTANT!!! ---- Set this to your QtPath
 ; The Qt5 mingw path is the compiler used to build the app. 
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#define MyQtPath "C:\Qt\Qt5.4.2\5.4\mingw491_32"
+#define MyQtPath "C:\Qt\Qt5.7.0\5.7\mingw53_32"
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This path will need to be changed to match the path containing mingw
 ; It should be the same path used in building the application.
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#define MyQtMingwPath "C:\Qt\Qt5.4.2\5.4\mingw491_32"
+#define MyQtMingwPath "C:\Qt\Qt5.7.0\5.7\mingw53_32"
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This path contains the propeller gcc build
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;#define MyGccPath "C:\mingw\msys\1.0\opt\parallax"
 #define MyGccPath "..\..\propeller-gcc"
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This path must contains the mingw path used for the propeller gcc build
@@ -37,10 +36,8 @@
 #define MyAppBin "{app}\bin"
 #define MyBoardFilter "..\boards.txt"
 #define MyFont "..\Parallax.ttf"
-;#define MyLoaderPath "..\..\proploader\build-proploader-Desktop_Qt_5_4_2_MinGW_32bit2-Release\Release"
 #define MyLoaderPath "..\..\proploader-msys-build\bin"
-;#define MyAppPath "..\build-propside-Qt_4_8_6-Release"
-#define MyAppPath "..\build-propside-Desktop_Qt_5_4_2_MinGW_32bit-Release"
+#define MyAppPath "..\build-propside-Desktop_Qt_5_7_0_MinGW_32bit-Release"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -118,9 +115,10 @@ Source: "zlib1.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 Source: "{#MyLoaderPath}\proploader.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 
 ; These paths are based on the mingw distribution used in building the application and should match.
-Source: "{#MyQtMingwPath}\bin\icuin53.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
-Source: "{#MyQtMingwPath}\bin\icuuc53.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
-Source: "{#MyQtMingwPath}\bin\icudt53.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+; icu not needed in 5.3+ and are not included in 5.7 mingwpath.
+;Source: "{#MyQtMingwPath}\bin\icuin53.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+;Source: "{#MyQtMingwPath}\bin\icuuc53.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
+;Source: "{#MyQtMingwPath}\bin\icudt53.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 Source: "{#MyQtMingwPath}\bin\libgcc_s_dw2-1.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 Source: "{#MyQtMingwPath}\bin\libstdc++-6.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion
 Source: "{#MyQtMingwPath}\bin\libwinpthread-1.dll"; DestDir: "{#MyAppBin}"; Flags: ignoreversion

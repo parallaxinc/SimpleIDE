@@ -3900,17 +3900,17 @@ QStringList MainSpinWindow::getAsFilters()
 
     filters << "C File (*.c)";
     filters << "C++ File (*.cpp)";
-#ifdef SPIN
+// #ifdef SPIN // always allow spin filters
     filters << "Spin File (*.spin)";
-#endif
+// #endif
     filters << "C Header File (*.h)";
     filters << "COG C File (*.cogc)";
 
     if(this->simpleViewType == false) {
         filters << "E-COG C File (*.ecogc)";
-#ifdef SPIN
+// #ifdef SPIN // always allow spin filters
         filters << "E-Spin File (*.espin)";
-#endif
+// #endif
     }
 
     QString comp = projectOptions->getCompiler();
@@ -3918,12 +3918,12 @@ QStringList MainSpinWindow::getAsFilters()
         filters.removeAt(1);
         filters.insert(0,"C++ File (*.cpp)");
     }
-#ifdef SPIN
+// #ifdef SPIN // always allow spin filters
     else if(comp.compare(projectOptions->SPIN_COMPILER) == 0) {
         filters.removeAt(2);
         filters.insert(0,"Spin File (*.spin)");
     }
-#endif
+// #endif
 
     filters << "Any File (*)";
 
