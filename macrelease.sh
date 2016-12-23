@@ -32,8 +32,8 @@ echo `pwd`
 if [ ! -e ./openspin ]
 then
     echo "Openspin not found. Openspin is in github:"
-    echo "git clone https://github.com/reltham/OpenSpin.git openspin"
-    git clone https://github.com/reltham/OpenSpin.git openspin
+    echo "git clone https://github.com/parallaxinc/OpenSpin.git openspin"
+    git clone https://github.com/parallaxinc/OpenSpin.git openspin
 fi
 
 #
@@ -68,7 +68,7 @@ cd ..
 if [ ! -e ./Workspace ]
 then
     echo "SimpleIDE Workspace not found. Add it with this command:"
-    echo "git clone https://github.com/parallaxinc/propsideworkspace/ Workspace"
+    echo "git clone https://github.com/parallaxinc/Simple-Libraries.git Workspace"
     exit 1
 fi
 
@@ -93,8 +93,8 @@ cd ..
 if [ ! -e ./proploader ]
 then
     echo "proploader not found. Add it with this command:"
-    echo "git clone https://github.com/dbetz/proploader"
-    git clone https://github.com/dbetz/proploader proploader
+    echo "git clone https://github.com/parallaxinc/proploader.git proploader"
+    git clone https://github.com/parallaxinc/proploader.git proploader
 fi
 
 cd proploader
@@ -271,7 +271,7 @@ pwd
 
 cp -r ../propside/IDE_LICENSE.txt license
 if test $? != 0; then
-   echo "copy propside-demos failed."
+   echo "copy license failed."
    exit 1
 fi
 

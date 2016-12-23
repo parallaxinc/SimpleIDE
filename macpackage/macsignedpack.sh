@@ -15,7 +15,7 @@
 #      - select the currently supported Mac OS X VCP driver from that page (i.e. x64 (64-bit))
 #      - or use: http://www.ftdichip.com/Drivers/VCP/MacOSX/FTDIUSBSerialDriver_v2_2_18.dmg
 #      - install FTDI's driver package onto the development Mac OS X system
-#      - copy the FTDIUSBSerialDriver.kext from /System/Library/Extensions/ to the script's directory
+#      - copy the FTDIUSBSerialDriver.kext from /Library/Extensions/ to the script's directory
 #   The SimpleIDE release must be:
 #       - previously built with ./macrelease.sh script
 #       - modified with ./macdeployqt_fix_frameworks.sh, to add Qt framework Info.plist files
@@ -48,8 +48,8 @@ EOF
 #
 # Default installation locations
 #
-# note: the FTDI kext could be moved to "/Library/Extensions/" in accord with Apple suggestion @ some future point
-FTDIDRIVER_DEST_DIR="/System/Library/Extensions/"
+# note: the FTDI kext used to be in "/System/Library/Extensions/" per Apple's previous suggestion (before Mavericks?)
+FTDIDRIVER_DEST_DIR="/Library/Extensions/"
 DEFAULT_APP_DIR="/Applications/"
 
 #
