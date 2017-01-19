@@ -1,7 +1,7 @@
 /*
  * This file is part of the Parallax Propeller SimpleIDE development environment.
  *
- * Copyright (C) 2014 Parallax Incorporated
+ * Copyright (C) 2017 Parallax Incorporated
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ AboutDialog::AboutDialog(QString landing, QWidget *parent) : QDialog(parent)
     layout->addWidget(new QLabel(""));
     QString version = QString("%1 Version %2.%3.%4").arg(ASideGuiKey)
             .arg(IDEVERSION).arg(MINVERSION).arg(FIXVERSION);
-    layout->addWidget(new QLabel(version+"\n"+tr("Copyright (C) 2012-2016, Parallax, Inc.")+" "+
+    layout->addWidget(new QLabel(version+"\n"+tr("Copyright (C) 2012-2017, Parallax Inc.")+" "+
             tr("See credits for license information.")));
 
     QLabel *landingLabel = new QLabel(landing);
