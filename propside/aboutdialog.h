@@ -1,7 +1,7 @@
 /*
  * This file is part of the Parallax Propeller SimpleIDE development environment.
  *
- * Copyright (C) 2014 Parallax Incorporated
+ * Copyright (C) 2017 Parallax Incorporated
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -6,19 +6,20 @@ This is the SimpleIDE code repository.
 Included here are:
   1. SimpleIDE GUI sources, images, and translation files
   2. Ctags source with Spin language support
-  3. SimpleIDE user guides
+  3. SimpleIDE user guide
   4. Command line build scripts for Mac and Linux
   5. InnoIDE packaging scripts for Windows
   6. propside.pro for building with Qt Creator
   
 Items required but not included here:
-  1. propeller-gcc compiler source https://github.com/dbetz/propeller-gcc
-  2. proploader source https://github.com/dbetz/proploader
-  3. Learn workspace https://github.com/parallaxinc/propsideworkspace
-  4. Qt5.4 libraries http://download.qt.io/archive/qt/
-  5. QtCreator community edition https://www.qt.io/download-open-source/#section-2
-  6. OpenGL xorg-x11-server-devel
-  7. libz
+  1. propeller-gcc compiler source https://github.com/parallaxinc/propgcc
+  2. Open Spin compiler source https://github.com/parallaxinc/OpenSpin
+  3. proploader source https://github.com/parallaxinc/proploader
+  4. Learn workspace https://github.com/parallaxinc/Simple-Libraries
+  5. Qt5.4 libraries http://download.qt.io/archive/qt/
+  6. QtCreator community edition https://www.qt.io/download-open-source/#section-2
+  7. OpenGL xorg-x11-server-devel
+  8. libz
   
 Windows Build:
 
