@@ -6107,6 +6107,7 @@ int  MainSpinWindow::runLoader(QString copts)
     }
 
     QString loadtype = cbBoard->currentText();
+    if(loadtype.compare("GENERIC") == 0) loadtype = "RCFAST";
     if(!loadtype.isEmpty() && loadtype.length() > 0 && rename_only == false) {
         args.append("-I");
         args.append(aSideIncludes);

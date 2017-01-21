@@ -133,7 +133,8 @@ int  BuildSpin::runBstc(QString spinfile)
 
 void BuildSpin::appendLoaderParameters(QString copts, QString projfile, QStringList *args)
 {
-    QString filename = projfile.mid(0,projectFile.lastIndexOf("."));
+    QString filename = projectFile.mid(projectFile.lastIndexOf("/")+1);
+    if(filename.length()) filename = projectFile.mid(0,projectFile.lastIndexOf("."));
     args->append(copts);
     args->append(filename+".binary");
 
