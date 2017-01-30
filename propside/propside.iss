@@ -3,11 +3,12 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "1-0-55"
+#define MyAppVersion "1-1-0"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
-#define FtdiChipApp "CDM v2.10.00 WHQL Certified.exe"
+;#define FtdiChipApp "CDM v2.10.00 WHQL Certified.exe"
+#define FtdiChipApp "Install-Parallax-USB-Drivers-v2.12.16(r2).exe"
 
 #define compiler "propeller-gcc"
 
