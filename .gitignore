@@ -1,0 +1,4 @@
+.idea/
+*.o
+moc_*.cpp
+SimpleIDE
