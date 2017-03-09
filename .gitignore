@@ -3,3 +3,4 @@
 moc_*.cpp
 SimpleIDE
 build/
+proploader-linux-build/

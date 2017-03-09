@@ -5,9 +5,13 @@ import os
 import shutil
 import subprocess
 import multiprocessing
+import tarfile
+import urllib.request
 
 NAME = 'SimpleIDE'
 SIMPLE_IDE_SOURCE_ROOT = os.path.dirname(os.path.realpath(__file__))
+DEFAULT_BUILD_PATH = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'build')
+DEFAULT_PROPGCC_PATH = os.path.join(DEFAULT_BUILD_PATH, 'parallax')
 
 PROP_LOADER_PATH = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'PropLoader')
 CTAGS_PATH = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'ctags-5.8')
@@ -16,6 +20,8 @@ SETUP_RUN_SCRIPT = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'release', 'linux', 'sim
 SPIN_LIBRARIES = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'spin')
 PROPSIDE_PATH = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'propside')
 WX_LOADER = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'PropLoader')
+
+MAKE_JOBS_ARG = '-j%d' % (multiprocessing.cpu_count() + 1)
 
 
 class QmakeNotFoundException(Exception):
@@ -36,25 +42,62 @@ def run():
     args = parse_args()
 
     binary_root = args.build
+    user_propgcc = args.propgcc
 
-    simple_ide_binary = compile_simple_ide(binary_root)
     package_binary_path = create_package_path(binary_root)
+
+    install_propgcc(binary_root, user_propgcc, package_binary_path)
+    compile_proploader(package_binary_path)
+    simple_ide_binary = compile_simple_ide(binary_root, package_binary_path)
+    install_shared_libs(package_binary_path, simple_ide_binary)
     install_static_files(package_binary_path)
 
-    install_shared_libs(package_binary_path, simple_ide_binary)
+
+def install_propgcc(binary_root, user_propgcc, package_binary_path):
+    if user_propgcc and os.path.exists(user_propgcc):
+        propgcc_path = user_propgcc
+    else:
+        propgcc_url = 'http://david.zemon.name:8111/repository/download/PropGCC5_Gcc4linuxX64/.lastSuccessful/propellergcc-alpha_v1_9_0-gcc4-linux-x64.tar.gz?guest=1'
+        propgcc_archive_name = os.path.join(binary_root, 'propgcc.tar.gz')
+
+        print('Downloading PropGCC from %s%s\tto %s' % (propgcc_url, os.linesep, propgcc_archive_name))
+        urllib.request.urlretrieve(propgcc_url, propgcc_archive_name)
+
+        print('Extracting PropGCC archive...')
+        with tarfile.open(propgcc_archive_name, "r:gz") as propgcc_archive:
+            propgcc_archive.extractall(binary_root)
+
+        propgcc_path = DEFAULT_PROPGCC_PATH
+
+    propgcc_target_path = os.path.join(package_binary_path, 'parallax')
+    shutil.copytree(propgcc_path, propgcc_target_path)
+    os.environ['PATH'] = '%s/bin:%s' % (propgcc_target_path, os.environ['PATH'])
 
 
-def compile_simple_ide(binary_root):
+def compile_simple_ide(binary_root, package_binary_path):
     qmake_args = get_qmake_invocation()
     propside_binary_root = os.path.join(binary_root, 'propside')
 
     os.makedirs(propside_binary_root, exist_ok=True)
     invoke(qmake_args + [PROPSIDE_PATH], propside_binary_root)
     # invoke(['make', 'clean'], propside_binary_root) FIXME (just need to uncomment this)
-    jobs_argument = '-j%d' % (multiprocessing.cpu_count() + 1)
-    invoke(['make', jobs_argument], propside_binary_root)
+    invoke(['make', MAKE_JOBS_ARG], propside_binary_root)
 
-    return os.path.join(propside_binary_root, 'SimpleIDE')
+    simple_ide_binary = os.path.join(propside_binary_root, 'SimpleIDE')
+    shutil.copy2(simple_ide_binary, os.path.join(package_binary_path, 'bin'))
+    return simple_ide_binary
+
+
+def compile_proploader(package_binary_path):
+    environment_vars = {}
+    environment_vars.update(os.environ)
+    environment_vars['OS'] = 'linux'
+
+    invoke(['make', 'clean'], cwd=PROP_LOADER_PATH, env=environment_vars)
+    invoke(['make', MAKE_JOBS_ARG], cwd=PROP_LOADER_PATH, env=environment_vars)
+
+    proploader_binary = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'proploader-linux-build', 'bin', 'proploader')
+    shutil.copy2(proploader_binary, os.path.join(package_binary_path, 'bin'))
 
 
 def create_package_path(binary_root):
@@ -66,12 +109,14 @@ def create_package_path(binary_root):
     full_version = '%s-%s' % (NAME, full_version_number)
     print('Creating Version ' + full_version)
     package_binary_path = os.path.join(binary_root, full_version)
+
+    shutil.rmtree(package_binary_path)
+    os.makedirs(package_binary_path)
+    
     return package_binary_path
 
 
 def install_static_files(package_binary_path):
-    shutil.rmtree(package_binary_path)
-    os.makedirs(package_binary_path, exist_ok=True)
     release_template_path = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'release', 'template')
     for source_root, dirs, files in os.walk(release_template_path):
         relative_root = source_root[len(release_template_path):]
@@ -79,12 +124,12 @@ def install_static_files(package_binary_path):
             relative_root = relative_root[1:]
 
         destination_root = os.path.join(package_binary_path, relative_root)
-        os.makedirs(destination_root, exist_ok=True)
+        if not os.path.exists(destination_root):
+            os.makedirs(destination_root, exist_ok=True)
 
         for f in files:
             source = os.path.join(source_root, f)
-            destination = os.path.join(destination_root, f)
-            shutil.copy2(source, destination)
+            shutil.copy2(source, destination_root)
     setup_script = shutil.copy2(SETUP_SCRIPT, package_binary_path)
     setup_run_script = shutil.copy2(SETUP_RUN_SCRIPT, os.path.join(package_binary_path, 'bin'))
     os.chmod(setup_script, 0o744)
@@ -99,9 +144,9 @@ def install_shared_libs(package_binary_path, simpleide_binary):
         shutil.copy(lib, os.path.join(package_binary_path, 'bin'))
 
 
-def invoke(args, cwd):
-    print(' '.join(args))
-    subprocess.call(args, cwd=cwd)
+def invoke(args, cwd, env=None):
+    print('%s$ %s' % (cwd, ' '.join(args)))
+    subprocess.check_call(args, cwd=cwd, env=env)
 
 
 def get_qmake_invocation():
@@ -171,10 +216,11 @@ def parse_args():
 
     parser.add_argument('-p', '--package', default=NAME + '.zip',
                         help='Name (and path) of the compressed package that will be generated')
-    parser.add_argument('-g', '--propgcc', default='/opt/parallax',
-                        help='PropGCC installation path on the local machine (will not affect installation path of '
-                             'target machine)')
-    parser.add_argument('-b', '--build', default=os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'build'),
+    parser.add_argument('-g', '--propgcc', default=DEFAULT_PROPGCC_PATH,
+                        help='PropGCC installation path on the local machine. If not provided, the latest PropGCC '
+                             'build from TeamCity will be downloaded and extracted for inclusion in the SimpleIDE '
+                             'package.')
+    parser.add_argument('-b', '--build', default=DEFAULT_BUILD_PATH,
                         help='Directory where the build for SimpleIDE can take place')
 
     return parser.parse_args()
