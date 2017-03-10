@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import multiprocessing
+import sys
 import tarfile
 import urllib.request
 
@@ -45,6 +46,7 @@ def run():
     binary_root = args.build
     user_propgcc = args.propgcc
     no_clean = args.no_clean
+    package = args.package
 
     package_binary_path = create_package_path(binary_root)
     package_name = os.path.basename(package_binary_path)
@@ -58,8 +60,14 @@ def run():
 
     if not no_clean:
         print("Make tarball...")
-        archive_name = '%s.%s.%s-linux.tar.bz2' % (package_name, platform.machine(), platform.uname().node)
-        archive_path = os.path.join(binary_root, archive_name)
+        if package:
+            if not package.endswith('bz2'):
+                print('WARNING! This script will compress the package with bz2 compression. You would be well advised '
+                      'to rename the package with the bz2 suffix when I\'m done here.', file=sys.stderr)
+            archive_path = package
+        else:
+            archive_name = '%s.%s.%s-linux.tar.bz2' % (package_name, platform.machine(), platform.uname().node)
+            archive_path = os.path.join(binary_root, archive_name)
         if os.path.exists(archive_path):
             os.remove(archive_path)
         with tarfile.open(archive_path, 'w:bz2') as archive:
@@ -263,8 +271,9 @@ def which(program):
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-p', '--package', default=NAME + '.zip',
-                        help='Name (and path) of the compressed package that will be generated')
+    parser.add_argument('-p', '--package',
+                        help='Name (and path) of the compressed package that will be generated. A default value will '
+                             'be selected based on the version number in the Qt project file if one is not provided.')
     parser.add_argument('-g', '--propgcc', default=DEFAULT_PROPGCC_PATH,
                         help='PropGCC installation path on the local machine. If not provided, the latest PropGCC '
                              'build from TeamCity will be downloaded and extracted for inclusion in the SimpleIDE '
