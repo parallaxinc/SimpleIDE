@@ -41,6 +41,12 @@ class Qt5NotAvailableException(Exception):
                          'download.qt.io./official_releases/qt/5.4/5.4.2')
 
 
+class MissingLibraryException(Exception):
+    def __init__(self, library_name):
+        super().__init__('Unable to find %s on the local computer, which is a required library for the package'
+                         % library_name)
+
+
 def run():
     args = parse_args()
 
@@ -191,7 +197,10 @@ def install_static_files(package_binary_path):
         print('WARNING: Unable to update workspace directory. This is expected from TeamCity builds. Otherwise, head '
               'this warning and find out why it failed.', file=sys.stderr)
         print(e, file=sys.stderr)
-    shutil.copytree(workspace_dir, os.path.join(package_binary_path, 'parallax', 'Workspace'))
+    workspace_target_dir = os.path.join(package_binary_path, 'parallax', 'Workspace')
+    if os.path.exists(workspace_target_dir):
+        shutil.rmtree(workspace_target_dir)
+    shutil.copytree(workspace_dir, workspace_target_dir)
 
 
 def install_shared_libs(package_binary_path, simpleide_binary):
@@ -202,8 +211,16 @@ def install_shared_libs(package_binary_path, simpleide_binary):
         for required_lib in required_libs:
             if required_lib in lib:
                 libs_to_package.append(lib.strip().split()[2])
+
     for lib in libs_to_package:
         install_binary(lib, package_binary_path)
+
+    # libqxcb is just too cool to show up via ldd
+    libqxcb_path = find('libqxcb.so', ['/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms'], '/usr/lib')
+    if libqxcb_path:
+        install_binary(libqxcb_path, package_binary_path, os.path.join('bin', 'platforms'))
+    else:
+        raise MissingLibraryException('libqxcb.so')
 
 
 def invoke(args, cwd, env=None, output=True):
@@ -215,11 +232,11 @@ def invoke(args, cwd, env=None, output=True):
         subprocess.check_output(args, cwd=cwd, env=env)
 
 
-def install_binary(binary, package_root):
-    package_binary_bin_path = os.path.join(package_root, 'bin')
-    destination_path = os.path.join(package_binary_bin_path, os.path.basename(binary))
-    if not os.path.exists(package_binary_bin_path):
-        os.makedirs(package_binary_bin_path)
+def install_binary(binary, package_root, subdir='bin'):
+    destination_directory = os.path.join(package_root, subdir)
+    destination_path = os.path.join(destination_directory, os.path.basename(binary))
+    if not os.path.exists(destination_directory):
+        os.makedirs(destination_directory)
     shutil.copy2(binary, destination_path)
     os.chmod(destination_path, 0o755)
     return destination_path
