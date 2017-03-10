@@ -13,6 +13,7 @@ import urllib.request
 NAME = 'SimpleIDE'
 SIMPLE_IDE_SOURCE_ROOT = os.path.dirname(os.path.realpath(__file__))
 DEFAULT_BUILD_PATH = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'build')
+DEFAULT_SHARED_PROPGCC_INSTALL_PATH = '/opt/parallax'
 DEFAULT_PROPGCC_PATH = os.path.join(DEFAULT_BUILD_PATH, 'parallax')
 
 PROP_LOADER_PATH = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'PropLoader')
@@ -79,6 +80,8 @@ def run():
 def install_propgcc(binary_root, user_propgcc, package_binary_path):
     if user_propgcc and os.path.exists(user_propgcc):
         propgcc_path = user_propgcc
+    elif os.path.exists(DEFAULT_SHARED_PROPGCC_INSTALL_PATH):
+        propgcc_path = DEFAULT_SHARED_PROPGCC_INSTALL_PATH
     else:
         propgcc_url = 'http://david.zemon.name:8111/repository/download/PropGCC5_Gcc4linuxX64/.lastSuccessful/propellergcc-alpha_v1_9_0-gcc4-linux-x64.tar.gz?guest=1'
         propgcc_archive_name = os.path.join(binary_root, 'propgcc.tar.gz')
@@ -91,6 +94,8 @@ def install_propgcc(binary_root, user_propgcc, package_binary_path):
             propgcc_archive.extractall(binary_root)
 
         propgcc_path = DEFAULT_PROPGCC_PATH
+
+    print('Using PropGCC from %s' % propgcc_path)
 
     propgcc_target_path = os.path.join(package_binary_path, 'parallax')
     shutil.copytree(propgcc_path, propgcc_target_path)
@@ -146,7 +151,8 @@ def create_package_path(binary_root):
     print('Creating Version ' + full_version)
     package_binary_path = os.path.join(binary_root, full_version)
 
-    shutil.rmtree(package_binary_path)
+    if os.path.exists(package_binary_path):
+        shutil.rmtree(package_binary_path)
     os.makedirs(package_binary_path)
     
     return package_binary_path
