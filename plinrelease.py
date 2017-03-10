@@ -67,7 +67,7 @@ def run():
                       'to rename the package with the bz2 suffix when I\'m done here.', file=sys.stderr)
             archive_path = package
         else:
-            archive_name = '%s.%s.%s-linux.tar.bz2' % (package_name, platform.machine(), platform.uname().node)
+            archive_name = '%s.%s.linux.tar.bz2' % (package_name, platform.machine())
             archive_path = os.path.join(binary_root, archive_name)
         if os.path.exists(archive_path):
             os.remove(archive_path)
