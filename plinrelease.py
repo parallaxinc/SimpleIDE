@@ -1,4 +1,5 @@
 #!/usr/bin/env /usr/bin/python3
+import platform
 
 import argparse
 import os
@@ -43,14 +44,28 @@ def run():
 
     binary_root = args.build
     user_propgcc = args.propgcc
+    no_clean = args.no_clean
 
     package_binary_path = create_package_path(binary_root)
+    package_name = os.path.basename(package_binary_path)
 
     install_propgcc(binary_root, user_propgcc, package_binary_path)
     compile_proploader(package_binary_path)
     simple_ide_binary = compile_simple_ide(binary_root, package_binary_path)
+    compile_ctags(binary_root, package_binary_path)
     install_shared_libs(package_binary_path, simple_ide_binary)
     install_static_files(package_binary_path)
+
+    if not no_clean:
+        print("Make tarball...")
+        archive_name = '%s.%s.%s-linux.tar.bz2' % (package_name, platform.machine(), platform.uname().node)
+        archive_path = os.path.join(binary_root, archive_name)
+        if os.path.exists(archive_path):
+            os.remove(archive_path)
+        with tarfile.open(archive_path, 'w:bz2') as archive:
+            archive.add(package_binary_path, arcname=package_name)
+
+    print('All done.')
 
 
 def install_propgcc(binary_root, user_propgcc, package_binary_path):
@@ -80,11 +95,11 @@ def compile_simple_ide(binary_root, package_binary_path):
 
     os.makedirs(propside_binary_root, exist_ok=True)
     invoke(qmake_args + [PROPSIDE_PATH], propside_binary_root)
-    # invoke(['make', 'clean'], propside_binary_root) FIXME (just need to uncomment this)
+    invoke(['make', 'clean'], propside_binary_root)
     invoke(['make', MAKE_JOBS_ARG], propside_binary_root)
 
     simple_ide_binary = os.path.join(propside_binary_root, 'SimpleIDE')
-    shutil.copy2(simple_ide_binary, os.path.join(package_binary_path, 'bin'))
+    install_binary(simple_ide_binary, package_binary_path)
     return simple_ide_binary
 
 
@@ -97,7 +112,20 @@ def compile_proploader(package_binary_path):
     invoke(['make', MAKE_JOBS_ARG], cwd=PROP_LOADER_PATH, env=environment_vars)
 
     proploader_binary = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'proploader-linux-build', 'bin', 'proploader')
-    shutil.copy2(proploader_binary, os.path.join(package_binary_path, 'bin'))
+    install_binary(proploader_binary, package_binary_path)
+
+
+def compile_ctags(binary_root, package_binary_path):
+    ctags_binary_path = os.path.join(binary_root, 'ctags-bin')
+    if os.path.exists(ctags_binary_path):
+        shutil.rmtree(ctags_binary_path)
+    os.makedirs(ctags_binary_path)
+
+    invoke([os.path.join(CTAGS_PATH, 'configure')], cwd=ctags_binary_path, output=False)
+    invoke(['make', MAKE_JOBS_ARG], cwd=ctags_binary_path)
+
+    ctags_binary = os.path.join(ctags_binary_path, 'ctags')
+    install_binary(ctags_binary, package_binary_path)
 
 
 def create_package_path(binary_root):
@@ -131,22 +159,43 @@ def install_static_files(package_binary_path):
             source = os.path.join(source_root, f)
             shutil.copy2(source, destination_root)
     setup_script = shutil.copy2(SETUP_SCRIPT, package_binary_path)
-    setup_run_script = shutil.copy2(SETUP_RUN_SCRIPT, os.path.join(package_binary_path, 'bin'))
     os.chmod(setup_script, 0o744)
-    os.chmod(setup_run_script, 0o755)
+    install_binary(SETUP_RUN_SCRIPT, package_binary_path)
     shutil.copytree(os.path.join(PROPSIDE_PATH, 'translations'), os.path.join(package_binary_path, 'translations'))
+    shutil.copy2(os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'SimpleIDE-User-Guide.pdf'),
+                 os.path.join(package_binary_path, 'parallax', 'bin'))
+    shutil.copytree(os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'propside-demos'), os.path.join(package_binary_path, 'demos'))
+
+    workspace_dir = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'Workspace')
+    subprocess.check_call(['git', 'fetch'], cwd=workspace_dir)
+    subprocess.check_call(['git', 'pull'], cwd=workspace_dir)
+    shutil.copytree(workspace_dir, os.path.join(package_binary_path, 'parallax', 'Workspace'))
 
 
 def install_shared_libs(package_binary_path, simpleide_binary):
     all_libs = subprocess.check_output(['ldd', simpleide_binary]).decode().split(os.linesep)
     qt_libs = [lib.strip().split()[2] for lib in all_libs if 'libQt' in lib or 'libaudio' in lib]
     for lib in qt_libs:
-        shutil.copy(lib, os.path.join(package_binary_path, 'bin'))
+        install_binary(lib, package_binary_path)
 
 
-def invoke(args, cwd, env=None):
+def invoke(args, cwd, env=None, output=True):
     print('%s$ %s' % (cwd, ' '.join(args)))
-    subprocess.check_call(args, cwd=cwd, env=env)
+    if output:
+        subprocess.check_call(args, cwd=cwd, env=env)
+    else:
+        print('\tstdout hidden...')
+        subprocess.check_output(args, cwd=cwd, env=env)
+
+
+def install_binary(binary, package_root):
+    package_binary_bin_path = os.path.join(package_root, 'bin')
+    destination_path = os.path.join(package_binary_bin_path, os.path.basename(binary))
+    if not os.path.exists(package_binary_bin_path):
+        os.makedirs(package_binary_bin_path)
+    shutil.copy2(binary, destination_path)
+    os.chmod(destination_path, 0o755)
+    return destination_path
 
 
 def get_qmake_invocation():
@@ -222,6 +271,7 @@ def parse_args():
                              'package.')
     parser.add_argument('-b', '--build', default=DEFAULT_BUILD_PATH,
                         help='Directory where the build for SimpleIDE can take place')
+    parser.add_argument('--no-clean', action='store_true', help='When given, the tarball will not be created')
 
     return parser.parse_args()
 
