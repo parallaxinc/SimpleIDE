@@ -122,7 +122,10 @@ def compile_proploader(package_binary_path):
     environment_vars['OS'] = 'linux'
 
     invoke(['make', 'clean'], cwd=PROP_LOADER_PATH, env=environment_vars)
-    invoke(['make', MAKE_JOBS_ARG], cwd=PROP_LOADER_PATH, env=environment_vars)
+
+    # We're skipping the parallel processing here because I think it was the culprit of some errors being thrown by
+    # TeamCity
+    invoke(['make'], cwd=PROP_LOADER_PATH, env=environment_vars)
 
     proploader_binary = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'proploader-linux-build', 'bin', 'proploader')
     install_binary(proploader_binary, package_binary_path)
