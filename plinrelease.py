@@ -50,6 +50,7 @@ class MissingLibraryException(Exception):
 def run():
     args = parse_args()
 
+    user_qmake = args.qmake
     binary_root = args.build
     user_propgcc = args.propgcc
     no_clean = args.no_clean
@@ -60,7 +61,7 @@ def run():
 
     install_propgcc(binary_root, user_propgcc, package_binary_path)
     compile_proploader(package_binary_path)
-    simple_ide_binary = compile_simple_ide(binary_root, package_binary_path)
+    simple_ide_binary = compile_simple_ide(binary_root, package_binary_path, user_qmake)
     compile_ctags(binary_root, package_binary_path)
     install_shared_libs(package_binary_path, simple_ide_binary)
     install_static_files(package_binary_path)
@@ -108,8 +109,8 @@ def install_propgcc(binary_root, user_propgcc, package_binary_path):
     os.environ['PATH'] = '%s/bin:%s' % (propgcc_target_path, os.environ['PATH'])
 
 
-def compile_simple_ide(binary_root, package_binary_path):
-    qmake_args = get_qmake_invocation()
+def compile_simple_ide(binary_root, package_binary_path, user_qmake):
+    qmake_args = get_qmake_invocation(user_qmake)
     propside_binary_root = os.path.join(binary_root, 'propside')
 
     os.makedirs(propside_binary_root, exist_ok=True)
@@ -242,10 +243,13 @@ def install_binary(binary, package_root, subdir='bin'):
     return destination_path
 
 
-def get_qmake_invocation():
-    qmake_path = which('qmake')
-    if not qmake_path:
-        raise QmakeNotFoundException
+def get_qmake_invocation(user_qmake):
+    if user_qmake and os.path.exists(user_qmake):
+        qmake_path = user_qmake
+    else:
+        qmake_path = which('qmake')
+        if not qmake_path:
+            raise QmakeNotFoundException
 
     real_qmake_path = os.path.realpath(qmake_path)
     if 'qtchooser' == os.path.basename(real_qmake_path):
@@ -307,6 +311,8 @@ def which(program):
 def parse_args():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('-q', '--qmake', help='Path to a qmake executable for Qt 5.4+. If not provided, the system '
+                                              'will be searched for an appropriate Qt installation.')
     parser.add_argument('-p', '--package',
                         help='Name (and path) of the compressed package that will be generated. A default value will '
                              'be selected based on the version number in the Qt project file if one is not provided.')
