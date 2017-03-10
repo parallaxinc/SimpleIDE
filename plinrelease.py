@@ -196,7 +196,7 @@ def install_static_files(package_binary_path):
 
 def install_shared_libs(package_binary_path, simpleide_binary):
     all_libs = subprocess.check_output(['ldd', simpleide_binary]).decode().split(os.linesep)
-    qt_libs = [lib.strip().split()[2] for lib in all_libs if 'libQt' in lib or 'libaudio' in lib]
+    qt_libs = [lib.strip().split()[2] for lib in all_libs if 'libQt' in lib or 'libaudio' in lib or 'libpng' in lib]
     for lib in qt_libs:
         install_binary(lib, package_binary_path)
 
