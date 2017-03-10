@@ -103,11 +103,11 @@ mkdir -p ${BUILD}
 
 DIR=`pwd`
 XFILES=`find propside/*`
-for XF in ${XFILES} ; do
-    BF=`echo ${XF} | sed 's/propside\//build\//g'`
-    if [ ! -e ${BF} ] ; then
-      echo ${DIR}/${BF}
-      ln -s ${DIR}/${XF} ${BUILD}
+for XF in $XFILES ; do
+    BF=`echo $XF | sed 's/propside\//build\//g'`
+    if [ ! -e $BF ] ; then
+      echo $DIR/$BF
+      ln -s $DIR/$XF ${BUILD}
     fi
     if [ $? -ne 0 ] ; then
       exit 1
@@ -122,7 +122,7 @@ if test $? != 0; then
     exit 1
 fi
 
-if [ x${CLEAN} != xnoclean ]; then
+if [ x$CLEAN != xnoclean ]; then
     make clean
 fi
 make ${JOBS}
@@ -175,7 +175,7 @@ if test $? != 0; then
 fi
 
 MYLDD=`ldd ${BUILD}/${NAME} | grep libQt | awk '{print $3}'`
-LIBS=`echo ${MYLDD}`
+LIBS=`echo $MYLDD`
 
 cp -f ${LIBS} ${VERSION}/bin
 if test $? != 0; then
@@ -184,7 +184,7 @@ if test $? != 0; then
 fi
 
 MYLDD=`ldd ${BUILD}/${NAME} | grep libQt | awk '{print $3}'`
-LIBS=`echo ${MYLDD}`
+LIBS=`echo $MYLDD`
 
 cp -f ${LIBS} ${VERSION}/bin
 if test $? != 0; then
@@ -193,7 +193,7 @@ if test $? != 0; then
 fi
 
 AULDD=`ldd ${BUILD}/${NAME} | grep libaudio | awk '{print $3}'`
-LIBAUDIO=`echo ${AULDD}`
+LIBAUDIO=`echo $AULDD`
 
 if [ ${LIBAUDIO}X != X ]; then
    cp -f ${LIBAUDIO} ${VERSION}/bin
@@ -216,9 +216,9 @@ fi
 #   exit 1
 #fi
 
-export PATH=${PROPGCC}/bin:$PATH
+export PATH=$PROPGCC/bin:$PATH
 
-if [ ! -e ${WXLOADER} ] ; then
+if [ ! -e $WXLOADER ] ; then
     echo "proploader not found. Adding:"
     git clone https://github.com/dbetz/proploader/ ../proploader
     pushd `pwd`
@@ -230,7 +230,7 @@ if [ ! -e ${WXLOADER} ] ; then
 fi
 
 cp ${WXLOADER} ${VERSION}/bin
-if [ ! -e ${WXLOADER} ] ; then
+if [ ! -e $WXLOADER ] ; then
    echo "${WXLOADER} is missing. Build it?"
    exit 1
 fi
@@ -322,7 +322,7 @@ if test $? != 0; then
 fi
 
 # pack-up a bzip tarball for distribution
-if [ x${CLEAN} != xnoclean ]; then
+if [ x$CLEAN != xnoclean ]; then
     echo "Make tarball ..."
     tar -cjf ${VERSION}.${UARCH}.${UNAME}-linux.tar.bz2 ${VERSION}
 fi
