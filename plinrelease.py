@@ -181,8 +181,13 @@ def install_static_files(package_binary_path):
     shutil.copytree(os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'propside-demos'), os.path.join(package_binary_path, 'demos'))
 
     workspace_dir = os.path.join(SIMPLE_IDE_SOURCE_ROOT, 'Workspace')
-    subprocess.check_call(['git', 'fetch'], cwd=workspace_dir)
-    subprocess.check_call(['git', 'pull'], cwd=workspace_dir)
+    try:
+        subprocess.check_call(['git', 'fetch'], cwd=workspace_dir)
+        subprocess.check_call(['git', 'pull'], cwd=workspace_dir)
+    except subprocess.CalledProcessError as e:
+        print('WARNING: Unable to update workspace directory. This is expected from TeamCity builds. Otherwise, head '
+              'this warning and find out why it failed.', file=sys.stderr)
+        print(e, file=sys.stderr)
     shutil.copytree(workspace_dir, os.path.join(package_binary_path, 'parallax', 'Workspace'))
 
 
