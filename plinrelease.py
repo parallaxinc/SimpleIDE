@@ -262,7 +262,7 @@ def get_qmake_invocation(user_qmake):
     else:
         raw_output = subprocess.check_output([qmake_path, '-version'])
         string_output = raw_output.decode()
-        if 'qt5' in string_output.lower():
+        if 'qt version 5' in string_output.lower():
             return [qmake_path]
         else:
             raise Qt5NotAvailableException()
