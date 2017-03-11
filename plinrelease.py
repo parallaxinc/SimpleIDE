@@ -61,9 +61,10 @@ def run():
 
     install_propgcc(binary_root, user_propgcc, package_binary_path)
     compile_proploader(package_binary_path)
-    simple_ide_binary = compile_simple_ide(binary_root, package_binary_path, user_qmake)
+    qmake_args = get_qmake_invocation(user_qmake)
+    simple_ide_binary = compile_simple_ide(binary_root, package_binary_path, qmake_args)
     compile_ctags(binary_root, package_binary_path)
-    install_shared_libs(package_binary_path, simple_ide_binary)
+    install_shared_libs(package_binary_path, simple_ide_binary, qmake_args[0])
     install_static_files(package_binary_path)
 
     if not no_clean:
@@ -109,8 +110,7 @@ def install_propgcc(binary_root, user_propgcc, package_binary_path):
     os.environ['PATH'] = '%s/bin:%s' % (propgcc_target_path, os.environ['PATH'])
 
 
-def compile_simple_ide(binary_root, package_binary_path, user_qmake):
-    qmake_args = get_qmake_invocation(user_qmake)
+def compile_simple_ide(binary_root, package_binary_path, qmake_args):
     propside_binary_root = os.path.join(binary_root, 'propside')
 
     os.makedirs(propside_binary_root, exist_ok=True)
@@ -204,8 +204,16 @@ def install_static_files(package_binary_path):
     shutil.copytree(workspace_dir, workspace_target_dir)
 
 
-def install_shared_libs(package_binary_path, simpleide_binary):
-    all_libs = subprocess.check_output(['ldd', simpleide_binary]).decode().split(os.linesep)
+def install_shared_libs(package_binary_path, simpleide_binary, qmake_path):
+    # libqxcb is just too cool to show up via ldd on SimpleIDE
+    qmake_directory = os.path.dirname(qmake_path)
+    libqxcb_path = os.path.join(qmake_directory, '..', 'plugins', 'platforms', 'libqxcb.so')
+    install_binary(libqxcb_path, package_binary_path, os.path.join('bin', 'platforms'))
+
+    all_direct_libs = subprocess.check_output(['ldd', simpleide_binary]).decode().split(os.linesep)
+    indirect_from_qxcb = subprocess.check_output(['ldd', libqxcb_path]).decode().split(os.linesep)
+    all_libs = all_direct_libs + indirect_from_qxcb
+
     required_libs = ['libQt', 'libaudio', 'libpng', 'libicu']
     libs_to_package = []
     for lib in all_libs:
@@ -213,15 +221,9 @@ def install_shared_libs(package_binary_path, simpleide_binary):
             if required_lib in lib:
                 libs_to_package.append(lib.strip().split()[2])
 
-    for lib in libs_to_package:
+    unique_libs_to_package = list(set(libs_to_package))
+    for lib in unique_libs_to_package:
         install_binary(lib, package_binary_path)
-
-    # libqxcb is just too cool to show up via ldd
-    libqxcb_path = find('libqxcb.so', ['/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms'], '/usr/lib')
-    if libqxcb_path:
-        install_binary(libqxcb_path, package_binary_path, os.path.join('bin', 'platforms'))
-    else:
-        raise MissingLibraryException('libqxcb.so')
 
 
 def invoke(args, cwd, env=None, output=True):
