@@ -132,14 +132,14 @@ int  BuildC::runBuild(QString option, QString projfile, QString compiler)
     {
         status->setText(tr("Building ..."));
 
-        QString model = projectOptions->getMemModel();
+        QString memmod = projectOptions->getMemModel();
         if (option.indexOf(BUILDALL_MEMTYPE) == 0) {
-            model = option.mid(option.indexOf("=")+1);
-            model = ">memtype="+model;
+            memmod = option.mid(option.indexOf("=")+1);
+            memmod = ">memtype="+memmod;
             option = "";
             for (int n = 0; n < list.length(); n++) {
                 if(list[n].contains(">memtype"))  {
-                    list[n] = model;
+                    list[n] = memmod;
                     break;
                 }
             }
@@ -1221,11 +1221,12 @@ int BuildC::getCompilerParameters(QStringList copts, QStringList *args)
     //portName = cbPort->itemText(cbPort->currentIndex());
     //boardName = cbBoard->itemText(cbBoard->currentIndex());
 
-    QString model = projectOptions->getMemModel();
+    //model = projectOptions->getMemModel();
     QString newmodel;
     if (copts.at(0).contains(BUILDALL_MEMTYPE)) {
         QString mopt = copts.at(0);
         newmodel = mopt.mid(mopt.indexOf("=")+1);
+        model = newmodel;
         copts.removeAt(0);
     }
     model = model.mid(0,model.indexOf(" ")); // anything after the first word is just description
