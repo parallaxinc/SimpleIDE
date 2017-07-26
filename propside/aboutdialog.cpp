@@ -20,6 +20,7 @@
 #include "aboutdialog.h"
 #include "properties.h"
 
+
 AboutDialog::AboutDialog(QString landing, QWidget *parent) : QDialog(parent)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
