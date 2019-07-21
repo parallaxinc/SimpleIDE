@@ -1,4 +1,4 @@
-# propside
+# SimpleIDE
 SimpleIDE for Propeller
 
 This is the SimpleIDE code repository.

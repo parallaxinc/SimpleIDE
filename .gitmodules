@@ -1,0 +1,6 @@
+[submodule "PropLoader"]
+	path = PropLoader
+	url = https://github.com/parallaxinc/PropLoader.git
+[submodule "Workspace"]
+	path = Workspace
+	url = https://github.com/parallaxinc/propsideworkspace/
