@@ -3,7 +3,7 @@
 
 #define MyAppName "SimpleIDE"
 #define MyDocName "SimpleIDE"
-#define MyAppVersion "1-1-0"
+#define MyAppVersion "1-1-2"
 #define MyAppPublisher "ParallaxInc"
 #define MyAppURL "parallax.com"
 #define MyAppExeName "bin\SimpleIDE.exe"
@@ -154,7 +154,8 @@ Filename: {app}\{#FtdiChipApp}; Flags: RunAsCurrentUser NoWait;
 
 [Registry]
 ; would like to use HKLM for these things if possible for specifying compiler and user workspace fields.
-Root: HKCU; SubKey: Software\{#MyAppPublisher}; Flags: DeleteKey UninsDeleteKey; 
+;Root: HKCU; SubKey: Software\{#MyAppPublisher}; Flags: DeleteKey UninsDeleteKey; This removes all publisher keys. Don't enable it.
+Root: HKCU; SubKey: Software\{#MyAppPublisher}\SimpleIDE; Flags: DeleteKey UninsDeleteKey; 
 Root: HKCU; SubKey: Software\{#MyAppPublisher}\SimpleIDE\*; Flags: DeleteKey UninsDeleteKey; 
 ;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Compiler; ValueData: "{app}\propeller-gcc\bin\propeller-elf-gcc.exe"; Flags: UninsDeleteKey; 
 ;Root: HKCU; Subkey: "Software\{#MyAppPublisher}\SimpleIDE"; ValueType: string; ValueName: SimpleIDE_Includes; ValueData: "{app}\propeller-gcc\propeller-load\"; Flags: UninsDeleteKey; 

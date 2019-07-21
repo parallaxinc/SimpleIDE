@@ -5285,6 +5285,14 @@ void MainSpinWindow::programDebug()
     term->getEditor()->setPortEnable(false);
     btnConnected->setChecked(false);
 
+    /* enable terminal here so first hello world program shows content */
+    term->getEditor()->setPlainText("");
+    term->getEditor()->setPortEnable(true);
+    term->setPortName(portName);
+    term->activateWindow();
+    term->setPortEnabled(true);
+    term->show();
+
     if(runLoader("-r -t")) {
         portListener->close();
         return;
@@ -5294,12 +5302,15 @@ void MainSpinWindow::programDebug()
     portListener->open();
 
     btnConnected->setChecked(true);
+
+    /* activate terminal here so first hello world program is in focus like before */
     term->getEditor()->setPlainText("");
     term->getEditor()->setPortEnable(true);
     term->setPortName(portName);
     term->activateWindow();
     term->setPortEnabled(true);
     term->show();
+
     term->getEditor()->setFocus();
     cbPort->setEnabled(false);
 }
