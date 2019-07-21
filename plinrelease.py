@@ -91,7 +91,7 @@ def install_propgcc(binary_root, user_propgcc, package_binary_path):
     elif os.path.exists(DEFAULT_SHARED_PROPGCC_INSTALL_PATH):
         propgcc_path = DEFAULT_SHARED_PROPGCC_INSTALL_PATH
     else:
-        propgcc_url = 'http://david.zemon.name:8111/repository/download/PropGCC5_Gcc4linuxX64/.lastSuccessful/propellergcc-alpha_v1_9_0-gcc4-linux-x64.tar.gz?guest=1'
+        propgcc_url = 'https://ci.zemon.name/repository/download/PropGCC5_Gcc4linuxX64/.lastSuccessful/propellergcc-alpha_v1_9_0-gcc4-linux-x64.tar.gz?guest=1'
         propgcc_archive_name = os.path.join(binary_root, 'propgcc.tar.gz')
 
         print('Downloading PropGCC from %s%s\tto %s' % (propgcc_url, os.linesep, propgcc_archive_name))
@@ -164,7 +164,7 @@ def create_package_path(binary_root):
     if os.path.exists(package_binary_path):
         shutil.rmtree(package_binary_path)
     os.makedirs(package_binary_path)
-    
+
     return package_binary_path
 
 
@@ -205,16 +205,22 @@ def install_static_files(package_binary_path):
 
 
 def install_shared_libs(package_binary_path, simpleide_binary, qmake_path):
-    # libqxcb is just too cool to show up via ldd on SimpleIDE
+    # A few libraries, like libqxcb are just too cool to show up via ldd on SimpleIDE
     qmake_directory = os.path.dirname(qmake_path)
-    libqxcb_path = os.path.join(qmake_directory, '..', 'plugins', 'platforms', 'libqxcb.so')
-    install_binary(libqxcb_path, package_binary_path, os.path.join('bin', 'platforms'))
+    extra_libs = [
+        os.path.join(qmake_directory, '..', 'plugins', 'platforms', 'libqxcb.so'),
+        os.path.join(qmake_directory, '..', 'plugins', 'xcbglintegrations', 'libqxcb-glx-integration.so')
+    ]
+    indirect_libs = []
+    for extra_lib in extra_libs:
+        install_binary(extra_lib, package_binary_path, os.path.join('bin', 'platforms'))
+        indirect_libs += subprocess.check_output(['ldd', extra_lib]).decode().split(os.linesep)
+        pass
 
     all_direct_libs = subprocess.check_output(['ldd', simpleide_binary]).decode().split(os.linesep)
-    indirect_from_qxcb = subprocess.check_output(['ldd', libqxcb_path]).decode().split(os.linesep)
-    all_libs = all_direct_libs + indirect_from_qxcb
+    all_libs = all_direct_libs + indirect_libs
 
-    required_libs = ['libQt', 'libaudio', 'libpng', 'libicu']
+    required_libs = ['libQt', 'libqxcb', 'libaudio', 'libpng', 'libicu']
     libs_to_package = []
     for lib in all_libs:
         for required_lib in required_libs:
@@ -258,7 +264,13 @@ def get_qmake_invocation(user_qmake):
         raw_output = subprocess.check_output([real_qmake_path, '-list-versions'])
         qt_versions = raw_output.decode().split()
         if '5' in qt_versions or 'qt5' in qt_versions:
-            return [qmake_path, '-qt=5']
+            try:
+                subprocess.check_output([qmake_path, '-qt=5'])
+            except subprocess.CalledProcessError as e:
+                qmake_path = e.output.decode().split()[1]
+                return [qmake_path]
+            else:
+                raise Exception("Wait a second... qmake was supposed to fail. What's going on here???")
         else:
             raise Qt5NotAvailableException()
     else:
@@ -273,7 +285,7 @@ def get_qmake_invocation(user_qmake):
 def find(name, default_paths, search_path):
     """
     Find a file
-    :param name: Name of the file to find 
+    :param name: Name of the file to find
     :type name str
     :param default_paths: Default paths where the file might be located
     :type default_paths list
